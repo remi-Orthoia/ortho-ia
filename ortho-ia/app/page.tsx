@@ -2,18 +2,17 @@
 
 import Link from 'next/link'
 import { useState } from 'react'
-import { 
-  FileText, 
-  Sparkles, 
-  CheckCircle, 
-  Clock, 
-  Shield, 
-  Users,
+import {
+  FileText,
+  CheckCircle,
+  Clock,
+  Shield,
   ChevronRight,
   Menu,
   X,
   Star
 } from 'lucide-react'
+import InfographieB from '@/components/InfographieB'
 
 export default function HomePage() {
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false)
@@ -107,28 +106,15 @@ export default function HomePage() {
             </p>
           </div>
 
-          {/* Hero Image/Illustration */}
-          <div className="mt-16 relative">
-            <div className="bg-gradient-to-br from-green-50 to-emerald-50 rounded-3xl p-8 lg:p-12">
-              <div className="bg-white rounded-2xl shadow-xl p-6 max-w-4xl mx-auto">
-                <div className="flex items-center gap-2 mb-4">
-                  <div className="w-3 h-3 bg-red-400 rounded-full"></div>
-                  <div className="w-3 h-3 bg-yellow-400 rounded-full"></div>
-                  <div className="w-3 h-3 bg-green-400 rounded-full"></div>
-                </div>
-                <div className="space-y-4">
-                  <div className="h-4 bg-gray-100 rounded w-3/4"></div>
-                  <div className="h-4 bg-gray-100 rounded w-1/2"></div>
-                  <div className="h-20 bg-green-50 rounded-lg flex items-center justify-center">
-                    <Sparkles className="text-green-600" size={32} />
-                    <span className="ml-2 text-green-700 font-medium">CRBO généré en 15 secondes</span>
-                  </div>
-                  <div className="h-4 bg-gray-100 rounded w-5/6"></div>
-                  <div className="h-4 bg-gray-100 rounded w-2/3"></div>
-                </div>
-              </div>
-            </div>
+          {/* Infographie avant/après */}
+          <div className="mt-16">
+            <InfographieB />
           </div>
+
+          {/* Punchline gradient */}
+          <p className="mt-12 text-center text-3xl sm:text-4xl lg:text-5xl font-bold leading-tight">
+            <span className="gradient-text">Maudire vos CRBO, c&apos;est du passé !</span>
+          </p>
         </div>
       </section>
 
