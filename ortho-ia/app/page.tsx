@@ -16,6 +16,7 @@ import InfographieB from '@/components/InfographieB'
 
 export default function HomePage() {
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false)
+  const [billingAnnual, setBillingAnnual] = useState(true)
 
   return (
     <div className="min-h-screen bg-white">
@@ -210,13 +211,46 @@ export default function HomePage() {
       {/* Pricing */}
       <section id="tarifs" className="py-20 bg-gray-50">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="text-center mb-16">
+          <div className="text-center mb-10">
             <h2 className="text-3xl sm:text-4xl font-bold text-gray-900">
               Un tarif simple et transparent
             </h2>
             <p className="mt-4 text-xl text-gray-600">
               Commencez gratuitement, passez Pro quand vous êtes prête
             </p>
+          </div>
+
+          {/* Billing toggle */}
+          <div className="flex justify-center mb-10">
+            <div className="inline-flex items-center bg-white rounded-full p-1 border border-gray-200 shadow-sm">
+              <button
+                type="button"
+                onClick={() => setBillingAnnual(false)}
+                className={`px-5 py-2 rounded-full text-sm font-semibold transition ${
+                  !billingAnnual
+                    ? 'bg-green-600 text-white shadow'
+                    : 'text-gray-600 hover:text-gray-900'
+                }`}
+              >
+                Mensuel
+              </button>
+              <button
+                type="button"
+                onClick={() => setBillingAnnual(true)}
+                className={`px-5 py-2 rounded-full text-sm font-semibold transition flex items-center gap-2 ${
+                  billingAnnual
+                    ? 'bg-green-600 text-white shadow'
+                    : 'text-gray-600 hover:text-gray-900'
+                }`}
+              >
+                Annuel
+                <span className={`text-[10px] font-bold px-2 py-0.5 rounded-full ${
+                  billingAnnual ? 'bg-white text-green-700' : 'bg-green-100 text-green-700'
+                }`}>
+                  -25%
+                </span>
+              </button>
+            </div>
           </div>
 
           <div className="grid md:grid-cols-2 gap-8 max-w-4xl mx-auto">
@@ -258,9 +292,16 @@ export default function HomePage() {
               <h3 className="text-xl font-semibold text-white">Pro</h3>
               <p className="text-green-100 mt-2">Pour les orthophonistes en activité</p>
               <div className="mt-6">
-                <span className="text-4xl font-bold text-white">19,90€</span>
+                <span className="text-4xl font-bold text-white">
+                  {billingAnnual ? '14,90€' : '19,90€'}
+                </span>
                 <span className="text-green-100">/mois</span>
               </div>
+              <p className="mt-2 text-xs text-green-100 min-h-[18px]">
+                {billingAnnual
+                  ? 'Facturé 178,80€/an · 60€ économisés'
+                  : 'Sans engagement · résiliable à tout moment'}
+              </p>
               <ul className="mt-8 space-y-4">
                 <li className="flex items-center gap-3">
                   <CheckCircle className="text-white flex-shrink-0" size={20} />
@@ -283,11 +324,11 @@ export default function HomePage() {
                   <span className="text-white">Support prioritaire</span>
                 </li>
               </ul>
-              <Link 
-                href="/auth/register?plan=pro" 
+              <Link
+                href={`/auth/register?plan=pro&billing=${billingAnnual ? 'annual' : 'monthly'}`}
                 className="mt-8 block w-full bg-white text-green-600 py-3 rounded-xl text-center font-semibold hover:bg-green-50 transition"
               >
-                Commencer l'essai Pro
+                Commencer l&apos;essai Pro
               </Link>
             </div>
           </div>
