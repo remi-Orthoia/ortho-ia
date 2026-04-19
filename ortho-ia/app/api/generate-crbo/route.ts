@@ -1,16 +1,55 @@
 import { NextRequest, NextResponse } from 'next/server'
 import Anthropic from '@anthropic-ai/sdk'
-import { SYSTEM_PROMPT_CRBO, buildCRBOPrompt } from '@/lib/prompts'
+import {
+  buildSystemPrompt,
+  buildCRBOPrompt,
+  CRBO_TOOL,
+  type CRBOStructure,
+} from '@/lib/prompts'
+
+function structureToText(structure: CRBOStructure): string {
+  const lines: string[] = []
+  lines.push('ANAMNÈSE')
+  lines.push(structure.anamnese_redigee.trim())
+  lines.push('')
+
+  for (const domain of structure.domains) {
+    lines.push(`## ${domain.nom.toUpperCase()}`)
+    lines.push('')
+    lines.push('| Épreuve | Score | É-T | Centile | Interprétation |')
+    lines.push('|---------|-------|-----|---------|----------------|')
+    for (const e of domain.epreuves) {
+      lines.push(
+        `| ${e.nom} | ${e.score} | ${e.et ?? '—'} | ${e.percentile} | ${e.interpretation} |`,
+      )
+    }
+    lines.push('')
+    if (domain.commentaire) {
+      lines.push(domain.commentaire.trim())
+      lines.push('')
+    }
+  }
+
+  lines.push('DIAGNOSTIC ORTHOPHONIQUE')
+  lines.push(structure.diagnostic.trim())
+  lines.push('')
+  lines.push('RECOMMANDATIONS')
+  lines.push(structure.recommandations.trim())
+  lines.push('')
+  lines.push('CONCLUSION')
+  lines.push(structure.conclusion.trim())
+
+  return lines.join('\n')
+}
 
 export async function POST(request: NextRequest) {
   try {
     const { formData } = await request.json()
 
-    // Vérifier que la clé API est configurée
     if (!process.env.ANTHROPIC_API_KEY || process.env.ANTHROPIC_API_KEY.includes('VOTRE_CLE')) {
       return NextResponse.json(
         { error: 'Clé API Claude non configurée. Veuillez ajouter votre clé ANTHROPIC_API_KEY dans le fichier .env.local' },
-        { status: 500 }
+        { status: 500 },
       )
     }
 
@@ -18,7 +57,10 @@ export async function POST(request: NextRequest) {
       apiKey: process.env.ANTHROPIC_API_KEY,
     })
 
-    // Construire le prompt utilisateur
+    const tests: string[] = Array.isArray(formData.test_utilise)
+      ? formData.test_utilise
+      : [formData.test_utilise]
+
     const userPrompt = buildCRBOPrompt({
       ortho_nom: formData.ortho_nom,
       ortho_adresse: formData.ortho_adresse,
@@ -36,44 +78,48 @@ export async function POST(request: NextRequest) {
       medecin_tel: formData.medecin_tel,
       motif: formData.motif,
       anamnese: formData.anamnese,
-      test_utilise: formData.test_utilise.join(', '),
+      test_utilise: tests.join(', '),
       resultats: formData.resultats_manuels,
       notes_passation: formData.notes_passation,
     })
 
-    // Appeler Claude
     const message = await anthropic.messages.create({
-      model: 'claude-sonnet-4-20250514',
+      model: 'claude-sonnet-4-6',
       max_tokens: 8192,
-      system: SYSTEM_PROMPT_CRBO,
-      messages: [
-        {
-          role: 'user',
-          content: userPrompt,
-        },
-      ],
+      system: buildSystemPrompt(tests),
+      tools: [CRBO_TOOL],
+      tool_choice: { type: 'tool', name: 'generate_crbo' },
+      messages: [{ role: 'user', content: userPrompt }],
     })
 
-    // Extraire le texte de la réponse
-    const crbo = message.content
-      .filter((block): block is Anthropic.TextBlock => block.type === 'text')
-      .map((block) => block.text)
-      .join('\n')
+    const toolUseBlock = message.content.find(
+      (block): block is Anthropic.ToolUseBlock => block.type === 'tool_use',
+    )
 
-    return NextResponse.json({ success: true, crbo })
+    if (!toolUseBlock || toolUseBlock.name !== 'generate_crbo') {
+      return NextResponse.json(
+        { error: "Claude n'a pas renvoyé de structure CRBO exploitable." },
+        { status: 502 },
+      )
+    }
+
+    const structure = toolUseBlock.input as CRBOStructure
+    const crbo = structureToText(structure)
+
+    return NextResponse.json({ success: true, crbo, structure })
   } catch (error: any) {
     console.error('Erreur génération CRBO:', error)
-    
+
     if (error.status === 401) {
       return NextResponse.json(
         { error: 'Clé API Claude invalide' },
-        { status: 401 }
+        { status: 401 },
       )
     }
 
     return NextResponse.json(
       { error: error.message || 'Erreur lors de la génération du CRBO' },
-      { status: 500 }
+      { status: 500 },
     )
   }
 }

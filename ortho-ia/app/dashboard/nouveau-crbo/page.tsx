@@ -4,6 +4,7 @@ import { useState, useEffect, Suspense } from 'react'
 import { useRouter, useSearchParams } from 'next/navigation'
 import { createClient } from '@/lib/supabase'
 import { CLASSES_OPTIONS, TESTS_OPTIONS, CRBOFormData } from '@/lib/types'
+import type { CRBOStructure, CRBODomain, CRBOEpreuve } from '@/lib/prompts'
 import { 
   ChevronRight, 
   ChevronLeft, 
@@ -40,6 +41,23 @@ const STEPS = [
   { id: 5, name: 'Résultats', description: 'Tests & scores' },
 ]
 
+const DRAFT_KEY = 'ortho-ia:crbo-draft'
+
+function StepPhaseBadge({ step }: { step: number }) {
+  if (step <= 4) {
+    return (
+      <div className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full bg-blue-50 border border-blue-200 text-blue-700 text-xs font-medium mb-3">
+        📋 En séance
+      </div>
+    )
+  }
+  return (
+    <div className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full bg-purple-50 border border-purple-200 text-purple-700 text-xs font-medium mb-3">
+      🔬 Post-séance
+    </div>
+  )
+}
+
 function NouveauCRBOContent() {
   const router = useRouter()
   const searchParams = useSearchParams()
@@ -49,6 +67,7 @@ function NouveauCRBOContent() {
   const [extracting, setExtracting] = useState(false)
   const [error, setError] = useState('')
   const [generatedCRBO, setGeneratedCRBO] = useState('')
+  const [generatedStructure, setGeneratedStructure] = useState<CRBOStructure | null>(null)
   const [showResult, setShowResult] = useState(false)
   
   // Patient selection
@@ -122,11 +141,36 @@ function NouveauCRBOContent() {
             handleSelectPatient(patient)
           }
         }
+
+        // Reprendre un brouillon s'il y en a un
+        try {
+          const raw = localStorage.getItem(DRAFT_KEY)
+          if (raw && !patientIdFromUrl) {
+            const draft = JSON.parse(raw) as { step: number; formData: Partial<CRBOFormData> }
+            if (draft?.formData) {
+              setFormData(prev => ({ ...prev, ...draft.formData }))
+              setCurrentStep(draft.step || 1)
+            }
+          }
+        } catch {
+          // brouillon corrompu → on l'ignore
+        }
       }
     }
 
     loadUserProfile()
   }, [searchParams])
+
+  const handleSaveDraft = () => {
+    try {
+      const { audio_file, resultats_pdf, ...serializable } = formData
+      localStorage.setItem(DRAFT_KEY, JSON.stringify({ step: currentStep, formData: serializable }))
+      alert('Brouillon sauvegardé. Vous pourrez le reprendre à votre prochaine connexion.')
+      router.push('/dashboard')
+    } catch {
+      setError("Impossible de sauvegarder le brouillon localement.")
+    }
+  }
 
   // Sélectionner un patient existant
   const handleSelectPatient = (patient: Patient) => {
@@ -262,7 +306,9 @@ function NouveauCRBOContent() {
       }
 
       setGeneratedCRBO(data.crbo)
+      setGeneratedStructure(data.structure ?? null)
       setShowResult(true)
+      try { localStorage.removeItem(DRAFT_KEY) } catch {}
 
       // Sauvegarder en base de données
       const supabase = createClient()
@@ -298,19 +344,19 @@ function NouveauCRBOContent() {
   }
 
   const handleDownloadWord = async () => {
-    // Import dynamique pour éviter les erreurs SSR
-    const { Document, Packer, Paragraph, TextRun, Table, TableRow, TableCell, WidthType, BorderStyle, AlignmentType, PageBreak, ShadingType } = await import('docx')
+    const {
+      Document, Packer, Paragraph, TextRun, Table, TableRow, TableCell,
+      WidthType, BorderStyle, AlignmentType, PageBreak, ShadingType, ImageRun,
+    } = await import('docx')
     const fileSaver = await import('file-saver')
     const saveAs = fileSaver.default || fileSaver.saveAs
 
-    // Constantes de style
     const FONT = "Calibri"
-    const FONT_SIZE_NORMAL = 22 // 11pt
-    const FONT_SIZE_TITLE = 32 // 16pt
-    const FONT_SIZE_SECTION = 26 // 13pt
+    const FONT_SIZE_NORMAL = 22
+    const FONT_SIZE_TITLE = 32
+    const FONT_SIZE_SECTION = 26
     const COLOR_GREEN = "2E7D32"
 
-    // Helper: créer une cellule
     const createCell = (text: string, options: { bold?: boolean, width?: number, shading?: string, alignment?: any } = {}) => {
       const { bold = false, width = 25, shading, alignment = AlignmentType.LEFT } = options
       return new TableCell({
@@ -329,26 +375,126 @@ function NouveauCRBOContent() {
       })
     }
 
-    // Helper: créer un titre de section
-    const createSectionTitle = (text: string) => {
-      return new Paragraph({
-        children: [new TextRun({ text, bold: true, size: FONT_SIZE_SECTION, font: FONT, color: COLOR_GREEN })],
-        spacing: { before: 400, after: 200 },
-        border: { bottom: { color: COLOR_GREEN, space: 20, style: BorderStyle.SINGLE, size: 12 } },
+    const createSectionTitle = (text: string) => new Paragraph({
+      children: [new TextRun({ text, bold: true, size: FONT_SIZE_SECTION, font: FONT, color: COLOR_GREEN })],
+      spacing: { before: 400, after: 200 },
+      border: { bottom: { color: COLOR_GREEN, space: 20, style: BorderStyle.SINGLE, size: 12 } },
+    })
+
+    // Couleur de shading par valeur de percentile (0-100)
+    const getPercentileColor = (value: number): string => {
+      if (value >= 25) return "C8E6C9"   // Normal — vert
+      if (value >= 16) return "DCEDC8"   // Limite basse — vert très clair
+      if (value >= 7)  return "FFF9C4"   // Fragile — jaune
+      if (value >= 2)  return "FFCC80"   // Déficitaire — orange
+      return "FFCDD2"                     // Pathologique — rouge
+    }
+
+    // Couleur CSS (pour canvas) miroir de getPercentileColor
+    const getPercentileCssColor = (value: number): string => {
+      if (value >= 25) return "#81C784"
+      if (value >= 16) return "#C5E1A5"
+      if (value >= 7)  return "#FFF176"
+      if (value >= 2)  return "#FFB74D"
+      return "#E57373"
+    }
+
+    // Graphique barres : retourne ArrayBuffer PNG + dimensions utilisées
+    const generateBarChart = async (
+      bars: { label: string; value: number }[],
+      title: string,
+      width = 900,
+      height = 380,
+    ): Promise<{ data: ArrayBuffer; width: number; height: number }> => {
+      const canvas = document.createElement('canvas')
+      canvas.width = width
+      canvas.height = height
+      const ctx = canvas.getContext('2d')!
+      ctx.fillStyle = '#FFFFFF'
+      ctx.fillRect(0, 0, width, height)
+
+      // Titre
+      ctx.fillStyle = '#2E7D32'
+      ctx.font = 'bold 16px Calibri, Arial, sans-serif'
+      ctx.textAlign = 'left'
+      ctx.fillText(title, 20, 28)
+
+      // Zone graphique
+      const padLeft = 50, padRight = 20, padTop = 50, padBottom = 100
+      const chartW = width - padLeft - padRight
+      const chartH = height - padTop - padBottom
+
+      // Grille horizontale (0, 25, 50, 75, 100)
+      ctx.strokeStyle = '#E0E0E0'
+      ctx.fillStyle = '#666666'
+      ctx.font = '11px Calibri, Arial, sans-serif'
+      ctx.textAlign = 'right'
+      for (const tick of [0, 25, 50, 75, 100]) {
+        const y = padTop + chartH - (tick / 100) * chartH
+        ctx.beginPath()
+        ctx.moveTo(padLeft, y)
+        ctx.lineTo(padLeft + chartW, y)
+        ctx.stroke()
+        ctx.fillText(`P${tick}`, padLeft - 6, y + 4)
+      }
+
+      // Ligne seuil "Normal" (P25)
+      const yP25 = padTop + chartH - (25 / 100) * chartH
+      ctx.strokeStyle = '#4CAF50'
+      ctx.setLineDash([4, 3])
+      ctx.beginPath()
+      ctx.moveTo(padLeft, yP25)
+      ctx.lineTo(padLeft + chartW, yP25)
+      ctx.stroke()
+      ctx.setLineDash([])
+
+      // Barres
+      const n = Math.max(bars.length, 1)
+      const slot = chartW / n
+      const barW = Math.min(slot * 0.7, 70)
+      bars.forEach((b, i) => {
+        const x = padLeft + i * slot + (slot - barW) / 2
+        const v = Math.max(0, Math.min(100, b.value))
+        const h = (v / 100) * chartH
+        const y = padTop + chartH - h
+        ctx.fillStyle = getPercentileCssColor(v)
+        ctx.fillRect(x, y, barW, h)
+        ctx.strokeStyle = '#424242'
+        ctx.lineWidth = 1
+        ctx.strokeRect(x, y, barW, h)
+
+        // Valeur au-dessus de la barre
+        ctx.fillStyle = '#212121'
+        ctx.font = 'bold 11px Calibri, Arial, sans-serif'
+        ctx.textAlign = 'center'
+        ctx.fillText(`P${Math.round(v)}`, x + barW / 2, y - 4)
+
+        // Label X (rotation si label long)
+        const label = b.label.length > 22 ? b.label.slice(0, 21) + '…' : b.label
+        ctx.save()
+        ctx.translate(x + barW / 2, padTop + chartH + 8)
+        ctx.rotate(-Math.PI / 6)
+        ctx.fillStyle = '#333333'
+        ctx.font = '11px Calibri, Arial, sans-serif'
+        ctx.textAlign = 'right'
+        ctx.fillText(label, 0, 0)
+        ctx.restore()
       })
+
+      const blob: Blob = await new Promise((r) => canvas.toBlob((b) => r(b!), 'image/png')!)
+      return { data: await blob.arrayBuffer(), width, height }
     }
 
-    // Helper: couleur selon É-T
-    const getETColor = (et: string) => {
-      const val = parseFloat(et)
-      if (isNaN(val)) return undefined
-      if (val < -2) return "FFCDD2"    // Rouge - pathologique
-      if (val < -1.5) return "FFE0B2"  // Orange - déficitaire
-      if (val < -1) return "FFF9C4"    // Jaune - fragile
-      return "C8E6C9"                   // Vert - normal
-    }
+    const imageParagraph = (img: { data: ArrayBuffer; width: number; height: number }) =>
+      new Paragraph({
+        alignment: AlignmentType.CENTER,
+        spacing: { before: 200, after: 200 },
+        children: [new ImageRun({
+          data: img.data,
+          transformation: { width: img.width / 1.6, height: img.height / 1.6 },
+        } as any)],
+      })
 
-    // Calculer l'âge
     const calculateAge = () => {
       if (!formData.patient_ddn) return ''
       const birth = new Date(formData.patient_ddn)
@@ -381,11 +527,9 @@ function NouveauCRBOContent() {
       }),
     )
 
-    // ===== SOUS-TITRE =====
     const bilanDateFormatted = new Date(formData.bilan_date).toLocaleDateString('fr-FR')
     children.push(createSectionTitle(`Bilan ${formData.bilan_type} du ${bilanDateFormatted}`))
 
-    // ===== TABLEAU PATIENT =====
     const ddnFormatted = formData.patient_ddn ? new Date(formData.patient_ddn).toLocaleDateString('fr-FR') : ''
     children.push(
       new Paragraph({ children: [new TextRun({ text: "Patient", size: FONT_SIZE_NORMAL, font: FONT, color: COLOR_GREEN, bold: true })], spacing: { before: 200 } }),
@@ -409,124 +553,211 @@ function NouveauCRBOContent() {
       new Paragraph({ children: [] }),
     )
 
-    // ===== TABLEAU MÉDECIN =====
     children.push(
       new Paragraph({ children: [new TextRun({ text: "Médecin prescripteur", size: FONT_SIZE_NORMAL, font: FONT, color: COLOR_GREEN, bold: true })], spacing: { before: 200 } }),
       new Table({
         width: { size: 100, type: WidthType.PERCENTAGE },
-        rows: [
-          new TableRow({ children: [
-            createCell("Nom :", { width: 15 }),
-            createCell(formData.medecin_nom, { width: 45 }),
-            createCell("Tél :", { width: 10 }),
-            createCell(formData.medecin_tel, { width: 30 }),
-          ]}),
-        ],
+        rows: [new TableRow({ children: [
+          createCell("Nom :", { width: 15 }),
+          createCell(formData.medecin_nom, { width: 45 }),
+          createCell("Tél :", { width: 10 }),
+          createCell(formData.medecin_tel, { width: 30 }),
+        ]})],
       }),
       new Paragraph({ children: [] }),
     )
 
-    // ===== MOTIF =====
     children.push(
       new Paragraph({ children: [new TextRun({ text: "Motif de consultation", size: FONT_SIZE_NORMAL, font: FONT, color: COLOR_GREEN, bold: true })], spacing: { before: 200 } }),
       new Paragraph({ children: [new TextRun({ text: formData.motif, size: FONT_SIZE_NORMAL, font: FONT })], spacing: { after: 200 } }),
     )
 
-    // ===== TESTS =====
     const testsText = Array.isArray(formData.test_utilise) ? formData.test_utilise.join(', ') : formData.test_utilise
     children.push(
       new Paragraph({ children: [new TextRun({ text: "Tests pratiqués", size: FONT_SIZE_NORMAL, font: FONT, color: COLOR_GREEN, bold: true })], spacing: { before: 200 } }),
       new Paragraph({ children: [new TextRun({ text: `• ${testsText}`, size: FONT_SIZE_NORMAL, font: FONT })], spacing: { after: 200 } }),
     )
 
-    // ===== SAUT DE PAGE =====
+    // ===== SYNTHÈSE VISUELLE (page 1) =====
+    const hasStructure = generatedStructure && generatedStructure.domains && generatedStructure.domains.length > 0
+    if (hasStructure) {
+      const recapBars = generatedStructure!.domains.map((d) => {
+        const values = d.epreuves.map((e) => e.percentile_value).filter((v) => typeof v === 'number')
+        const avg = values.length > 0 ? values.reduce((a, b) => a + b, 0) / values.length : 0
+        return { label: d.nom, value: avg }
+      })
+      const recapChart = await generateBarChart(recapBars, 'Synthèse — percentile moyen par domaine', 900, 380)
+      children.push(
+        new Paragraph({ children: [new TextRun({ text: "Synthèse des résultats", size: FONT_SIZE_NORMAL, font: FONT, color: COLOR_GREEN, bold: true })], spacing: { before: 200 } }),
+        imageParagraph(recapChart),
+      )
+    }
+
     children.push(new Paragraph({ children: [new PageBreak()] }))
 
     // ===== ANAMNÈSE =====
     children.push(createSectionTitle("ANAMNÈSE"))
-    formData.anamnese.split('\n').forEach(line => {
+    const anamneseText = hasStructure && generatedStructure!.anamnese_redigee
+      ? generatedStructure!.anamnese_redigee
+      : formData.anamnese
+    anamneseText.split('\n').forEach((line) => {
       if (line.trim()) {
         children.push(new Paragraph({ children: [new TextRun({ text: line.trim(), size: FONT_SIZE_NORMAL, font: FONT })], spacing: { after: 100 } }))
       }
     })
 
-    // ===== BILAN - RÉSULTATS =====
+    // ===== BILAN =====
     children.push(createSectionTitle("BILAN"))
 
-    // Légende
     children.push(
-      new Paragraph({ children: [new TextRun({ text: "Légende des scores :", size: 18, font: FONT, bold: true })], spacing: { before: 200, after: 100 } }),
+      new Paragraph({ children: [new TextRun({ text: "Légende des scores (percentiles) :", size: 18, font: FONT, bold: true })], spacing: { before: 200, after: 100 } }),
       new Table({
         width: { size: 100, type: WidthType.PERCENTAGE },
         rows: [new TableRow({ children: [
-          createCell("Normal (É-T ≥ -1)", { shading: "C8E6C9", width: 25 }),
-          createCell("Fragile (-1.5 < É-T < -1)", { shading: "FFF9C4", width: 25 }),
-          createCell("Déficitaire (-2 < É-T < -1.5)", { shading: "FFE0B2", width: 25 }),
-          createCell("Pathologique (É-T ≤ -2)", { shading: "FFCDD2", width: 25 }),
+          createCell("Normal (P ≥ 25)", { shading: "C8E6C9", width: 20 }),
+          createCell("Limite basse (P16-24)", { shading: "DCEDC8", width: 20 }),
+          createCell("Fragile (P7-15)", { shading: "FFF9C4", width: 20 }),
+          createCell("Déficitaire (P2-6)", { shading: "FFCC80", width: 20 }),
+          createCell("Pathologique (P < 2)", { shading: "FFCDD2", width: 20 }),
         ]})],
       }),
       new Paragraph({ children: [] }),
     )
 
-    // Parser et afficher les résultats avec couleurs
-    const resultLines = formData.resultats_manuels.split('\n').filter(l => l.trim())
-    if (resultLines.length > 0) {
-      const tableRows = [
-        new TableRow({ children: [
-          createCell("Épreuve", { bold: true, width: 50, shading: "E8F5E9" }),
-          createCell("Score", { bold: true, width: 20, shading: "E8F5E9", alignment: AlignmentType.CENTER }),
-          createCell("É-T", { bold: true, width: 15, shading: "E8F5E9", alignment: AlignmentType.CENTER }),
-          createCell("Centile", { bold: true, width: 15, shading: "E8F5E9", alignment: AlignmentType.CENTER }),
-        ]}),
-      ]
+    if (hasStructure) {
+      for (const domain of generatedStructure!.domains) {
+        children.push(
+          new Paragraph({
+            children: [new TextRun({ text: domain.nom, bold: true, size: FONT_SIZE_NORMAL + 2, font: FONT, color: COLOR_GREEN })],
+            spacing: { before: 300, after: 120 },
+          }),
+        )
 
-      resultLines.forEach(line => {
-        // Parser : "Nom épreuve : score, É-T : -1.5, P10" ou variations
-        const parts = line.split(/[,:]/).map(p => p.trim())
-        const epreuve = parts[0] || line
-        const score = parts[1] || ''
-        const etMatch = line.match(/É-T\s*:\s*([-\d.]+)/i) || line.match(/([-]\d+\.?\d*)/);
-        const et = etMatch ? etMatch[1] : ''
-        const centileMatch = line.match(/P(\d+)/i) || line.match(/centile\s*:\s*(\d+)/i)
-        const centile = centileMatch ? `P${centileMatch[1]}` : ''
+        const tableRows = [
+          new TableRow({ children: [
+            createCell("Épreuve", { bold: true, width: 40, shading: "E8F5E9" }),
+            createCell("Score", { bold: true, width: 15, shading: "E8F5E9", alignment: AlignmentType.CENTER }),
+            createCell("É-T", { bold: true, width: 12, shading: "E8F5E9", alignment: AlignmentType.CENTER }),
+            createCell("Centile", { bold: true, width: 15, shading: "E8F5E9", alignment: AlignmentType.CENTER }),
+            createCell("Interprétation", { bold: true, width: 18, shading: "E8F5E9", alignment: AlignmentType.CENTER }),
+          ]}),
+        ]
 
-        tableRows.push(new TableRow({ children: [
-          createCell(epreuve, { width: 50 }),
-          createCell(score, { width: 20, alignment: AlignmentType.CENTER }),
-          createCell(et, { width: 15, alignment: AlignmentType.CENTER, shading: getETColor(et) }),
-          createCell(centile, { width: 15, alignment: AlignmentType.CENTER }),
-        ]}))
-      })
+        domain.epreuves.forEach((e) => {
+          const color = getPercentileColor(e.percentile_value)
+          tableRows.push(new TableRow({ children: [
+            createCell(e.nom, { width: 40, shading: color }),
+            createCell(e.score, { width: 15, alignment: AlignmentType.CENTER, shading: color }),
+            createCell(e.et ?? '—', { width: 12, alignment: AlignmentType.CENTER, shading: color }),
+            createCell(e.percentile, { width: 15, alignment: AlignmentType.CENTER, shading: color }),
+            createCell(e.interpretation, { width: 18, alignment: AlignmentType.CENTER, shading: color }),
+          ]}))
+        })
 
-      children.push(
-        new Table({ width: { size: 100, type: WidthType.PERCENTAGE }, rows: tableRows }),
-        new Paragraph({ children: [] }),
-      )
+        children.push(
+          new Table({ width: { size: 100, type: WidthType.PERCENTAGE }, rows: tableRows }),
+          new Paragraph({ children: [] }),
+        )
+
+        // Graphique détaillé du domaine
+        if (domain.epreuves.length > 0) {
+          const chart = await generateBarChart(
+            domain.epreuves.map((e) => ({ label: e.nom, value: e.percentile_value })),
+            `${domain.nom} — percentiles par épreuve`,
+            900,
+            360,
+          )
+          children.push(imageParagraph(chart))
+        }
+
+        if (domain.commentaire && domain.commentaire.trim()) {
+          children.push(
+            new Paragraph({
+              children: [new TextRun({ text: domain.commentaire.trim(), size: FONT_SIZE_NORMAL, font: FONT, italics: true })],
+              spacing: { after: 200 },
+            }),
+          )
+        }
+      }
+    } else {
+      // Fallback : parsing texte legacy (si structure absente)
+      const resultLines = formData.resultats_manuels.split('\n').filter((l) => l.trim())
+      if (resultLines.length > 0) {
+        const tableRows = [
+          new TableRow({ children: [
+            createCell("Épreuve", { bold: true, width: 50, shading: "E8F5E9" }),
+            createCell("Score", { bold: true, width: 20, shading: "E8F5E9", alignment: AlignmentType.CENTER }),
+            createCell("É-T", { bold: true, width: 15, shading: "E8F5E9", alignment: AlignmentType.CENTER }),
+            createCell("Centile", { bold: true, width: 15, shading: "E8F5E9", alignment: AlignmentType.CENTER }),
+          ]}),
+        ]
+        resultLines.forEach((line) => {
+          const parts = line.split(/[,:]/).map((p) => p.trim())
+          const epreuve = parts[0] || line
+          const score = parts[1] || ''
+          const etMatch = line.match(/É-T\s*:\s*([-\d.]+)/i) || line.match(/([-]\d+\.?\d*)/)
+          const et = etMatch ? etMatch[1] : ''
+          const centileMatch = line.match(/P(\d+)/i) || line.match(/centile\s*:\s*(\d+)/i)
+          const centile = centileMatch ? `P${centileMatch[1]}` : ''
+          const pVal = centileMatch ? parseInt(centileMatch[1], 10) : 100
+          const color = getPercentileColor(pVal)
+          tableRows.push(new TableRow({ children: [
+            createCell(epreuve, { width: 50 }),
+            createCell(score, { width: 20, alignment: AlignmentType.CENTER }),
+            createCell(et, { width: 15, alignment: AlignmentType.CENTER }),
+            createCell(centile, { width: 15, alignment: AlignmentType.CENTER, shading: color }),
+          ]}))
+        })
+        children.push(
+          new Table({ width: { size: 100, type: WidthType.PERCENTAGE }, rows: tableRows }),
+          new Paragraph({ children: [] }),
+        )
+      }
     }
 
-    // ===== SAUT DE PAGE =====
     children.push(new Paragraph({ children: [new PageBreak()] }))
 
-    // ===== SYNTHÈSE (texte généré par Claude) =====
+    // ===== SYNTHÈSE ET CONCLUSIONS =====
     children.push(createSectionTitle("SYNTHÈSE ET CONCLUSIONS"))
-    generatedCRBO.split('\n').forEach(line => {
-      const trimmedLine = line.trim()
-      if (!trimmedLine) {
-        children.push(new Paragraph({ children: [] }))
-        return
+    if (hasStructure) {
+      const s = generatedStructure!
+      const pushBlock = (label: string, content: string) => {
+        children.push(
+          new Paragraph({
+            children: [new TextRun({ text: label, bold: true, size: FONT_SIZE_NORMAL, font: FONT, color: COLOR_GREEN })],
+            spacing: { before: 240, after: 80 },
+          }),
+        )
+        content.split('\n').forEach((line) => {
+          const t = line.trim()
+          if (t) {
+            children.push(new Paragraph({ children: [new TextRun({ text: t, size: FONT_SIZE_NORMAL, font: FONT })], spacing: { after: 60 } }))
+          }
+        })
       }
-      const isSectionHeader = /^[A-ZÉÈÀÊÂÎÔÛÇ\s]+:$/.test(trimmedLine)
-      children.push(new Paragraph({
-        children: [new TextRun({ 
-          text: trimmedLine, 
-          size: FONT_SIZE_NORMAL, 
-          font: FONT, 
-          bold: isSectionHeader,
-          color: isSectionHeader ? COLOR_GREEN : undefined 
-        })],
-        spacing: { after: isSectionHeader ? 100 : 60 },
-      }))
-    })
+      pushBlock('Diagnostic orthophonique', s.diagnostic)
+      pushBlock('Recommandations', s.recommandations)
+      pushBlock('Conclusion', s.conclusion)
+    } else {
+      generatedCRBO.split('\n').forEach((line) => {
+        const t = line.trim()
+        if (!t) {
+          children.push(new Paragraph({ children: [] }))
+          return
+        }
+        const isHeader = /^[A-ZÉÈÀÊÂÎÔÛÇ\s]+:?$/.test(t) && t.length < 50
+        children.push(new Paragraph({
+          children: [new TextRun({
+            text: t,
+            size: FONT_SIZE_NORMAL,
+            font: FONT,
+            bold: isHeader,
+            color: isHeader ? COLOR_GREEN : undefined,
+          })],
+          spacing: { after: isHeader ? 100 : 60 },
+        }))
+      })
+    }
 
     // ===== SIGNATURE =====
     children.push(
@@ -546,7 +777,6 @@ function NouveauCRBOContent() {
       }),
     )
 
-    // ===== CRÉER ET TÉLÉCHARGER =====
     const doc = new Document({
       sections: [{
         properties: { page: { margin: { top: 720, right: 720, bottom: 720, left: 720 } } },
@@ -595,8 +825,10 @@ function NouveauCRBOContent() {
         <div className="flex gap-4">
           <button
             onClick={() => {
+              try { localStorage.removeItem(DRAFT_KEY) } catch {}
               setShowResult(false)
               setGeneratedCRBO('')
+              setGeneratedStructure(null)
               setFormData({
                 ...formData,
                 patient_prenom: '',
@@ -676,6 +908,7 @@ function NouveauCRBOContent() {
         {currentStep === 1 && (
           <div className="space-y-6">
             <div>
+              <StepPhaseBadge step={1} />
               <h2 className="text-xl font-semibold text-gray-900">Vos coordonnées</h2>
               <p className="mt-1 text-sm text-gray-500">Ces informations apparaîtront sur le CRBO</p>
             </div>
@@ -755,6 +988,7 @@ function NouveauCRBOContent() {
         {currentStep === 2 && (
           <div className="space-y-6">
             <div>
+              <StepPhaseBadge step={2} />
               <h2 className="text-xl font-semibold text-gray-900">Informations patient</h2>
               <p className="mt-1 text-sm text-gray-500">Sélectionnez un patient existant ou créez-en un nouveau</p>
             </div>
@@ -802,30 +1036,34 @@ function NouveauCRBOContent() {
 
             {/* Patient Form */}
             <div className="grid sm:grid-cols-2 gap-4">
-              <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">Prénom *</label>
-                <input
-                  type="text"
-                  name="patient_prenom"
-                  value={formData.patient_prenom}
-                  onChange={handleChange}
-                  required
-                  className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-green-500"
-                  placeholder="Delyss"
-                />
-              </div>
-              <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">Nom *</label>
-                <input
-                  type="text"
-                  name="patient_nom"
-                  value={formData.patient_nom}
-                  onChange={handleChange}
-                  required
-                  className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-green-500"
-                  placeholder="Martin"
-                />
-              </div>
+              {!selectedPatientId && (
+                <>
+                  <div>
+                    <label className="block text-sm font-medium text-gray-700 mb-1">Prénom *</label>
+                    <input
+                      type="text"
+                      name="patient_prenom"
+                      value={formData.patient_prenom}
+                      onChange={handleChange}
+                      required
+                      className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-green-500"
+                      placeholder="Delyss"
+                    />
+                  </div>
+                  <div>
+                    <label className="block text-sm font-medium text-gray-700 mb-1">Nom *</label>
+                    <input
+                      type="text"
+                      name="patient_nom"
+                      value={formData.patient_nom}
+                      onChange={handleChange}
+                      required
+                      className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-green-500"
+                      placeholder="Martin"
+                    />
+                  </div>
+                </>
+              )}
               <div>
                 <label className="block text-sm font-medium text-gray-700 mb-1">Date de naissance *</label>
                 <input
@@ -884,6 +1122,7 @@ function NouveauCRBOContent() {
         {currentStep === 3 && (
           <div className="space-y-6">
             <div>
+              <StepPhaseBadge step={3} />
               <h2 className="text-xl font-semibold text-gray-900">Médecin prescripteur & Motif</h2>
               <p className="mt-1 text-sm text-gray-500">Informations sur la prescription</p>
             </div>
@@ -932,6 +1171,7 @@ function NouveauCRBOContent() {
         {currentStep === 4 && (
           <div className="space-y-6">
             <div>
+              <StepPhaseBadge step={4} />
               <h2 className="text-xl font-semibold text-gray-900">Anamnèse</h2>
               <p className="mt-1 text-sm text-gray-500">Entrez vos notes librement, l'IA les reformulera</p>
             </div>
@@ -982,6 +1222,23 @@ function NouveauCRBOContent() {
                 </button>
               </div>
             </div>
+
+            {/* Sauvegarde brouillon en fin d'étape 4 — fin de la phase "En séance" */}
+            <div className="bg-blue-50 border border-blue-200 rounded-lg p-4 flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
+              <div>
+                <p className="text-sm font-medium text-blue-900">Pause jusqu'à après la séance ?</p>
+                <p className="text-xs text-blue-700 mt-0.5">
+                  Sauvegardez ce que vous avez saisi. Vous retrouverez tout à votre prochaine connexion.
+                </p>
+              </div>
+              <button
+                type="button"
+                onClick={handleSaveDraft}
+                className="inline-flex items-center justify-center gap-2 px-4 py-2.5 bg-white border border-blue-300 text-blue-700 rounded-lg text-sm font-medium hover:bg-blue-100 transition whitespace-nowrap"
+              >
+                💾 Sauvegarder et reprendre plus tard
+              </button>
+            </div>
           </div>
         )}
 
@@ -989,6 +1246,7 @@ function NouveauCRBOContent() {
         {currentStep === 5 && (
           <div className="space-y-6">
             <div>
+              <StepPhaseBadge step={5} />
               <h2 className="text-xl font-semibold text-gray-900">Résultats des tests</h2>
               <p className="mt-1 text-sm text-gray-500">Sélectionnez les tests utilisés et entrez les résultats</p>
             </div>

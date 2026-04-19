@@ -86,7 +86,10 @@ export interface GenerateCRBORequest {
 
 export interface GenerateCRBOResponse {
   success: boolean
+  /** Texte reconstitué du CRBO (pour persistance et affichage fallback). */
   crbo?: string
+  /** Structure JSON renvoyée par Claude via tool_use. */
+  structure?: import('./prompts').CRBOStructure
   error?: string
 }
 
@@ -110,6 +113,8 @@ export const TESTS_OPTIONS = [
   'EVALEO 6-15',
   'N-EEL',
   'BILO',
+  'BELEC',
+  'Examath',
   'Autre'
 ] as const
 
