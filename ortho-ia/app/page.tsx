@@ -258,7 +258,7 @@ export default function HomePage() {
               <h3 className="text-xl font-semibold text-white">Pro</h3>
               <p className="text-green-100 mt-2">Pour les orthophonistes en activité</p>
               <div className="mt-6">
-                <span className="text-4xl font-bold text-white">29€</span>
+                <span className="text-4xl font-bold text-white">19,90€</span>
                 <span className="text-green-100">/mois</span>
               </div>
               <ul className="mt-8 space-y-4">
