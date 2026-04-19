@@ -36,7 +36,7 @@ interface Patient {
 const STEPS = [
   { id: 1, name: 'Vos infos', description: 'Coordonnées orthophoniste' },
   { id: 2, name: 'Patient', description: 'Informations patient' },
-  { id: 3, name: 'Médecin', description: 'Prescripteur & motif' },
+  { id: 3, name: 'Médecin', description: 'Prescripteur & plaintes' },
   { id: 4, name: 'Anamnèse', description: 'Notes cliniques' },
   { id: 5, name: 'Résultats', description: 'Tests & scores' },
 ]
@@ -69,6 +69,9 @@ function NouveauCRBOContent() {
   const [generatedCRBO, setGeneratedCRBO] = useState('')
   const [generatedStructure, setGeneratedStructure] = useState<CRBOStructure | null>(null)
   const [showResult, setShowResult] = useState(false)
+  const [lastSavedAt, setLastSavedAt] = useState<number | null>(null)
+  const [nowTick, setNowTick] = useState(0)
+  const [importingAnamnese, setImportingAnamnese] = useState(false)
   
   // Patient selection
   const [patients, setPatients] = useState<Patient[]>([])
@@ -161,16 +164,95 @@ function NouveauCRBOContent() {
     loadUserProfile()
   }, [searchParams])
 
-  const handleSaveDraft = () => {
+  const persistDraft = () => {
     try {
       const { audio_file, resultats_pdf, ...serializable } = formData
+      // Ne rien sauvegarder si rien n'a été saisi (état initial vide)
+      const hasContent =
+        serializable.patient_prenom || serializable.patient_nom ||
+        serializable.motif || serializable.anamnese || serializable.resultats_manuels
+      if (!hasContent) return false
       localStorage.setItem(DRAFT_KEY, JSON.stringify({ step: currentStep, formData: serializable }))
+      setLastSavedAt(Date.now())
+      return true
+    } catch {
+      return false
+    }
+  }
+
+  const handleSaveDraft = () => {
+    if (persistDraft()) {
       alert('Brouillon sauvegardé. Vous pourrez le reprendre à votre prochaine connexion.')
       router.push('/dashboard')
-    } catch {
+    } else {
       setError("Impossible de sauvegarder le brouillon localement.")
     }
   }
+
+  // Auto-save silencieux toutes les 15 secondes
+  useEffect(() => {
+    if (showResult) return
+    const id = setInterval(() => { persistDraft() }, 15_000)
+    return () => clearInterval(id)
+  }, [formData, currentStep, showResult])
+
+  // Tick 1s pour rafraîchir le "sauvegardé il y a X s"
+  useEffect(() => {
+    const id = setInterval(() => setNowTick(Date.now()), 1000)
+    return () => clearInterval(id)
+  }, [])
+
+  const savedAgoLabel = (() => {
+    if (!lastSavedAt) return null
+    const seconds = Math.max(0, Math.floor((nowTick - lastSavedAt) / 1000))
+    if (seconds < 5) return 'à l\'instant'
+    if (seconds < 60) return `il y a ${seconds} s`
+    const minutes = Math.floor(seconds / 60)
+    return `il y a ${minutes} min`
+  })()
+
+  const handleImportPreviousAnamnese = async () => {
+    if (!formData.patient_prenom || !formData.patient_nom) {
+      setError("Renseignez d'abord le patient à l'étape précédente.")
+      return
+    }
+    setImportingAnamnese(true)
+    setError('')
+    try {
+      const supabase = createClient()
+      const { data: { user } } = await supabase.auth.getUser()
+      if (!user) throw new Error('Session expirée')
+      const { data, error: dbError } = await supabase
+        .from('crbos')
+        .select('anamnese, bilan_date')
+        .eq('user_id', user.id)
+        .eq('patient_prenom', formData.patient_prenom)
+        .eq('patient_nom', formData.patient_nom)
+        .order('bilan_date', { ascending: false })
+        .limit(1)
+        .maybeSingle()
+      if (dbError) throw dbError
+      if (!data || !data.anamnese) {
+        setError(`Aucun bilan précédent trouvé pour ${formData.patient_prenom} ${formData.patient_nom}.`)
+        return
+      }
+      setFormData(prev => ({ ...prev, anamnese: data.anamnese }))
+    } catch (e: any) {
+      setError(e.message || "Erreur lors de l'import de l'anamnèse.")
+    } finally {
+      setImportingAnamnese(false)
+    }
+  }
+
+  const patientAgeLabel = (() => {
+    if (!formData.patient_ddn) return ''
+    const birth = new Date(formData.patient_ddn)
+    const bilan = new Date(formData.bilan_date)
+    let years = bilan.getFullYear() - birth.getFullYear()
+    let months = bilan.getMonth() - birth.getMonth()
+    if (months < 0) { years--; months += 12 }
+    return `${years} ans ${months} m`
+  })()
 
   // Sélectionner un patient existant
   const handleSelectPatient = (patient: Patient) => {
@@ -568,7 +650,7 @@ function NouveauCRBOContent() {
     )
 
     children.push(
-      new Paragraph({ children: [new TextRun({ text: "Motif de consultation", size: FONT_SIZE_NORMAL, font: FONT, color: COLOR_GREEN, bold: true })], spacing: { before: 200 } }),
+      new Paragraph({ children: [new TextRun({ text: "Plaintes du patient", size: FONT_SIZE_NORMAL, font: FONT, color: COLOR_GREEN, bold: true })], spacing: { before: 200 } }),
       new Paragraph({ children: [new TextRun({ text: formData.motif, size: FONT_SIZE_NORMAL, font: FONT })], spacing: { after: 200 } }),
     )
 
@@ -861,8 +943,37 @@ function NouveauCRBOContent() {
     )
   }
 
+  const patientBannerVisible =
+    currentStep >= 2 && currentStep <= 5 &&
+    (formData.patient_prenom || formData.patient_nom)
+
   return (
     <div className="max-w-3xl mx-auto">
+      {/* Bandeau patient — rappel du dossier actif */}
+      {patientBannerVisible && (
+        <div className="mb-4 flex items-center justify-between gap-3 bg-gradient-to-r from-green-50 to-emerald-50 border border-green-200 rounded-lg px-4 py-2.5">
+          <div className="flex items-center gap-2.5 text-sm text-green-900 min-w-0">
+            <span aria-hidden>👤</span>
+            <span className="font-semibold truncate">
+              {formData.patient_prenom} {formData.patient_nom}
+            </span>
+            {patientAgeLabel && (
+              <span className="text-green-700">· {patientAgeLabel}</span>
+            )}
+            {formData.patient_classe && (
+              <span className="text-green-700">· {formData.patient_classe}</span>
+            )}
+          </div>
+          <button
+            type="button"
+            onClick={() => setCurrentStep(2)}
+            className="text-xs font-medium text-green-700 hover:text-green-900 underline decoration-dotted whitespace-nowrap"
+          >
+            Changer
+          </button>
+        </div>
+      )}
+
       {/* Progress steps */}
       <nav className="mb-8">
         <ol className="flex items-center">
@@ -1123,8 +1234,8 @@ function NouveauCRBOContent() {
           <div className="space-y-6">
             <div>
               <StepPhaseBadge step={3} />
-              <h2 className="text-xl font-semibold text-gray-900">Médecin prescripteur & Motif</h2>
-              <p className="mt-1 text-sm text-gray-500">Informations sur la prescription</p>
+              <h2 className="text-xl font-semibold text-gray-900">Médecin prescripteur & Plaintes</h2>
+              <p className="mt-1 text-sm text-gray-500">Informations sur la prescription et plaintes exprimées</p>
             </div>
 
             <div className="grid sm:grid-cols-2 gap-4">
@@ -1152,7 +1263,7 @@ function NouveauCRBOContent() {
                 />
               </div>
               <div className="sm:col-span-2">
-                <label className="block text-sm font-medium text-gray-700 mb-1">Motif de consultation *</label>
+                <label className="block text-sm font-medium text-gray-700 mb-1">Plaintes du patient *</label>
                 <textarea
                   name="motif"
                   value={formData.motif}
@@ -1175,6 +1286,33 @@ function NouveauCRBOContent() {
               <h2 className="text-xl font-semibold text-gray-900">Anamnèse</h2>
               <p className="mt-1 text-sm text-gray-500">Entrez vos notes librement, l'IA les reformulera</p>
             </div>
+
+            {/* Import anamnèse du bilan précédent — uniquement pour un renouvellement sur patient existant */}
+            {formData.bilan_type === 'renouvellement' && selectedPatientId && (
+              <div className="bg-emerald-50 border border-emerald-200 rounded-lg p-4 flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
+                <div>
+                  <p className="text-sm font-medium text-emerald-900">Bilan de renouvellement</p>
+                  <p className="text-xs text-emerald-700 mt-0.5">
+                    Récupérez l'anamnèse du dernier bilan de {formData.patient_prenom} {formData.patient_nom}, puis ajustez-la.
+                  </p>
+                </div>
+                <button
+                  type="button"
+                  onClick={handleImportPreviousAnamnese}
+                  disabled={importingAnamnese}
+                  className="inline-flex items-center justify-center gap-2 px-4 py-2.5 bg-white border border-emerald-300 text-emerald-700 rounded-lg text-sm font-medium hover:bg-emerald-100 transition whitespace-nowrap disabled:opacity-60"
+                >
+                  {importingAnamnese ? (
+                    <>
+                      <Loader2 className="animate-spin" size={16} />
+                      Import en cours…
+                    </>
+                  ) : (
+                    <>📥 Importer l'anamnèse du dernier bilan</>
+                  )}
+                </button>
+              </div>
+            )}
 
             <div className="bg-blue-50 border border-blue-200 rounded-lg p-4 text-sm text-blue-800">
               <p className="font-medium mb-2">💡 Vous pouvez noter :</p>
@@ -1360,8 +1498,16 @@ Lecture de mots (score) : 15/100, É-T : -6.62, P5
           </div>
         )}
 
+        {/* Indicateur d'auto-save */}
+        {savedAgoLabel && (
+          <div className="mt-6 text-xs text-gray-400 flex items-center justify-end gap-1.5">
+            <span aria-hidden>💾</span>
+            <span>Sauvegardé {savedAgoLabel}</span>
+          </div>
+        )}
+
         {/* Navigation buttons */}
-        <div className="flex justify-between mt-8 pt-6 border-t border-gray-200">
+        <div className="flex justify-between mt-4 pt-6 border-t border-gray-200">
           <button
             type="button"
             onClick={prevStep}
