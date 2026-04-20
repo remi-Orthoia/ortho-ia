@@ -4,8 +4,8 @@ import { useState, useEffect } from 'react'
 import { useRouter } from 'next/navigation'
 import Link from 'next/link'
 import { createClient } from '@/lib/supabase'
-import { 
-  Plus, 
+import {
+  Plus,
   Search,
   User,
   Calendar,
@@ -16,7 +16,8 @@ import {
   X,
   Loader2,
   ChevronRight,
-  School
+  School,
+  TrendingUp
 } from 'lucide-react'
 
 interface Patient {
@@ -256,17 +257,17 @@ export default function PatientsPage() {
                 {filteredPatients.map((patient) => (
                   <tr key={patient.id} className="hover:bg-gray-50 transition">
                     <td className="px-4 py-4">
-                      <div className="flex items-center gap-3">
+                      <Link href={`/dashboard/patients/${patient.id}`} className="flex items-center gap-3 hover:opacity-80">
                         <div className="w-10 h-10 bg-indigo-100 rounded-full flex items-center justify-center">
                           <span className="text-indigo-600 font-medium">
                             {patient.prenom[0]}{patient.nom[0]}
                           </span>
                         </div>
                         <div>
-                          <p className="font-medium text-gray-900">{patient.prenom} {patient.nom}</p>
+                          <p className="font-medium text-gray-900 hover:text-indigo-700">{patient.prenom} {patient.nom}</p>
                           <p className="text-sm text-gray-500">{calculateAge(patient.date_naissance)}</p>
                         </div>
-                      </div>
+                      </Link>
                     </td>
                     <td className="px-4 py-4 hidden md:table-cell">
                       <div className="flex items-center gap-1.5 text-gray-600">
@@ -300,6 +301,13 @@ export default function PatientsPage() {
                     </td>
                     <td className="px-4 py-4 text-right">
                       <div className="flex items-center justify-end gap-2">
+                        <Link
+                          href={`/dashboard/patients/${patient.id}`}
+                          className="p-2 hover:bg-indigo-50 rounded-lg transition"
+                          title="Timeline du patient"
+                        >
+                          <TrendingUp size={18} className="text-indigo-600" />
+                        </Link>
                         <Link
                           href={`/dashboard/nouveau-crbo?patient=${patient.id}`}
                           className="p-2 hover:bg-green-50 rounded-lg transition"
