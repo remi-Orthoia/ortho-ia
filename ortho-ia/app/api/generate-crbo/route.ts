@@ -61,11 +61,54 @@ function structureToText(structure: CRBOStructure): string {
   lines.push('DIAGNOSTIC ORTHOPHONIQUE')
   lines.push(structure.diagnostic.trim())
   lines.push('')
+
+  if (structure.severite_globale) {
+    lines.push(`Sévérité globale du profil : ${structure.severite_globale}`)
+    lines.push('')
+  }
+
+  if (structure.comorbidites_detectees && structure.comorbidites_detectees.length > 0) {
+    lines.push('COMORBIDITÉS / PROFILS ASSOCIÉS SUSPECTÉS')
+    for (const c of structure.comorbidites_detectees) lines.push(`- ${c}`)
+    lines.push('')
+  }
+
+  if (structure.synthese_evolution) {
+    const ev = structure.synthese_evolution
+    lines.push("SYNTHÈSE D'ÉVOLUTION DEPUIS LE DERNIER BILAN")
+    lines.push(ev.resume.trim())
+    if (ev.domaines_progres?.length > 0) {
+      lines.push(`Progrès : ${ev.domaines_progres.join(', ')}`)
+    }
+    if (ev.domaines_stagnation?.length > 0) {
+      lines.push(`Stagnation : ${ev.domaines_stagnation.join(', ')}`)
+    }
+    if (ev.domaines_regression?.length > 0) {
+      lines.push(`Régression : ${ev.domaines_regression.join(', ')}`)
+    }
+    lines.push('')
+  }
+
   lines.push('RECOMMANDATIONS')
   lines.push(structure.recommandations.trim())
   lines.push('')
+
+  if (structure.pap_suggestions && structure.pap_suggestions.length > 0) {
+    lines.push('AMÉNAGEMENTS SCOLAIRES PROPOSÉS (PAP)')
+    for (const p of structure.pap_suggestions) lines.push(`- ${p}`)
+    lines.push('')
+  }
+
   lines.push('CONCLUSION')
   lines.push(structure.conclusion.trim())
+
+  if (structure.glossaire && structure.glossaire.length > 0) {
+    lines.push('')
+    lines.push('GLOSSAIRE')
+    for (const g of structure.glossaire) {
+      lines.push(`${g.terme} : ${g.definition}`)
+    }
+  }
 
   return lines.join('\n')
 }

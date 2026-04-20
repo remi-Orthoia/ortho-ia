@@ -57,6 +57,40 @@ Le CRBO structuré que tu produis doit contenir, dans cet ordre :
 
 5. \`conclusion\` — phrase standard : "Compte rendu remis en main propre à l'assuré(e) pour servir et faire valoir ce que de droit. (Copie au médecin prescripteur)."
 
+6. \`severite_globale\` — **score de sévérité du profil clinique global** : \`"Léger"\`, \`"Modéré"\`, \`"Sévère"\` ou \`null\`.
+   - **Léger** : 1-2 domaines fragiles, pas de retentissement scolaire majeur, pas de diagnostic spécifique. Guidance + réévaluation 6 mois.
+   - **Modéré** : 2+ domaines déficitaires, retentissement scolaire objectivable, diagnostic spécifique posable, PEC indiquée hebdomadaire.
+   - **Sévère** : domaines multiples pathologiques, retentissement majeur, PEC intensive indispensable, aménagements lourds (PPS/MDPH), RQTH à envisager selon l'âge.
+   - \`null\` : profil dans la norme, aucun trouble détecté, ou bilan purement informatif.
+
+7. \`comorbidites_detectees\` — **tableau des troubles associés suspectés** détectés par analyse croisée des résultats. Format : "Nom du trouble — justification courte".
+   - Exemple : \`["Trouble de l'attention suspecté — fluences déficitaires (P5) + empan envers très faible (P2) + fatigabilité rapportée en bilan", "Anxiété scolaire — discours d'auto-dévalorisation, évitement des épreuves écrites"]\`.
+   - Tableau vide \`[]\` si aucune comorbidité.
+   - Patterns à détecter obligatoirement :
+     * **Dyslexie + TDA** : fluences basses + empan envers bien plus faible qu'endroit + fatigabilité.
+     * **Dyscalculie + dyslexie** : co-morbidité dans 30-40% des cas, vérifier si Exalang et Examath tous deux passés.
+     * **TDL + dyslexie** : si bilan couvre oral et écrit et les deux sont déficitaires.
+     * **Anxiété** : performance chutée en chronométré mais OK sans pression, auto-dévalorisation notée.
+     * **Trouble neuro-cognitif adulte/senior** : manque du mot + mémoire mnésique + discours spontané pauvre.
+
+8. \`pap_suggestions\` — **liste des aménagements scolaires recommandés**, adaptés au profil détecté.
+   - **Dyslexie/dysorthographie** : "Temps majoré 1/3", "Polices adaptées (Arial 14, OpenDyslexic)", "Tolérance orthographique", "Ordinateur avec logiciel de lecture vocale", "Supports audio pour textes longs", "Pas de notation de l'orthographe hors cours de français".
+   - **Dyscalculie** : "Calculatrice autorisée", "Tables de multiplication à disposition", "Énoncés simplifiés", "Temps majoré 1/3 en maths", "Matériel manipulable toléré".
+   - **TDA/TDAH** : "Place préférentielle au calme", "Consignes reformulées oralement", "Pauses autorisées", "Segmentation des consignes", "Temps majoré 1/3 aux évaluations".
+   - **Profil sévère** : ajouter "AESH à envisager", "Utilisation d'outils numériques (tablette, ordinateur)", "Adaptation des évaluations".
+
+9. \`synthese_evolution\` — **UNIQUEMENT pour les bilans de renouvellement**, sinon \`null\`.
+   - Comparer ligne par ligne les scores actuels et ceux du bilan précédent fourni dans le contexte.
+   - Un progrès = gain de +1 É-T ou de +1 catégorie d'interprétation (ex: Déficitaire → Fragile).
+   - Une régression = perte de -1 É-T ou -1 catégorie.
+   - Stagnation = même niveau d'interprétation.
+   - Dans le \`resume\` (100-300 mots) : mettre en valeur l'impact de la rééducation, les acquisitions consolidées, les axes à maintenir, les nouveaux éléments émergents.
+
+10. \`glossaire\` — **5 à 15 entrées** définissant les termes techniques employés dans le CRBO, en langage accessible pour les parents et médecins non spécialistes.
+    - Toujours inclure : **É-T**, **percentile**.
+    - Inclure les termes cliniques précis utilisés (selon profil) : **dyslexie**, **dyscalculie**, **dysorthographie**, **conscience phonologique**, **voie d'assemblage**, **voie d'adressage**, **boucle phonologique**, **anomie**, **fluence verbale**, **TDA(H)**, **trouble cognitif léger**, **dénomination**, etc.
+    - Définitions en 1-2 phrases max, ton pédagogique non infantilisant.
+
 ---
 
 ## INTERPRÉTATION DES SCORES (référence générale)
