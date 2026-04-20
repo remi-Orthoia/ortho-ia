@@ -340,78 +340,32 @@ export default function HomePage() {
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="text-center mb-16">
             <h2 className="text-3xl sm:text-4xl font-bold text-gray-900">
-              Ce que disent nos utilisatrices
+              Témoignages à venir
             </h2>
             <p className="mt-4 text-xl text-gray-600">
-              Des orthophonistes qui ont transformé leur pratique
+              Les premier·ère·s utilisateur·rice·s testent actuellement Ortho.ia. <br className="hidden sm:block" />
+              Leurs retours seront publiés ici prochainement.
             </p>
           </div>
 
-          <div className="grid md:grid-cols-3 gap-8">
-            {/* Testimonial 1 */}
-            <div className="bg-white rounded-2xl p-8 shadow-sm border border-gray-100">
-              <div className="flex gap-1 mb-4">
-                {[...Array(5)].map((_, i) => (
-                  <Star key={i} className="text-yellow-400 fill-current" size={20} />
-                ))}
+          <div className="max-w-2xl mx-auto">
+            <div className="bg-gradient-to-br from-green-50 to-emerald-50 border border-green-100 rounded-2xl p-8 text-center">
+              <div className="inline-flex items-center justify-center w-14 h-14 rounded-full bg-white shadow-sm mb-4">
+                <Star className="text-yellow-400 fill-current" size={24} />
               </div>
-              <p className="text-gray-600 mb-6">
-                "J'étais sceptique au début, mais après l'essai gratuit, je ne pouvais plus m'en passer. 
-                Ortho.ia m'a permis de retrouver un équilibre entre vie professionnelle et personnelle."
+              <p className="text-gray-700 text-lg font-medium">
+                Vous êtes orthophoniste et vous aimeriez tester Ortho.ia en avant-première&nbsp;?
               </p>
-              <div className="flex items-center gap-3">
-                <div className="w-10 h-10 bg-green-100 rounded-full flex items-center justify-center">
-                  <span className="text-green-600 font-semibold">M</span>
-                </div>
-                <div>
-                  <p className="font-semibold text-gray-900">Marc</p>
-                  <p className="text-sm text-gray-500">Orthophoniste à Lyon</p>
-                </div>
-              </div>
-            </div>
-
-            {/* Testimonial 2 */}
-            <div className="bg-white rounded-2xl p-8 shadow-sm border border-gray-100">
-              <div className="flex gap-1 mb-4">
-                {[...Array(5)].map((_, i) => (
-                  <Star key={i} className="text-yellow-400 fill-current" size={20} />
-                ))}
-              </div>
-              <p className="text-gray-600 mb-6">
-                "La qualité des comptes rendus générés est impressionnante. Mes patients et les médecins 
-                prescripteurs apprécient la clarté et le professionnalisme des documents."
+              <p className="text-gray-600 mt-3">
+                Rejoignez les premier·ère·s utilisateur·rice·s — 3 CRBO gratuits, sans carte bancaire.
               </p>
-              <div className="flex items-center gap-3">
-                <div className="w-10 h-10 bg-green-100 rounded-full flex items-center justify-center">
-                  <span className="text-green-600 font-semibold">J</span>
-                </div>
-                <div>
-                  <p className="font-semibold text-gray-900">Julie</p>
-                  <p className="text-sm text-gray-500">Orthophoniste à Paris</p>
-                </div>
-              </div>
-            </div>
-
-            {/* Testimonial 3 */}
-            <div className="bg-white rounded-2xl p-8 shadow-sm border border-gray-100">
-              <div className="flex gap-1 mb-4">
-                {[...Array(5)].map((_, i) => (
-                  <Star key={i} className="text-yellow-400 fill-current" size={20} />
-                ))}
-              </div>
-              <p className="text-gray-600 mb-6">
-                "Cet outil a complètement transformé ma façon de travailler. Je passe maintenant plus 
-                de temps avec mes patients et moins de temps à rédiger. C'est un gain incroyable !"
-              </p>
-              <div className="flex items-center gap-3">
-                <div className="w-10 h-10 bg-green-100 rounded-full flex items-center justify-center">
-                  <span className="text-green-600 font-semibold">L</span>
-                </div>
-                <div>
-                  <p className="font-semibold text-gray-900">Laurie</p>
-                  <p className="text-sm text-gray-500">Orthophoniste à Toulouse</p>
-                </div>
-              </div>
+              <Link
+                href="/auth/register"
+                className="mt-6 inline-flex items-center gap-2 bg-green-600 text-white px-6 py-3 rounded-xl font-semibold hover:bg-green-700 transition"
+              >
+                Commencer l&apos;essai gratuit
+                <ChevronRight size={18} />
+              </Link>
             </div>
           </div>
         </div>
