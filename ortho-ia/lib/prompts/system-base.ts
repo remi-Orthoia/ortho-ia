@@ -14,7 +14,15 @@ Tu DOIS utiliser l'outil \`generate_crbo\` pour retourner le compte rendu au for
 
 Le CRBO structuré que tu produis doit contenir, dans cet ordre :
 
-1. \`anamnese_redigee\` — paragraphe fluide reprenant : situation scolaire actuelle, fratrie, premières acquisitions (marche, langage), vision/audition, loisirs, suivis antérieurs, parcours scolaire et difficultés signalées.
+1. \`anamnese_redigee\` — **Un paragraphe fluide en prose professionnelle, JAMAIS une liste de notes brutes.**
+   - **Obligatoire** : reformuler toutes les notes brutes fournies par l'orthophoniste en un texte continu, rédigé à la 3ème personne (il/elle), en phrases complètes.
+   - **Interdit** : recopier tel quel le champ "Anamnèse (notes brutes)", faire des bullet points, utiliser des abréviations ("ortho" → "orthophoniste", "pb" → "problème", etc.), ou laisser du "jargon note".
+   - **Structure attendue** : situation scolaire actuelle → fratrie → premières acquisitions (marche, langage) → vision / audition → loisirs / centres d'intérêt → antécédents médicaux / suivis antérieurs → parcours scolaire → difficultés signalées par les parents ou l'école.
+   - **Longueur** : entre 150 et 400 mots. Un CRBO professionnel a au minimum un paragraphe dense d'anamnèse.
+   - **Exemple de transformation attendue** :
+     - ❌ Notes brutes reçues : "marche 13m / langage 2 ans / pas d'ORL / CE2 / redoublement CP / aime dessin"
+     - ✅ Anamnèse rédigée : "Léa est actuellement scolarisée en CE2 après un redoublement en CP lié à des difficultés de langage écrit. Elle a acquis la marche à l'âge de 13 mois et les premiers mots à l'âge de 2 ans, ce qui dénote un retard modéré du développement langagier. Aucun bilan ORL n'a été réalisé à ce jour. Elle manifeste un goût particulier pour le dessin et les activités graphiques."
+   - Si une information est manquante, écrire simplement "[Information non communiquée]" au sein du paragraphe, sans inventer.
 2. \`domains[]\` — un objet par domaine testé. Chaque domaine regroupe les épreuves correspondantes avec :
    - \`nom\` de l'épreuve
    - \`score\` brut (ex: "16/25", "480s")

@@ -480,23 +480,29 @@ function NouveauCRBOContent() {
       border: { bottom: { color: COLOR_GREEN, space: 20, style: BorderStyle.SINGLE, size: 12 } },
     })
 
-    // Couleur de shading par valeur de percentile (0-100)
-    const getPercentileColor = (value: number): string => {
-      if (value >= 25) return "C8E6C9"   // Normal — vert
-      if (value >= 16) return "DCEDC8"   // Limite basse — vert très clair
-      if (value >= 7)  return "FFF9C4"   // Fragile — jaune
-      if (value >= 2)  return "FFCC80"   // Déficitaire — orange
-      return "FFCDD2"                     // Pathologique — rouge
+    // Palette cohérente seuils cliniques → couleurs visuelles
+    // Dégradé vert → jaune → orange → rouge, alarme visuelle dès P < 7
+    type SeuilClinique = {
+      label: 'Normal' | 'Limite basse' | 'Fragile' | 'Déficitaire' | 'Pathologique'
+      min: number
+      shading: string // couleur de fond Word (hex sans #)
+      css: string     // couleur canvas (avec #)
+      range: string   // libellé légende
     }
+    const SEUILS: SeuilClinique[] = [
+      { label: 'Normal',        min: 25, shading: 'C8E6C9', css: '#81C784', range: 'P ≥ 25' },
+      { label: 'Limite basse',  min: 16, shading: 'FFF59D', css: '#FFEE58', range: 'P16-24' },
+      { label: 'Fragile',       min: 7,  shading: 'FFCC80', css: '#FFB74D', range: 'P7-15' },
+      { label: 'Déficitaire',   min: 2,  shading: 'EF9A9A', css: '#E57373', range: 'P2-6' },
+      { label: 'Pathologique',  min: 0,  shading: 'E57373', css: '#C62828', range: 'P < 2' },
+    ]
 
-    // Couleur CSS (pour canvas) miroir de getPercentileColor
-    const getPercentileCssColor = (value: number): string => {
-      if (value >= 25) return "#81C784"
-      if (value >= 16) return "#C5E1A5"
-      if (value >= 7)  return "#FFF176"
-      if (value >= 2)  return "#FFB74D"
-      return "#E57373"
+    const seuilFor = (value: number): SeuilClinique => {
+      for (const s of SEUILS) if (value >= s.min) return s
+      return SEUILS[SEUILS.length - 1]
     }
+    const getPercentileColor = (value: number): string => seuilFor(value).shading
+    const getPercentileCssColor = (value: number): string => seuilFor(value).css
 
     // Graphique barres : retourne ArrayBuffer PNG + dimensions utilisées
     const generateBarChart = async (
@@ -695,10 +701,13 @@ function NouveauCRBOContent() {
     children.push(new Paragraph({ children: [new PageBreak()] }))
 
     // ===== ANAMNÈSE =====
+    // Jamais de notes brutes : on utilise toujours la reformulation de Claude.
+    // Si la structure n'a pas d'anamnèse rédigée, on affiche un marqueur [À COMPLÉTER]
+    // pour forcer l'ortho à relire avant envoi — on ne recopie PAS les notes brutes.
     children.push(createSectionTitle("ANAMNÈSE"))
-    const anamneseText = hasStructure && generatedStructure!.anamnese_redigee
-      ? generatedStructure!.anamnese_redigee
-      : formData.anamnese
+    const anamneseText = hasStructure && generatedStructure!.anamnese_redigee?.trim()
+      ? generatedStructure!.anamnese_redigee.trim()
+      : '[À COMPLÉTER — anamnèse non reformulée par l\'IA. Reprenez les notes brutes et rédigez un paragraphe fluide.]'
     anamneseText.split('\n').forEach((line) => {
       if (line.trim()) {
         children.push(new Paragraph({ children: [new TextRun({ text: line.trim(), size: FONT_SIZE_NORMAL, font: FONT })], spacing: { after: 100 } }))
@@ -712,13 +721,11 @@ function NouveauCRBOContent() {
       new Paragraph({ children: [new TextRun({ text: "Légende des scores (percentiles) :", size: 18, font: FONT, bold: true })], spacing: { before: 200, after: 100 } }),
       new Table({
         width: { size: 100, type: WidthType.PERCENTAGE },
-        rows: [new TableRow({ children: [
-          createCell("Normal (P ≥ 25)", { shading: "C8E6C9", width: 20 }),
-          createCell("Limite basse (P16-24)", { shading: "DCEDC8", width: 20 }),
-          createCell("Fragile (P7-15)", { shading: "FFF9C4", width: 20 }),
-          createCell("Déficitaire (P2-6)", { shading: "FFCC80", width: 20 }),
-          createCell("Pathologique (P < 2)", { shading: "FFCDD2", width: 20 }),
-        ]})],
+        rows: [new TableRow({
+          children: SEUILS.map(s =>
+            createCell(`${s.label} (${s.range})`, { shading: s.shading, width: 20, alignment: AlignmentType.CENTER, bold: true }),
+          ),
+        })],
       }),
       new Paragraph({ children: [] }),
     )
