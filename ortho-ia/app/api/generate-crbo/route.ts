@@ -147,14 +147,26 @@ export async function POST(request: NextRequest) {
       notes_passation: s(anonymized.notes_passation),
     })
 
-    const message = await anthropic.messages.create({
-      model: 'claude-sonnet-4-6',
-      max_tokens: 8192,
-      system: buildSystemPrompt(tests),
-      tools: [CRBO_TOOL],
-      tool_choice: { type: 'tool', name: 'generate_crbo' },
-      messages: [{ role: 'user', content: userPrompt }],
-    })
+    // Timeout explicite — 45s max (Claude API met parfois 20-30s sur gros prompts)
+    const abortController = new AbortController()
+    const timeoutId = setTimeout(() => abortController.abort(), 45_000)
+
+    let message
+    try {
+      message = await anthropic.messages.create(
+        {
+          model: 'claude-sonnet-4-6',
+          max_tokens: 8192,
+          system: buildSystemPrompt(tests),
+          tools: [CRBO_TOOL],
+          tool_choice: { type: 'tool', name: 'generate_crbo' },
+          messages: [{ role: 'user', content: userPrompt }],
+        },
+        { signal: abortController.signal },
+      )
+    } finally {
+      clearTimeout(timeoutId)
+    }
 
     const toolUseBlock = message.content.find(
       (block): block is Anthropic.ToolUseBlock => block.type === 'tool_use',
@@ -174,17 +186,35 @@ export async function POST(request: NextRequest) {
 
     return NextResponse.json({ success: true, crbo, structure })
   } catch (error: any) {
-    console.error('Erreur génération CRBO:', error)
+    // Logging SANS payload — évite fuite DDN / anamnèse / résultats dans les logs
+    console.error('Erreur génération CRBO:', {
+      name: error?.name,
+      code: error?.code,
+      status: error?.status,
+      message: typeof error?.message === 'string' ? error.message.slice(0, 200) : undefined,
+    })
 
-    if (error.status === 401) {
+    if (error?.name === 'AbortError') {
       return NextResponse.json(
-        { error: 'Clé API Claude invalide' },
-        { status: 401 },
+        { error: 'La génération a dépassé le délai de 45 secondes. Veuillez réessayer.' },
+        { status: 504 },
+      )
+    }
+    if (error?.status === 401) {
+      return NextResponse.json(
+        { error: 'Service temporairement indisponible.' },
+        { status: 503 },
+      )
+    }
+    if (error?.status === 429) {
+      return NextResponse.json(
+        { error: 'Trop de demandes. Attendez une minute et réessayez.' },
+        { status: 429 },
       )
     }
 
     return NextResponse.json(
-      { error: error.message || 'Erreur lors de la génération du CRBO' },
+      { error: 'Erreur lors de la génération du CRBO. Veuillez réessayer.' },
       { status: 500 },
     )
   }

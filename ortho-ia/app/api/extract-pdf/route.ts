@@ -63,18 +63,30 @@ export async function POST(request: NextRequest) {
       }
     }
 
-    const message = await anthropic.messages.create({
-      model: 'claude-sonnet-4-6',
-      max_tokens: 4096,
-      tools: [EXTRACT_TOOL],
-      tool_choice: { type: 'tool', name: 'extract_test_results' },
-      messages: [
+    // Timeout 60s — l'extraction de PDF volumineux peut être lente
+    const abortController = new AbortController()
+    const timeoutId = setTimeout(() => abortController.abort(), 60_000)
+
+    let message
+    try {
+      message = await anthropic.messages.create(
         {
-          role: 'user',
-          content: [contentBlock, { type: 'text', text: EXTRACTION_PROMPT }],
+          model: 'claude-sonnet-4-6',
+          max_tokens: 4096,
+          tools: [EXTRACT_TOOL],
+          tool_choice: { type: 'tool', name: 'extract_test_results' },
+          messages: [
+            {
+              role: 'user',
+              content: [contentBlock, { type: 'text', text: EXTRACTION_PROMPT }],
+            },
+          ],
         },
-      ],
-    })
+        { signal: abortController.signal },
+      )
+    } finally {
+      clearTimeout(timeoutId)
+    }
 
     const toolUseBlock = message.content.find(
       (block): block is Anthropic.ToolUseBlock => block.type === 'tool_use',
@@ -114,12 +126,31 @@ export async function POST(request: NextRequest) {
         (message.usage?.input_tokens ?? 0) + (message.usage?.output_tokens ?? 0),
     })
   } catch (error: any) {
-    console.error('Erreur extraction PDF:', error)
+    // Logging SANS payload — évite fuite de données patient
+    console.error('Erreur extraction PDF:', {
+      name: error?.name,
+      code: error?.code,
+      status: error?.status,
+      message: typeof error?.message === 'string' ? error.message.slice(0, 200) : undefined,
+    })
+
+    if (error?.name === 'AbortError') {
+      return NextResponse.json(
+        { error: "L'extraction a dépassé 60 secondes. PDF trop volumineux ou API lente. Réessayez." },
+        { status: 504 },
+      )
+    }
     if (error?.status === 401) {
-      return NextResponse.json({ error: 'Clé API Claude invalide' }, { status: 401 })
+      return NextResponse.json({ error: 'Service temporairement indisponible.' }, { status: 503 })
+    }
+    if (error?.status === 429) {
+      return NextResponse.json(
+        { error: 'Trop de demandes. Attendez une minute et réessayez.' },
+        { status: 429 },
+      )
     }
     return NextResponse.json(
-      { error: error?.message || "Erreur lors de l'extraction. Veuillez réessayer." },
+      { error: "Erreur lors de l'extraction. Veuillez réessayer." },
       { status: 500 },
     )
   }

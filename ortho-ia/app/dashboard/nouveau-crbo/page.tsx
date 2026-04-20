@@ -371,6 +371,16 @@ function NouveauCRBOContent() {
   }
 
   const handleGenerate = async () => {
+    // Anti double-click
+    if (generating) return
+
+    // Validation taille payload — évite erreurs cryptées côté Claude si énorme
+    const payloadSize = JSON.stringify(formData).length
+    if (payloadSize > 1_000_000) {
+      setError('Les données saisies sont trop volumineuses (> 1 Mo). Résumez votre anamnèse et vos résultats.')
+      return
+    }
+
     setGenerating(true)
     setError('')
 
@@ -384,6 +394,7 @@ function NouveauCRBOContent() {
       const data = await response.json()
 
       if (!response.ok) {
+        // Message serveur déjà filtré côté API (pas de fuite). On affiche tel quel.
         throw new Error(data.error || 'Erreur lors de la génération')
       }
 
