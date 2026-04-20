@@ -8,6 +8,12 @@ interface SessionTimerProps {
   durationMinutes?: number
   /** Callback au stop ou reset. */
   onChange: (minutes: number) => void
+  /**
+   * Clé unique de session (ex: patient_prenom + patient_nom + bilan_date).
+   * Si cette clé change, le timer se reset automatiquement pour éviter
+   * de recycler la durée d'un CRBO précédent.
+   */
+  sessionKey?: string
 }
 
 function formatHMS(totalSec: number): string {
@@ -26,22 +32,31 @@ function formatHMS(totalSec: number): string {
  *
  * Persiste en localStorage pour résister à un F5 pendant la séance.
  */
-const STORAGE_KEY = 'orthoia.session-timer.v1'
+const STORAGE_KEY = 'orthoia.session-timer.v2'
 
-export default function SessionTimer({ durationMinutes, onChange }: SessionTimerProps) {
+export default function SessionTimer({ durationMinutes, onChange, sessionKey }: SessionTimerProps) {
   const [running, setRunning] = useState(false)
   const [elapsedSec, setElapsedSec] = useState(() => (durationMinutes ? durationMinutes * 60 : 0))
   const lastTickRef = useRef<number | null>(null)
 
-  // Restore from localStorage at mount
+  // Restore from localStorage at mount, ONLY si la sessionKey correspond.
   useEffect(() => {
     try {
       const raw = localStorage.getItem(STORAGE_KEY)
       if (!raw) return
-      const parsed = JSON.parse(raw) as { elapsedSec: number; running: boolean; lastTick: number | null }
+      const parsed = JSON.parse(raw) as {
+        elapsedSec: number
+        running: boolean
+        lastTick: number | null
+        sessionKey?: string
+      }
+      // Clé de session différente → reset (nouveau CRBO, pas de recyclage de durée)
+      if (sessionKey && parsed.sessionKey && parsed.sessionKey !== sessionKey) {
+        localStorage.removeItem(STORAGE_KEY)
+        return
+      }
       let restoredElapsed = parsed.elapsedSec || 0
       if (parsed.running && parsed.lastTick) {
-        // Si le timer tournait, compenser le temps écoulé hors-page
         restoredElapsed += Math.floor((Date.now() - parsed.lastTick) / 1000)
       }
       setElapsedSec(restoredElapsed)
@@ -50,7 +65,7 @@ export default function SessionTimer({ durationMinutes, onChange }: SessionTimer
       // ignore
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [])
+  }, [sessionKey])
 
   // Tick every second when running
   useEffect(() => {
@@ -72,17 +87,18 @@ export default function SessionTimer({ durationMinutes, onChange }: SessionTimer
     if (minutes !== (durationMinutes ?? 0)) {
       onChange(minutes)
     }
-    // Save to localStorage
+    // Save to localStorage (avec sessionKey pour détecter le recyclage)
     try {
       localStorage.setItem(STORAGE_KEY, JSON.stringify({
         elapsedSec,
         running,
         lastTick: running ? lastTickRef.current : null,
+        sessionKey,
       }))
     } catch {
       // ignore
     }
-  }, [elapsedSec, running, durationMinutes, onChange])
+  }, [elapsedSec, running, durationMinutes, onChange, sessionKey])
 
   const handleReset = () => {
     setRunning(false)

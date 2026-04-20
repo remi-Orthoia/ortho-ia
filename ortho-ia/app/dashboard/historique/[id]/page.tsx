@@ -27,9 +27,23 @@ interface CRBO {
   test_utilise: string
   bilan_date: string
   bilan_type: string
-  crbo_text: string
+  crbo_text?: string | null
+  crbo_genere?: string | null
   statut: string
   created_at: string
+  // Tous les champs restants sont optionnels — certains CRBOs antérieurs à
+  // l'extension de schéma peuvent ne pas les avoir.
+  medecin_nom?: string | null
+  medecin_tel?: string | null
+  motif?: string | null
+  anamnese?: string | null
+  resultats?: string | null
+  notes_passation?: string | null
+  structure_json?: any
+  severite_globale?: 'Léger' | 'Modéré' | 'Sévère' | null
+  bilan_precedent_id?: string | null
+  comportement_seance?: string | null
+  duree_seance_minutes?: number | null
 }
 
 const statusConfig = {
@@ -84,6 +98,23 @@ export default function CRBODetailPage() {
     if (!crbo) return
     try {
       const { downloadCRBOWord } = await import('@/lib/word-export')
+
+      // Charger bilan précédent si présent (renouvellement)
+      let previousStructure = null
+      let previousBilanDate: string | undefined
+      if (crbo.bilan_precedent_id) {
+        const supabase = createClient()
+        const { data: prev } = await supabase
+          .from('crbos')
+          .select('structure_json, bilan_date')
+          .eq('id', crbo.bilan_precedent_id)
+          .maybeSingle()
+        if (prev) {
+          previousStructure = prev.structure_json
+          previousBilanDate = prev.bilan_date
+        }
+      }
+
       await downloadCRBOWord({
         formData: {
           ortho_nom: profile ? `${profile.prenom} ${profile.nom}` : '',
@@ -98,16 +129,18 @@ export default function CRBODetailPage() {
           patient_classe: crbo.patient_classe,
           bilan_date: crbo.bilan_date,
           bilan_type: crbo.bilan_type,
-          medecin_nom: (crbo as any).medecin_nom,
-          medecin_tel: (crbo as any).medecin_tel,
-          motif: (crbo as any).motif,
-          test_utilise: (crbo as any).test_utilise
-            ? String((crbo as any).test_utilise).split(',').map((t: string) => t.trim())
+          medecin_nom: crbo.medecin_nom ?? '',
+          medecin_tel: crbo.medecin_tel ?? '',
+          motif: crbo.motif ?? '',
+          test_utilise: crbo.test_utilise
+            ? String(crbo.test_utilise).split(',').map((t: string) => t.trim())
             : [],
-          resultats_manuels: (crbo as any).resultats,
+          resultats_manuels: crbo.resultats ?? '',
         },
-        structure: (crbo as any).structure_json ?? null,
-        fallbackCRBO: (crbo as any).crbo_text || (crbo as any).crbo_genere || '',
+        structure: crbo.structure_json ?? null,
+        fallbackCRBO: crbo.crbo_text || crbo.crbo_genere || '',
+        previousStructure,
+        previousBilanDate,
       })
     } catch (err) {
       console.error('Erreur export Word:', err)

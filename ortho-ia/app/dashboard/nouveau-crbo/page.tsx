@@ -409,7 +409,11 @@ function NouveauCRBOContent() {
       setGeneratedCRBO(data.crbo)
       setGeneratedStructure(data.structure ?? null)
       setShowResult(true)
-      try { localStorage.removeItem(DRAFT_KEY) } catch {}
+      try {
+        localStorage.removeItem(DRAFT_KEY)
+        // Purge le chronomètre de séance (évite recyclage sur le prochain CRBO)
+        localStorage.removeItem('orthoia.session-timer.v2')
+      } catch {}
 
       // ============ Persistance : insert CRBO PUIS increment compteur ============
       const supabase = createClient()
@@ -1245,6 +1249,7 @@ Lecture de mots (score) : 15/100, É-T : -6.62, P5
             {/* Chronomètre de séance — facturation */}
             <SessionTimer
               durationMinutes={formData.duree_seance_minutes}
+              sessionKey={`${formData.patient_prenom}|${formData.patient_nom}|${formData.bilan_date}`}
               onChange={(minutes) => setFormData(prev => ({ ...prev, duree_seance_minutes: minutes }))}
             />
 

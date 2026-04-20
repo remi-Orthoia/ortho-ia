@@ -525,15 +525,16 @@ export async function generateCRBOWord(payload: WordExportPayload): Promise<Blob
     }
     pushBlock('Diagnostic orthophonique', s.diagnostic)
 
-    // Comorbidités détectées
-    if (s.comorbidites_detectees && s.comorbidites_detectees.length > 0) {
+    // Comorbidités détectées (filtre strings vides)
+    const comorbidites = (s.comorbidites_detectees ?? []).filter(c => c && c.trim().length > 0)
+    if (comorbidites.length > 0) {
       children.push(new Paragraph({
         children: [new TextRun({ text: 'Comorbidités / profils associés suspectés', bold: true, size: FONT_SIZE_NORMAL, font: FONT, color: 'E65100' })],
         spacing: { before: 240, after: 80 },
       }))
-      for (const c of s.comorbidites_detectees) {
+      for (const c of comorbidites) {
         children.push(new Paragraph({
-          children: [new TextRun({ text: `• ${c}`, size: FONT_SIZE_NORMAL, font: FONT })],
+          children: [new TextRun({ text: `• ${c.trim()}`, size: FONT_SIZE_NORMAL, font: FONT })],
           spacing: { after: 60 },
         }))
       }
@@ -580,15 +581,16 @@ export async function generateCRBOWord(payload: WordExportPayload): Promise<Blob
 
     pushBlock('Recommandations', s.recommandations)
 
-    // PAP suggestions
-    if (s.pap_suggestions && s.pap_suggestions.length > 0) {
+    // PAP suggestions (filtre strings vides)
+    const paps = (s.pap_suggestions ?? []).filter(p => p && p.trim().length > 0)
+    if (paps.length > 0) {
       children.push(new Paragraph({
         children: [new TextRun({ text: 'Aménagements scolaires proposés (PAP)', bold: true, size: FONT_SIZE_NORMAL, font: FONT, color: '1565C0' })],
         spacing: { before: 240, after: 80 },
       }))
-      for (const p of s.pap_suggestions) {
+      for (const p of paps) {
         children.push(new Paragraph({
-          children: [new TextRun({ text: `✓ ${p}`, size: FONT_SIZE_NORMAL, font: FONT })],
+          children: [new TextRun({ text: `✓ ${p.trim()}`, size: FONT_SIZE_NORMAL, font: FONT })],
           spacing: { after: 60 },
         }))
       }
@@ -631,8 +633,11 @@ export async function generateCRBOWord(payload: WordExportPayload): Promise<Blob
     }),
   )
 
-  // ===== GLOSSAIRE (si présent) =====
-  if (hasStructure && structure!.glossaire && structure!.glossaire.length > 0) {
+  // ===== GLOSSAIRE (si présent, filtre entrées vides) =====
+  const glossaire = (hasStructure ? structure!.glossaire ?? [] : []).filter(
+    g => g && g.terme && g.terme.trim() && g.definition && g.definition.trim(),
+  )
+  if (glossaire.length > 0) {
     children.push(new Paragraph({ children: [new PageBreak()] }))
     children.push(createSectionTitle('GLOSSAIRE'))
     children.push(new Paragraph({
@@ -642,12 +647,12 @@ export async function generateCRBOWord(payload: WordExportPayload): Promise<Blob
       })],
       spacing: { after: 200 },
     }))
-    for (const g of structure!.glossaire) {
+    for (const g of glossaire) {
       children.push(new Paragraph({
         spacing: { after: 120 },
         children: [
-          new TextRun({ text: `${g.terme} — `, bold: true, size: FONT_SIZE_NORMAL, font: FONT, color: COLOR_GREEN }),
-          new TextRun({ text: g.definition, size: FONT_SIZE_NORMAL, font: FONT }),
+          new TextRun({ text: `${g.terme.trim()} — `, bold: true, size: FONT_SIZE_NORMAL, font: FONT, color: COLOR_GREEN }),
+          new TextRun({ text: g.definition.trim(), size: FONT_SIZE_NORMAL, font: FONT }),
         ],
       }))
     }

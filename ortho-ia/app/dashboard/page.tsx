@@ -174,17 +174,29 @@ export default function DashboardPage() {
       crbo.id === cardId ? { ...crbo, statut: newStatus } : crbo
     ))
 
-    const { error } = await supabase
-      .from('crbos')
-      .update({ statut: newStatus })
-      .eq('id', cardId)
-
-    if (error) {
-      // Rollback
-      console.error('Erreur mise à jour statut Kanban:', error)
+    // On inclut user_id ET on vérifie count > 0 (RLS peut masquer l'erreur)
+    const { data: { user } } = await supabase.auth.getUser()
+    const rollback = () => {
       setCrbos(prev => prev.map(crbo =>
         crbo.id === cardId ? { ...crbo, statut: previousStatus } : crbo
       ))
+    }
+    if (!user) {
+      rollback()
+      alert('Session expirée — reconnectez-vous.')
+      return
+    }
+
+    const { data: updated, error } = await supabase
+      .from('crbos')
+      .update({ statut: newStatus })
+      .eq('id', cardId)
+      .eq('user_id', user.id)
+      .select('id')
+
+    if (error || !updated || updated.length === 0) {
+      console.error('Erreur mise à jour statut Kanban:', error)
+      rollback()
       alert("Le changement de statut n'a pas pu être enregistré. Réessayez.")
     }
   }
