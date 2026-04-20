@@ -4,7 +4,7 @@
 SaaS B2B pour orthophonistes francophones. Génère automatiquement des Comptes Rendus de Bilan Orthophonique (CRBO) via Claude API.
 
 **URL prod** : https://ortho-ia.vercel.app  
-**Business model** : 19,90€/mois
+**Business model** : 14,90€/mois (mensuel) ou 119€/an (annuel, ~9,92€/mois)
 
 ## Stack
 - Next.js 14 (App Router) + Tailwind CSS

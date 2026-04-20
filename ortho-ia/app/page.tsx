@@ -247,7 +247,7 @@ export default function HomePage() {
                 <span className={`text-[10px] font-bold px-2 py-0.5 rounded-full ${
                   billingAnnual ? 'bg-white text-green-700' : 'bg-green-100 text-green-700'
                 }`}>
-                  -25%
+                  -33%
                 </span>
               </button>
             </div>
@@ -293,13 +293,13 @@ export default function HomePage() {
               <p className="text-green-100 mt-2">Pour les orthophonistes en activité</p>
               <div className="mt-6">
                 <span className="text-4xl font-bold text-white">
-                  {billingAnnual ? '14,90€' : '19,90€'}
+                  {billingAnnual ? '9,92€' : '14,90€'}
                 </span>
                 <span className="text-green-100">/mois</span>
               </div>
               <p className="mt-2 text-xs text-green-100 min-h-[18px]">
                 {billingAnnual
-                  ? 'Facturé 178,80€/an · 60€ économisés'
+                  ? 'Facturé 119€/an · économisez 59,80€'
                   : 'Sans engagement · résiliable à tout moment'}
               </p>
               <ul className="mt-8 space-y-4">
