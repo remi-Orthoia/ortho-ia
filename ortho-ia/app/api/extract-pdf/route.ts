@@ -67,6 +67,7 @@ export async function POST(request: NextRequest) {
     const abortController = new AbortController()
     const timeoutId = setTimeout(() => abortController.abort(), 60_000)
 
+    // Prompt caching : instructions stables → cache 5 min, ~80% d'économie
     let message
     try {
       message = await anthropic.messages.create(
@@ -78,7 +79,14 @@ export async function POST(request: NextRequest) {
           messages: [
             {
               role: 'user',
-              content: [contentBlock, { type: 'text', text: EXTRACTION_PROMPT }],
+              content: [
+                contentBlock,
+                {
+                  type: 'text',
+                  text: EXTRACTION_PROMPT,
+                  cache_control: { type: 'ephemeral' as const },
+                },
+              ],
             },
           ],
         },
@@ -100,6 +108,34 @@ export async function POST(request: NextRequest) {
     }
 
     const structure = toolUseBlock.input as ExtractedResults
+
+    // Fallback détection test si Claude a laissé test_name null : heuristique sur le nom de fichier.
+    if (!structure.test_name) {
+      const fname = (file.name || '').toLowerCase()
+      const heuristiques: Array<[RegExp, string]> = [
+        [/exalang[\s_-]*8[\s_-]*11/, 'Exalang 8-11'],
+        [/exalang[\s_-]*11[\s_-]*15/, 'Exalang 11-15'],
+        [/exalang[\s_-]*5[\s_-]*8/, 'Exalang 5-8'],
+        [/exalang[\s_-]*3[\s_-]*6/, 'Exalang 3-6'],
+        [/examath/, 'Examath'],
+        [/evalo/, 'EVALO 2-6'],
+        [/\belo\b/, 'ELO'],
+        [/bale/, 'BALE'],
+        [/belec/, 'BELEC'],
+        [/betl/, 'BETL'],
+        [/moca/, 'MoCA'],
+        [/n-?eel/, 'N-EEL'],
+        [/bilo/, 'BILO'],
+        [/evaleo/, 'EVALEO 6-15'],
+      ]
+      for (const [re, name] of heuristiques) {
+        if (re.test(fname)) {
+          structure.test_name = name
+          structure.warnings.push(`Test non identifié dans le document, déduit du nom de fichier : ${name}`)
+          break
+        }
+      }
+    }
 
     // Filet de sécurité : normaliser percentile_value à partir de percentile_raw si incohérent
     for (const e of structure.epreuves ?? []) {

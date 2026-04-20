@@ -147,9 +147,20 @@ export async function POST(request: NextRequest) {
       notes_passation: s(anonymized.notes_passation),
     })
 
-    // Timeout explicite — 45s max (Claude API met parfois 20-30s sur gros prompts)
+    // Timeout explicite — 45s max
     const abortController = new AbortController()
     const timeoutId = setTimeout(() => abortController.abort(), 45_000)
+
+    // Prompt caching sur system prompt : économise ~80% de coût en entrée sur
+    // les requêtes successives (le prompt système pèse ~15k tokens avec les
+    // référentiels tests). Cache TTL = 5 min par défaut.
+    const systemBlocks = [
+      {
+        type: 'text' as const,
+        text: buildSystemPrompt(tests),
+        cache_control: { type: 'ephemeral' as const },
+      },
+    ]
 
     let message
     try {
@@ -157,7 +168,7 @@ export async function POST(request: NextRequest) {
         {
           model: 'claude-sonnet-4-6',
           max_tokens: 8192,
-          system: buildSystemPrompt(tests),
+          system: systemBlocks,
           tools: [CRBO_TOOL],
           tool_choice: { type: 'tool', name: 'generate_crbo' },
           messages: [{ role: 'user', content: userPrompt }],
