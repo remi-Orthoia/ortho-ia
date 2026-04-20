@@ -21,8 +21,9 @@ export default function HomePage() {
   return (
     <div className="min-h-screen bg-white">
       {/* Bandeau Beta */}
-      <div className="fixed top-0 left-0 right-0 z-[60] bg-gradient-to-r from-green-600 to-emerald-600 text-white text-center text-sm font-medium py-2 px-4">
-        ✨ Beta en cours — <span className="font-bold">3 mois offerts</span> pour les premiers orthophonistes inscrits
+      <div className="fixed top-0 left-0 right-0 z-[60] bg-gradient-to-r from-green-600 to-emerald-600 text-white text-center text-xs sm:text-sm font-medium py-2 px-4">
+        <span className="sm:hidden">✨ Beta — <strong>3 mois offerts</strong></span>
+        <span className="hidden sm:inline">✨ Beta en cours — <strong>3 mois offerts</strong> pour les premiers orthophonistes inscrits</span>
       </div>
       {/* Navigation */}
       <nav className="fixed top-[36px] left-0 right-0 bg-white/95 backdrop-blur-sm z-50 border-b border-gray-100">
