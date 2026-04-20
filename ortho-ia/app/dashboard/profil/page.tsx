@@ -92,7 +92,11 @@ export default function ProfilPage() {
     <div className="max-w-2xl mx-auto space-y-6">
       <div>
         <h1 className="text-2xl font-bold text-gray-900">Mon profil</h1>
-        <p className="mt-1 text-gray-600">Ces informations seront utilisées pour pré-remplir vos CRBO</p>
+        <p className="mt-1 text-gray-600">
+          Ces informations apparaissent en en-tête de chaque CRBO généré — prénom, nom, adresse,
+          téléphone et email du cabinet. Elles sont pré-remplies automatiquement à l&apos;étape 1 de
+          chaque nouveau bilan.
+        </p>
       </div>
 
       <div className="bg-white rounded-xl border border-gray-200 p-6 sm:p-8 space-y-6">
