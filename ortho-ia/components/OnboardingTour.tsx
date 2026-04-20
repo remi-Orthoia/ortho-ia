@@ -15,7 +15,7 @@ interface Step {
   icon: React.ElementType
   title: string
   description: string
-  cta: { label: string; href: string }
+  cta: { label: string; href?: string }
 }
 
 const STEPS: Step[] = [
@@ -24,7 +24,7 @@ const STEPS: Step[] = [
     title: 'Bienvenue sur Ortho.ia 👋',
     description:
       'Votre CRBO en 3 minutes au lieu de 45. Prenons 30 secondes pour vous montrer comment ça marche.',
-    cta: { label: 'C\'est parti', href: '' },
+    cta: { label: 'C\'est parti' },
   },
   {
     icon: Users,

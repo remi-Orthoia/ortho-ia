@@ -47,17 +47,15 @@ export default function FeedbackButton() {
 
   return (
     <>
-      {/* Floating button */}
+      {/* Floating button — pilule desktop avec label, rond compact sur mobile */}
       <button
         onClick={() => setOpen(true)}
-        className="fixed bottom-6 right-6 z-40 w-12 h-12 rounded-full bg-primary-600 hover:bg-primary-700 text-white shadow-card-lg hover:shadow-xl transition-all duration-200 hover:scale-105 flex items-center justify-center group"
+        className="fixed bottom-6 right-6 z-40 h-12 rounded-full bg-primary-600 hover:bg-primary-700 text-white shadow-card-lg hover:shadow-xl transition-all duration-200 hover:scale-105 flex items-center justify-center gap-2 px-3 sm:px-4 group"
         aria-label="Envoyer un feedback"
         title="Un retour pour nous améliorer ?"
       >
-        <MessageCircle size={20} />
-        <span className="absolute right-full mr-3 whitespace-nowrap bg-gray-900 dark:bg-gray-100 text-white dark:text-gray-900 text-xs px-2 py-1 rounded opacity-0 group-hover:opacity-100 transition pointer-events-none">
-          Un retour ?
-        </span>
+        <MessageCircle size={18} />
+        <span className="text-sm font-medium hidden sm:inline">Feedback</span>
       </button>
 
       {/* Modal */}

@@ -149,12 +149,14 @@ export default function ProfilPage() {
 
         <div className="grid sm:grid-cols-2 gap-4">
           <div>
-            <label className="block text-sm font-medium text-gray-700 mb-1">Code postal</label>
+            <label className="block text-sm font-medium text-gray-700 mb-1">Code postal (5 chiffres)</label>
             <input
               type="text"
               name="code_postal"
               value={profile.code_postal}
               onChange={handleChange}
+              pattern="\d{5}"
+              maxLength={5}
               className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-green-500"
               placeholder="75015"
             />
