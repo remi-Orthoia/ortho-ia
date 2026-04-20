@@ -7,6 +7,9 @@ import { CLASSES_OPTIONS, TESTS_OPTIONS, TESTS_SCREENING_OPTIONS, CRBOFormData }
 import type { CRBOStructure, CRBODomain, CRBOEpreuve } from '@/lib/prompts'
 import { downloadCRBOWord } from '@/lib/word-export'
 import SessionTimer from '@/components/SessionTimer'
+import StepProgress from '@/components/StepProgress'
+import GenerationLoader from '@/components/GenerationLoader'
+import Tooltip from '@/components/Tooltip'
 import { 
   ChevronRight, 
   ChevronLeft, 
@@ -203,6 +206,27 @@ function NouveauCRBOContent() {
     const id = setInterval(() => setNowTick(Date.now()), 1000)
     return () => clearInterval(id)
   }, [])
+
+  // Raccourci clavier Cmd/Ctrl + Entrée pour générer depuis l'étape 5
+  useEffect(() => {
+    const onKey = (e: KeyboardEvent) => {
+      if (
+        (e.metaKey || e.ctrlKey) &&
+        e.key === 'Enter' &&
+        currentStep === 5 &&
+        !generating &&
+        !showResult &&
+        formData.test_utilise.length > 0 &&
+        formData.resultats_manuels
+      ) {
+        e.preventDefault()
+        handleGenerate()
+      }
+    }
+    window.addEventListener('keydown', onKey)
+    return () => window.removeEventListener('keydown', onKey)
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [currentStep, generating, showResult, formData.test_utilise, formData.resultats_manuels])
 
   const savedAgoLabel = (() => {
     if (!lastSavedAt) return null
@@ -591,40 +615,17 @@ function NouveauCRBOContent() {
         </div>
       )}
 
-      {/* Progress steps */}
-      <nav className="mb-8">
-        <ol className="flex items-center">
-          {STEPS.map((step, index) => (
-            <li key={step.id} className={`flex items-center ${index < STEPS.length - 1 ? 'flex-1' : ''}`}>
-              <div className="flex items-center">
-                <div className={`
-                  w-10 h-10 rounded-full flex items-center justify-center text-sm font-medium
-                  ${currentStep > step.id 
-                    ? 'bg-green-600 text-white' 
-                    : currentStep === step.id 
-                      ? 'bg-green-600 text-white' 
-                      : 'bg-gray-200 text-gray-600'}
-                `}>
-                  {currentStep > step.id ? <CheckCircle size={20} /> : step.id}
-                </div>
-                <span className={`ml-3 text-sm font-medium hidden sm:block ${
-                  currentStep >= step.id ? 'text-gray-900' : 'text-gray-500'
-                }`}>
-                  {step.name}
-                </span>
-              </div>
-              {index < STEPS.length - 1 && (
-                <div className={`flex-1 h-0.5 mx-4 ${
-                  currentStep > step.id ? 'bg-green-600' : 'bg-gray-200'
-                }`} />
-              )}
-            </li>
-          ))}
-        </ol>
-      </nav>
+      {/* Progress bar moderne */}
+      <StepProgress
+        currentStep={currentStep}
+        onStepClick={(step) => setCurrentStep(step)}
+      />
+
+      {/* Overlay pendant génération Claude */}
+      <GenerationLoader visible={generating} />
 
       {/* Form */}
-      <div className="bg-white rounded-xl border border-gray-200 p-6 sm:p-8">
+      <div className="card-lifted p-6 sm:p-8">
         {error && (
           <div className="mb-6 bg-red-50 border border-red-200 text-red-700 px-4 py-3 rounded-lg flex items-center gap-2">
             <AlertCircle size={20} />
@@ -1303,17 +1304,21 @@ Lecture de mots (score) : 15/100, É-T : -6.62, P5
               type="button"
               onClick={handleGenerate}
               disabled={generating || !formData.test_utilise.length || !formData.resultats_manuels}
-              className="flex items-center gap-2 px-6 py-3 bg-green-600 text-white rounded-lg font-medium hover:bg-green-700 transition disabled:opacity-50 disabled:cursor-not-allowed"
+              title="Raccourci : Ctrl+Entrée (Cmd+Entrée sur Mac)"
+              className="btn-primary py-3 px-6 group relative"
             >
               {generating ? (
                 <>
-                  <Loader2 className="animate-spin" size={20} />
-                  Génération en cours...
+                  <Loader2 className="animate-spin" size={18} />
+                  Génération…
                 </>
               ) : (
                 <>
-                  <Sparkles size={20} />
-                  Générer le CRBO
+                  <Sparkles size={18} />
+                  <span>Générer le CRBO</span>
+                  <kbd className="hidden lg:inline-flex items-center gap-0.5 ml-1 px-1.5 py-0.5 bg-white/20 rounded text-[10px] font-mono">
+                    ⌘↵
+                  </kbd>
                 </>
               )}
             </button>
