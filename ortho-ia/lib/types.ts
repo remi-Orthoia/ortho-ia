@@ -102,7 +102,14 @@ export const CLASSES_OPTIONS = [
   'Adulte', 'Autre'
 ] as const
 
+/** Tests de screening rapide — à proposer AVANT un bilan complet (adulte / senior). */
+export const TESTS_SCREENING_OPTIONS = [
+  'MoCA',
+] as const
+
+/** Bilans complets (enfant, adolescent, adulte). */
 export const TESTS_OPTIONS = [
+  ...TESTS_SCREENING_OPTIONS,
   'Exalang 3-6',
   'Exalang 5-8',
   'Exalang 8-11',

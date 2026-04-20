@@ -3,7 +3,7 @@
 import { useState, useEffect, Suspense } from 'react'
 import { useRouter, useSearchParams } from 'next/navigation'
 import { createClient } from '@/lib/supabase'
-import { CLASSES_OPTIONS, TESTS_OPTIONS, CRBOFormData } from '@/lib/types'
+import { CLASSES_OPTIONS, TESTS_OPTIONS, TESTS_SCREENING_OPTIONS, CRBOFormData } from '@/lib/types'
 import type { CRBOStructure, CRBODomain, CRBOEpreuve } from '@/lib/prompts'
 import { 
   ChevronRight, 
@@ -1391,13 +1391,48 @@ function NouveauCRBOContent() {
 
             <div>
               <label className="block text-sm font-medium text-gray-700 mb-2">Tests utilisés *</label>
+
+              {/* Screening préalable — à proposer AVANT le bilan complet */}
+              <div className="mb-3 rounded-lg border border-amber-200 bg-amber-50 p-3">
+                <p className="text-xs font-semibold text-amber-800 uppercase tracking-wide mb-2">
+                  Screening préalable · adulte / senior
+                </p>
+                <p className="text-xs text-amber-700 mb-3">
+                  À proposer <strong>avant</strong> un bilan complet pour orienter les épreuves ciblées.
+                </p>
+                <div className="grid sm:grid-cols-2 gap-2">
+                  {TESTS_SCREENING_OPTIONS.map(test => (
+                    <label
+                      key={test}
+                      className={`flex items-center gap-3 p-3 border rounded-lg cursor-pointer transition bg-white ${
+                        formData.test_utilise.includes(test)
+                          ? 'border-amber-500 ring-2 ring-amber-200'
+                          : 'border-amber-200 hover:border-amber-400'
+                      }`}
+                    >
+                      <input
+                        type="checkbox"
+                        checked={formData.test_utilise.includes(test)}
+                        onChange={() => handleTestChange(test)}
+                        className="w-4 h-4 text-amber-600 border-gray-300 rounded focus:ring-amber-500"
+                      />
+                      <span className="text-sm text-gray-700 font-medium">{test}</span>
+                    </label>
+                  ))}
+                </div>
+              </div>
+
+              {/* Bilans complets */}
+              <p className="text-xs font-semibold text-gray-500 uppercase tracking-wide mb-2">
+                Bilans complets
+              </p>
               <div className="grid sm:grid-cols-2 gap-2">
-                {TESTS_OPTIONS.map(test => (
-                  <label 
+                {TESTS_OPTIONS.filter(t => !(TESTS_SCREENING_OPTIONS as readonly string[]).includes(t)).map(test => (
+                  <label
                     key={test}
                     className={`flex items-center gap-3 p-3 border rounded-lg cursor-pointer transition ${
-                      formData.test_utilise.includes(test) 
-                        ? 'border-green-500 bg-green-50' 
+                      formData.test_utilise.includes(test)
+                        ? 'border-green-500 bg-green-50'
                         : 'border-gray-300 hover:border-gray-400'
                     }`}
                   >
