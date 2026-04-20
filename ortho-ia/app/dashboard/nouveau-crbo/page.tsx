@@ -6,6 +6,7 @@ import { createClient } from '@/lib/supabase'
 import { CLASSES_OPTIONS, TESTS_OPTIONS, TESTS_SCREENING_OPTIONS, CRBOFormData } from '@/lib/types'
 import type { CRBOStructure, CRBODomain, CRBOEpreuve } from '@/lib/prompts'
 import { downloadCRBOWord } from '@/lib/word-export'
+import SessionTimer from '@/components/SessionTimer'
 import { 
   ChevronRight, 
   ChevronLeft, 
@@ -1182,6 +1183,69 @@ Lecture de mots (score) : 15/100, É-T : -6.62, P5
               )}
             </div>
 
+            {/* Comportement en séance — observations structurées */}
+            <div className="bg-indigo-50 border border-indigo-200 rounded-xl p-4 space-y-3">
+              <div className="flex items-center gap-2">
+                <span className="text-xl">🧠</span>
+                <div>
+                  <p className="font-semibold text-indigo-900 text-sm">Comportement en séance</p>
+                  <p className="text-xs text-indigo-700">Cochez les observations, précisez au besoin — injecté dans le prompt</p>
+                </div>
+              </div>
+
+              <div className="flex flex-wrap gap-2">
+                {[
+                  'Coopératif·ve',
+                  'Fatigabilité notée',
+                  'Anxiété / tension',
+                  'Stratégies d\'évitement',
+                  'Autocorrections',
+                  'Découragement',
+                  'Attention fluctuante',
+                  'Motivation soutenue',
+                  'Auto-dévalorisation',
+                  'Persévérance',
+                ].map(tag => {
+                  const active = (formData.comportement_seance || '').includes(tag)
+                  return (
+                    <button
+                      key={tag}
+                      type="button"
+                      onClick={() => {
+                        const current = formData.comportement_seance || ''
+                        const tags = current.split(' · ').filter(Boolean)
+                        const next = active
+                          ? tags.filter(t => t !== tag).join(' · ')
+                          : [...tags, tag].join(' · ')
+                        setFormData(prev => ({ ...prev, comportement_seance: next }))
+                      }}
+                      className={`px-3 py-1.5 rounded-full text-xs font-medium transition ${
+                        active
+                          ? 'bg-indigo-600 text-white shadow-sm'
+                          : 'bg-white text-indigo-700 border border-indigo-200 hover:border-indigo-400'
+                      }`}
+                    >
+                      {tag}
+                    </button>
+                  )
+                })}
+              </div>
+
+              <textarea
+                value={formData.comportement_seance || ''}
+                onChange={e => setFormData(prev => ({ ...prev, comportement_seance: e.target.value }))}
+                rows={2}
+                placeholder="Précisez librement (ex : 'Pleurs sur la dictée, réconfort efficace, rebondit bien après une pause de 3 min.')"
+                className="w-full px-3 py-2 border border-indigo-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-400 text-sm resize-none bg-white"
+              />
+            </div>
+
+            {/* Chronomètre de séance — facturation */}
+            <SessionTimer
+              durationMinutes={formData.duree_seance_minutes}
+              onChange={(minutes) => setFormData(prev => ({ ...prev, duree_seance_minutes: minutes }))}
+            />
+
             <div>
               <label className="block text-sm font-medium text-gray-700 mb-1">
                 Notes de passation (optionnel)
@@ -1192,7 +1256,7 @@ Lecture de mots (score) : 15/100, É-T : -6.62, P5
                 onChange={handleChange}
                 rows={3}
                 className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-green-500 resize-none"
-                placeholder="Enfant coopérant mais fatigable. Nombreuses autocorrections en lecture..."
+                placeholder="Nombre de séances passées, matériel utilisé, adaptations..."
               />
             </div>
           </div>
