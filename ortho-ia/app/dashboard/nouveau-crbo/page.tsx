@@ -225,7 +225,7 @@ function NouveauCRBOContent() {
       if (!user) throw new Error('Session expirée')
       const { data, error: dbError } = await supabase
         .from('crbos')
-        .select('anamnese, bilan_date')
+        .select('id, anamnese, bilan_date, structure_json')
         .eq('user_id', user.id)
         .eq('patient_prenom', formData.patient_prenom)
         .eq('patient_nom', formData.patient_nom)
@@ -237,7 +237,13 @@ function NouveauCRBOContent() {
         setError(`Aucun bilan précédent trouvé pour ${formData.patient_prenom} ${formData.patient_nom}.`)
         return
       }
-      setFormData(prev => ({ ...prev, anamnese: data.anamnese }))
+      setFormData(prev => ({
+        ...prev,
+        anamnese: data.anamnese,
+        bilan_precedent_id: data.id,
+        bilan_precedent_structure: data.structure_json ?? null,
+        bilan_precedent_date: data.bilan_date,
+      }))
     } catch (e: any) {
       setError(e.message || "Erreur lors de l'import de l'anamnèse.")
     } finally {
@@ -434,6 +440,11 @@ function NouveauCRBOContent() {
           notes_passation: formData.notes_passation,
           crbo_genere: data.crbo,
           structure_json: data.structure ?? null,
+          // Nouveaux champs
+          comportement_seance: formData.comportement_seance || null,
+          duree_seance_minutes: formData.duree_seance_minutes || null,
+          severite_globale: data.structure?.severite_globale ?? null,
+          bilan_precedent_id: formData.bilan_precedent_id || null,
         })
         .select('id')
         .single()
@@ -922,6 +933,49 @@ function NouveauCRBOContent() {
                     <>📥 Importer l'anamnèse du dernier bilan</>
                   )}
                 </button>
+              </div>
+            )}
+
+            {/* ZONE 1 — Évolution depuis le dernier bilan (renouvellement uniquement) */}
+            {formData.bilan_type === 'renouvellement' && (
+              <div className="bg-purple-50 border border-purple-200 rounded-xl p-5 space-y-3">
+                <div className="flex items-center gap-2">
+                  <span className="text-2xl">📊</span>
+                  <h3 className="font-semibold text-purple-900">Évolution depuis le dernier bilan</h3>
+                </div>
+                {formData.bilan_precedent_date ? (
+                  <p className="text-xs text-purple-700">
+                    Dernier bilan du <strong>{new Date(formData.bilan_precedent_date).toLocaleDateString('fr-FR')}</strong> chargé —
+                    Claude comparera les résultats actuels aux précédents pour produire une synthèse d'évolution.
+                  </p>
+                ) : (
+                  <p className="text-xs text-purple-700">
+                    Cliquez sur « Importer l'anamnèse du dernier bilan » ci-dessus pour charger aussi les résultats précédents et activer la comparaison automatique.
+                  </p>
+                )}
+                <div>
+                  <label className="block text-xs font-medium text-purple-900 mb-1">
+                    Vos observations cliniques sur l'évolution
+                  </label>
+                  <textarea
+                    name="evolution_notes"
+                    value={formData.evolution_notes || ''}
+                    onChange={handleChange}
+                    rows={4}
+                    placeholder={`Ex : "Progrès notables en lecture depuis la PEC démarrée en mars. Vitesse +40%. Orthographe grammaticale encore fragile. Conscience phonémique bien consolidée. Motivation restaurée."`}
+                    className="w-full px-3 py-2 border border-purple-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-purple-400 text-sm resize-none bg-white"
+                  />
+                </div>
+              </div>
+            )}
+
+            {/* ZONE 2 — Anamnèse de base pré-remplie depuis la fiche patient */}
+            {formData.bilan_type === 'renouvellement' && selectedPatientId && (
+              <div className="bg-slate-50 border border-slate-200 rounded-xl p-4 text-xs text-slate-700">
+                <p className="font-semibold text-slate-900 mb-1">📋 Anamnèse de base (fiche patient)</p>
+                <p>
+                  L'anamnèse ci-dessous est pré-remplie depuis la fiche patient. Ajustez-la avec les événements survenus depuis le dernier bilan (changements de classe, suivis démarrés/arrêtés, évolution médicale…).
+                </p>
               </div>
             )}
 

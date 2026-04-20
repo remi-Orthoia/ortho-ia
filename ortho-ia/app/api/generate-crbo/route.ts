@@ -214,6 +214,11 @@ export async function POST(request: NextRequest) {
       test_utilise: tests.join(', '),
       resultats: s(anonymized.resultats_manuels),
       notes_passation: s(anonymized.notes_passation),
+      comportement_seance: formData.comportement_seance,
+      duree_seance_minutes: formData.duree_seance_minutes,
+      evolution_notes: formData.evolution_notes,
+      bilan_precedent_structure: formData.bilan_precedent_structure,
+      bilan_precedent_date: formData.bilan_precedent_date ? formatDateFR(formData.bilan_precedent_date) : undefined,
     })
 
     // Timeout explicite — 45s max

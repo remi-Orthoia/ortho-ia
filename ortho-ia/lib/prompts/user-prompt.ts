@@ -1,3 +1,27 @@
+import type { CRBOStructure } from './tool-schema'
+
+/** Compacte un résumé du bilan précédent pour injection dans le prompt de renouvellement. */
+function formatBilanPrecedent(structure: CRBOStructure | null, bilanDate: string): string {
+  if (!structure) return ''
+  const lines: string[] = []
+  lines.push(`Date du bilan précédent : ${bilanDate}`)
+  if (structure.severite_globale) lines.push(`Sévérité globale précédente : ${structure.severite_globale}`)
+  lines.push('')
+  lines.push('Résultats précédents (par domaine et épreuve) :')
+  for (const d of structure.domains || []) {
+    lines.push(`  ${d.nom} :`)
+    for (const e of d.epreuves || []) {
+      lines.push(`    - ${e.nom} : ${e.score} / ${e.percentile} / ${e.interpretation}`)
+    }
+  }
+  if (structure.diagnostic) {
+    lines.push('')
+    lines.push('Diagnostic précédent :')
+    lines.push(structure.diagnostic)
+  }
+  return lines.join('\n')
+}
+
 export function buildCRBOPrompt(data: {
   ortho_nom: string
   ortho_adresse: string
@@ -20,7 +44,41 @@ export function buildCRBOPrompt(data: {
   test_utilise: string
   resultats: string
   notes_passation: string
+  /** Nouveau : observations en séance (comportement, anxiété, stratégies). */
+  comportement_seance?: string
+  /** Nouveau : durée totale de la séance en minutes. */
+  duree_seance_minutes?: number
+  /** Nouveau : notes évolution (renouvellement). */
+  evolution_notes?: string
+  /** Nouveau : structure CRBO du bilan précédent pour comparaison (renouvellement). */
+  bilan_precedent_structure?: CRBOStructure | null
+  bilan_precedent_date?: string
 }): string {
+  const bilanPrecBlock =
+    data.bilan_precedent_structure && data.bilan_precedent_date
+      ? `
+
+=== BILAN PRÉCÉDENT (pour comparaison évolution) ===
+${formatBilanPrecedent(data.bilan_precedent_structure, data.bilan_precedent_date)}
+
+=== NOTES DU CLINICIEN SUR L'ÉVOLUTION ===
+${data.evolution_notes || '(à déduire de la comparaison des scores)'}`
+      : ''
+
+  const comportementBlock = data.comportement_seance
+    ? `
+
+=== COMPORTEMENT EN SÉANCE (observations cliniques) ===
+${data.comportement_seance}`
+    : ''
+
+  const dureeBlock = data.duree_seance_minutes
+    ? `
+
+=== DURÉE DE LA SÉANCE ===
+${data.duree_seance_minutes} minutes`
+    : ''
+
   return `=== INFORMATIONS ORTHOPHONISTE ===
 Nom : ${data.ortho_nom}
 Adresse : ${data.ortho_adresse}, ${data.ortho_cp} ${data.ortho_ville}
@@ -52,8 +110,12 @@ ${data.test_utilise}
 ${data.resultats}
 
 === NOTES DE PASSATION ===
-${data.notes_passation || 'Aucune note supplémentaire'}
+${data.notes_passation || 'Aucune note supplémentaire'}${comportementBlock}${dureeBlock}${bilanPrecBlock}
 
 === INSTRUCTION ===
-Génère le CRBO complet en appelant l'outil \`generate_crbo\`. Remplis chaque champ avec soin et respecte scrupuleusement les règles de conversion de percentiles.`
+Génère le CRBO complet en appelant l'outil \`generate_crbo\`. Remplis chaque champ avec soin et respecte scrupuleusement les règles de conversion de percentiles. Inclus obligatoirement : severite_globale, comorbidites_detectees (même vide), pap_suggestions, glossaire. ${
+    data.bilan_precedent_structure
+      ? "Remplis aussi synthese_evolution avec comparaison rigoureuse des scores actuels vs précédents."
+      : 'synthese_evolution = null (bilan initial).'
+  }`
 }

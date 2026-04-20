@@ -77,6 +77,21 @@ export interface CRBOFormData {
   resultats_pdf?: File
   resultats_manuels: string
   notes_passation: string
+
+  // Étape 5 — state of the art
+  /** Observations du clinicien sur le comportement du patient pendant la séance. */
+  comportement_seance?: string
+  /** Durée totale de la séance en minutes (chronomètre). */
+  duree_seance_minutes?: number
+
+  // Étape 4 — renouvellement uniquement
+  /** Notes libres sur l'évolution depuis le dernier bilan. */
+  evolution_notes?: string
+  /** ID du bilan précédent (pour lier en DB et injecter dans le prompt). */
+  bilan_precedent_id?: string
+  /** Snapshot des résultats du bilan précédent (pour comparaison Claude). */
+  bilan_precedent_structure?: import('./prompts').CRBOStructure | null
+  bilan_precedent_date?: string
 }
 
 export interface GenerateCRBORequest {
