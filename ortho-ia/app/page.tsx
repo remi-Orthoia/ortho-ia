@@ -13,6 +13,7 @@ import {
   Star
 } from 'lucide-react'
 import InfographieB from '@/components/InfographieB'
+import FAQ from '@/components/FAQ'
 
 export default function HomePage() {
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false)
@@ -41,7 +42,7 @@ export default function HomePage() {
             <div className="hidden md:flex items-center space-x-8">
               <a href="#fonctionnalites" className="text-gray-600 hover:text-gray-900 transition">Fonctionnalités</a>
               <a href="#tarifs" className="text-gray-600 hover:text-gray-900 transition">Abonnement</a>
-              <a href="#temoignages" className="text-gray-600 hover:text-gray-900 transition">Témoignages</a>
+              <a href="#faq" className="text-gray-600 hover:text-gray-900 transition">FAQ</a>
               <Link href="/auth/login" className="text-gray-600 hover:text-gray-900 transition">Connexion</Link>
               <Link 
                 href="/auth/register" 
@@ -67,7 +68,7 @@ export default function HomePage() {
             <div className="flex flex-col space-y-4 px-4">
               <a href="#fonctionnalites" className="text-gray-600">Fonctionnalités</a>
               <a href="#tarifs" className="text-gray-600">Abonnement</a>
-              <a href="#temoignages" className="text-gray-600">Témoignages</a>
+              <a href="#faq" className="text-gray-600">FAQ</a>
               <Link href="/auth/login" className="text-gray-600">Connexion</Link>
               <Link 
                 href="/auth/register" 
@@ -375,6 +376,9 @@ export default function HomePage() {
           </div>
         </div>
       </section>
+
+      {/* FAQ */}
+      <FAQ />
 
       {/* CTA */}
       <section className="py-20 bg-green-600">
