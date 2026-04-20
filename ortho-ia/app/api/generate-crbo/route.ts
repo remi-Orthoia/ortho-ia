@@ -6,6 +6,7 @@ import {
   CRBO_TOOL,
   type CRBOStructure,
 } from '@/lib/prompts'
+import { anonymize, rehydrate } from '@/lib/anonymizer'
 
 function structureToText(structure: CRBOStructure): string {
   const lines: string[] = []
@@ -61,26 +62,30 @@ export async function POST(request: NextRequest) {
       ? formData.test_utilise
       : [formData.test_utilise]
 
+    // ============ Anonymisation RGPD avant envoi API ============
+    const { anonymized, reverseMap } = anonymize(formData)
+    const s = (v: string | undefined) => v ?? ''
+
     const userPrompt = buildCRBOPrompt({
-      ortho_nom: formData.ortho_nom,
-      ortho_adresse: formData.ortho_adresse,
-      ortho_cp: formData.ortho_cp,
-      ortho_ville: formData.ortho_ville,
-      ortho_tel: formData.ortho_tel,
-      ortho_email: formData.ortho_email,
-      patient_prenom: formData.patient_prenom,
-      patient_nom: formData.patient_nom,
-      patient_ddn: formData.patient_ddn,
-      patient_classe: formData.patient_classe,
-      bilan_date: formData.bilan_date,
-      bilan_type: formData.bilan_type,
-      medecin_nom: formData.medecin_nom,
-      medecin_tel: formData.medecin_tel,
-      motif: formData.motif,
-      anamnese: formData.anamnese,
+      ortho_nom: s(anonymized.ortho_nom),
+      ortho_adresse: s(anonymized.ortho_adresse),
+      ortho_cp: s(anonymized.ortho_cp),
+      ortho_ville: s(anonymized.ortho_ville),
+      ortho_tel: s(anonymized.ortho_tel),
+      ortho_email: s(anonymized.ortho_email),
+      patient_prenom: anonymized.patient_prenom,
+      patient_nom: anonymized.patient_nom,
+      patient_ddn: s(formData.patient_ddn), // DDN en clair pour calcul âge côté prompt
+      patient_classe: s(anonymized.patient_classe),
+      bilan_date: s(anonymized.bilan_date),
+      bilan_type: s(anonymized.bilan_type),
+      medecin_nom: s(anonymized.medecin_nom),
+      medecin_tel: s(anonymized.medecin_tel),
+      motif: s(anonymized.motif),
+      anamnese: s(anonymized.anamnese),
       test_utilise: tests.join(', '),
-      resultats: formData.resultats_manuels,
-      notes_passation: formData.notes_passation,
+      resultats: s(anonymized.resultats_manuels),
+      notes_passation: s(anonymized.notes_passation),
     })
 
     const message = await anthropic.messages.create({
@@ -103,7 +108,9 @@ export async function POST(request: NextRequest) {
       )
     }
 
-    const structure = toolUseBlock.input as CRBOStructure
+    // ============ Réhydratation après réponse API ============
+    const rawStructure = toolUseBlock.input as CRBOStructure
+    const structure = rehydrate(rawStructure, reverseMap)
     const crbo = structureToText(structure)
 
     return NextResponse.json({ success: true, crbo, structure })
