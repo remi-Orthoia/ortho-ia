@@ -446,10 +446,9 @@ export default function HomePage() {
               <span className="font-bold text-xl text-white">Ortho<span className="text-green-400">.ia</span></span>
             </div>
             <div className="flex gap-8 text-gray-400 text-sm">
-              <a href="#" className="hover:text-white transition">Mentions légales</a>
-              <a href="#" className="hover:text-white transition">CGU</a>
-              <a href="#" className="hover:text-white transition">Politique de confidentialité</a>
-              <a href="#" className="hover:text-white transition">Contact</a>
+              <Link href="/cgu" className="hover:text-white transition">CGU</Link>
+              <Link href="/confidentialite" className="hover:text-white transition">Politique de confidentialité</Link>
+              <a href="mailto:remi.berrio@gmail.com" className="hover:text-white transition">Contact</a>
             </div>
           </div>
           <div className="mt-8 text-center text-gray-500 text-sm">

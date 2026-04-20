@@ -18,6 +18,7 @@ function RegisterForm() {
     nom: '',
     prenom: '',
   })
+  const [termsAccepted, setTermsAccepted] = useState(false)
   const [showPassword, setShowPassword] = useState(false)
   const [loading, setLoading] = useState(false)
   const [error, setError] = useState('')
@@ -41,6 +42,12 @@ function RegisterForm() {
 
     if (formData.password.length < 8) {
       setError('Le mot de passe doit contenir au moins 8 caractères')
+      setLoading(false)
+      return
+    }
+
+    if (!termsAccepted) {
+      setError('Vous devez accepter les CGU et la politique de confidentialité')
       setLoading(false)
       return
     }
@@ -257,13 +264,21 @@ function RegisterForm() {
                 name="terms"
                 type="checkbox"
                 required
+                checked={termsAccepted}
+                onChange={(e) => setTermsAccepted(e.target.checked)}
                 className="h-4 w-4 text-green-600 focus:ring-green-500 border-gray-300 rounded mt-0.5"
               />
               <label htmlFor="terms" className="ml-2 block text-sm text-gray-600">
-                J'accepte les{' '}
-                <a href="#" className="text-green-600 hover:text-green-500">conditions d'utilisation</a>
+                J&apos;accepte les{' '}
+                <Link href="/cgu" target="_blank" className="text-green-600 hover:text-green-500 underline">
+                  conditions d&apos;utilisation
+                </Link>
                 {' '}et la{' '}
-                <a href="#" className="text-green-600 hover:text-green-500">politique de confidentialité</a>
+                <Link href="/confidentialite" target="_blank" className="text-green-600 hover:text-green-500 underline">
+                  politique de confidentialité
+                </Link>
+                . Je reconnais que les comptes-rendus générés par l&apos;IA sont des brouillons nécessitant
+                une relecture clinique avant transmission.
               </label>
             </div>
 
