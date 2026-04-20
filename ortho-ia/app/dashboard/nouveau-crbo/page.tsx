@@ -80,6 +80,7 @@ function NouveauCRBOContent() {
   const [showResult, setShowResult] = useState(false)
   const [confettiTrigger, setConfettiTrigger] = useState(0)
   const [savedCrboId, setSavedCrboId] = useState<string | null>(null)
+  const [isFirstCRBO, setIsFirstCRBO] = useState(false)
   const [lastSavedAt, setLastSavedAt] = useState<number | null>(null)
   const [nowTick, setNowTick] = useState(0)
   const [importingAnamnese, setImportingAnamnese] = useState(false)
@@ -503,6 +504,13 @@ function NouveauCRBOContent() {
       }
       setSavedCrboId(inserted.id)
 
+      // Détection : est-ce le tout premier CRBO de l'ortho ?
+      const { count } = await supabase
+        .from('crbos')
+        .select('*', { count: 'exact', head: true })
+        .eq('user_id', user.id)
+      if (count === 1) setIsFirstCRBO(true)
+
       // Le compteur n'est incrémenté que si l'insertion a réussi
       const { error: rpcError } = await supabase.rpc('increment_crbo_count', { user_id: user.id })
       if (rpcError) {
@@ -536,22 +544,52 @@ function NouveauCRBOContent() {
       <>
         <ConfettiBurst trigger={confettiTrigger} />
         <div className="max-w-4xl mx-auto space-y-6 animate-fade-in">
-          {/* Bandeau succès */}
-          <div className="bg-gradient-to-br from-primary-50 to-emerald-50 dark:from-primary-900/20 dark:to-emerald-900/20 border border-primary-200 dark:border-primary-800/40 rounded-2xl p-6">
-            <div className="flex items-center gap-3 mb-2">
-              <div className="w-10 h-10 rounded-full bg-primary-600 text-white flex items-center justify-center shadow-lg animate-check-bounce">
-                <CheckCircle size={22} />
-              </div>
-              <div>
-                <h2 className="text-xl font-bold text-primary-900 dark:text-primary-200">
-                  CRBO généré avec succès !
-                </h2>
-                <p className="text-sm text-primary-700 dark:text-primary-300">
-                  Relisez le brouillon ci-dessous, ajustez si besoin, puis téléchargez le Word final.
-                </p>
+          {/* Bandeau succès — version enrichie pour le 1er CRBO */}
+          {isFirstCRBO ? (
+            <div className="bg-gradient-to-br from-primary-100 via-emerald-50 to-amber-50 dark:from-primary-900/30 dark:via-emerald-900/20 dark:to-amber-900/20 border-2 border-primary-300 dark:border-primary-700 rounded-2xl p-6 sm:p-8 shadow-card-lg">
+              <div className="flex items-start gap-4">
+                <div className="w-14 h-14 rounded-2xl bg-gradient-to-br from-primary-500 to-primary-700 text-white flex items-center justify-center shadow-lg animate-check-bounce shrink-0">
+                  <Sparkles size={26} />
+                </div>
+                <div className="flex-1">
+                  <p className="text-xs uppercase tracking-wider font-bold text-amber-700 dark:text-amber-400">
+                    🎉 Votre premier CRBO est prêt
+                  </p>
+                  <h2 className="mt-1 text-2xl font-bold text-primary-900 dark:text-primary-200">
+                    Félicitations !
+                  </h2>
+                  <p className="mt-2 text-primary-800 dark:text-primary-300 leading-relaxed">
+                    Vous venez de gagner environ 45 minutes sur la rédaction de ce CRBO. Relisez le
+                    brouillon, ajustez si besoin, puis téléchargez le Word. Il sera retrouvable à tout
+                    moment dans votre historique.
+                  </p>
+                  <p className="mt-3 text-sm text-primary-700 dark:text-primary-300">
+                    💡 <strong>Astuce :</strong>{' '}
+                    <a href="/dashboard/profil" className="underline font-semibold">
+                      Complétez votre profil
+                    </a>{' '}
+                    pour que vos coordonnées soient pré-remplies dans tous les prochains CRBO.
+                  </p>
+                </div>
               </div>
             </div>
-          </div>
+          ) : (
+            <div className="bg-gradient-to-br from-primary-50 to-emerald-50 dark:from-primary-900/20 dark:to-emerald-900/20 border border-primary-200 dark:border-primary-800/40 rounded-2xl p-6">
+              <div className="flex items-center gap-3 mb-2">
+                <div className="w-10 h-10 rounded-full bg-primary-600 text-white flex items-center justify-center shadow-lg animate-check-bounce">
+                  <CheckCircle size={22} />
+                </div>
+                <div>
+                  <h2 className="text-xl font-bold text-primary-900 dark:text-primary-200">
+                    CRBO généré avec succès !
+                  </h2>
+                  <p className="text-sm text-primary-700 dark:text-primary-300">
+                    Relisez le brouillon ci-dessous, ajustez si besoin, puis téléchargez le Word final.
+                  </p>
+                </div>
+              </div>
+            </div>
+          )}
 
           {/* Prévisualisation structurée */}
           {generatedStructure ? (

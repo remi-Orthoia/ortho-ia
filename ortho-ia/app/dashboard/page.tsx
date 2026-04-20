@@ -2,6 +2,8 @@
 
 import { useState, useEffect } from 'react'
 import DashboardSkeleton from '@/components/skeletons/DashboardSkeleton'
+import OnboardingTour from '@/components/OnboardingTour'
+import DailyTip from '@/components/DailyTip'
 import { useRouter } from 'next/navigation'
 import Link from 'next/link'
 import { createClient } from '@/lib/supabase'
@@ -226,6 +228,8 @@ export default function DashboardPage() {
 
   return (
     <div className="space-y-6 animate-fade-in">
+      <OnboardingTour />
+      {stats.total > 0 && <DailyTip crboCount={stats.total} />}
       {/* Header */}
       <div className="flex flex-col sm:flex-row sm:items-end sm:justify-between gap-4">
         <div>
