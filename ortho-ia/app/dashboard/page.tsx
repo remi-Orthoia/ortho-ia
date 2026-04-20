@@ -153,19 +153,32 @@ export default function DashboardPage() {
     if (!draggedCard) return
 
     const supabase = createClient()
-    
-    // Mettre à jour en local immédiatement (optimistic update)
-    setCrbos(prev => prev.map(crbo => 
-      crbo.id === draggedCard ? { ...crbo, statut: newStatus } : crbo
+    const cardId = draggedCard
+    setDraggedCard(null)
+
+    // Capture l'ancien statut pour rollback si DB échoue
+    const previousCrbo = crbos.find(c => c.id === cardId)
+    if (!previousCrbo || previousCrbo.statut === newStatus) return
+    const previousStatus = previousCrbo.statut
+
+    // Optimistic update
+    setCrbos(prev => prev.map(crbo =>
+      crbo.id === cardId ? { ...crbo, statut: newStatus } : crbo
     ))
 
-    // Mettre à jour en base
-    await supabase
+    const { error } = await supabase
       .from('crbos')
       .update({ statut: newStatus })
-      .eq('id', draggedCard)
+      .eq('id', cardId)
 
-    setDraggedCard(null)
+    if (error) {
+      // Rollback
+      console.error('Erreur mise à jour statut Kanban:', error)
+      setCrbos(prev => prev.map(crbo =>
+        crbo.id === cardId ? { ...crbo, statut: previousStatus } : crbo
+      ))
+      alert("Le changement de statut n'a pas pu être enregistré. Réessayez.")
+    }
   }
 
   const handleDelete = async (crboId: string) => {

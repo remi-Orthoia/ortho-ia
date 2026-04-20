@@ -46,6 +46,17 @@ export async function middleware(request: NextRequest) {
   const isApiProtected =
     pathname.startsWith('/api/generate-crbo') ||
     pathname.startsWith('/api/extract-pdf')
+  // Pages /dev/* : outils internes — bloquées en prod, accessibles en dev local
+  const isDevRoute = pathname.startsWith('/dev')
+  const isProd = process.env.NODE_ENV === 'production'
+
+  if (isDevRoute && isProd && !user) {
+    // En prod, /dev/* exige auth. En local dev, accès libre pour itération rapide.
+    const redirectUrl = request.nextUrl.clone()
+    redirectUrl.pathname = '/auth/login'
+    redirectUrl.searchParams.set('redirect', pathname)
+    return NextResponse.redirect(redirectUrl)
+  }
 
   if ((isDashboard || isApiProtected) && !user) {
     const redirectUrl = request.nextUrl.clone()
@@ -62,5 +73,6 @@ export const config = {
     '/dashboard/:path*',
     '/api/generate-crbo/:path*',
     '/api/extract-pdf/:path*',
+    '/dev/:path*',
   ],
 }

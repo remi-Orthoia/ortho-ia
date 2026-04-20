@@ -7,6 +7,7 @@ import { FileText, Download, Trash2, Search, Calendar } from 'lucide-react'
 
 export default function HistoriquePage() {
   const [crbos, setCrbos] = useState<any[]>([])
+  const [profile, setProfile] = useState<any>(null)
   const [loading, setLoading] = useState(true)
   const [searchTerm, setSearchTerm] = useState('')
 
@@ -14,18 +15,22 @@ export default function HistoriquePage() {
     const fetchCRBOs = async () => {
       const supabase = createClient()
       const { data: { user } } = await supabase.auth.getUser()
-      
+
       if (!user) return
 
-      const { data } = await supabase
-        .from('crbos')
-        .select('*')
-        .eq('user_id', user.id)
-        .order('created_at', { ascending: false })
+      // Charger le profil en parallèle (pour injection ortho_* au download Word)
+      const [crbosRes, profileRes] = await Promise.all([
+        supabase
+          .from('crbos')
+          .select('*')
+          .eq('user_id', user.id)
+          .order('bilan_date', { ascending: false, nullsFirst: false })
+          .order('created_at', { ascending: false }),
+        supabase.from('profiles').select('*').eq('id', user.id).single(),
+      ])
 
-      if (data) {
-        setCrbos(data)
-      }
+      if (crbosRes.data) setCrbos(crbosRes.data)
+      if (profileRes.data) setProfile(profileRes.data)
       setLoading(false)
     }
 
@@ -49,14 +54,16 @@ export default function HistoriquePage() {
   const handleDownload = async (crbo: any) => {
     try {
       const { downloadCRBOWord } = await import('@/lib/word-export')
+      // Les infos ortho (nom, adresse, tel, email) ne sont pas persistées dans
+      // les CRBO — on les récupère du profil courant au moment du download.
       await downloadCRBOWord({
         formData: {
-          ortho_nom: crbo.ortho_nom,
-          ortho_adresse: crbo.ortho_adresse,
-          ortho_cp: crbo.ortho_cp,
-          ortho_ville: crbo.ortho_ville,
-          ortho_tel: crbo.ortho_tel,
-          ortho_email: crbo.ortho_email,
+          ortho_nom: profile ? `${profile.prenom} ${profile.nom}` : '',
+          ortho_adresse: profile?.adresse || '',
+          ortho_cp: profile?.code_postal || '',
+          ortho_ville: profile?.ville || '',
+          ortho_tel: profile?.telephone || '',
+          ortho_email: profile?.email || '',
           patient_prenom: crbo.patient_prenom,
           patient_nom: crbo.patient_nom,
           patient_ddn: crbo.patient_ddn,

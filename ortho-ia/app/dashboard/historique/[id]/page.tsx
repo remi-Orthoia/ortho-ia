@@ -43,6 +43,7 @@ export default function CRBODetailPage() {
   const params = useParams()
   const router = useRouter()
   const [crbo, setCrbo] = useState<CRBO | null>(null)
+  const [profile, setProfile] = useState<any>(null)
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState('')
 
@@ -50,24 +51,28 @@ export default function CRBODetailPage() {
     const fetchCRBO = async () => {
       const supabase = createClient()
       const { data: { user } } = await supabase.auth.getUser()
-      
+
       if (!user) {
         router.push('/auth/login')
         return
       }
 
-      const { data, error } = await supabase
-        .from('crbos')
-        .select('*')
-        .eq('id', params.id)
-        .eq('user_id', user.id) // RLS check
-        .single()
+      const [crboRes, profileRes] = await Promise.all([
+        supabase
+          .from('crbos')
+          .select('*')
+          .eq('id', params.id)
+          .eq('user_id', user.id) // RLS check
+          .single(),
+        supabase.from('profiles').select('*').eq('id', user.id).single(),
+      ])
 
-      if (error || !data) {
+      if (crboRes.error || !crboRes.data) {
         setError('CRBO non trouvé')
       } else {
-        setCrbo(data)
+        setCrbo(crboRes.data)
       }
+      if (profileRes.data) setProfile(profileRes.data)
 
       setLoading(false)
     }
@@ -81,12 +86,12 @@ export default function CRBODetailPage() {
       const { downloadCRBOWord } = await import('@/lib/word-export')
       await downloadCRBOWord({
         formData: {
-          ortho_nom: (crbo as any).ortho_nom,
-          ortho_adresse: (crbo as any).ortho_adresse,
-          ortho_cp: (crbo as any).ortho_cp,
-          ortho_ville: (crbo as any).ortho_ville,
-          ortho_tel: (crbo as any).ortho_tel,
-          ortho_email: (crbo as any).ortho_email,
+          ortho_nom: profile ? `${profile.prenom} ${profile.nom}` : '',
+          ortho_adresse: profile?.adresse || '',
+          ortho_cp: profile?.code_postal || '',
+          ortho_ville: profile?.ville || '',
+          ortho_tel: profile?.telephone || '',
+          ortho_email: profile?.email || '',
           patient_prenom: crbo.patient_prenom,
           patient_nom: crbo.patient_nom,
           patient_ddn: crbo.patient_ddn,

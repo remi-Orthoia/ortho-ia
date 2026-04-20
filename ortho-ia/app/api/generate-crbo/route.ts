@@ -103,6 +103,36 @@ export async function POST(request: NextRequest) {
 
     const { formData } = await request.json()
 
+    // ============ Validation des champs requis ============
+    if (!formData || typeof formData !== 'object') {
+      return NextResponse.json({ error: 'Données du formulaire manquantes' }, { status: 400 })
+    }
+    const requiredFields: Array<[keyof typeof formData, string]> = [
+      ['patient_prenom', 'Prénom du patient'],
+      ['patient_nom', 'Nom du patient'],
+      ['bilan_date', 'Date du bilan'],
+    ]
+    for (const [key, label] of requiredFields) {
+      if (!formData[key] || typeof formData[key] !== 'string' || !String(formData[key]).trim()) {
+        return NextResponse.json(
+          { error: `Le champ "${label}" est requis.` },
+          { status: 400 },
+        )
+      }
+    }
+    const tests = Array.isArray(formData.test_utilise)
+      ? formData.test_utilise.filter((t: unknown): t is string => typeof t === 'string' && t.trim().length > 0)
+      : (typeof formData.test_utilise === 'string' && formData.test_utilise.trim().length > 0)
+        ? [formData.test_utilise]
+        : []
+    if (tests.length === 0) {
+      return NextResponse.json(
+        { error: 'Vous devez sélectionner au moins un test.' },
+        { status: 400 },
+      )
+    }
+    formData.test_utilise = tests
+
     if (!process.env.ANTHROPIC_API_KEY || process.env.ANTHROPIC_API_KEY.includes('VOTRE_CLE')) {
       return NextResponse.json(
         { error: 'Clé API Claude non configurée. Veuillez ajouter votre clé ANTHROPIC_API_KEY dans le fichier .env.local' },
@@ -113,10 +143,6 @@ export async function POST(request: NextRequest) {
     const anthropic = new Anthropic({
       apiKey: process.env.ANTHROPIC_API_KEY,
     })
-
-    const tests: string[] = Array.isArray(formData.test_utilise)
-      ? formData.test_utilise
-      : [formData.test_utilise]
 
     // ============ Anonymisation RGPD avant envoi API ============
     const { anonymized, reverseMap } = anonymize(formData)
