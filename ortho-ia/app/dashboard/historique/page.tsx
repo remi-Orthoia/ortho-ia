@@ -145,20 +145,34 @@ export default function HistoriquePage() {
           <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-green-600 mx-auto"></div>
         </div>
       ) : filteredCRBOs.length === 0 ? (
-        <div className="bg-white rounded-xl border border-gray-200 p-8 text-center">
-          <div className="w-16 h-16 bg-gray-100 rounded-full flex items-center justify-center mx-auto mb-4">
-            <FileText className="text-gray-400" size={32} />
+        <div className="card-modern p-10 text-center">
+          <div className="w-20 h-20 bg-gradient-to-br from-primary-50 to-primary-100 dark:from-primary-900/30 dark:to-primary-800/30 rounded-2xl flex items-center justify-center mx-auto mb-5 shadow-card">
+            <FileText className="text-primary-600 dark:text-primary-400" size={36} />
           </div>
-          <p className="text-gray-500">
+          <h3 className="text-lg font-bold text-gray-900 dark:text-gray-100">
             {searchTerm ? 'Aucun CRBO trouvé' : 'Aucun CRBO généré pour le moment'}
+          </h3>
+          <p className="mt-2 text-sm text-gray-500 dark:text-gray-400 max-w-md mx-auto">
+            {searchTerm
+              ? `Aucun résultat pour "${searchTerm}". Essayez un autre terme ou réinitialisez la recherche.`
+              : "Lancez votre premier bilan : import PDF de résultats, génération IA en ~20 secondes, export Word professionnel avec graphiques."}
           </p>
           {!searchTerm && (
-            <Link 
+            <Link
               href="/dashboard/nouveau-crbo"
-              className="mt-4 inline-block text-green-600 hover:text-green-700 font-medium"
+              className="btn-primary mt-6"
             >
-              Créer votre premier CRBO
+              <FileText size={16} />
+              Créer mon premier CRBO
             </Link>
+          )}
+          {searchTerm && (
+            <button
+              onClick={() => setSearchTerm('')}
+              className="btn-secondary mt-6"
+            >
+              Réinitialiser la recherche
+            </button>
           )}
         </div>
       ) : (

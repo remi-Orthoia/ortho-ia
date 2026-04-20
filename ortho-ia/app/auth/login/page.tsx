@@ -47,16 +47,16 @@ function LoginForm() {
   }
 
   return (
-    <div className="min-h-screen bg-gray-50 flex flex-col justify-center py-12 sm:px-6 lg:px-8">
+    <div className="min-h-screen bg-gray-50 dark:bg-surface-dark flex flex-col justify-center py-12 sm:px-6 lg:px-8">
       {/* Logo */}
       <div className="sm:mx-auto sm:w-full sm:max-w-md">
         <Link href="/" className="flex items-center justify-center space-x-2">
-          <div className="w-10 h-10 bg-gradient-to-br from-green-500 to-emerald-600 rounded-lg flex items-center justify-center">
+          <div className="w-10 h-10 bg-gradient-to-br from-primary-500 to-primary-700 rounded-lg flex items-center justify-center shadow-sm">
             <span className="text-white font-bold">O</span>
           </div>
-          <span className="font-bold text-2xl text-gray-900">Ortho<span className="text-green-600">.ia</span></span>
+          <span className="font-bold text-2xl text-gray-900 dark:text-gray-100">Ortho<span className="text-primary-600 dark:text-primary-400">.ia</span></span>
         </Link>
-        <h2 className="mt-6 text-center text-3xl font-bold text-gray-900">
+        <h2 className="mt-6 text-center text-3xl font-bold text-gray-900 dark:text-gray-100">
           Connexion à votre compte
         </h2>
         <p className="mt-2 text-center text-sm text-gray-600">
@@ -68,7 +68,7 @@ function LoginForm() {
       </div>
 
       <div className="mt-8 sm:mx-auto sm:w-full sm:max-w-md">
-        <div className="bg-white py-8 px-4 shadow-sm rounded-xl sm:px-10 border border-gray-100">
+        <div className="bg-white dark:bg-surface-dark-subtle py-8 px-4 shadow-card rounded-xl sm:px-10 border border-gray-100 dark:border-surface-dark-muted">
           <form className="space-y-6" onSubmit={handleLogin}>
             {error && (
               <div className="bg-red-50 border border-red-200 text-red-700 px-4 py-3 rounded-lg text-sm">

@@ -104,9 +104,9 @@ function RegisterForm() {
 
   if (success) {
     return (
-      <div className="min-h-screen bg-gray-50 flex flex-col justify-center py-12 sm:px-6 lg:px-8">
+      <div className="min-h-screen bg-gray-50 dark:bg-surface-dark flex flex-col justify-center py-12 sm:px-6 lg:px-8">
         <div className="sm:mx-auto sm:w-full sm:max-w-md">
-          <div className="bg-white py-8 px-4 shadow-sm rounded-xl sm:px-10 border border-gray-100 text-center">
+          <div className="bg-white dark:bg-surface-dark-subtle py-8 px-4 shadow-card rounded-xl sm:px-10 border border-gray-100 dark:border-surface-dark-muted text-center">
             <div className="w-16 h-16 bg-green-100 rounded-full flex items-center justify-center mx-auto mb-4">
               <CheckCircle className="w-8 h-8 text-green-600" />
             </div>
@@ -127,16 +127,16 @@ function RegisterForm() {
   }
 
   return (
-    <div className="min-h-screen bg-gray-50 flex flex-col justify-center py-12 sm:px-6 lg:px-8">
+    <div className="min-h-screen bg-gray-50 dark:bg-surface-dark flex flex-col justify-center py-12 sm:px-6 lg:px-8">
       {/* Logo */}
       <div className="sm:mx-auto sm:w-full sm:max-w-md">
         <Link href="/" className="flex items-center justify-center space-x-2">
           <div className="w-10 h-10 bg-gradient-to-br from-green-500 to-emerald-600 rounded-lg flex items-center justify-center">
             <span className="text-white font-bold">O</span>
           </div>
-          <span className="font-bold text-2xl text-gray-900">Ortho<span className="text-green-600">.ia</span></span>
+          <span className="font-bold text-2xl text-gray-900 dark:text-gray-100">Ortho<span className="text-primary-600 dark:text-primary-400">.ia</span></span>
         </Link>
-        <h2 className="mt-6 text-center text-3xl font-bold text-gray-900">
+        <h2 className="mt-6 text-center text-3xl font-bold text-gray-900 dark:text-gray-100">
           Créer votre compte
         </h2>
         <p className="mt-2 text-center text-sm text-gray-600">
@@ -155,7 +155,7 @@ function RegisterForm() {
           </span>
         </div>
 
-        <div className="bg-white py-8 px-4 shadow-sm rounded-xl sm:px-10 border border-gray-100">
+        <div className="bg-white dark:bg-surface-dark-subtle py-8 px-4 shadow-card rounded-xl sm:px-10 border border-gray-100 dark:border-surface-dark-muted">
           <form className="space-y-5" onSubmit={handleRegister}>
             {error && (
               <div className="bg-red-50 border border-red-200 text-red-700 px-4 py-3 rounded-lg text-sm">

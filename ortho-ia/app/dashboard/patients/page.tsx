@@ -224,19 +224,25 @@ export default function PatientsPage() {
 
       {/* Patient List */}
       {filteredPatients.length === 0 ? (
-        <div className="bg-white rounded-xl border border-gray-200 p-12 text-center">
-          <User className="mx-auto h-12 w-12 text-gray-300" />
-          <h3 className="mt-4 text-lg font-medium text-gray-900">Aucun patient</h3>
-          <p className="mt-2 text-gray-500">
-            {searchQuery ? 'Aucun patient ne correspond à votre recherche.' : 'Commencez par ajouter votre premier patient.'}
+        <div className="card-modern p-10 text-center">
+          <div className="w-20 h-20 bg-gradient-to-br from-indigo-50 to-indigo-100 dark:from-indigo-900/30 dark:to-indigo-800/30 rounded-2xl flex items-center justify-center mx-auto mb-5 shadow-card">
+            <User className="text-indigo-600 dark:text-indigo-400" size={36} />
+          </div>
+          <h3 className="text-lg font-bold text-gray-900 dark:text-gray-100">
+            {searchQuery ? 'Aucun patient trouvé' : 'Votre carnet de patients est vide'}
+          </h3>
+          <p className="mt-2 text-sm text-gray-500 dark:text-gray-400 max-w-md mx-auto">
+            {searchQuery
+              ? `Aucun résultat pour "${searchQuery}". Essayez un autre terme.`
+              : "Ajoutez vos patients ici pour retrouver leurs infos à chaque CRBO : prénom, nom, date de naissance, médecin, anamnèse de base."}
           </p>
           {!searchQuery && (
             <button
               onClick={() => handleOpenModal()}
-              className="mt-4 inline-flex items-center gap-2 px-4 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700 transition font-medium"
+              className="btn-primary mt-6"
             >
-              <Plus size={18} />
-              Ajouter un patient
+              <Plus size={16} />
+              Ajouter mon premier patient
             </button>
           )}
         </div>
