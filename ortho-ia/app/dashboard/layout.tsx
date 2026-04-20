@@ -17,6 +17,7 @@ import {
   Sparkles,
 } from 'lucide-react'
 import ThemeToggle from '@/components/ThemeToggle'
+import FeedbackButton from '@/components/FeedbackButton'
 
 interface DashboardLayoutProps {
   children: React.ReactNode
@@ -231,6 +232,7 @@ export default function DashboardLayout({ children }: DashboardLayoutProps) {
         <main className="p-4 lg:p-8">
           {children}
         </main>
+        <FeedbackButton />
       </div>
     </div>
   )

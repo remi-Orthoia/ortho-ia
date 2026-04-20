@@ -23,10 +23,13 @@ export default function HomePage() {
   return (
     <div className="min-h-screen bg-white">
       {/* Bandeau Beta */}
-      <div className="fixed top-0 left-0 right-0 z-[60] bg-gradient-to-r from-green-600 to-emerald-600 text-white text-center text-xs sm:text-sm font-medium py-2 px-4">
-        <span className="sm:hidden">✨ Beta — <strong>3 mois offerts</strong></span>
-        <span className="hidden sm:inline">✨ Beta en cours — <strong>3 mois offerts</strong> pour les premiers orthophonistes inscrits</span>
-      </div>
+      <Link
+        href="/beta"
+        className="fixed top-0 left-0 right-0 z-[60] bg-gradient-to-r from-green-600 to-emerald-600 text-white text-center text-xs sm:text-sm font-medium py-2 px-4 hover:brightness-110 transition block"
+      >
+        <span className="sm:hidden">✨ Beta · <strong>3 mois offerts</strong> · S&apos;inscrire →</span>
+        <span className="hidden sm:inline">✨ Version beta — <strong>3 mois offerts</strong> pour les premiers orthophonistes · <u>Rejoindre la beta</u></span>
+      </Link>
       {/* Navigation */}
       <nav className="fixed top-[36px] left-0 right-0 bg-white/95 backdrop-blur-sm z-50 border-b border-gray-100">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
@@ -412,9 +415,11 @@ export default function HomePage() {
               </div>
               <span className="font-bold text-xl text-white">Ortho<span className="text-green-400">.ia</span></span>
             </div>
-            <div className="flex gap-8 text-gray-400 text-sm">
+            <div className="flex flex-wrap gap-x-6 gap-y-2 text-gray-400 text-sm justify-center">
+              <Link href="/beta" className="hover:text-white transition">Rejoindre la beta</Link>
+              <Link href="/roadmap" className="hover:text-white transition">Roadmap</Link>
               <Link href="/cgu" className="hover:text-white transition">CGU</Link>
-              <Link href="/confidentialite" className="hover:text-white transition">Politique de confidentialité</Link>
+              <Link href="/confidentialite" className="hover:text-white transition">Confidentialité</Link>
               <a href="mailto:remi.berrio@gmail.com" className="hover:text-white transition">Contact</a>
             </div>
           </div>
