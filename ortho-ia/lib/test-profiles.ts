@@ -35,6 +35,9 @@ export interface TestProfile {
     test_utilise: string[]
     resultats_manuels: string
     notes_passation: string
+    comportement_seance?: string
+    duree_seance_minutes?: number
+    evolution_notes?: string
   }
 }
 
@@ -310,6 +313,259 @@ Compréhension écrite : 12/15, É-T : -1.2, P10
 Dictée de phrases : 14/20, É-T : -1.25, P10`,
       notes_passation:
         'Bilan en 2 séances. Monsieur Bernard coopératif mais fatigabilité nette. Plusieurs recherches de mots observées dans le discours spontané ("cette chose qui…"). Paraphasies sémantiques (hippopotame au lieu de rhinocéros). Manque du mot à plusieurs reprises. Épouse confirme perte progressive d\'autonomie cognitive depuis 18 mois.',
+    },
+  },
+
+  // =============================================================
+  // PROFIL 6 — Retard simple langage (EVALO 2-6, MS 4 ans)
+  // =============================================================
+  {
+    id: 'retard-simple-ms',
+    label: 'Retard simple de langage (MS, garçon 4 ans)',
+    hypothese_clinique:
+      "Performances globalement sous la norme mais enfant évolutif, pas de trouble spécifique. Guidance + réévaluation 6 mois.",
+    formData: {
+      ...ORTHO_BASE,
+      patient_prenom: 'Hugo',
+      patient_nom: 'DELAUNAY',
+      patient_ddn: '2022-02-15',
+      patient_classe: 'MS',
+      bilan_date: '2026-04-20',
+      bilan_type: 'initial',
+      medecin_nom: 'Dr Marie LAURENT',
+      medecin_tel: '04 72 15 16 17',
+      motif:
+        "Maîtresse de MS signale un langage pauvre, phrases courtes, vocabulaire limité par rapport aux pairs. Pas d'inquiétude majeure, demande un avis orthophonique.",
+      anamnese:
+        "cadet fratrie 2 / grossesse normale / marche 14m / premiers mots 22m / phrases 3 ans / aîné 7 ans lecture OK / parents présents stimulants / otites à répétition drains à 2 ans / audio OK depuis / vision OK / frère à la maison, souvent livres et jeux / écrans limités",
+      test_utilise: ['EVALO 2-6'],
+      resultats_manuels: `# Communication précoce
+Attention conjointe : préservée
+Pointage : préservé
+Tours de parole : adaptés
+
+# Langage oral - réceptif
+Désignation (lexique récep.) : P20, É-T -0.85
+Compréhension consignes simples : P25, É-T -0.65
+
+# Langage oral - expressif
+Dénomination : P15, É-T -1.1
+Production syntaxique : P15, É-T -1.15
+
+# Phonologie
+Répétition mots : P20, É-T -0.9
+Répétition logatomes : P15, É-T -1.05
+
+# Métaphonologie (émergente)
+Rimes : P25, É-T -0.7`,
+      notes_passation:
+        'Bilan en 1 séance de 40 min. Hugo coopératif mais timide. Phrases courtes, syntaxe simple. Interaction adaptée. Pas de trouble articulatoire majeur.',
+    },
+  },
+
+  // =============================================================
+  // PROFIL 7 — Dyslexie compensée au collège (Exalang 11-15, 5e)
+  // =============================================================
+  {
+    id: 'dyslexie-compensee-5e',
+    label: 'Dyslexie compensée collège (5e, garçon 13 ans)',
+    hypothese_clinique:
+      "Dyslexie diagnostiquée en CM1, PAP en place. Trace résiduelle visible, aménagements pour le Brevet à discuter.",
+    formData: {
+      ...ORTHO_BASE,
+      patient_prenom: 'Théo',
+      patient_nom: 'ROSSI',
+      patient_ddn: '2013-06-10',
+      patient_classe: '5ème',
+      bilan_date: '2026-04-20',
+      bilan_type: 'renouvellement',
+      medecin_nom: 'Dr Paul GARNIER',
+      medecin_tel: '01 42 99 88 77',
+      motif:
+        "Bilan de renouvellement pour ajuster le PAP et anticiper les aménagements pour les épreuves du Brevet. PEC orthophonique allégée depuis 2 ans. Moyenne générale 14/20 au collège, difficultés persistantes en orthographe et en langues vivantes.",
+      anamnese:
+        "dyslexie diagnostiquée CM1 / PAP en place / PEC orthophonique hebdo CE2-CM2, puis 1/15j depuis 6e / classe europe pour anglais compensé par bon oral / aime sport et histoire / famille coopérante / audio/visuel OK",
+      test_utilise: ['Exalang 11-15'],
+      resultats_manuels: `# Mémoire de travail
+Empan endroit : 5/7, É-T -0.4, Med (P50)
+Empan envers : 4/6, É-T -0.3, Med (P50)
+
+# Lecture
+Lecture mots fréquents : 29/30, É-T 0.1, Med (P50)
+Lecture mots irréguliers : 27/30, É-T -0.5, Med (P50)
+Lecture non-mots : 24/30, É-T -0.9, Q1 (P25)
+Leximétrie 5e : 145 mots/min, É-T -0.8, Q1 (P25)
+
+# Compréhension écrite
+Compréhension inférentielle : 16/20, É-T -0.25, Med (P50)
+
+# Orthographe
+DRA lexicale : 14/20, É-T -1.15, P15
+DRA grammaticale : 11/15, É-T -0.85, Q1 (P25)
+Production écrite : correct, syntaxe riche`,
+      notes_passation:
+        'Bilan 45 min. Théo à l\'aise, bon oral, stratégies métacognitives développées. Conscient de ses difficultés, demande aménagements Brevet. Fatigabilité à la fin.',
+      // Simule une anamnèse déjà pré-remplie depuis le dernier bilan
+      evolution_notes: "Progrès nets en lecture depuis le dernier bilan il y a 2 ans. Vitesse de lecture désormais dans la norme. Orthographe reste le point faible résiduel. Stratégies métacognitives bien installées.",
+    },
+  },
+
+  // =============================================================
+  // PROFIL 8 — OMF / Déglutition atypique (CE1, 7 ans)
+  // =============================================================
+  {
+    id: 'omf-deglutition',
+    label: 'Déglutition atypique + sigmatisme (CE1, fille 7 ans)',
+    hypothese_clinique:
+      "Déglutition primaire infantile persistante avec interposition linguale, sigmatisme interdental. Orthodontie à venir.",
+    formData: {
+      ...ORTHO_BASE,
+      patient_prenom: 'Sarah',
+      patient_nom: 'BENSAID',
+      patient_ddn: '2018-11-05',
+      patient_classe: 'CE1',
+      bilan_date: '2026-04-20',
+      bilan_type: 'initial',
+      medecin_nom: 'Dr Orthodontiste BERGER',
+      medecin_tel: '04 72 44 55 66',
+      motif:
+        "Orthodontiste adresse pour bilan OMF avant pose d'appareil multi-attaches. Sigmatisme interdental persistant. Succion du pouce abandonnée à 5 ans.",
+      anamnese:
+        "fille unique / allaitement 12 mois / tétine jusqu'à 3 ans puis pouce jusqu'à 5 ans / otites 2 ans drain / audio OK / prononciation imparfaite des sifflantes / scolarité sans difficulté / lecture et écriture acquises CP normalement / musique (piano 1 an)",
+      test_utilise: ['OMF / Déglutition'],
+      resultats_manuels: `# Observation morpho-statique au repos
+Lèvres : béance labiale notée, langue apparente entre incisives au repos
+Langue : position basse, pas de spot palatin identifié
+Voûte palatine : ogivale
+
+# Praxies BLF
+Protrusion langue : réalisée
+Latéralité langue : limitée (difficulté à toucher les commissures)
+Claquement : faible intensité
+
+# Tonicité
+Lèvres : hypotoniques
+Langue : hypotonique
+Joues : normales
+
+# Déglutition (eau, semi-liquide, solide)
+Interposition linguale systématique
+Participation forte musculature péri-orale
+Absence de serrage dentaire
+Bruit de déglutition audible
+→ Déglutition atypique / primaire persistante
+
+# Ventilation
+Mode dominant : MIXTE avec tendance buccale
+Bouche ouverte au repos
+Ronflements rapportés
+
+# Articulation
+Sigmatisme interdental [s], [z], [∫], [ʒ]
+Autres phonèmes acquis`,
+      notes_passation:
+        'Bilan 45 min. Sarah coopérative. Sensible au regard sur sa bouche. Consciente du défaut articulatoire, en souffre à l\'école. Maman attentive, collaboration orthodontiste confirmée.',
+    },
+  },
+
+  // =============================================================
+  // PROFIL 9 — Anxiété mathématique sans dyscalculie (CM2, 10 ans)
+  // =============================================================
+  {
+    id: 'anxiete-math',
+    label: 'Anxiété mathématique sans dyscalculie (CM2, fille 10 ans)',
+    hypothese_clinique:
+      "Capacités numériques de base préservées. Blocage affectif massif en situation d'évaluation chronométrée. Orientation psy indiquée.",
+    formData: {
+      ...ORTHO_BASE,
+      patient_prenom: 'Inès',
+      patient_nom: 'MOREAU',
+      patient_ddn: '2016-01-20',
+      patient_classe: 'CM2',
+      bilan_date: '2026-04-20',
+      bilan_type: 'initial',
+      medecin_nom: 'Dr Marc TISSERAND',
+      medecin_tel: '04 78 80 90 00',
+      motif:
+        "Difficultés majeures en mathématiques rapportées par les parents depuis le CE2. Pleurs quotidiens aux devoirs de maths. En français : excellent profil (17/20). Parents demandent un bilan dyscalculie.",
+      anamnese:
+        "aînée fratrie / lecture CP fluide / CE1 : première évaluation maths avec note rouge, maîtresse sévère / depuis : évitement massif / écran : dessins et écriture / rêve d'être écrivain / parents professeurs (lettres) pression indirecte / pas de bilan psy",
+      test_utilise: ['Examath'],
+      resultats_manuels: `# Cognition numérique de base
+Subitizing : 9/10, É-T 0.3, Med (P50)
+Comparaison grandeurs symboliques : 28/30, É-T 0.15, Med (P50)
+Comparaison grandeurs non-symboliques : 26/30, É-T 0.05, Med (P50)
+
+# Transcodage
+Chiffres → mots : 19/20, É-T 0.2, Med (P50)
+Mots → chiffres : 18/20, É-T -0.1, Med (P50)
+
+# Calcul mental (sans pression)
+Additions simples : 14/15, É-T 0.3, Med (P50)
+Soustractions : 9/10, É-T 0.1, Med (P50)
+Tables multiplication : 16/20, É-T -0.45, Med (P50)
+
+# Calcul mental CHRONOMÉTRÉ (condition évaluation scolaire simulée)
+Additions chronométrées : 6/15, É-T -1.9, P5
+Tables chronométrées : 4/20, É-T -2.1, P3
+→ Chute massive en condition de pression
+
+# Résolution de problèmes
+Problèmes simples (sans chrono) : 8/10, Med (P50)
+Problèmes à étapes (sans chrono) : 5/8, P25
+
+# Géométrie
+Reproduction figure complexe : 19/20, Med (P50)`,
+      notes_passation:
+        'Bilan 2 séances. Inès en larmes à l\'annonce de l\'épreuve chronométrée. A fallu couper le chrono et reprendre à froid. Dit "je déteste les maths, je suis nulle". Mère confirme que les notes chutent précisément aux évaluations chronométrées, alors qu\'en devoirs maison les résultats sont corrects.',
+    },
+  },
+
+  // =============================================================
+  // PROFIL 10 — TDL sévère suspecté (GS, 5 ans)
+  // =============================================================
+  {
+    id: 'tdl-severe-gs',
+    label: 'TDL sévère suspecté (GS, garçon 5 ans)',
+    hypothese_clinique:
+      "Langage oral très altéré, pronostic lourd. Orientation CRTLA urgente et bilan pluridisciplinaire (psychomot, pédopsychiatrie).",
+    formData: {
+      ...ORTHO_BASE,
+      patient_prenom: 'Noé',
+      patient_nom: 'VASSEUR',
+      patient_ddn: '2020-06-12',
+      patient_classe: 'GS',
+      bilan_date: '2026-04-20',
+      bilan_type: 'initial',
+      medecin_nom: 'Dr Pédiatre LACROIX',
+      medecin_tel: '04 72 88 99 11',
+      motif:
+        "Enseignante de GS très inquiète : Noé s'exprime avec des phrases de 2-3 mots, vocabulaire très pauvre, compréhension limitée. Difficultés d'intégration en classe. Adressé en urgence par le pédiatre.",
+      anamnese:
+        "cadet 3 enfants / marche 18m / premiers mots vers 2;6 ans (alerte parents différée) / phrases courtes à 4 ans / CAMSP contacté à 3 ans, pas de suite / PMI jamais signalé / famille allophone à la maison (mélange français-arabe) / audio OK bilan ORL récent / vision suspecte pas de bilan / psychomotricité pas évaluée / pas d'interaction sociale problématique rapportée / aîné frère aucun problème langage",
+      test_utilise: ['Exalang 3-6', 'N-EEL'],
+      resultats_manuels: `# Exalang 3-6 - Langage oral réceptif
+Désignation (lexique récep.) : 18/30, P3, É-T -2.1
+Compréhension phrases courtes : 8/15, P5, É-T -1.85
+
+# Langage oral expressif
+Dénomination : 10/30, P2, É-T -2.3
+Production syntaxique : 3/15, P2, É-T -2.4
+Récit sur image : 4 mots totaux, agrammatique
+
+# Phonologie
+Répétition mots : 12/25, P5, É-T -1.75
+Répétition logatomes : 3/20, P2, É-T -2.5
+
+# Métaphonologie
+Rimes : 2/10, P5, É-T -1.8
+Syllabes : 1/10, P2, É-T -2.1
+
+# N-EEL (complément)
+Compréhension morphosyntaxique : score pathologique
+Empan auditif : 2/6, P2`,
+      notes_passation:
+        'Bilan 2 séances 30 min. Noé coopératif mais fatigabilité rapide. Communication non verbale adaptée (pointage, intérêt pour autrui, tours de parole). Interaction préservée, pas de signes autistiques (éliminés par pédiatre). Prononciation très déformée, plusieurs phonèmes non acquis. Souffrance scolaire palpable.',
     },
   },
 ]
