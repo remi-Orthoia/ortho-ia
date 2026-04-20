@@ -6,88 +6,166 @@ export const exalang811: TestModule = {
   auteurs: 'Helloin, Lenfant, Thibault',
   annee: 2012,
   domaines: [
-    'Langage oral',
-    'Langage écrit',
-    'Mémoire de travail',
+    'Langage oral — versant réceptif',
+    'Langage oral — versant expressif',
+    'Langage écrit — lecture',
+    'Langage écrit — orthographe / production',
+    'Mémoire de travail verbale',
     'Métaphonologie',
-    'Accès lexical',
-    'Compréhension',
+    'Fonctions exécutives verbales (fluences, flexibilité)',
+    'Accès lexical / sémantique',
   ],
   epreuves: [
-    'Empan auditif (endroit / envers)',
+    // Mémoire de travail
+    'Empan auditif endroit (boucle phonologique)',
+    'Empan auditif envers (administrateur central)',
     'Répétition de logatomes',
-    'Métaphonologie (acronymes, rimes)',
-    'Fluences (phonétique, sémantique)',
+    // Métaphonologie
+    'Métaphonologie — acronymes',
+    'Métaphonologie — rimes',
+    'Métaphonologie — suppression phonémique',
+    // Langage oral
+    'Compréhension orale de phrases',
+    'Compréhension orale de textes',
+    'Dénomination d\'images',
+    'Désignation sur définition',
+    'Lexique en réception',
+    // Fonctions exécutives verbales
+    'Fluence phonémique (lettre, 1 min)',
+    'Fluence sémantique (animaux, 1 min)',
+    // Langage écrit — lecture
+    'Lecture de mots fréquents',
+    'Lecture de mots irréguliers',
+    'Lecture de non-mots (logatomes écrits)',
+    'Leximétrie (vitesse de lecture en contexte)',
     'Décision lexico-morphologique',
-    'Compréhension de phrases',
-    'Lecture de mots / non-mots',
-    'Leximétrie (lecture chronométrée)',
+    // Langage écrit — compréhension & production
     'Closure de texte',
-    'DRA (Dictée de Rédaction Abrégée)',
+    'Compréhension écrite de texte',
+    'DRA — Dictée de Rédaction Abrégée (mots, phrases)',
+    'Copie différée',
   ],
-  regles_specifiques: `### EXALANG 8-11 — Règles cliniques détaillées
+  regles_specifiques: `### EXALANG 8-11 — Référentiel clinique complet (niveau senior)
 
-#### Règles de conversion
-- Les résultats sont présentés avec une notation en **quartiles** (Q1, Med, Q3) dans la colonne "Percentiles".
-- Conversion obligatoire : **Q1 → P25**, **Med → P50**, **Q3 → P75**.
-- Les valeurs explicites P5, P10, P90, P95 sont à utiliser telles quelles.
-- Ne JAMAIS recalculer un percentile depuis l'É-T : les normes du test priment sur la distribution gaussienne théorique.
-- Exemple typique : "Boucle phonologique : É-T -1.53, Q1" → Percentile = P25 → Interprétation **Normal**.
+Population : enfants du CE2 au CM2 (classe d'âge 8 à 11 ans). Outil le plus utilisé en France pour le dépistage des troubles spécifiques des apprentissages (TSA).
 
-#### Meilleures pratiques cliniques par épreuve
+#### RÈGLES DE CONVERSION DES PERCENTILES (impératif)
 
-**Empan auditif** (mémoire de travail phonologique) :
-- Empan endroit déficitaire isolé → évocateur d'une fragilité de la **boucle phonologique** (Baddeley).
-- Empan envers déficitaire → davantage en faveur d'un trouble de **l'administrateur central** (fonctions exécutives).
-- Croiser systématiquement avec la répétition de logatomes pour confirmer une atteinte phonologique.
+Les résultats Exalang sont présentés en quartiles :
+- **Q1 → P25** (Normal — pas déficitaire malgré un É-T négatif)
+- **Med / Q2 → P50**
+- **Q3 → P75**
+- **P5, P10, P90, P95** : valeurs exactes à utiliser telles quelles
+- Ne **JAMAIS** recalculer un percentile depuis l'É-T : les normes étalonnées du test priment sur la distribution gaussienne théorique.
 
-**Répétition de logatomes** :
-- Erreur type : élisions, substitutions, inversions → signer un trouble phonologique.
-- Performance faible + empan faible → forte présomption de trouble de la boucle phonologique.
-- Préciser les longueurs échouées (3, 4, 5 syllabes) pour orienter la prise en charge (travail en paliers progressifs).
+Exemple piège classique : "Boucle phonologique : É-T -1.53, Q1" → Percentile = P25 → Interprétation **Normal** (et non "Déficitaire" comme le suggérerait l'É-T).
 
-**Métaphonologie** :
-- Épreuve **prédictive** du langage écrit (lecture/orthographe).
-- Déficit en métaphonologie à 8-9 ans → marqueur **fort** de dyslexie développementale.
-- Même en l'absence de plainte scolaire, un déficit métaphonologique isolé justifie un suivi préventif.
+---
 
-**Fluences** :
-- Fluence phonétique (lettre) > sémantique → plutôt profil **dysexécutif** (flexibilité, récupération stratégique).
-- Fluence sémantique > phonétique → plutôt trouble **lexical** ou organisation sémantique.
-- Comparer les pentes temporelles (15s / 30s / 45s / 60s) : une chute rapide évoque un épuisement attentionnel.
+#### INTERPRÉTATION CLINIQUE PAR ÉPREUVE
 
-**Lecture de mots / non-mots** :
-- Lecture de mots fluide + lecture de non-mots déficitaire → **voie d'adressage** préservée, **voie d'assemblage** déficitaire (dyslexie phonologique).
-- Lecture de non-mots fluide + mots fréquents/irréguliers déficitaires → voie d'assemblage préservée, voie d'adressage déficitaire (dyslexie de surface).
-- Dyslexie mixte si les deux voies sont touchées.
+**EMPAN AUDITIF ENDROIT** (boucle phonologique)
+- Mesure la capacité de stockage phonologique à court terme.
+- Seuil de vigilance : empan < 4 à 8 ans, < 5 à 10 ans.
+- Empan faible isolé → fragilité de la **boucle phonologique** (modèle de Baddeley). Impact sur répétition, lecture de non-mots, acquisition de vocabulaire nouveau.
 
-**Leximétrie (vitesse de lecture)** :
-- Seuils indicatifs CE2 : environ 90-120 mots/min pour un lecteur normolecteur.
-- Vitesse déficitaire + exactitude conservée → évocateur d'un trouble **d'automatisation** (sous-lexical).
-- Toujours croiser vitesse ET compréhension : une lecture rapide mais sans compréhension oriente vers un trouble **pragmatique / attentionnel**.
+**EMPAN AUDITIF ENVERS** (administrateur central)
+- Mesure la capacité de manipulation mentale des informations phonologiques.
+- Empan envers faible isolé → orientation vers **trouble exécutif** (mémoire de travail). Compatible avec TDAH.
+- Empan envers = Empan endroit −1 est attendu.
 
-**Closure de texte / Compréhension** :
-- Déficit isolé en closure (avec bonne lecture mécanique) → évocateur d'un **trouble de la compréhension écrite** ou trouble pragmatique.
-- Toujours questionner la compréhension orale en parallèle pour distinguer trouble spécifique écrit vs trouble global du langage.
+**RÉPÉTITION DE LOGATOMES**
+- Épreuve clé pour distinguer atteinte de la boucle phonologique vs trouble articulatoire.
+- Erreurs typiques : élisions, substitutions, inversions de phonèmes.
+- Performance faible + empan endroit faible → forte présomption de trouble phonologique.
+- Noter les **longueurs échouées** (3, 4, 5 syllabes) → cible pour la rééducation.
 
-**DRA (Dictée de Rédaction Abrégée)** :
-- Analyse qualitative des erreurs :
-  - **Phonologiques** (omissions, inversions) → voie d'assemblage immature.
-  - **Lexicales** (irréguliers mal orthographiés) → voie d'adressage immature, faible mémoire orthographique.
-  - **Grammaticales** (accords) → fragilité morphosyntaxique, souvent associée.
-- Compter les types d'erreurs dominantes plutôt que le nombre total.
+**MÉTAPHONOLOGIE** (acronymes, rimes, suppression phonémique)
+- Épreuve **prédictive n°1** de la réussite en langage écrit.
+- Suppression phonémique = la plus sensible et la plus prédictive.
+- Déficit métaphonologique à 8-9 ans → marqueur **fort** de dyslexie développementale, même sans plainte scolaire explicite.
+- Un déficit isolé à la suppression phonémique justifie un suivi préventif de 6 à 12 mois.
 
-#### Points d'attention rédactionnels
+**FLUENCES VERBALES**
+- Fluence phonémique > sémantique → plutôt profil **lexico-sémantique** préservé, possible trouble du contrôle exécutif.
+- Fluence sémantique > phonémique → plutôt profil **dysexécutif** (difficultés de stratégie de récupération).
+- Les deux déficitaires → flag pour déficit général (TDAH, trouble cognitif).
+- Analyser les **clusters** (regroupements sémantiques) et les **switches** (changements de catégorie). Peu de switches = difficulté de flexibilité.
 
-- **Ne pas conclure à une dyslexie / dysorthographie sur un bilan isolé** avant le milieu du CE1 (février minimum). L'écart doit être significatif ET persistant.
-- Si déficit limité à un domaine, proposer une **réévaluation à 6 mois** avant de conclure à un trouble spécifique.
-- Toujours recommander un bilan ophtalmologique et ORL à jour si non réalisés.
-- Coupler à un bilan psychométrique (WISC-V) si suspicion de trouble associé (TDAH, haut potentiel, trouble cognitif global).
+**LECTURE**
+- Mots fréquents fluides + non-mots déficitaires → **voie d'assemblage** touchée → **dyslexie phonologique** (la plus fréquente).
+- Mots irréguliers échoués + non-mots fluides → **voie d'adressage** touchée → **dyslexie de surface** (mémoire orthographique faible).
+- Les deux voies touchées → **dyslexie mixte** (souvent plus sévère, pronostic plus lourd).
+- Leximétrie : vitesse normale CE2 = 90-120 mots/min ; CM1 = 110-140 ; CM2 = 130-160.
+- Vitesse déficitaire + exactitude préservée → trouble **d'automatisation**, rééduquer par lectures répétées.
 
-#### Articulation avec d'autres outils
-- **En amont** : Exalang 5-8 pour profil pré-scolaire / CP.
-- **En aval** : Exalang 11-15 pour collège.
-- **Complément écrit** : BALE, ODEDYS, Alouette-R, BELEC pour l'orthographe approfondie.
-- **Complément calcul** : Examath si suspicion de trouble associé.
-- **Complément mémoire/exécutif** : NEPSY-II, CMS, BRIEF (parent/enseignant).`,
+**CLOSURE / COMPRÉHENSION ÉCRITE**
+- Déficit isolé en closure avec bonne lecture mécanique → trouble de la **compréhension écrite** (vs décodage).
+- Toujours croiser avec la compréhension orale : si orale préservée et écrite déficitaire → trouble spécifique du langage écrit ; si les deux déficitaires → trouble global du langage.
+
+**DRA (Dictée)**
+- Analyse **qualitative** des erreurs :
+  - Phonologiques (omission, substitution, inversion) → voie d'assemblage immature.
+  - Lexicales (mots irréguliers mal orthographiés) → voie d'adressage immature.
+  - Grammaticales (accord sujet-verbe, pluriels) → fragilité morphosyntaxique.
+- Comptabiliser les types d'erreurs dominantes plutôt que le nombre total.
+
+---
+
+#### 🎯 PROFILS TYPES
+
+**PROFIL 1 — Dyslexie phonologique (70% des dyslexies développementales)**
+- Empan endroit : Fragile à Déficitaire
+- Répétition logatomes : Déficitaire
+- Métaphonologie (surtout suppression phonémique) : Déficitaire à Pathologique
+- Lecture mots fréquents : Limite basse / Fragile (conservée mais lente)
+- Lecture non-mots : **Déficitaire à Pathologique** (marqueur central)
+- Lecture mots irréguliers : Fragile (par compensation lexicale)
+- Leximétrie : Déficitaire (lenteur)
+- DRA : erreurs phonologiques dominantes
+- **Diagnostic** : "Les résultats sont compatibles avec un profil de dyslexie-dysorthographie développementale de type phonologique, caractérisé par une atteinte de la voie d'assemblage et une fragilité métaphonologique sous-jacente."
+- **PEC** : conscience phonémique + automatisation code grapho-phonémique + lecture répétée. 30 séances réévaluées à mi-parcours.
+- **Aménagements** : PAP, temps majoré 1/3, police OpenDyslexic/Arial 14.
+
+**PROFIL 2 — Dyslexie mixte (15-20% des dyslexies)**
+- Toutes les voies de lecture touchées.
+- Lecture mots fréquents : Fragile / Déficitaire
+- Lecture mots irréguliers : Déficitaire (voie d'adressage faible)
+- Lecture non-mots : Déficitaire (voie d'assemblage faible)
+- Métaphonologie : Déficitaire
+- Mémoire orthographique faible : échec sur mots irréguliers au DRA
+- Leximétrie : Pathologique (très lente)
+- **Diagnostic** : "Les deux voies de lecture (adressage et assemblage) sont significativement déficitaires, dénotant un profil de dyslexie-dysorthographie développementale mixte, de sévérité marquée."
+- **PEC** : PEC intensive bi-hebdomadaire, 40-50 séances, double axe (phono + lexical).
+- **Aménagements** : PPS via MDPH probable. Support audio systématique. Tolérance orthographique explicite.
+
+**PROFIL 3 — DYS + TDA(H) associé**
+- Lecture déficitaire (type variable) **+** attention fluctuante **+** fluences déficitaires **+** empan envers bien plus faible que l'endroit.
+- Fatigabilité importante notée pendant le bilan.
+- Performances très variables selon l'heure, l'état émotionnel.
+- **Diagnostic** : "Le profil orthophonique est compatible avec une dyslexie développementale, associée à des signes évocateurs d'un trouble de l'attention. Un bilan neuropsychologique complémentaire est fortement indiqué pour préciser le diagnostic."
+- **PEC** : PEC orthophonique + orientation NEUROPSY prioritaire. Coordination avec pédopsychiatre / neuropédiatre si prescription méthylphénidate envisagée.
+- **Aménagements** : PPS avec AESH souvent nécessaire. Pauses, chronométrage adapté, consignes écrites ET orales.
+
+---
+
+#### ARTICULATION AVEC D'AUTRES OUTILS
+
+- **En amont** (maternelle / CP) : Exalang 5-8, ELO, EVALO 2-6 pour dépistage précoce.
+- **En aval** (collège) : Exalang 11-15 pour suivi longitudinal.
+- **Complément lecture / décodage approfondi** : ODEDYS, Alouette-R, BALE.
+- **Complément orthographe approfondi** : BELEC, Chronodictées.
+- **Complément calcul** (si co-morbidité dyscalculie) : Examath.
+- **Complément attention / exécutif** : à orienter vers **neuropsychologue** pour NEPSY-II, TEA-Ch, BRIEF (parent/enseignant), CPT-3.
+- **Complément cognitif global** : à orienter vers **psychologue** pour WISC-V (nécessaire avant tout PPS).
+
+---
+
+#### POINTS DE VIGILANCE RÉDACTIONNELS
+
+- **Ne pas conclure à une dyslexie avant le milieu du CE1** (février minimum, avec persistance confirmée).
+- Si le déficit est limité à un seul domaine, proposer **réévaluation à 6 mois** avant diagnostic définitif.
+- Toujours recommander bilan **ORL et ophtalmologique à jour**.
+- Proposer **systématiquement** un bilan psychométrique (WISC-V) avant de poser PPS / aménagements lourds.
+- Si profil complexe : proposer un **bilan pluridisciplinaire en centre référent** (CRTLA, CMPP, centre hospitalier).`,
 }
