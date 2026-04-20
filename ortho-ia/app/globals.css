@@ -4,20 +4,98 @@
 
 @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap');
 
+/* ==============================================================
+ * TOKENS DE DESIGN — unifiés light / dark via CSS custom props
+ * ============================================================== */
 :root {
-  --foreground-rgb: 0, 0, 0;
-  --background-rgb: 255, 255, 255;
+  --foreground-rgb: 17, 24, 39;       /* gray-900 */
+  --background-rgb: 255, 255, 255;    /* white */
+  --surface-rgb: 248, 250, 252;       /* slate-50 */
+  --muted-rgb: 241, 245, 249;         /* slate-100 */
+  --border-rgb: 229, 231, 235;        /* gray-200 */
+  --primary-rgb: 22, 163, 74;         /* primary-600 */
+  --accent-warm-rgb: 240, 140, 31;    /* warm-500 */
+}
+
+.dark {
+  --foreground-rgb: 241, 245, 249;    /* slate-100 */
+  --background-rgb: 15, 23, 42;       /* slate-900 */
+  --surface-rgb: 30, 41, 59;          /* slate-800 */
+  --muted-rgb: 51, 65, 85;            /* slate-700 */
+  --border-rgb: 51, 65, 85;           /* slate-700 */
+  --primary-rgb: 74, 222, 128;        /* primary-400 (plus lumineux en dark) */
+  --accent-warm-rgb: 245, 161, 66;    /* warm-400 */
 }
 
 body {
   color: rgb(var(--foreground-rgb));
   background: rgb(var(--background-rgb));
   font-family: 'Inter', system-ui, sans-serif;
+  font-feature-settings: "cv11", "ss01", "ss03";
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+  transition: background-color 0.2s ease;
 }
+
+/* Hiérarchie typo cohérente */
+h1, h2, h3, h4 { font-feature-settings: "cv11", "ss01"; letter-spacing: -0.01em; }
 
 @layer utilities {
   .text-balance {
     text-wrap: balance;
+  }
+  /* Focus visible uniforme */
+  .focus-ring {
+    @apply focus:outline-none focus-visible:ring-2 focus-visible:ring-primary-500 focus-visible:ring-offset-2 dark:focus-visible:ring-offset-surface-dark;
+  }
+}
+
+/* ==============================================================
+ * COMPOSANTS — classes d'emploi courant, cohérence visuelle
+ * ============================================================== */
+@layer components {
+  /* Carte moderne avec ombre douce */
+  .card-modern {
+    @apply bg-white dark:bg-surface-dark-subtle border border-gray-200 dark:border-surface-dark-muted rounded-xl shadow-card transition-all duration-200;
+  }
+  .card-modern-hover {
+    @apply hover:shadow-card-hover hover:-translate-y-0.5 transition-all duration-200;
+  }
+  .card-lifted {
+    @apply bg-white dark:bg-surface-dark-subtle border border-gray-200 dark:border-surface-dark-muted rounded-2xl shadow-card-lg;
+  }
+
+  /* Boutons */
+  .btn-primary {
+    @apply inline-flex items-center justify-center gap-2 px-4 py-2.5 bg-primary-600 hover:bg-primary-700 active:bg-primary-800 text-white font-medium rounded-lg shadow-sm hover:shadow transition-all duration-150 ease-smooth focus-ring disabled:opacity-60 disabled:cursor-not-allowed disabled:hover:bg-primary-600;
+  }
+  .btn-secondary {
+    @apply inline-flex items-center justify-center gap-2 px-4 py-2.5 bg-white dark:bg-surface-dark-subtle border border-gray-200 dark:border-surface-dark-muted hover:bg-gray-50 dark:hover:bg-surface-dark-muted text-gray-800 dark:text-gray-100 font-medium rounded-lg transition-all duration-150 ease-smooth focus-ring;
+  }
+  .btn-ghost {
+    @apply inline-flex items-center justify-center gap-2 px-3 py-2 text-gray-600 dark:text-gray-300 hover:text-gray-900 dark:hover:text-white hover:bg-gray-100 dark:hover:bg-surface-dark-muted font-medium rounded-lg transition-all duration-150 ease-smooth focus-ring;
+  }
+
+  /* Input / textarea moderne, généreux, confortable pour saisie rapide */
+  .input-modern {
+    @apply w-full px-4 py-3 text-base bg-white dark:bg-surface-dark-subtle border border-gray-200 dark:border-surface-dark-muted rounded-lg text-gray-900 dark:text-gray-100 placeholder:text-gray-400 dark:placeholder:text-gray-500 focus:outline-none focus:ring-2 focus:ring-primary-500 focus:border-transparent transition-shadow duration-150;
+  }
+  .input-large {
+    @apply input-modern py-3.5 text-base;
+  }
+  .textarea-modern {
+    @apply input-modern resize-none leading-relaxed;
+  }
+
+  /* Chip / badge */
+  .chip {
+    @apply inline-flex items-center gap-1 px-2.5 py-1 rounded-full text-xs font-medium;
+  }
+  .chip-primary {
+    @apply chip bg-primary-100 text-primary-800 dark:bg-primary-900/40 dark:text-primary-200;
+  }
+  .chip-warm {
+    @apply chip bg-warm-100 text-warm-800 dark:bg-warm-900/40 dark:text-warm-200;
   }
 }
 
@@ -199,3 +277,31 @@ input:focus, textarea:focus, select:focus {
   50%      { opacity: 0.5; }
 }
 .animate-count-blink { animation: count-blink 1s ease-in-out infinite; }
+
+/* ==============================================================
+ * Animations écran de génération Claude
+ * ============================================================== */
+@keyframes dots-loader {
+  0%, 80%, 100% { opacity: 0.3; transform: scale(0.8); }
+  40% { opacity: 1; transform: scale(1); }
+}
+.animate-dot-1 { animation: dots-loader 1.4s ease-in-out infinite; animation-delay: 0s; }
+.animate-dot-2 { animation: dots-loader 1.4s ease-in-out infinite; animation-delay: 0.2s; }
+.animate-dot-3 { animation: dots-loader 1.4s ease-in-out infinite; animation-delay: 0.4s; }
+
+@keyframes progress-grow {
+  from { transform: scaleX(0); }
+  to   { transform: scaleX(1); }
+}
+.animate-progress-grow { transform-origin: left; animation: progress-grow 20s linear forwards; }
+
+/* Shimmer effect pour barre de progression indéterminée */
+.shimmer-bg {
+  background: linear-gradient(
+    90deg,
+    rgba(22, 163, 74, 0.15) 0%,
+    rgba(22, 163, 74, 0.4) 50%,
+    rgba(22, 163, 74, 0.15) 100%
+  );
+  background-size: 200% 100%;
+}
