@@ -623,6 +623,18 @@ function NouveauCRBOContent() {
               <p className="mt-1 text-sm text-gray-500">Ces informations apparaîtront sur le CRBO</p>
             </div>
 
+            {(!formData.ortho_nom || !formData.ortho_adresse) && (
+              <div className="bg-amber-50 border border-amber-200 rounded-lg px-4 py-3 text-sm text-amber-900 flex items-start gap-3">
+                <AlertCircle size={18} className="shrink-0 mt-0.5" />
+                <div>
+                  <p className="font-semibold">Profil incomplet</p>
+                  <p className="mt-0.5">
+                    Complétez vos informations dans <a href="/dashboard/profil" className="underline font-semibold">Mon profil</a> pour les pré-remplir automatiquement à chaque CRBO.
+                  </p>
+                </div>
+              </div>
+            )}
+
             <div className="grid sm:grid-cols-2 gap-4">
               <div className="sm:col-span-2">
                 <label className="block text-sm font-medium text-gray-700 mb-1">Nom complet</label>
