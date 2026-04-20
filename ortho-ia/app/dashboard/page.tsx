@@ -221,46 +221,110 @@ export default function DashboardPage() {
     )
   }
 
+  const recentCrbos = crbos.slice(0, 3)
+  const now = new Date()
+  const hour = now.getHours()
+  const salutation = hour < 12 ? 'Bonjour' : hour < 18 ? 'Bon après-midi' : 'Bonsoir'
+
   return (
-    <div className="space-y-6">
+    <div className="space-y-6 animate-fade-in">
       {/* Header */}
-      <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
+      <div className="flex flex-col sm:flex-row sm:items-end sm:justify-between gap-4">
         <div>
-          <h1 className="text-2xl font-bold text-gray-900">
-            Bonjour {userName} 👋
+          <h1 className="text-3xl font-bold text-gray-900 dark:text-gray-100">
+            {salutation} {userName} <span className="inline-block animate-pulse">👋</span>
           </h1>
-          <p className="text-gray-500 mt-1">
-            Voici vos bilans en cours
+          <p className="text-gray-500 dark:text-gray-400 mt-1.5">
+            {stats.total === 0
+              ? 'Prêt·e à générer votre premier CRBO ?'
+              : `${stats.thisMonth} CRBO${stats.thisMonth > 1 ? 's' : ''} ce mois · ${Math.floor(stats.timeSaved / 60)} h gagnées au total`}
           </p>
         </div>
         <Link
           href="/dashboard/nouveau-crbo"
-          className="inline-flex items-center gap-2 px-4 py-2.5 bg-green-600 text-white rounded-lg hover:bg-green-700 transition font-medium shadow-sm"
+          className="btn-primary whitespace-nowrap"
         >
-          <Plus size={20} />
+          <Plus size={18} />
           Nouveau CRBO
         </Link>
       </div>
 
-      {/* Stats rapides */}
-      <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
-        <div className="bg-white rounded-xl border border-gray-200 p-4">
-          <p className="text-sm text-gray-500">Total CRBO</p>
-          <p className="text-2xl font-bold text-gray-900">{stats.total}</p>
-        </div>
-        <div className="bg-white rounded-xl border border-gray-200 p-4">
-          <p className="text-sm text-gray-500">Ce mois</p>
-          <p className="text-2xl font-bold text-gray-900">{stats.thisMonth}</p>
-        </div>
-        <div className="bg-white rounded-xl border border-gray-200 p-4">
-          <p className="text-sm text-gray-500">À rédiger</p>
-          <p className="text-2xl font-bold text-blue-600">{getCRBOsByStatus('a_rediger').length}</p>
-        </div>
-        <div className="bg-white rounded-xl border border-gray-200 p-4">
-          <p className="text-sm text-gray-500">Temps gagné</p>
-          <p className="text-2xl font-bold text-green-600">{Math.floor(stats.timeSaved / 60)}h</p>
-        </div>
+      {/* Stats modernes */}
+      <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
+        {[
+          { label: 'Total CRBO', value: stats.total, color: 'text-gray-900 dark:text-gray-100' },
+          { label: 'Ce mois', value: stats.thisMonth, color: 'text-gray-900 dark:text-gray-100' },
+          { label: 'À rédiger', value: getCRBOsByStatus('a_rediger').length, color: 'text-blue-600 dark:text-blue-400' },
+          { label: 'Temps gagné', value: `${Math.floor(stats.timeSaved / 60)} h`, color: 'text-primary-600 dark:text-primary-400' },
+        ].map((s) => (
+          <div key={s.label} className="card-modern p-4">
+            <p className="text-sm text-gray-500 dark:text-gray-400">{s.label}</p>
+            <p className={`text-2xl font-bold mt-0.5 ${s.color}`}>{s.value}</p>
+          </div>
+        ))}
       </div>
+
+      {/* Widget Prochain bilan / CRBO récents */}
+      {recentCrbos.length > 0 && (
+        <div className="grid md:grid-cols-3 gap-4">
+          {/* Widget Prochain bilan à relire — 1ère carte en À relire */}
+          {getCRBOsByStatus('a_relire').length > 0 && (
+            <div className="card-modern p-5 bg-gradient-to-br from-purple-50 to-white dark:from-purple-900/20 dark:to-surface-dark-subtle border-purple-200 dark:border-purple-800/40">
+              <div className="flex items-center gap-2 mb-3">
+                <Eye className="text-purple-600 dark:text-purple-400" size={18} />
+                <p className="text-sm font-semibold text-purple-900 dark:text-purple-200">À relire en priorité</p>
+              </div>
+              {(() => {
+                const next = getCRBOsByStatus('a_relire')[0]
+                return (
+                  <Link href={`/dashboard/historique/${next.id}`} className="block">
+                    <p className="font-bold text-gray-900 dark:text-gray-100">
+                      {next.patient_prenom} {next.patient_nom}
+                    </p>
+                    <p className="text-sm text-gray-600 dark:text-gray-400 mt-0.5">
+                      {next.test_utilise || 'Tests non renseignés'}
+                    </p>
+                    <p className="text-xs text-gray-500 dark:text-gray-500 mt-1">
+                      Bilan du {new Date(next.bilan_date || next.created_at).toLocaleDateString('fr-FR')}
+                    </p>
+                  </Link>
+                )
+              })()}
+            </div>
+          )}
+
+          {/* 3 CRBO les plus récents */}
+          <div className={`card-modern p-5 ${getCRBOsByStatus('a_relire').length > 0 ? 'md:col-span-2' : 'md:col-span-3'}`}>
+            <div className="flex items-center justify-between mb-3">
+              <p className="text-sm font-semibold text-gray-900 dark:text-gray-100">
+                CRBO récents
+              </p>
+              <Link href="/dashboard/historique" className="text-xs text-primary-600 dark:text-primary-400 hover:underline">
+                Tout voir →
+              </Link>
+            </div>
+            <div className="grid sm:grid-cols-3 gap-2">
+              {recentCrbos.map(c => (
+                <Link
+                  key={c.id}
+                  href={`/dashboard/historique/${c.id}`}
+                  className="group p-3 rounded-lg border border-gray-100 dark:border-surface-dark-muted hover:border-primary-300 dark:hover:border-primary-700 hover:bg-gray-50 dark:hover:bg-surface-dark-muted/50 transition-all"
+                >
+                  <p className="font-semibold text-gray-900 dark:text-gray-100 text-sm truncate">
+                    {c.patient_prenom} {c.patient_nom}
+                  </p>
+                  <p className="text-xs text-gray-500 dark:text-gray-500 mt-0.5 truncate">
+                    {c.test_utilise || '—'}
+                  </p>
+                  <p className="text-[11px] text-gray-400 dark:text-gray-600 mt-1">
+                    {new Date(c.bilan_date || c.created_at).toLocaleDateString('fr-FR')}
+                  </p>
+                </Link>
+              ))}
+            </div>
+          </div>
+        </div>
+      )}
 
       {/* Onboarding — visible uniquement si aucun CRBO */}
       {stats.total === 0 && (
@@ -322,15 +386,17 @@ export default function DashboardPage() {
         {columns.map(column => (
           <div
             key={column.id}
-            className={`rounded-xl border-2 ${column.bgColor} min-h-[400px]`}
+            className={`rounded-xl border ${column.bgColor} dark:bg-surface-dark-subtle/50 dark:border-surface-dark-muted min-h-[450px] transition-colors`}
             onDragOver={handleDragOver}
             onDrop={(e) => handleDrop(e, column.id)}
           >
             {/* Column Header */}
-            <div className={`p-3 border-b border-gray-200 flex items-center gap-2 ${column.color}`}>
-              {column.icon}
-              <span className="font-semibold">{column.title}</span>
-              <span className="ml-auto bg-white px-2 py-0.5 rounded-full text-xs font-medium">
+            <div className={`px-4 py-3.5 border-b border-gray-200 dark:border-surface-dark-muted flex items-center gap-2.5 ${column.color} dark:text-gray-200`}>
+              <div className="w-7 h-7 rounded-lg bg-white dark:bg-surface-dark flex items-center justify-center shadow-sm">
+                {column.icon}
+              </div>
+              <span className="font-semibold text-[0.95rem]">{column.title}</span>
+              <span className="ml-auto bg-white dark:bg-surface-dark-muted text-gray-700 dark:text-gray-200 px-2 py-0.5 rounded-full text-xs font-bold shadow-sm">
                 {getCRBOsByStatus(column.id).length}
               </span>
             </div>
@@ -342,34 +408,34 @@ export default function DashboardPage() {
                   key={crbo.id}
                   draggable
                   onDragStart={(e) => handleDragStart(e, crbo.id)}
-                  className={`bg-white rounded-lg border border-gray-200 p-3 cursor-grab active:cursor-grabbing hover:shadow-md transition group ${
-                    draggedCard === crbo.id ? 'opacity-50' : ''
+                  className={`bg-white dark:bg-surface-dark-subtle rounded-lg border border-gray-200 dark:border-surface-dark-muted p-3 cursor-grab active:cursor-grabbing shadow-card hover:shadow-card-hover hover:-translate-y-0.5 transition-all duration-150 ease-smooth group ${
+                    draggedCard === crbo.id ? 'opacity-40 scale-95' : ''
                   }`}
                 >
                   {/* Card Header */}
                   <div className="flex items-start justify-between gap-2">
-                    <div className="flex items-center gap-2">
-                      <GripVertical size={14} className="text-gray-300 group-hover:text-gray-400" />
-                      <div>
-                        <p className="font-medium text-gray-900 text-sm">
+                    <div className="flex items-center gap-2 min-w-0 flex-1">
+                      <GripVertical size={14} className="text-gray-300 dark:text-gray-600 group-hover:text-gray-400 shrink-0" />
+                      <div className="min-w-0">
+                        <p className="font-semibold text-gray-900 dark:text-gray-100 text-sm truncate">
                           {crbo.patient_prenom} {crbo.patient_nom}
                         </p>
-                        <p className="text-xs text-gray-500">{crbo.patient_classe}</p>
+                        <p className="text-xs text-gray-500 dark:text-gray-400">{crbo.patient_classe}</p>
                       </div>
                     </div>
-                    
+
                     {/* Actions */}
-                    <div className="flex items-center gap-1 opacity-0 group-hover:opacity-100 transition">
+                    <div className="flex items-center gap-1 opacity-0 group-hover:opacity-100 transition shrink-0">
                       <Link
                         href={`/dashboard/historique/${crbo.id}`}
-                        className="p-1 hover:bg-gray-100 rounded"
+                        className="p-1 hover:bg-gray-100 dark:hover:bg-surface-dark-muted rounded"
                         title="Voir"
                       >
-                        <Eye size={14} className="text-gray-500" />
+                        <Eye size={14} className="text-gray-500 dark:text-gray-400" />
                       </Link>
                       <button
                         onClick={() => handleDelete(crbo.id)}
-                        className="p-1 hover:bg-red-50 rounded"
+                        className="p-1 hover:bg-red-50 dark:hover:bg-red-900/30 rounded"
                         title="Supprimer"
                       >
                         <Trash2 size={14} className="text-red-500" />
