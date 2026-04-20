@@ -77,17 +77,37 @@ export default function CRBODetailPage() {
 
   const handleDownload = async () => {
     if (!crbo) return
-
-    // Simple text download for now
-    const blob = new Blob([crbo.crbo_text], { type: 'text/plain;charset=utf-8' })
-    const url = URL.createObjectURL(blob)
-    const a = document.createElement('a')
-    a.href = url
-    a.download = `CRBO_${crbo.patient_prenom}_${crbo.patient_nom}_${crbo.bilan_date}.txt`
-    document.body.appendChild(a)
-    a.click()
-    document.body.removeChild(a)
-    URL.revokeObjectURL(url)
+    try {
+      const { downloadCRBOWord } = await import('@/lib/word-export')
+      await downloadCRBOWord({
+        formData: {
+          ortho_nom: (crbo as any).ortho_nom,
+          ortho_adresse: (crbo as any).ortho_adresse,
+          ortho_cp: (crbo as any).ortho_cp,
+          ortho_ville: (crbo as any).ortho_ville,
+          ortho_tel: (crbo as any).ortho_tel,
+          ortho_email: (crbo as any).ortho_email,
+          patient_prenom: crbo.patient_prenom,
+          patient_nom: crbo.patient_nom,
+          patient_ddn: crbo.patient_ddn,
+          patient_classe: crbo.patient_classe,
+          bilan_date: crbo.bilan_date,
+          bilan_type: crbo.bilan_type,
+          medecin_nom: (crbo as any).medecin_nom,
+          medecin_tel: (crbo as any).medecin_tel,
+          motif: (crbo as any).motif,
+          test_utilise: (crbo as any).test_utilise
+            ? String((crbo as any).test_utilise).split(',').map((t: string) => t.trim())
+            : [],
+          resultats_manuels: (crbo as any).resultats,
+        },
+        structure: (crbo as any).structure_json ?? null,
+        fallbackCRBO: (crbo as any).crbo_text || (crbo as any).crbo_genere || '',
+      })
+    } catch (err) {
+      console.error('Erreur export Word:', err)
+      alert('Erreur lors de la génération du document Word.')
+    }
   }
 
   const handleDelete = async () => {

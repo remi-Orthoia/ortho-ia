@@ -47,22 +47,35 @@ export default function HistoriquePage() {
   }
 
   const handleDownload = async (crbo: any) => {
-    const { Document, Packer, Paragraph, TextRun } = await import('docx')
-    const { saveAs } = await import('file-saver')
-
-    const doc = new Document({
-      sections: [{
-        children: crbo.crbo_genere.split('\n').map((line: string) => 
-          new Paragraph({
-            children: [new TextRun(line)],
-            spacing: { after: 200 },
-          })
-        ),
-      }],
-    })
-
-    const blob = await Packer.toBlob(doc)
-    saveAs(blob, `CRBO_${crbo.patient_prenom}_${crbo.patient_nom}_${new Date(crbo.created_at).toISOString().split('T')[0]}.docx`)
+    try {
+      const { downloadCRBOWord } = await import('@/lib/word-export')
+      await downloadCRBOWord({
+        formData: {
+          ortho_nom: crbo.ortho_nom,
+          ortho_adresse: crbo.ortho_adresse,
+          ortho_cp: crbo.ortho_cp,
+          ortho_ville: crbo.ortho_ville,
+          ortho_tel: crbo.ortho_tel,
+          ortho_email: crbo.ortho_email,
+          patient_prenom: crbo.patient_prenom,
+          patient_nom: crbo.patient_nom,
+          patient_ddn: crbo.patient_ddn,
+          patient_classe: crbo.patient_classe,
+          bilan_date: crbo.bilan_date,
+          bilan_type: crbo.bilan_type,
+          medecin_nom: crbo.medecin_nom,
+          medecin_tel: crbo.medecin_tel,
+          motif: crbo.motif,
+          test_utilise: crbo.test_utilise ? String(crbo.test_utilise).split(',').map((t: string) => t.trim()) : [],
+          resultats_manuels: crbo.resultats,
+        },
+        structure: crbo.structure_json ?? null,
+        fallbackCRBO: crbo.crbo_genere || '',
+      })
+    } catch (err) {
+      console.error('Erreur export Word historique:', err)
+      alert("Erreur lors de la génération du document Word. Réessayez ou contactez le support.")
+    }
   }
 
   const filteredCRBOs = crbos.filter(crbo => {

@@ -418,6 +418,7 @@ function NouveauCRBOContent() {
         .from('crbos')
         .insert({
           user_id: user.id,
+          patient_id: selectedPatientId || null, // Lien patient ↔ CRBO
           patient_prenom: formData.patient_prenom,
           patient_nom: formData.patient_nom,
           patient_ddn: formData.patient_ddn,
