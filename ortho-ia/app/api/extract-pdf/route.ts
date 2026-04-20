@@ -1,6 +1,12 @@
 import { NextRequest, NextResponse } from 'next/server'
 import Anthropic from '@anthropic-ai/sdk'
-import { EXTRACTION_PROMPT } from '@/lib/prompts'
+import {
+  EXTRACTION_PROMPT,
+  EXTRACT_TOOL,
+  extractedToLegacyText,
+  type ExtractedResults,
+} from '@/lib/prompts/extraction'
+import { createServerSupabaseClient } from '@/lib/supabase-server'
 
 const anthropic = new Anthropic({
   apiKey: process.env.ANTHROPIC_API_KEY,
@@ -8,113 +14,113 @@ const anthropic = new Anthropic({
 
 export async function POST(request: NextRequest) {
   try {
-    const formData = await request.formData()
-    const file = formData.get('file') as File
-    
-    if (!file) {
-      return NextResponse.json(
-        { error: 'Aucun fichier fourni' },
-        { status: 400 }
-      )
+    // Auth check
+    const supabase = createServerSupabaseClient()
+    const { data: { user } } = await supabase.auth.getUser()
+    if (!user) {
+      return NextResponse.json({ error: 'Authentification requise' }, { status: 401 })
     }
 
-    // Vérifier le type de fichier
+    const formData = await request.formData()
+    const file = formData.get('file') as File
+
+    if (!file) {
+      return NextResponse.json({ error: 'Aucun fichier fourni' }, { status: 400 })
+    }
+
     if (!file.type.includes('pdf') && !file.type.includes('image')) {
       return NextResponse.json(
         { error: 'Format non supporté. Utilisez un PDF ou une image.' },
-        { status: 400 }
+        { status: 400 },
       )
     }
 
-    // Convertir le fichier en base64
+    if (file.size > 10 * 1024 * 1024) {
+      return NextResponse.json(
+        { error: 'Fichier trop volumineux (max 10 Mo).' },
+        { status: 413 },
+      )
+    }
+
     const bytes = await file.arrayBuffer()
     const base64 = Buffer.from(bytes).toString('base64')
 
-    // Construire le contenu selon le type de fichier
     let contentBlock: Anthropic.DocumentBlockParam | Anthropic.ImageBlockParam
 
     if (file.type.includes('pdf')) {
-      // PDF → utiliser document block
       contentBlock = {
         type: 'document',
-        source: {
-          type: 'base64',
-          media_type: 'application/pdf',
-          data: base64,
-        },
+        source: { type: 'base64', media_type: 'application/pdf', data: base64 },
       }
     } else {
-      // Image → utiliser image block
       let imageMediaType: 'image/png' | 'image/jpeg' | 'image/gif' | 'image/webp' = 'image/png'
       if (file.type.includes('jpeg') || file.type.includes('jpg')) imageMediaType = 'image/jpeg'
       else if (file.type.includes('gif')) imageMediaType = 'image/gif'
       else if (file.type.includes('webp')) imageMediaType = 'image/webp'
-
       contentBlock = {
         type: 'image',
-        source: {
-          type: 'base64',
-          media_type: imageMediaType,
-          data: base64,
-        },
+        source: { type: 'base64', media_type: imageMediaType, data: base64 },
       }
     }
 
-    // Appeler Claude Vision
     const message = await anthropic.messages.create({
       model: 'claude-sonnet-4-6',
       max_tokens: 4096,
+      tools: [EXTRACT_TOOL],
+      tool_choice: { type: 'tool', name: 'extract_test_results' },
       messages: [
         {
           role: 'user',
-          content: [
-            contentBlock,
-            {
-              type: 'text',
-              text: EXTRACTION_PROMPT,
-            },
-          ],
+          content: [contentBlock, { type: 'text', text: EXTRACTION_PROMPT }],
         },
       ],
     })
 
-    // Extraire le texte de la réponse
-    const responseText = message.content
-      .filter((block): block is Anthropic.TextBlock => block.type === 'text')
-      .map(block => block.text)
-      .join('\n')
+    const toolUseBlock = message.content.find(
+      (block): block is Anthropic.ToolUseBlock => block.type === 'tool_use',
+    )
 
-    // Essayer de détecter le test utilisé
-    let detectedTest = ''
-    const testPatterns = [
-      { pattern: /exalang\s*8[-\s]?11/i, name: 'Exalang 8-11' },
-      { pattern: /exalang\s*11[-\s]?15/i, name: 'Exalang 11-15' },
-      { pattern: /exalang\s*3[-\s]?6/i, name: 'Exalang 3-6' },
-      { pattern: /evalo\s*2[-\s]?6/i, name: 'EVALO 2-6' },
-      { pattern: /elo/i, name: 'ELO' },
-      { pattern: /bale/i, name: 'BALE' },
-      { pattern: /belec/i, name: 'BELEC' },
-    ]
+    if (!toolUseBlock || toolUseBlock.name !== 'extract_test_results') {
+      return NextResponse.json(
+        { error: "Claude n'a pas renvoyé de structure d'extraction exploitable." },
+        { status: 502 },
+      )
+    }
 
-    for (const { pattern, name } of testPatterns) {
-      if (pattern.test(responseText) || pattern.test(file.name)) {
-        detectedTest = name
-        break
+    const structure = toolUseBlock.input as ExtractedResults
+
+    // Filet de sécurité : normaliser percentile_value à partir de percentile_raw si incohérent
+    for (const e of structure.epreuves ?? []) {
+      if (e.percentile_raw && (e.percentile_value == null || isNaN(e.percentile_value))) {
+        const raw = e.percentile_raw.trim().toUpperCase()
+        if (raw.startsWith('Q1')) e.percentile_value = 25
+        else if (raw.startsWith('MED') || raw === 'Q2') e.percentile_value = 50
+        else if (raw.startsWith('Q3')) e.percentile_value = 75
+        else {
+          const m = raw.match(/P?(\d+)/)
+          if (m) e.percentile_value = parseInt(m[1], 10)
+        }
       }
     }
 
+    const legacyText = extractedToLegacyText(structure)
+
     return NextResponse.json({
       success: true,
-      resultats: responseText,
-      detectedTest,
-      tokensUsed: message.usage?.input_tokens + (message.usage?.output_tokens || 0),
+      structure,
+      resultats: legacyText, // Compat UI existante
+      detectedTest: structure.test_name ?? '',
+      tokensUsed:
+        (message.usage?.input_tokens ?? 0) + (message.usage?.output_tokens ?? 0),
     })
-
-  } catch (error) {
+  } catch (error: any) {
     console.error('Erreur extraction PDF:', error)
+    if (error?.status === 401) {
+      return NextResponse.json({ error: 'Clé API Claude invalide' }, { status: 401 })
+    }
     return NextResponse.json(
-      { error: 'Erreur lors de l\'extraction. Veuillez réessayer.' },
-      { status: 500 }
+      { error: error?.message || "Erreur lors de l'extraction. Veuillez réessayer." },
+      { status: 500 },
     )
   }
 }
