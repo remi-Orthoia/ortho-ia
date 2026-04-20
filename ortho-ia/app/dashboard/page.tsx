@@ -1,6 +1,7 @@
 'use client'
 
 import { useState, useEffect } from 'react'
+import DashboardSkeleton from '@/components/skeletons/DashboardSkeleton'
 import { useRouter } from 'next/navigation'
 import Link from 'next/link'
 import { createClient } from '@/lib/supabase'
@@ -214,11 +215,8 @@ export default function DashboardPage() {
   }
 
   if (loading) {
-    return (
-      <div className="flex items-center justify-center py-12">
-        <Loader2 className="animate-spin h-8 w-8 text-green-600" />
-      </div>
-    )
+    // Skeleton plutôt qu'un simple spinner — évite le layout shift
+    return <DashboardSkeleton />
   }
 
   const recentCrbos = crbos.slice(0, 3)
