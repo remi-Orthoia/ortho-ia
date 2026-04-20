@@ -13,6 +13,7 @@ import { belec } from './belec'
 import { examath } from './examath'
 import { omfDeglutition } from './omf-deglutition'
 import { moca } from './moca'
+import { betl } from './betl'
 
 export const TEST_REGISTRY: Record<string, TestModule> = {
   'Exalang 3-6': exalang36,
@@ -29,6 +30,7 @@ export const TEST_REGISTRY: Record<string, TestModule> = {
   'Examath': examath,
   'OMF / Déglutition': omfDeglutition,
   'MoCA': moca,
+  'BETL': betl,
 }
 
 export function getTestModule(nom: string): TestModule | null {

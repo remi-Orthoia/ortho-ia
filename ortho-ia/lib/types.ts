@@ -121,6 +121,7 @@ export const TESTS_OPTIONS = [
   'N-EEL',
   'BILO',
   'BELEC',
+  'BETL',
   'Examath',
   'OMF / Déglutition',
   'Autre'
