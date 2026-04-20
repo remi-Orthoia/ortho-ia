@@ -10,6 +10,10 @@ import SessionTimer from '@/components/SessionTimer'
 import StepProgress from '@/components/StepProgress'
 import GenerationLoader from '@/components/GenerationLoader'
 import Tooltip from '@/components/Tooltip'
+import ConfettiBurst from '@/components/ConfettiBurst'
+import CRBOStructuredPreview from '@/components/CRBOStructuredPreview'
+import ShareCRBOButton from '@/components/ShareCRBOButton'
+import { playSuccessSound } from '@/lib/success-sound'
 import { 
   ChevronRight, 
   ChevronLeft, 
@@ -74,6 +78,8 @@ function NouveauCRBOContent() {
   const [generatedCRBO, setGeneratedCRBO] = useState('')
   const [generatedStructure, setGeneratedStructure] = useState<CRBOStructure | null>(null)
   const [showResult, setShowResult] = useState(false)
+  const [confettiTrigger, setConfettiTrigger] = useState(0)
+  const [savedCrboId, setSavedCrboId] = useState<string | null>(null)
   const [lastSavedAt, setLastSavedAt] = useState<number | null>(null)
   const [nowTick, setNowTick] = useState(0)
   const [importingAnamnese, setImportingAnamnese] = useState(false)
@@ -442,6 +448,9 @@ function NouveauCRBOContent() {
       setGeneratedCRBO(data.crbo)
       setGeneratedStructure(data.structure ?? null)
       setShowResult(true)
+      // 🎉 Moment de satisfaction
+      setConfettiTrigger(c => c + 1)
+      playSuccessSound()
       try {
         localStorage.removeItem(DRAFT_KEY)
         // Purge le chronomètre de séance (évite recyclage sur le prochain CRBO)
@@ -492,6 +501,7 @@ function NouveauCRBOContent() {
         setError('Le CRBO a été généré mais n\'a pas pu être sauvegardé. Copiez-le maintenant et contactez le support.')
         return
       }
+      setSavedCrboId(inserted.id)
 
       // Le compteur n'est incrémenté que si l'insertion a réussi
       const { error: rpcError } = await supabase.rpc('increment_crbo_count', { user_id: user.id })
@@ -523,36 +533,57 @@ function NouveauCRBOContent() {
   // Afficher le résultat
   if (showResult) {
     return (
-      <div className="max-w-4xl mx-auto space-y-6">
-        <div className="bg-green-50 border border-green-200 rounded-xl p-6">
-          <div className="flex items-center gap-3 mb-4">
-            <CheckCircle className="text-green-600" size={24} />
-            <h2 className="text-xl font-semibold text-green-800">CRBO généré avec succès !</h2>
+      <>
+        <ConfettiBurst trigger={confettiTrigger} />
+        <div className="max-w-4xl mx-auto space-y-6 animate-fade-in">
+          {/* Bandeau succès */}
+          <div className="bg-gradient-to-br from-primary-50 to-emerald-50 dark:from-primary-900/20 dark:to-emerald-900/20 border border-primary-200 dark:border-primary-800/40 rounded-2xl p-6">
+            <div className="flex items-center gap-3 mb-2">
+              <div className="w-10 h-10 rounded-full bg-primary-600 text-white flex items-center justify-center shadow-lg animate-check-bounce">
+                <CheckCircle size={22} />
+              </div>
+              <div>
+                <h2 className="text-xl font-bold text-primary-900 dark:text-primary-200">
+                  CRBO généré avec succès !
+                </h2>
+                <p className="text-sm text-primary-700 dark:text-primary-300">
+                  Relisez le brouillon ci-dessous, ajustez si besoin, puis téléchargez le Word final.
+                </p>
+              </div>
+            </div>
           </div>
-          <p className="text-green-700">
-            Votre compte rendu a été généré. Vous pouvez le relire, le modifier si nécessaire, puis le télécharger.
-          </p>
-        </div>
 
-        <div className="bg-white rounded-xl border border-gray-200 overflow-hidden">
-          <div className="px-6 py-4 border-b border-gray-200 flex items-center justify-between">
-            <h3 className="font-semibold text-gray-900">Aperçu du CRBO</h3>
-            <button
-              onClick={handleDownloadWord}
-              className="flex items-center gap-2 px-4 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700 transition text-sm font-medium"
-            >
-              <Download size={18} />
-              Télécharger en Word
-            </button>
-          </div>
-          <div className="p-6">
-            <textarea
-              value={generatedCRBO}
-              onChange={(e) => setGeneratedCRBO(e.target.value)}
-              className="w-full h-[600px] p-4 border border-gray-200 rounded-lg font-mono text-sm resize-none focus:outline-none focus:ring-2 focus:ring-green-500"
-            />
-          </div>
-        </div>
+          {/* Prévisualisation structurée */}
+          {generatedStructure ? (
+            <>
+              <ShareCRBOButton crboId={savedCrboId} />
+              <CRBOStructuredPreview
+                structure={generatedStructure}
+                onDownload={handleDownloadWord}
+                onEdit={() => {
+                  // Toggle vers textarea brut — l'ortho peut éditer si besoin
+                  setGeneratedStructure(null)
+                }}
+              />
+            </>
+          ) : (
+            <div className="card-lifted overflow-hidden">
+              <div className="px-6 py-4 border-b border-gray-200 dark:border-surface-dark-muted flex items-center justify-between">
+                <h3 className="font-semibold text-gray-900 dark:text-gray-100">Texte éditable du CRBO</h3>
+                <button onClick={handleDownloadWord} className="btn-primary">
+                  <Download size={16} />
+                  Télécharger en Word
+                </button>
+              </div>
+              <div className="p-6">
+                <textarea
+                  value={generatedCRBO}
+                  onChange={(e) => setGeneratedCRBO(e.target.value)}
+                  className="textarea-modern w-full h-[600px] font-mono text-sm"
+                />
+              </div>
+            </div>
+          )}
 
         <div className="flex gap-4">
           <button
@@ -584,12 +615,13 @@ function NouveauCRBOContent() {
           </button>
           <button
             onClick={() => router.push('/dashboard/historique')}
-            className="flex-1 py-3 bg-gray-900 text-white rounded-lg font-medium hover:bg-gray-800 transition"
+            className="flex-1 py-3 bg-gray-900 dark:bg-surface-dark-muted text-white rounded-lg font-medium hover:bg-gray-800 dark:hover:bg-surface-dark transition"
           >
-            Voir l'historique
+            Voir l&apos;historique
           </button>
         </div>
-      </div>
+        </div>
+      </>
     )
   }
 

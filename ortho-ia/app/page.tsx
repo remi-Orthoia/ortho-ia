@@ -14,6 +14,7 @@ import {
 } from 'lucide-react'
 import InfographieB from '@/components/InfographieB'
 import FAQ from '@/components/FAQ'
+import LandingStats from '@/components/LandingStats'
 
 export default function HomePage() {
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false)
@@ -122,6 +123,9 @@ export default function HomePage() {
           <p className="mt-12 text-center text-3xl sm:text-4xl lg:text-5xl font-bold leading-tight">
             <span className="gradient-text">Maudire vos CRBO, c&apos;est du passé !</span>
           </p>
+
+          {/* Stats publiques animées */}
+          <LandingStats />
         </div>
       </section>
 
