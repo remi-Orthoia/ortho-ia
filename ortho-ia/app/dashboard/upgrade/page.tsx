@@ -54,7 +54,7 @@ export default function UpgradePage() {
             <span className={`text-[10px] font-bold px-2 py-0.5 rounded-full ${
               billingAnnual ? 'bg-white text-green-700' : 'bg-green-100 text-green-700'
             }`}>
-              -33%
+              -25%
             </span>
           </button>
         </div>
@@ -68,13 +68,13 @@ export default function UpgradePage() {
 
           <div className="mt-6">
             <span className="text-5xl font-bold">
-              {billingAnnual ? '9,92€' : '14,90€'}
+              {billingAnnual ? '14,90€' : '19,90€'}
             </span>
             <span className="text-green-100 ml-2">/mois</span>
           </div>
           <p className="mt-2 text-sm text-green-100">
             {billingAnnual
-              ? 'Facturé 119€/an · économisez 59,80€'
+              ? 'Facturé 178,80€/an · économisez 60€'
               : 'Sans engagement · résiliable à tout moment'}
           </p>
 

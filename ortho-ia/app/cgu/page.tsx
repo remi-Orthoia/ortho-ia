@@ -83,8 +83,8 @@ export default function CGUPage() {
             engagement.
           </p>
           <p>
-            L&apos;abonnement Pro est proposé à 14,90 €/mois (facturation mensuelle sans engagement) ou
-            119 €/an (facturation annuelle à l&apos;avance). Les prix sont indiqués TTC.
+            L&apos;abonnement Pro est proposé à 19,90 €/mois (facturation mensuelle sans engagement) ou
+            14,90 €/mois en facturation annuelle (178,80 €/an prélevés à l&apos;avance, soit une économie de 60 €). Les prix sont indiqués TTC.
           </p>
           <p>
             L&apos;abonnement mensuel est résiliable à tout moment depuis l&apos;espace client. La

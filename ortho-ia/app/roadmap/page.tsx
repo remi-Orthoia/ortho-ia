@@ -28,7 +28,7 @@ const ROADMAP: Array<{
   {
     quarter: 'Q3 2026 — Sortie publique',
     items: [
-      { title: 'Intégration Stripe (paiement)', status: 'in_progress', details: 'Abonnement 14,90€/mois ou 119€/an. 3 mois offerts beta.' },
+      { title: 'Intégration Stripe (paiement)', status: 'in_progress', details: 'Abonnement 19,90€/mois ou 14,90€/mois en annuel (178,80€/an). 3 mois offerts beta.' },
       { title: 'Webhook factures automatiques', status: 'planned' },
       { title: 'Hébergement HDS (Scaleway / Clever Cloud)', status: 'planned', details: 'Migration avant ouverture publique large' },
       { title: 'Parrainage beta → public', status: 'planned', details: 'Codes parrain, 1 mois offert pour l\'invité et le parrain' },
