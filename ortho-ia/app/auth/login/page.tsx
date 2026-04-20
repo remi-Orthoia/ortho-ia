@@ -1,13 +1,15 @@
 'use client'
 
-import { useState } from 'react'
+import { useState, Suspense } from 'react'
 import Link from 'next/link'
-import { useRouter } from 'next/navigation'
+import { useRouter, useSearchParams } from 'next/navigation'
 import { createClient } from '@/lib/supabase'
 import { Eye, EyeOff, Loader2 } from 'lucide-react'
 
-export default function LoginPage() {
+function LoginForm() {
   const router = useRouter()
+  const searchParams = useSearchParams()
+  const redirectTo = searchParams.get('redirect') || '/dashboard'
   const [email, setEmail] = useState('')
   const [password, setPassword] = useState('')
   const [showPassword, setShowPassword] = useState(false)
@@ -35,7 +37,7 @@ export default function LoginPage() {
         return
       }
 
-      router.push('/dashboard')
+      router.push(redirectTo)
       router.refresh()
     } catch (err) {
       setError('Une erreur est survenue. Veuillez réessayer.')
@@ -163,5 +165,19 @@ export default function LoginPage() {
         </div>
       </div>
     </div>
+  )
+}
+
+export default function LoginPage() {
+  return (
+    <Suspense
+      fallback={
+        <div className="min-h-screen flex items-center justify-center">
+          <Loader2 className="animate-spin h-8 w-8 text-green-600" />
+        </div>
+      }
+    >
+      <LoginForm />
+    </Suspense>
   )
 }
