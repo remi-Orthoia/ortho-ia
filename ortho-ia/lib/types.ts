@@ -115,6 +115,7 @@ export const TESTS_OPTIONS = [
   'BILO',
   'BELEC',
   'Examath',
+  'OMF / Déglutition',
   'Autre'
 ] as const
 
