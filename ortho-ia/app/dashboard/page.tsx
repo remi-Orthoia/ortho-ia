@@ -29,6 +29,14 @@ interface CRBO {
   bilan_type: string
   statut: CRBOStatus
   created_at: string
+  severite_globale?: 'Léger' | 'Modéré' | 'Sévère' | null
+}
+
+/** Couleurs de badge sévérité pour les cartes Kanban. */
+const SEVERITE_BADGE: Record<string, { bg: string; text: string; dot: string }> = {
+  'Léger':   { bg: 'bg-green-50 border-green-200', text: 'text-green-800', dot: 'bg-green-500' },
+  'Modéré':  { bg: 'bg-amber-50 border-amber-200', text: 'text-amber-800', dot: 'bg-amber-500' },
+  'Sévère':  { bg: 'bg-red-50 border-red-200',     text: 'text-red-800',   dot: 'bg-red-500' },
 }
 
 interface KanbanColumn {
@@ -314,15 +322,21 @@ export default function DashboardPage() {
                     </div>
                   </div>
 
-                  {/* Badge type */}
-                  <div className="mt-2">
+                  {/* Badges type + sévérité */}
+                  <div className="mt-2 flex items-center gap-1.5 flex-wrap">
                     <span className={`inline-block px-2 py-0.5 rounded text-xs font-medium ${
-                      crbo.bilan_type === 'initial' 
-                        ? 'bg-blue-100 text-blue-700' 
+                      crbo.bilan_type === 'initial'
+                        ? 'bg-blue-100 text-blue-700'
                         : 'bg-purple-100 text-purple-700'
                     }`}>
                       {crbo.bilan_type === 'initial' ? 'Initial' : 'Renouvellement'}
                     </span>
+                    {crbo.severite_globale && SEVERITE_BADGE[crbo.severite_globale] && (
+                      <span className={`inline-flex items-center gap-1 px-2 py-0.5 rounded border text-xs font-medium ${SEVERITE_BADGE[crbo.severite_globale].bg} ${SEVERITE_BADGE[crbo.severite_globale].text}`}>
+                        <span className={`w-1.5 h-1.5 rounded-full ${SEVERITE_BADGE[crbo.severite_globale].dot}`} />
+                        {crbo.severite_globale}
+                      </span>
+                    )}
                   </div>
                 </div>
               ))}
