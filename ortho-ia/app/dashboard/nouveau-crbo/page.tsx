@@ -474,6 +474,8 @@ function NouveauCRBOContent() {
         formData,
         structure: generatedStructure,
         fallbackCRBO: generatedCRBO,
+        previousStructure: formData.bilan_precedent_structure ?? null,
+        previousBilanDate: formData.bilan_precedent_date,
       })
     } catch (err) {
       console.error('Erreur export Word:', err)

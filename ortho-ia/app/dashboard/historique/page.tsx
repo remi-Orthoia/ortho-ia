@@ -54,6 +54,21 @@ export default function HistoriquePage() {
   const handleDownload = async (crbo: any) => {
     try {
       const { downloadCRBOWord } = await import('@/lib/word-export')
+      // Si c'est un renouvellement avec un bilan précédent lié, on charge sa structure
+      let previousStructure = null
+      let previousBilanDate: string | undefined
+      if (crbo.bilan_precedent_id) {
+        const supabase = createClient()
+        const { data: prev } = await supabase
+          .from('crbos')
+          .select('structure_json, bilan_date')
+          .eq('id', crbo.bilan_precedent_id)
+          .maybeSingle()
+        if (prev) {
+          previousStructure = prev.structure_json
+          previousBilanDate = prev.bilan_date
+        }
+      }
       // Les infos ortho (nom, adresse, tel, email) ne sont pas persistées dans
       // les CRBO — on les récupère du profil courant au moment du download.
       await downloadCRBOWord({
@@ -78,6 +93,8 @@ export default function HistoriquePage() {
         },
         structure: crbo.structure_json ?? null,
         fallbackCRBO: crbo.crbo_genere || '',
+        previousStructure,
+        previousBilanDate,
       })
     } catch (err) {
       console.error('Erreur export Word historique:', err)

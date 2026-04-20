@@ -64,6 +64,10 @@ export interface WordExportPayload {
   }
   structure?: CRBOStructure | null
   fallbackCRBO?: string
+  /** Structure du bilan précédent (renouvellement) — pour tableau comparatif Word. */
+  previousStructure?: CRBOStructure | null
+  /** Date du bilan précédent (ISO) pour affichage. */
+  previousBilanDate?: string
 }
 
 // --------------------- Générateur principal ---------------------
@@ -80,8 +84,16 @@ export async function generateCRBOWord(payload: WordExportPayload): Promise<Blob
   const FONT_SIZE_SECTION = 26
   const COLOR_GREEN = '2E7D32'
 
-  const { formData, structure, fallbackCRBO = '' } = payload
+  const { formData, structure, fallbackCRBO = '', previousStructure, previousBilanDate } = payload
   const hasStructure = !!structure && !!structure.domains && structure.domains.length > 0
+  const hasPrevious = !!previousStructure && !!previousStructure.domains && previousStructure.domains.length > 0
+
+  // Couleur du badge sévérité
+  const severiteColors: Record<string, { bg: string; fg: string }> = {
+    'Léger':   { bg: 'C8E6C9', fg: '1B5E20' },
+    'Modéré':  { bg: 'FFE082', fg: 'E65100' },
+    'Sévère':  { bg: 'EF9A9A', fg: '8B0000' },
+  }
 
   // ============ Helpers ============
 
@@ -282,6 +294,99 @@ export async function generateCRBOWord(payload: WordExportPayload): Promise<Blob
     new Paragraph({ children: [new TextRun({ text: `• ${testsText}`, size: FONT_SIZE_NORMAL, font: FONT })], spacing: { after: 200 } }),
   )
 
+  // ===== BADGE SÉVÉRITÉ GLOBALE =====
+  if (hasStructure && structure!.severite_globale) {
+    const sev = structure!.severite_globale
+    const colors = severiteColors[sev] ?? { bg: 'E0E0E0', fg: '212121' }
+    children.push(
+      new Paragraph({
+        spacing: { before: 200, after: 100 },
+        alignment: AlignmentType.CENTER,
+        children: [new TextRun({
+          text: `  Sévérité globale du profil : ${sev}  `,
+          bold: true,
+          size: FONT_SIZE_NORMAL + 2,
+          font: FONT,
+          color: colors.fg,
+          shading: { type: ShadingType.CLEAR, fill: colors.bg, color: 'auto' },
+        } as any)],
+      }),
+    )
+  }
+
+  // ===== TABLEAU COMPARATIF (renouvellement) =====
+  if (hasStructure && hasPrevious) {
+    children.push(
+      new Paragraph({
+        children: [new TextRun({ text: '📊 Évolution depuis le dernier bilan', size: FONT_SIZE_NORMAL, font: FONT, color: COLOR_GREEN, bold: true })],
+        spacing: { before: 300, after: 100 },
+      }),
+    )
+    if (previousBilanDate) {
+      const prevDate = new Date(previousBilanDate).toLocaleDateString('fr-FR')
+      children.push(new Paragraph({
+        children: [new TextRun({ text: `Comparaison avec le bilan du ${prevDate}`, italics: true, size: FONT_SIZE_NORMAL - 2, font: FONT, color: '666666' })],
+        spacing: { after: 100 },
+      }))
+    }
+
+    // Construire le tableau : par épreuve commune
+    const compRows = [
+      new TableRow({ children: [
+        createCell('Domaine / Épreuve', { bold: true, width: 40, shading: 'E8F5E9' }),
+        createCell('Bilan précédent', { bold: true, width: 22, shading: 'E8F5E9', alignment: AlignmentType.CENTER }),
+        createCell('Bilan actuel', { bold: true, width: 22, shading: 'E8F5E9', alignment: AlignmentType.CENTER }),
+        createCell('Évolution', { bold: true, width: 16, shading: 'E8F5E9', alignment: AlignmentType.CENTER }),
+      ]}),
+    ]
+
+    // Index précédent par nom d'épreuve (insensible à la casse)
+    const prevIndex = new Map<string, { percentile: string; value: number }>()
+    for (const d of previousStructure!.domains) {
+      for (const e of d.epreuves) {
+        prevIndex.set(e.nom.toLowerCase().trim(), { percentile: e.percentile, value: e.percentile_value })
+      }
+    }
+
+    for (const d of structure!.domains) {
+      for (const e of d.epreuves) {
+        const prev = prevIndex.get(e.nom.toLowerCase().trim())
+        const prevLabel = prev ? prev.percentile : '—'
+        const curLabel = e.percentile
+        let arrow = '='
+        let arrowColor = '9E9E9E'
+        if (prev) {
+          const delta = e.percentile_value - prev.value
+          if (delta >= 10) { arrow = '↑ Progrès'; arrowColor = '1B5E20' }
+          else if (delta <= -10) { arrow = '↓ Régression'; arrowColor = 'C62828' }
+          else { arrow = '= Stable'; arrowColor = '616161' }
+        } else {
+          arrow = 'Nouvelle'
+          arrowColor = '1565C0'
+        }
+        compRows.push(new TableRow({ children: [
+          createCell(e.nom, { width: 40 }),
+          createCell(prevLabel, { width: 22, alignment: AlignmentType.CENTER }),
+          createCell(curLabel, { width: 22, alignment: AlignmentType.CENTER, shading: getPercentileColor(e.percentile_value) }),
+          new TableCell({
+            width: { size: 16, type: WidthType.PERCENTAGE },
+            children: [new Paragraph({
+              alignment: AlignmentType.CENTER,
+              children: [new TextRun({ text: arrow, bold: true, size: FONT_SIZE_NORMAL - 2, font: FONT, color: arrowColor })],
+            })],
+            borders: {
+              top:    { style: BorderStyle.SINGLE, size: 1, color: 'BFBFBF' },
+              bottom: { style: BorderStyle.SINGLE, size: 1, color: 'BFBFBF' },
+              left:   { style: BorderStyle.SINGLE, size: 1, color: 'BFBFBF' },
+              right:  { style: BorderStyle.SINGLE, size: 1, color: 'BFBFBF' },
+            },
+          }),
+        ]}))
+      }
+    }
+    children.push(new Table({ width: { size: 100, type: WidthType.PERCENTAGE }, rows: compRows }), new Paragraph({ children: [] }))
+  }
+
   // ===== SYNTHÈSE VISUELLE PAGE 1 =====
   if (hasStructure) {
     const recapBars = structure!.domains.map((d) => {
@@ -419,7 +524,76 @@ export async function generateCRBOWord(payload: WordExportPayload): Promise<Blob
       })
     }
     pushBlock('Diagnostic orthophonique', s.diagnostic)
+
+    // Comorbidités détectées
+    if (s.comorbidites_detectees && s.comorbidites_detectees.length > 0) {
+      children.push(new Paragraph({
+        children: [new TextRun({ text: 'Comorbidités / profils associés suspectés', bold: true, size: FONT_SIZE_NORMAL, font: FONT, color: 'E65100' })],
+        spacing: { before: 240, after: 80 },
+      }))
+      for (const c of s.comorbidites_detectees) {
+        children.push(new Paragraph({
+          children: [new TextRun({ text: `• ${c}`, size: FONT_SIZE_NORMAL, font: FONT })],
+          spacing: { after: 60 },
+        }))
+      }
+    }
+
+    // Synthèse d'évolution (renouvellement)
+    if (s.synthese_evolution) {
+      children.push(new Paragraph({
+        children: [new TextRun({ text: "Synthèse d'évolution", bold: true, size: FONT_SIZE_NORMAL, font: FONT, color: '6A1B9A' })],
+        spacing: { before: 240, after: 80 },
+      }))
+      s.synthese_evolution.resume.split('\n').forEach((line: string) => {
+        const t = line.trim()
+        if (t) children.push(new Paragraph({ children: [new TextRun({ text: t, size: FONT_SIZE_NORMAL, font: FONT })], spacing: { after: 60 } }))
+      })
+      if (s.synthese_evolution.domaines_progres?.length) {
+        children.push(new Paragraph({
+          children: [
+            new TextRun({ text: 'Progrès : ', bold: true, size: FONT_SIZE_NORMAL, font: FONT, color: '1B5E20' }),
+            new TextRun({ text: s.synthese_evolution.domaines_progres.join(', '), size: FONT_SIZE_NORMAL, font: FONT }),
+          ],
+          spacing: { after: 40 },
+        }))
+      }
+      if (s.synthese_evolution.domaines_stagnation?.length) {
+        children.push(new Paragraph({
+          children: [
+            new TextRun({ text: 'Stagnation : ', bold: true, size: FONT_SIZE_NORMAL, font: FONT, color: '616161' }),
+            new TextRun({ text: s.synthese_evolution.domaines_stagnation.join(', '), size: FONT_SIZE_NORMAL, font: FONT }),
+          ],
+          spacing: { after: 40 },
+        }))
+      }
+      if (s.synthese_evolution.domaines_regression?.length) {
+        children.push(new Paragraph({
+          children: [
+            new TextRun({ text: 'Régression : ', bold: true, size: FONT_SIZE_NORMAL, font: FONT, color: 'C62828' }),
+            new TextRun({ text: s.synthese_evolution.domaines_regression.join(', '), size: FONT_SIZE_NORMAL, font: FONT }),
+          ],
+          spacing: { after: 40 },
+        }))
+      }
+    }
+
     pushBlock('Recommandations', s.recommandations)
+
+    // PAP suggestions
+    if (s.pap_suggestions && s.pap_suggestions.length > 0) {
+      children.push(new Paragraph({
+        children: [new TextRun({ text: 'Aménagements scolaires proposés (PAP)', bold: true, size: FONT_SIZE_NORMAL, font: FONT, color: '1565C0' })],
+        spacing: { before: 240, after: 80 },
+      }))
+      for (const p of s.pap_suggestions) {
+        children.push(new Paragraph({
+          children: [new TextRun({ text: `✓ ${p}`, size: FONT_SIZE_NORMAL, font: FONT })],
+          spacing: { after: 60 },
+        }))
+      }
+    }
+
     pushBlock('Conclusion', s.conclusion)
   } else {
     fallbackCRBO.split('\n').forEach((line) => {
@@ -456,6 +630,28 @@ export async function generateCRBOWord(payload: WordExportPayload): Promise<Blob
       children: [new TextRun({ text: 'Orthophoniste', size: FONT_SIZE_NORMAL, font: FONT, italics: true })],
     }),
   )
+
+  // ===== GLOSSAIRE (si présent) =====
+  if (hasStructure && structure!.glossaire && structure!.glossaire.length > 0) {
+    children.push(new Paragraph({ children: [new PageBreak()] }))
+    children.push(createSectionTitle('GLOSSAIRE'))
+    children.push(new Paragraph({
+      children: [new TextRun({
+        text: 'Définition des termes techniques employés dans ce compte rendu, à destination des parents et des professionnels non spécialistes.',
+        italics: true, size: FONT_SIZE_NORMAL - 2, font: FONT, color: '666666',
+      })],
+      spacing: { after: 200 },
+    }))
+    for (const g of structure!.glossaire) {
+      children.push(new Paragraph({
+        spacing: { after: 120 },
+        children: [
+          new TextRun({ text: `${g.terme} — `, bold: true, size: FONT_SIZE_NORMAL, font: FONT, color: COLOR_GREEN }),
+          new TextRun({ text: g.definition, size: FONT_SIZE_NORMAL, font: FONT }),
+        ],
+      }))
+    }
+  }
 
   const doc = new Document({
     sections: [{
