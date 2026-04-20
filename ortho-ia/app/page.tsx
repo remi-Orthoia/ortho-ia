@@ -20,8 +20,12 @@ export default function HomePage() {
 
   return (
     <div className="min-h-screen bg-white">
+      {/* Bandeau Beta */}
+      <div className="fixed top-0 left-0 right-0 z-[60] bg-gradient-to-r from-green-600 to-emerald-600 text-white text-center text-sm font-medium py-2 px-4">
+        ✨ Beta en cours — <span className="font-bold">3 mois offerts</span> pour les premiers orthophonistes inscrits
+      </div>
       {/* Navigation */}
-      <nav className="fixed top-0 left-0 right-0 bg-white/95 backdrop-blur-sm z-50 border-b border-gray-100">
+      <nav className="fixed top-[36px] left-0 right-0 bg-white/95 backdrop-blur-sm z-50 border-b border-gray-100">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="flex justify-between items-center h-16">
             {/* Logo */}
@@ -76,7 +80,7 @@ export default function HomePage() {
       </nav>
 
       {/* Hero Section */}
-      <section className="pt-32 pb-20 px-4 sm:px-6 lg:px-8">
+      <section className="pt-40 pb-20 px-4 sm:px-6 lg:px-8">
         <div className="max-w-7xl mx-auto">
           <div className="text-center max-w-4xl mx-auto">
             <h1 className="text-4xl sm:text-5xl lg:text-6xl font-bold text-gray-900 leading-tight">
@@ -103,7 +107,7 @@ export default function HomePage() {
               </a>
             </div>
             <p className="mt-4 text-sm text-gray-500">
-              ✓ 3 CRBO gratuits pour tester &nbsp;&nbsp; ✓ Sans engagement &nbsp;&nbsp; ✓ Sans carte bancaire
+              ✓ 3 mois gratuits en Beta &nbsp;&nbsp; ✓ Sans engagement &nbsp;&nbsp; ✓ Sans carte bancaire
             </p>
           </div>
 
@@ -286,8 +290,8 @@ export default function HomePage() {
 
             {/* Pro */}
             <div className="bg-green-600 rounded-2xl p-8 shadow-lg relative overflow-hidden">
-              <div className="absolute top-4 right-4 bg-white/20 text-white text-xs font-semibold px-3 py-1 rounded-full">
-                Populaire
+              <div className="absolute top-4 right-4 bg-yellow-400 text-gray-900 text-xs font-bold px-3 py-1 rounded-full">
+                ✨ 3 mois offerts (Beta)
               </div>
               <h3 className="text-xl font-semibold text-white">Pro</h3>
               <p className="text-green-100 mt-2">Pour les orthophonistes en activité</p>
