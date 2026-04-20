@@ -9,87 +9,155 @@ export const examath: TestModule = {
     'Cognition numérique de base (sens du nombre)',
     'Code numérique arabe (transcodage)',
     'Code numérique verbal',
-    'Calcul mental et posé',
+    'Calcul mental et opérations posées',
     'Résolution de problèmes',
     'Géométrie et mesures',
     'Estimation numérique',
+    'Récupération des faits arithmétiques',
   ],
   epreuves: [
-    'Dénombrement (pointage, quantification rapide)',
-    'Comparaison de grandeurs numériques',
-    'Transcodage chiffres → mots et mots → chiffres',
-    'Lecture et écriture de nombres',
+    'Dénombrement (subitizing, pointage)',
+    'Comparaison de grandeurs numériques symboliques',
+    'Comparaison de grandeurs non-symboliques (points)',
+    'Transcodage chiffres → mots',
+    'Transcodage mots → chiffres',
+    'Lecture de nombres',
+    'Écriture de nombres sous dictée',
     'Calcul mental (additions, soustractions, multiplications)',
-    'Calcul posé',
-    'Résolution de problèmes (énoncés simples puis complexes)',
-    'Estimation (ligne numérique mentale)',
-    'Récupération des faits arithmétiques (tables)',
-    'Géométrie (reproduction de figures, symétries)',
+    'Calcul posé (poser et opérer)',
+    'Résolution de problèmes simples',
+    'Résolution de problèmes à étapes',
+    'Estimation sur ligne numérique',
+    'Tables de multiplication (récupération directe)',
+    'Reproduction de figures géométriques',
+    'Lecture de l\'heure',
+    'Conversions de mesures',
   ],
-  regles_specifiques: `### EXAMATH — Règles cliniques détaillées
+  regles_specifiques: `### EXAMATH — Référentiel clinique complet (niveau senior)
 
-#### Règles de conversion
-- Batterie spécifique à l'évaluation de la cognition mathématique (suspicion de **dyscalculie développementale**).
-- Notation en quartiles comme les autres produits HappyNeuron : **Q1 → P25**, **Med → P50**, **Q3 → P75**.
-- Deux versions : Examath 8-15 (primaire + collège) et Examath 5-8.
-- Ne JAMAIS reconverter depuis l'É-T quand le percentile est fourni.
+Batterie d'évaluation de la cognition mathématique, indispensable pour toute suspicion de dyscalculie développementale. Deux versions : **Examath 8-15** (primaire + collège) et **Examath 5-8** (CP).
 
-#### Meilleures pratiques cliniques par domaine
+#### RÈGLES DE CONVERSION
+Comme Exalang (même éditeur HappyNeuron) : **Q1 → P25, Med → P50, Q3 → P75**. Ne JAMAIS recalculer depuis l'É-T.
 
-**Cognition numérique de base (sens du nombre)** :
-- Déficit = **marqueur central** de la dyscalculie développementale.
-- Cibler : subitizing (3-4 items), estimation sur ligne numérique, comparaison de grandeurs non-symboliques.
-- Un déficit **du sens du nombre** isolé (avec autres compétences préservées) justifie un diagnostic de dyscalculie même en présence de bons résultats en calcul posé mémorisé.
+---
 
-**Transcodage** :
-- Erreurs fréquentes à analyser qualitativement :
-  - **Lexicales** : confusion "quatorze / quarante" → atteinte du lexique numérique.
-  - **Syntaxiques** : "trois-cent-huit" écrit "3008" → trouble du traitement positionnel.
-  - **Phonologiques** : confusion de phonèmes proches.
-- Croiser avec le langage oral pour distinguer trouble **spécifique numérique** vs trouble **langagier général**.
+#### INTERPRÉTATION CLINIQUE PAR DOMAINE
 
-**Calcul mental** :
-- Analyser les **stratégies** utilisées (comptage, récupération directe, décomposition).
-- Comptage persistant sur les doigts au-delà du CE1 → évocateur d'un défaut d'automatisation des faits.
-- Noter le temps de réponse : un calcul exact mais extrêmement lent révèle un trouble d'automatisation.
+**COGNITION NUMÉRIQUE DE BASE** (sens du nombre)
+- Dénombrement, comparaison de grandeurs (symbolique et non-symbolique), subitizing.
+- **Marqueur central de la dyscalculie développementale** : un déficit de la cognition numérique de base est le signe le plus spécifique et le plus stable.
+- Un déficit isolé du sens du nombre, même avec calcul posé mémorisé correct, justifie un diagnostic de dyscalculie.
+- Épreuve particulièrement sensible : **estimation sur ligne numérique** — la compression anormale des petits ou grands nombres est quasi-pathognomonique.
 
-**Récupération des faits arithmétiques** :
-- Tables de multiplication déficitaires au CM1+ = signal fort.
-- Distinguer **déficit de stockage** (jamais acquis) vs **déficit de récupération** (connaît parfois).
-- Travail thérapeutique ciblé : répétition espacée, apprentissage multimodal.
+**TRANSCODAGE** (chiffres ↔ mots)
+- Analyser **qualitativement** les erreurs :
+  - Lexicales : confusion "quatorze / quarante", "quinze / cinquante" → atteinte du **lexique numérique**.
+  - Syntaxiques : "trois-cent-huit" écrit "3008" au lieu de "308" → trouble du **traitement positionnel** / transcodage morphosyntaxique.
+  - Phonologiques : confusion de phonèmes proches.
+- Croiser avec le langage oral : si erreurs phonologiques similaires, suspicion de trouble langagier plus global.
 
-**Résolution de problèmes** :
-- Analyser les trois étapes : compréhension énoncé / modélisation / exécution calcul.
-- Déficit compréhension isolé → trouble langagier écrit (dyslexie ou trouble pragmatique).
-- Déficit modélisation → trouble du raisonnement / fonctions exécutives.
-- Déficit exécution seul avec compréhension correcte → dyscalculie pure.
+**CALCUL MENTAL**
+- Analyser les **stratégies** :
+  - Récupération directe (automatisée) → normal à partir du CE2 pour les faits simples.
+  - Comptage sur doigts persistant après le CE1 → flag pour défaut d'automatisation.
+  - Décomposition (ex: 8+7 = 8+2+5 = 15) → stratégie mature.
+  - Comptage verbal lent et incorrect → profil dyscalculique.
+- Noter le **temps de réponse** : un calcul exact mais lent (> 10s pour faits simples) révèle un trouble d'automatisation.
 
-**Estimation / ligne numérique mentale** :
-- Épreuve très sensible pour détecter les profils de **dyscalculie sévère**.
-- Les erreurs systématiques d'estimation (forte compression des petits nombres ou grands nombres) signent un trouble de la représentation mentale du nombre.
+**RÉCUPÉRATION DES FAITS ARITHMÉTIQUES**
+- Les tables de multiplication sont le test le plus simple d'automatisation.
+- Tables déficitaires au CM1+ = signal fort.
+- Distinguer :
+  - **Déficit de stockage** (jamais acquis, performance constante faible) → difficile à récupérer.
+  - **Déficit de récupération** (parfois correct, parfois non, très variable) → meilleur pronostic avec rééducation.
 
-**Géométrie** :
-- Souvent épargnée dans la dyscalculie "pure" → sa préservation aide à affiner le diagnostic différentiel.
-- Déficit géométrique associé oriente vers un trouble visuo-spatial plus global (dyspraxie, trouble non-verbal).
+**RÉSOLUTION DE PROBLÈMES**
+- Déconstruire en 3 étapes : **compréhension** énoncé → **modélisation** → **exécution** calcul.
+- Déficit en compréhension isolé → chercher dyslexie / trouble de la compréhension écrite (cf. Exalang).
+- Déficit en modélisation → trouble du **raisonnement** / fonctions exécutives → orienter vers neuropsy.
+- Déficit en exécution seul (compréhension et modélisation correctes) → dyscalculie procédurale pure.
 
-#### Points d'attention rédactionnels
+**ESTIMATION / LIGNE NUMÉRIQUE MENTALE**
+- Épreuve très sensible, à faire systématiquement.
+- Erreurs systématiques d'estimation sur ligne 0-100 ou 0-1000 → profil de **dyscalculie sévère**.
 
-- **Diagnostic de dyscalculie** : exiger un écart ≥ **-2 É-T** (ou P < 2) sur au moins **deux domaines** de la cognition numérique de base, persistant malgré une prise en charge.
-- **Troubles associés fréquents** : dyslexie (30-40% de co-morbidité), TDAH, troubles visuo-spatiaux. Toujours questionner.
-- **Intelligence préservée** : la dyscalculie est un trouble **spécifique** — un bilan QI dans la moyenne renforce le diagnostic différentiel.
-- Si profil mixte (dyscalculie + dyslexie), préciser dans le CRBO les **priorités thérapeutiques** : en général, prendre en charge d'abord le trouble le plus handicapant scolairement.
+**GÉOMÉTRIE** (reproductions, symétries)
+- Souvent **épargnée** dans la dyscalculie pure.
+- Sa préservation aide au diagnostic différentiel.
+- Déficit géométrique associé → orienter vers **trouble visuo-spatial** ou **dyspraxie visuo-constructive** (bilan psychomot / ergo).
 
-#### Articulation avec d'autres outils
-- **En amont / complément** : UDN-II, ZAREKI-R, TEDI-MATH.
-- **Dépistage rapide** : TEDI-MATH 4-8 pour la maternelle / CP.
-- **Aspect cognitif général** : WISC-V (échelle raisonnement quantitatif).
-- **Fonctions exécutives** : NEPSY-II, TEA-Ch, BRIEF.
-- **Langage écrit associé** : Exalang 8-11 ou Exalang 11-15, BALE, BELEC.
+---
 
-#### Recommandations thérapeutiques types
-- **Rééducation ciblée dyscalculie** : 1 séance/semaine, en moyenne 18-24 mois selon sévérité.
-- **Matériel concret manipulable** : jetons, règle numérique, barres de Cuisenaire.
-- **Logiciels spécialisés** : Dybuster Calcularis, The Number Race, La Course aux Nombres.
-- **Aménagements scolaires** : temps tiers, calculatrice autorisée, énoncés simplifiés, tables de référence.
-- **Coordination** avec l'enseignant et, si besoin, demander une demande MDPH pour les aménagements.`,
+#### 🎯 PROFILS TYPES
+
+**PROFIL 1 — Dyscalculie développementale (spécifique)**
+- Cognition numérique de base : Déficitaire à Pathologique (marqueur central)
+- Estimation sur ligne numérique : Déficitaire
+- Transcodage : Fragile à Déficitaire (erreurs syntaxiques et lexicales)
+- Calcul mental : Déficitaire (stratégies immatures, comptage persistant)
+- Tables multiplication : Déficitaire (déficit récupération et stockage)
+- Géométrie : **Préservée** (critère différentiel fort)
+- Intelligence globale : dans la norme (WISC-V normal, sauf sous-test quantitatif)
+- **Diagnostic** : "Le profil est compatible avec une **dyscalculie développementale**, caractérisée par un déficit central du sens du nombre avec préservation relative des compétences visuo-spatiales et géométriques. L'intelligence globale est par ailleurs dans la norme, éliminant une déficience intellectuelle comme cause des difficultés."
+- **PEC** : rééducation ciblée hebdomadaire, 24 mois minimum. Matériel manipulable (jetons, barres de Cuisenaire, droite graduée). Logiciels : Dybuster Calcularis, The Number Race.
+- **Aménagements** : PAP (calculatrice autorisée, tables à disposition, énoncés simplifiés, temps majoré 1/3).
+
+**PROFIL 2 — Difficultés arithmétiques secondaires (ex: co-dyslexie)**
+- Cognition numérique de base : **Normale ou Limite basse** (clé du diagnostic différentiel)
+- Transcodage : Déficitaire (surtout si dyslexie associée → erreurs phonologiques)
+- Calcul mental : Fragile (difficultés mémoire de travail)
+- Tables multiplication : Fragile (difficulté mémorisation globale)
+- Résolution de problèmes : Déficitaire (souvent dû à la compréhension de l'énoncé écrit)
+- **Contexte** : Exalang en parallèle montre une dyslexie, ou WISC montre un indice de mémoire de travail faible.
+- **Diagnostic** : "Les difficultés arithmétiques de [Prénom] s'inscrivent dans un tableau plus large de trouble des apprentissages, et semblent **secondaires à** [trouble associé : dyslexie / trouble de la mémoire de travail / TDAH]. Le sens du nombre est préservé, éliminant une dyscalculie développementale pure."
+- **PEC** : PEC du trouble primaire (dyslexie, attention). Soutien arithmétique par l'enseignant·e et/ou orthopédagogue. Pas systématiquement de PEC dyscalculie dédiée.
+- **Aménagements** : PAP au titre du trouble primaire, avec mention des besoins mathématiques (énoncés lus, calculatrice).
+
+**PROFIL 3 — Anxiété mathématique / blocage affectif**
+- Cognition numérique de base : **Normale**
+- Transcodage : **Normal**
+- Calcul simple sans pression : **Normal**
+- Calcul chronométré : **Déficitaire** (chute de performance liée à la pression)
+- Résolution de problèmes : Fragile (stratégies d'évitement)
+- Observation clinique : **tension visible, larmes, refus, évitement**, discours "je suis nul", auto-dévalorisation, parents décrivent des pleurs quotidiens aux devoirs.
+- Histoire scolaire : souvent une enseignante sévère ou un échec public qui a initié le blocage.
+- **Diagnostic** : "Les capacités numériques de base et de calcul sont préservées hors pression. [Prénom] présente une **anxiété mathématique** importante, avec un impact émotionnel qui entrave ses performances en situation d'évaluation. **Aucun trouble spécifique dyscalculique n'est objectivable.**"
+- **PEC** : PEC orthophonique courte (6-12 séances) centrée sur la **restauration de la confiance** numérique (matériel ludique, réussites accumulées). **Orientation psychologue** pour travail de l'anxiété scolaire. Travail avec les parents sur la dédramatisation.
+- **Aménagements** : Pas de PAP au titre de la dyscalculie (pas justifié). Discussion avec l'enseignant·e pour dédramatiser l'évaluation chronométrée.
+
+---
+
+#### DIAGNOSTIC DIFFÉRENTIEL (critères cumulatifs pour dyscalculie développementale)
+
+Pour poser un diagnostic de dyscalculie développementale, les critères suivants doivent être réunis :
+
+1. Écart ≥ **-2 É-T** (ou P < 2) sur au moins **deux domaines** de la cognition numérique.
+2. Persistance malgré une prise en charge pédagogique adaptée d'au moins 6 mois.
+3. Retentissement **scolaire significatif** et objectivable.
+4. **Exclusion** : déficience intellectuelle (QI global < 70), trouble sensoriel non corrigé, absentéisme chronique, difficulté socio-culturelle majeure (non-francophonie récente).
+5. Préservation des compétences non-numériques attendues à l'âge.
+
+Sans ces 5 critères réunis → ne pas diagnostiquer une dyscalculie, rester sur "difficultés arithmétiques" avec analyse différentielle.
+
+---
+
+#### ARTICULATION AVEC D'AUTRES OUTILS
+
+- **En complément** : UDN-II (Utilisation du Nombre, étalonné CE2-4e), ZAREKI-R, TEDI-MATH (CP-CE1), TEDI-MATH Grands (CE2-3e).
+- **En amont** : Examath 5-8 ou TEDI-MATH pour dépistage précoce CP.
+- **Cognitif global** : WISC-V (indice de raisonnement quantitatif + vitesse de traitement).
+- **Fonctions exécutives** : NEPSY-II, TEA-Ch, BRIEF (parent/enseignant).
+- **Langage écrit associé** : Exalang 8-11 ou Exalang 11-15 systématique (co-morbidité dyslexie 30-40%).
+- **Visuo-spatial** : Bender, Figure de Rey (psychomot / ergo).
+
+---
+
+#### RECOMMANDATIONS TYPES PAR PROFIL
+
+- **Dyscalculie développementale** : rééducation hebdomadaire 30-45 min, 24-36 mois. Bilan de fin de CM2 et de 5e pour ajustement aménagements.
+- **Difficultés secondaires** : PEC du trouble primaire, pas de PEC dyscalculie dédiée sauf si apparition secondaire d'une peur des maths.
+- **Anxiété mathématique** : PEC courte + psychologue obligatoire.
+
+En cas de diagnostic de dyscalculie : PAP automatique. PPS/MDPH à envisager si association avec d'autres DYS ou TDAH.`,
 }
