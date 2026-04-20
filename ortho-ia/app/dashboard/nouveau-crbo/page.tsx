@@ -433,6 +433,7 @@ function NouveauCRBOContent() {
           resultats: formData.resultats_manuels,
           notes_passation: formData.notes_passation,
           crbo_genere: data.crbo,
+          structure_json: data.structure ?? null,
         })
         .select('id')
         .single()
