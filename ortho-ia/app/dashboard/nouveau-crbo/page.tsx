@@ -426,6 +426,15 @@ function NouveauCRBOContent() {
       const data = await response.json()
 
       if (!response.ok) {
+        // Session expirée : on sauvegarde le brouillon + redirige login avec retour
+        if (response.status === 401) {
+          persistDraft()
+          setError('Session expirée. Votre saisie est sauvegardée, vous serez redirigé·e vers la page de connexion.')
+          setTimeout(() => {
+            router.push(`/auth/login?redirect=${encodeURIComponent('/dashboard/nouveau-crbo')}`)
+          }, 2500)
+          return
+        }
         // Message serveur déjà filtré côté API (pas de fuite). On affiche tel quel.
         throw new Error(data.error || 'Erreur lors de la génération')
       }

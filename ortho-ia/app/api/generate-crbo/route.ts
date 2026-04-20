@@ -8,6 +8,7 @@ import {
 } from '@/lib/prompts'
 import { anonymize, rehydrate } from '@/lib/anonymizer'
 import { createServerSupabaseClient } from '@/lib/supabase-server'
+import { withRetry } from '@/lib/retry'
 
 /** Calcule l'âge "X ans Y mois" à partir de DDN et date du bilan (ou date du jour). */
 function computePatientAge(ddnISO: string, bilanISO?: string): string {
@@ -238,16 +239,27 @@ export async function POST(request: NextRequest) {
 
     let message
     try {
-      message = await anthropic.messages.create(
+      // Retry auto (jusqu'à 3 tentatives) sur 429 / 5xx / erreurs réseau transitoires
+      message = await withRetry(
+        () => anthropic.messages.create(
+          {
+            model: 'claude-sonnet-4-6',
+            max_tokens: 8192,
+            system: systemBlocks,
+            tools: [CRBO_TOOL],
+            tool_choice: { type: 'tool', name: 'generate_crbo' },
+            messages: [{ role: 'user', content: userPrompt }],
+          },
+          { signal: abortController.signal },
+        ),
         {
-          model: 'claude-sonnet-4-6',
-          max_tokens: 8192,
-          system: systemBlocks,
-          tools: [CRBO_TOOL],
-          tool_choice: { type: 'tool', name: 'generate_crbo' },
-          messages: [{ role: 'user', content: userPrompt }],
+          maxAttempts: 3,
+          initialDelayMs: 1500,
+          signal: abortController.signal,
+          onRetry: (attempt, error: any) => {
+            console.log(`[retry ${attempt}/3] Claude generate-crbo — ${error?.status || error?.code || error?.message?.slice(0, 60)}`)
+          },
         },
-        { signal: abortController.signal },
       )
     } finally {
       clearTimeout(timeoutId)

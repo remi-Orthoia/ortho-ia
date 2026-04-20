@@ -7,6 +7,7 @@ import {
   type ExtractedResults,
 } from '@/lib/prompts/extraction'
 import { createServerSupabaseClient } from '@/lib/supabase-server'
+import { withRetry } from '@/lib/retry'
 
 const anthropic = new Anthropic({
   apiKey: process.env.ANTHROPIC_API_KEY,
@@ -68,29 +69,40 @@ export async function POST(request: NextRequest) {
     const timeoutId = setTimeout(() => abortController.abort(), 60_000)
 
     // Prompt caching : instructions stables → cache 5 min, ~80% d'économie
+    // Retry auto (3 tentatives) sur erreurs transitoires
     let message
     try {
-      message = await anthropic.messages.create(
+      message = await withRetry(
+        () => anthropic.messages.create(
+          {
+            model: 'claude-sonnet-4-6',
+            max_tokens: 4096,
+            tools: [EXTRACT_TOOL],
+            tool_choice: { type: 'tool', name: 'extract_test_results' },
+            messages: [
+              {
+                role: 'user',
+                content: [
+                  contentBlock,
+                  {
+                    type: 'text',
+                    text: EXTRACTION_PROMPT,
+                    cache_control: { type: 'ephemeral' as const },
+                  },
+                ],
+              },
+            ],
+          },
+          { signal: abortController.signal },
+        ),
         {
-          model: 'claude-sonnet-4-6',
-          max_tokens: 4096,
-          tools: [EXTRACT_TOOL],
-          tool_choice: { type: 'tool', name: 'extract_test_results' },
-          messages: [
-            {
-              role: 'user',
-              content: [
-                contentBlock,
-                {
-                  type: 'text',
-                  text: EXTRACTION_PROMPT,
-                  cache_control: { type: 'ephemeral' as const },
-                },
-              ],
-            },
-          ],
+          maxAttempts: 3,
+          initialDelayMs: 1500,
+          signal: abortController.signal,
+          onRetry: (attempt, error: any) => {
+            console.log(`[retry ${attempt}/3] Claude extract-pdf — ${error?.status || error?.code || error?.message?.slice(0, 60)}`)
+          },
         },
-        { signal: abortController.signal },
       )
     } finally {
       clearTimeout(timeoutId)
