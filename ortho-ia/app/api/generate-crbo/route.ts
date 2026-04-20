@@ -7,6 +7,33 @@ import {
   type CRBOStructure,
 } from '@/lib/prompts'
 import { anonymize, rehydrate } from '@/lib/anonymizer'
+import { createServerSupabaseClient } from '@/lib/supabase-server'
+
+/** Calcule l'âge "X ans Y mois" à partir de DDN et date du bilan (ou date du jour). */
+function computePatientAge(ddnISO: string, bilanISO?: string): string {
+  if (!ddnISO) return ''
+  const ddn = new Date(ddnISO)
+  if (isNaN(ddn.getTime())) return ''
+  const ref = bilanISO ? new Date(bilanISO) : new Date()
+  if (isNaN(ref.getTime())) return ''
+  let years = ref.getFullYear() - ddn.getFullYear()
+  let months = ref.getMonth() - ddn.getMonth()
+  if (ref.getDate() < ddn.getDate()) months -= 1
+  if (months < 0) {
+    years -= 1
+    months += 12
+  }
+  if (years <= 0) return `${Math.max(0, months)} mois`
+  return months > 0 ? `${years} ans et ${months} mois` : `${years} ans`
+}
+
+/** Formate une date ISO en DD/MM/YYYY, ou chaîne vide si invalide. */
+function formatDateFR(iso: string): string {
+  if (!iso) return ''
+  const d = new Date(iso)
+  if (isNaN(d.getTime())) return ''
+  return d.toLocaleDateString('fr-FR')
+}
 
 function structureToText(structure: CRBOStructure): string {
   const lines: string[] = []
@@ -45,6 +72,35 @@ function structureToText(structure: CRBOStructure): string {
 
 export async function POST(request: NextRequest) {
   try {
+    // ============ AUTH + QUOTA server-side (protection contre abus) ============
+    const supabase = createServerSupabaseClient()
+    const { data: { user } } = await supabase.auth.getUser()
+
+    if (!user) {
+      return NextResponse.json(
+        { error: 'Authentification requise' },
+        { status: 401 },
+      )
+    }
+
+    const { data: sub } = await supabase
+      .from('subscriptions')
+      .select('crbo_count, crbo_limit, plan, status')
+      .eq('user_id', user.id)
+      .single()
+
+    if (sub && sub.status === 'active' && sub.crbo_count >= sub.crbo_limit) {
+      return NextResponse.json(
+        {
+          error:
+            sub.plan === 'free'
+              ? `Quota de ${sub.crbo_limit} CRBO gratuits atteint. Passez à l'offre Pro pour continuer.`
+              : `Quota mensuel de ${sub.crbo_limit} CRBO atteint.`,
+        },
+        { status: 429 },
+      )
+    }
+
     const { formData } = await request.json()
 
     if (!process.env.ANTHROPIC_API_KEY || process.env.ANTHROPIC_API_KEY.includes('VOTRE_CLE')) {
@@ -66,6 +122,9 @@ export async function POST(request: NextRequest) {
     const { anonymized, reverseMap } = anonymize(formData)
     const s = (v: string | undefined) => v ?? ''
 
+    // DDN jamais transmise à Claude : on ne passe que l'âge calendaire calculé
+    const patientAge = computePatientAge(formData.patient_ddn, formData.bilan_date)
+
     const userPrompt = buildCRBOPrompt({
       ortho_nom: s(anonymized.ortho_nom),
       ortho_adresse: s(anonymized.ortho_adresse),
@@ -75,9 +134,9 @@ export async function POST(request: NextRequest) {
       ortho_email: s(anonymized.ortho_email),
       patient_prenom: anonymized.patient_prenom,
       patient_nom: anonymized.patient_nom,
-      patient_ddn: s(formData.patient_ddn), // DDN en clair pour calcul âge côté prompt
+      patient_age: patientAge,
       patient_classe: s(anonymized.patient_classe),
-      bilan_date: s(anonymized.bilan_date),
+      bilan_date_display: formatDateFR(formData.bilan_date),
       bilan_type: s(anonymized.bilan_type),
       medecin_nom: s(anonymized.medecin_nom),
       medecin_tel: s(anonymized.medecin_tel),

@@ -392,12 +392,19 @@ function NouveauCRBOContent() {
       setShowResult(true)
       try { localStorage.removeItem(DRAFT_KEY) } catch {}
 
-      // Sauvegarder en base de données
+      // ============ Persistance : insert CRBO PUIS increment compteur ============
       const supabase = createClient()
       const { data: { user } } = await supabase.auth.getUser()
 
-      if (user) {
-        await supabase.from('crbos').insert({
+      if (!user) {
+        console.error('CRBO généré mais utilisateur non trouvé — non sauvegardé')
+        setError('Session expirée — veuillez vous reconnecter pour sauvegarder.')
+        return
+      }
+
+      const { data: inserted, error: insertError } = await supabase
+        .from('crbos')
+        .insert({
           user_id: user.id,
           patient_prenom: formData.patient_prenom,
           patient_nom: formData.patient_nom,
@@ -414,9 +421,19 @@ function NouveauCRBOContent() {
           notes_passation: formData.notes_passation,
           crbo_genere: data.crbo,
         })
+        .select('id')
+        .single()
 
-        // Mettre à jour le compteur
-        await supabase.rpc('increment_crbo_count', { user_id: user.id })
+      if (insertError || !inserted?.id) {
+        console.error('Erreur sauvegarde CRBO:', insertError)
+        setError('Le CRBO a été généré mais n\'a pas pu être sauvegardé. Copiez-le maintenant et contactez le support.')
+        return
+      }
+
+      // Le compteur n'est incrémenté que si l'insertion a réussi
+      const { error: rpcError } = await supabase.rpc('increment_crbo_count', { user_id: user.id })
+      if (rpcError) {
+        console.error('CRBO sauvé (id=' + inserted.id + ') mais compteur non incrémenté:', rpcError)
       }
     } catch (err: any) {
       setError(err.message)

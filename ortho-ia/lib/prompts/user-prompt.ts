@@ -7,9 +7,11 @@ export function buildCRBOPrompt(data: {
   ortho_email: string
   patient_prenom: string
   patient_nom: string
-  patient_ddn: string
+  /** Âge au bilan déjà formaté (ex: "8 ans et 4 mois"). La DDN brute n'est PAS transmise à l'API pour des raisons RGPD. */
+  patient_age: string
   patient_classe: string
-  bilan_date: string
+  /** Date du bilan formatée FR (ex: "20/04/2026"). */
+  bilan_date_display: string
   bilan_type: string
   medecin_nom: string
   medecin_tel: string
@@ -19,14 +21,6 @@ export function buildCRBOPrompt(data: {
   resultats: string
   notes_passation: string
 }): string {
-  const ddn = new Date(data.patient_ddn)
-  const bilanDate = new Date(data.bilan_date)
-  const ageYears = bilanDate.getFullYear() - ddn.getFullYear()
-  const ageMonths = bilanDate.getMonth() - ddn.getMonth()
-  const totalMonths = ageYears * 12 + ageMonths
-  const years = Math.floor(totalMonths / 12)
-  const months = totalMonths % 12
-
   return `=== INFORMATIONS ORTHOPHONISTE ===
 Nom : ${data.ortho_nom}
 Adresse : ${data.ortho_adresse}, ${data.ortho_cp} ${data.ortho_ville}
@@ -36,10 +30,9 @@ Email : ${data.ortho_email}
 === INFORMATIONS PATIENT ===
 Prénom : ${data.patient_prenom}
 Nom : ${data.patient_nom}
-Date de naissance : ${new Date(data.patient_ddn).toLocaleDateString('fr-FR')}
-Âge au bilan : ${years} ans et ${months} mois
+Âge au bilan : ${data.patient_age}
 Classe : ${data.patient_classe}
-Date du bilan : ${new Date(data.bilan_date).toLocaleDateString('fr-FR')}
+Date du bilan : ${data.bilan_date_display}
 Type : Bilan ${data.bilan_type}
 
 === MÉDECIN PRESCRIPTEUR ===
