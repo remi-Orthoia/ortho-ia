@@ -130,26 +130,26 @@ export default function HomePage() {
               {/* Underline brush main levée — 2 paths décalés pour effet crayon/pinceau */}
               <svg
                 aria-hidden="true"
-                viewBox="0 0 300 18"
+                viewBox="0 0 300 24"
                 preserveAspectRatio="none"
-                className="pointer-events-none absolute inset-x-0 -bottom-1.5 h-[0.45em] w-full text-primary-700 dark:text-primary-500"
+                className="pointer-events-none absolute inset-x-0 -bottom-2 h-[0.6em] w-full text-primary-500 dark:text-primary-400"
               >
                 <path
-                  d="M 4 11 C 45 5, 85 14, 130 9 S 210 13, 255 8 S 290 12, 296 10"
+                  d="M 4 13 C 45 6, 85 17, 130 11 S 210 16, 255 9 S 290 14, 296 12"
                   fill="none"
                   stroke="currentColor"
-                  strokeWidth="4.5"
+                  strokeWidth="8"
                   strokeLinecap="round"
                   strokeLinejoin="round"
                   className="animate-underline-draw"
                 />
                 <path
-                  d="M 8 13 C 60 9, 110 15, 160 11 C 210 8, 250 13, 292 12"
+                  d="M 8 17 C 60 12, 110 19, 160 14 C 210 10, 250 17, 292 15"
                   fill="none"
                   stroke="currentColor"
-                  strokeWidth="2"
+                  strokeWidth="3"
                   strokeLinecap="round"
-                  opacity="0.45"
+                  opacity="0.5"
                 />
               </svg>
             </span>
