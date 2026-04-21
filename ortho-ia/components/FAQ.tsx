@@ -15,17 +15,19 @@ const FAQS: FAQItem[] = [
     answer: (
       <>
         <p>
-          Oui. Avant tout envoi à l&apos;IA (Claude d&apos;Anthropic), les données
-          nominatives de vos patients (prénom, nom, nom du médecin, vos
+          <strong>Oui.</strong> Avant tout envoi à l&apos;IA (Claude d&apos;Anthropic),
+          les données nominatives de vos patients (prénom, nom, nom du médecin, vos
           coordonnées) sont <strong>anonymisées par des identifiants techniques</strong>.
-          Elles sont réhydratées uniquement sur nos serveurs après réception.
+          Elles sont <strong>réhydratées uniquement sur nos serveurs</strong> après
+          réception.
         </p>
         <p className="mt-2">
-          Les mots de passe sont hachés, les communications sont chiffrées en TLS,
-          et un Row-Level Security PostgreSQL empêche tout accès croisé aux
-          données d&apos;un autre orthophoniste. Une migration vers un hébergeur
-          certifié <strong>HDS (Hébergeur de Données de Santé)</strong> est
-          prévue avant la montée en charge commerciale.
+          Les <strong>mots de passe sont hachés</strong>, les communications sont{' '}
+          <strong>chiffrées en TLS</strong>, et un <strong>Row-Level Security
+          PostgreSQL</strong> empêche tout accès croisé aux données d&apos;un autre
+          orthophoniste. Une migration vers un hébergeur certifié{' '}
+          <strong>HDS (Hébergeur de Données de Santé)</strong> est prévue avant la
+          montée en charge commerciale.
         </p>
       </>
     ),
@@ -43,8 +45,8 @@ const FAQS: FAQItem[] = [
           <li><strong>Observation clinique</strong> — OMF / Déglutition</li>
         </ul>
         <p className="mt-2 text-sm text-gray-500">
-          Chaque module intègre les règles de conversion de percentiles (Q1→P25, Med→P50, Q3→P75)
-          et les seuils cliniques officiels (FNO).
+          Chaque module intègre les <strong>règles de conversion de percentiles</strong>{' '}
+          (Q1→P25, Med→P50, Q3→P75) et les <strong>seuils cliniques officiels (FNO)</strong>.
         </p>
       </>
     ),
@@ -55,8 +57,8 @@ const FAQS: FAQItem[] = [
       <p>
         Entre <strong>15 et 40 secondes</strong> selon la complexité du bilan
         (nombre de tests, longueur de l&apos;anamnèse). Sur un bilan Exalang 8-11
-        standard, comptez 20 secondes. La relecture clinique reste obligatoire
-        avant envoi au médecin et au patient.
+        standard, comptez <strong>20 secondes</strong>. La <strong>relecture
+        clinique reste obligatoire</strong> avant envoi au médecin et au patient.
       </p>
     ),
   },
@@ -67,8 +69,8 @@ const FAQS: FAQItem[] = [
         <p>
           <strong>Non — et c&apos;est volontaire.</strong> Ortho.ia produit un{' '}
           <strong>brouillon complet</strong> structuré et cliniquement cohérent,
-          mais vous restez entièrement responsable du diagnostic, de
-          l&apos;interprétation et du contenu final du compte-rendu.
+          mais vous restez <strong>entièrement responsable du diagnostic</strong>,
+          de l&apos;interprétation et du contenu final du compte-rendu.
         </p>
         <p className="mt-2">
           L&apos;outil est conçu pour vous faire gagner du temps sur la rédaction,
@@ -145,10 +147,11 @@ const FAQS: FAQItem[] = [
     answer: (
       <p>
         Vous uploadez le PDF de résultats de votre logiciel (Exalang, Examath…) directement
-        dans Ortho.ia. Claude Vision extrait automatiquement chaque épreuve avec son score,
-        son écart-type et son percentile, dans la notation exacte du document (Q1, Med, Q3, P5…).
-        Les percentiles ne sont <strong>jamais recalculés depuis l&apos;écart-type</strong>,
-        les normes du test priment.
+        dans Ortho.ia. <strong>Claude Vision extrait automatiquement</strong> chaque épreuve
+        avec son score, son écart-type et son percentile, dans la{' '}
+        <strong>notation exacte du document</strong> (Q1, Med, Q3, P5…). Les percentiles ne
+        sont <strong>jamais recalculés depuis l&apos;écart-type</strong>, les normes du test
+        priment.
       </p>
     ),
   },
@@ -156,11 +159,12 @@ const FAQS: FAQItem[] = [
     question: "Mes CRBOs sont-ils conservés ?",
     answer: (
       <p>
-        Tous vos CRBOs sont sauvegardés dans votre historique personnel, classés par
-        patient avec timeline d&apos;évolution des scores. Vous pouvez les télécharger
-        en Word à tout moment, les éditer, ou les supprimer. Les données sont
-        conservées tant que votre compte est actif, puis 12 mois après résiliation
-        (obligation légale de conservation comptable).
+        Tous vos CRBOs sont sauvegardés dans votre <strong>historique personnel</strong>,
+        classés par patient avec <strong>timeline d&apos;évolution des scores</strong>.
+        Vous pouvez les <strong>télécharger en Word à tout moment</strong>, les éditer, ou
+        les supprimer. Les données sont conservées tant que votre compte est actif, puis{' '}
+        <strong>12 mois après résiliation</strong> (obligation légale de conservation
+        comptable).
       </p>
     ),
   },
@@ -168,17 +172,17 @@ const FAQS: FAQItem[] = [
     question: "Que contient le Word généré ?",
     answer: (
       <>
-        <p>Un CRBO professionnel complet incluant :</p>
+        <p>Un <strong>CRBO professionnel complet</strong> incluant :</p>
         <ul className="list-disc pl-5 mt-2 space-y-0.5">
-          <li>En-tête de vos coordonnées professionnelles</li>
-          <li>Fiche patient + médecin prescripteur</li>
-          <li>Badge de sévérité globale (Léger / Modéré / Sévère)</li>
-          <li>Graphique de synthèse des percentiles moyens par domaine</li>
-          <li>Anamnèse rédigée en prose fluide (jamais de notes brutes)</li>
-          <li>Tableaux par domaine avec code couleur par seuil clinique et colonne Interprétation</li>
-          <li>Diagnostic, comorbidités suspectées, recommandations, aménagements PAP/PPS</li>
-          <li>Glossaire des termes techniques pour les parents et médecins</li>
-          <li>Pour un renouvellement : tableau comparatif avec flèches d&apos;évolution</li>
+          <li><strong>En-tête</strong> de vos coordonnées professionnelles</li>
+          <li><strong>Fiche patient + médecin prescripteur</strong></li>
+          <li><strong>Badge de sévérité globale</strong> (Léger / Modéré / Sévère)</li>
+          <li><strong>Graphique de synthèse</strong> des percentiles moyens par domaine</li>
+          <li><strong>Anamnèse rédigée en prose fluide</strong> (jamais de notes brutes)</li>
+          <li><strong>Tableaux par domaine</strong> avec code couleur par seuil clinique et colonne Interprétation</li>
+          <li><strong>Diagnostic, comorbidités, recommandations, aménagements PAP/PPS</strong></li>
+          <li><strong>Glossaire</strong> des termes techniques pour les parents et médecins</li>
+          <li>Pour un <strong>renouvellement</strong> : tableau comparatif avec flèches d&apos;évolution</li>
         </ul>
       </>
     ),
@@ -189,13 +193,13 @@ const FAQS: FAQItem[] = [
       <>
         <p>
           Les <strong>3 premiers mois sont offerts</strong> à tout orthophoniste
-          qui s&apos;inscrit pendant la phase Beta. Aucune carte bancaire n&apos;est
-          demandée à l&apos;inscription.
+          qui s&apos;inscrit pendant la phase Beta. <strong>Aucune carte bancaire</strong>{' '}
+          n&apos;est demandée à l&apos;inscription.
         </p>
         <p className="mt-2">
-          En échange, un retour régulier sur l&apos;outil nous aide à affiner le
-          prompt et à corriger les coquilles. Nous privilégions un groupe réduit
-          pour itérer vite.
+          En échange, un <strong>retour régulier sur l&apos;outil</strong> nous aide à
+          affiner le prompt et à corriger les coquilles. Nous privilégions un{' '}
+          <strong>groupe réduit pour itérer vite</strong>.
         </p>
       </>
     ),
@@ -204,10 +208,11 @@ const FAQS: FAQItem[] = [
     question: "Puis-je l'utiliser sur tablette ou téléphone ?",
     answer: (
       <p>
-        Oui, l&apos;interface est responsive. Pour la prise de notes en séance sur
-        smartphone, cela fonctionne. Pour la génération et l&apos;export Word, un
-        écran d&apos;ordinateur reste plus confortable, notamment pour relire les
-        tableaux détaillés.
+        <strong>Oui, l&apos;interface est responsive.</strong> Pour la{' '}
+        <strong>prise de notes en séance sur smartphone</strong>, cela fonctionne.
+        Pour la <strong>génération et l&apos;export Word</strong>, un écran
+        d&apos;ordinateur reste plus confortable, notamment pour relire les tableaux
+        détaillés.
       </p>
     ),
   },
@@ -215,13 +220,16 @@ const FAQS: FAQItem[] = [
     question: "Et si je veux arrêter ?",
     answer: (
       <p>
-        Vous pouvez résilier votre abonnement mensuel à tout moment depuis votre
-        espace personnel ; la résiliation prend effet en fin de période. Vous pouvez
-        également <strong>mettre en pause votre abonnement mensuel à tout moment</strong>,
-        pour vos congés ou une période sans bilan — vous ne serez pas facturé·e pendant
-        la pause et vos données restent intactes. L&apos;abonnement annuel n&apos;est pas
-        remboursable mais reste actif jusqu&apos;à échéance. Vous pouvez également exporter
-        et supprimer l&apos;ensemble de vos données conformément au RGPD.
+        Vous pouvez <strong>résilier votre abonnement mensuel à tout moment</strong>{' '}
+        depuis votre espace personnel ; la résiliation prend effet{' '}
+        <strong>en fin de période</strong>. Vous pouvez également{' '}
+        <strong>mettre en pause votre abonnement mensuel à tout moment</strong>, pour
+        vos congés ou une période sans bilan — <strong>vous ne serez pas facturé·e
+        pendant la pause</strong> et <strong>vos données restent intactes</strong>.
+        L&apos;abonnement annuel <strong>n&apos;est pas remboursable</strong> mais
+        reste actif jusqu&apos;à échéance. Vous pouvez également{' '}
+        <strong>exporter et supprimer l&apos;ensemble de vos données</strong>{' '}
+        conformément au RGPD.
       </p>
     ),
   },
