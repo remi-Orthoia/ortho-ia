@@ -118,11 +118,34 @@ function structureToText(structure: CRBOStructure): string {
   return lines.join('\n')
 }
 
+/** Détecte une erreur réseau/indisponibilité Supabase (ECONNREFUSED, fetch failed, DNS, etc.). */
+function isSupabaseUnavailable(err: any): boolean {
+  if (!err) return false
+  const code = err?.code ?? err?.cause?.code
+  if (['ENOTFOUND', 'ECONNREFUSED', 'ECONNRESET', 'ETIMEDOUT', 'EAI_AGAIN'].includes(code)) return true
+  const msg = String(err?.message ?? '').toLowerCase()
+  if (msg.includes('fetch failed') || msg.includes('network')) return true
+  return false
+}
+
 export async function POST(request: NextRequest) {
   try {
     // ============ AUTH + QUOTA server-side (protection contre abus) ============
     const supabase = createServerSupabaseClient()
-    const { data: { user } } = await supabase.auth.getUser()
+    let user
+    try {
+      const { data } = await supabase.auth.getUser()
+      user = data.user
+    } catch (err) {
+      if (isSupabaseUnavailable(err)) {
+        console.error('Supabase indisponible (auth):', (err as any)?.message)
+        return NextResponse.json(
+          { error: 'Service temporairement indisponible. Réessayez dans quelques minutes.' },
+          { status: 503 },
+        )
+      }
+      throw err
+    }
 
     if (!user) {
       return NextResponse.json(
@@ -131,11 +154,26 @@ export async function POST(request: NextRequest) {
       )
     }
 
-    const { data: sub } = await supabase
-      .from('subscriptions')
-      .select('crbo_limit, plan, status')
-      .eq('user_id', user.id)
-      .single()
+    let sub
+    try {
+      const res = await supabase
+        .from('subscriptions')
+        .select('crbo_limit, plan, status')
+        .eq('user_id', user.id)
+        .single()
+      sub = res.data
+    } catch (err) {
+      if (isSupabaseUnavailable(err)) {
+        console.error('Supabase indisponible (subscriptions):', (err as any)?.message)
+        return NextResponse.json(
+          { error: 'Service temporairement indisponible. Réessayez dans quelques minutes.' },
+          { status: 503 },
+        )
+      }
+      // Autre erreur lecture sub : fail-open, on laisse passer comme plan free
+      console.error('Erreur lecture subscription:', (err as any)?.message)
+      sub = null
+    }
 
     // Plan Pro / Team = illimité (crbo_limit = -1). Plan Free = quota mensuel
     // recalculé à chaque appel depuis `crbos.created_at >= date_trunc('month', NOW())` :
@@ -314,6 +352,12 @@ export async function POST(request: NextRequest) {
       return NextResponse.json(
         { error: 'La génération a dépassé 3 minutes. Réessayez ou réduisez la longueur de l\'anamnèse.' },
         { status: 504 },
+      )
+    }
+    if (isSupabaseUnavailable(error)) {
+      return NextResponse.json(
+        { error: 'Service temporairement indisponible. Réessayez dans quelques minutes.' },
+        { status: 503 },
       )
     }
     if (error?.status === 401) {

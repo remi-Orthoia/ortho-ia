@@ -45,7 +45,7 @@ interface Patient {
 const STEPS = [
   { id: 1, name: 'Vos infos', description: 'Coordonnées orthophoniste' },
   { id: 2, name: 'Patient', description: 'Informations patient' },
-  { id: 3, name: 'Médecin', description: 'Prescripteur & plaintes' },
+  { id: 3, name: 'Médecin', description: 'Prescripteur & motif' },
   { id: 4, name: 'Anamnèse', description: 'Notes cliniques' },
   { id: 5, name: 'Résultats', description: 'Tests & scores' },
 ]
@@ -1053,8 +1053,8 @@ function NouveauCRBOContent() {
           <div className="space-y-6">
             <div>
               <StepPhaseBadge step={3} />
-              <h2 className="text-xl font-semibold text-gray-900">Médecin prescripteur & Plaintes</h2>
-              <p className="mt-1 text-sm text-gray-500">Informations sur la prescription et plaintes exprimées</p>
+              <h2 className="text-xl font-semibold text-gray-900">Médecin prescripteur & Motif</h2>
+              <p className="mt-1 text-sm text-gray-500">Informations sur la prescription et motif de consultation</p>
             </div>
 
             <div className="grid sm:grid-cols-2 gap-4">
@@ -1082,7 +1082,7 @@ function NouveauCRBOContent() {
                 />
               </div>
               <div className="sm:col-span-2">
-                <label className="block text-sm font-medium text-gray-700 mb-1">Plaintes du patient *</label>
+                <label className="block text-sm font-medium text-gray-700 mb-1">Motif de consultation *</label>
                 <textarea
                   name="motif"
                   value={formData.motif}

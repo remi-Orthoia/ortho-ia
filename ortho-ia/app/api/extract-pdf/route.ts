@@ -13,11 +13,32 @@ const anthropic = new Anthropic({
   apiKey: process.env.ANTHROPIC_API_KEY,
 })
 
+function isSupabaseUnavailable(err: any): boolean {
+  if (!err) return false
+  const code = err?.code ?? err?.cause?.code
+  if (['ENOTFOUND', 'ECONNREFUSED', 'ECONNRESET', 'ETIMEDOUT', 'EAI_AGAIN'].includes(code)) return true
+  const msg = String(err?.message ?? '').toLowerCase()
+  if (msg.includes('fetch failed') || msg.includes('network')) return true
+  return false
+}
+
 export async function POST(request: NextRequest) {
   try {
     // Auth check
     const supabase = createServerSupabaseClient()
-    const { data: { user } } = await supabase.auth.getUser()
+    let user
+    try {
+      const { data } = await supabase.auth.getUser()
+      user = data.user
+    } catch (err) {
+      if (isSupabaseUnavailable(err)) {
+        return NextResponse.json(
+          { error: 'Service temporairement indisponible. Réessayez dans quelques minutes.' },
+          { status: 503 },
+        )
+      }
+      throw err
+    }
     if (!user) {
       return NextResponse.json({ error: 'Authentification requise' }, { status: 401 })
     }
@@ -186,6 +207,12 @@ export async function POST(request: NextRequest) {
       return NextResponse.json(
         { error: "L'extraction a dépassé 60 secondes. PDF trop volumineux ou API lente. Réessayez." },
         { status: 504 },
+      )
+    }
+    if (isSupabaseUnavailable(error)) {
+      return NextResponse.json(
+        { error: 'Service temporairement indisponible. Réessayez dans quelques minutes.' },
+        { status: 503 },
       )
     }
     if (error?.status === 401) {
