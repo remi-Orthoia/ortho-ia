@@ -132,7 +132,7 @@ export default function HomePage() {
                 aria-hidden="true"
                 viewBox="0 0 300 24"
                 preserveAspectRatio="none"
-                className="pointer-events-none absolute inset-x-0 -bottom-2 h-[0.6em] w-full text-primary-500 dark:text-primary-400"
+                className="pointer-events-none absolute inset-x-0 top-full -mt-[0.05em] h-[0.5em] w-full text-primary-500 dark:text-primary-400"
               >
                 <path
                   d="M 4 13 C 45 6, 85 17, 130 11 S 210 16, 255 9 S 290 14, 296 12"
