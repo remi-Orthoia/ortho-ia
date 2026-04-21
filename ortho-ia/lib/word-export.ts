@@ -317,65 +317,169 @@ export async function generateCRBOWord(payload: WordExportPayload): Promise<Blob
     )
   }
 
-  // ===== TABLEAU COMPARATIF (renouvellement) =====
+  // ===== PAGE 1 RENOUVELLEMENT — Bloc comparatif riche =====
   if (hasStructure && hasPrevious) {
-    children.push(
-      new Paragraph({
-        children: [new TextRun({ text: '📊 Évolution depuis le dernier bilan', size: FONT_SIZE_NORMAL, font: FONT, color: COLOR_GREEN, bold: true })],
-        spacing: { before: 300, after: 100 },
-      }),
-    )
+    // Titre section
+    children.push(createSectionTitle('🔄 ÉVOLUTION DEPUIS LE DERNIER BILAN'))
+
+    // Sous-titre : dates comparées
     if (previousBilanDate) {
       const prevDate = new Date(previousBilanDate).toLocaleDateString('fr-FR')
+      const curDate = bilanDateFormatted || '(actuel)'
       children.push(new Paragraph({
-        children: [new TextRun({ text: `Comparaison avec le bilan du ${prevDate}`, italics: true, size: FONT_SIZE_NORMAL - 2, font: FONT, color: '666666' })],
-        spacing: { after: 100 },
+        alignment: AlignmentType.CENTER,
+        children: [new TextRun({ text: `Bilan initial du ${prevDate}  →  Bilan actuel du ${curDate}`, italics: true, size: FONT_SIZE_NORMAL - 2, font: FONT, color: '666666' })],
+        spacing: { after: 200 },
       }))
     }
 
-    // Construire le tableau : par épreuve commune
-    const compRows = [
-      new TableRow({ children: [
-        createCell('Domaine / Épreuve', { bold: true, width: 40, shading: 'E8F5E9' }),
-        createCell('Bilan précédent', { bold: true, width: 22, shading: 'E8F5E9', alignment: AlignmentType.CENTER }),
-        createCell('Bilan actuel', { bold: true, width: 22, shading: 'E8F5E9', alignment: AlignmentType.CENTER }),
-        createCell('Évolution', { bold: true, width: 16, shading: 'E8F5E9', alignment: AlignmentType.CENTER }),
-      ]}),
-    ]
-
-    // Index précédent par nom d'épreuve (insensible à la casse)
-    const prevIndex = new Map<string, { percentile: string; value: number }>()
+    // Calcul stats globales d'évolution
+    const prevIndex = new Map<string, { percentile: string; value: number; domain: string }>()
     for (const d of previousStructure!.domains) {
       for (const e of d.epreuves) {
-        prevIndex.set(e.nom.toLowerCase().trim(), { percentile: e.percentile, value: e.percentile_value })
+        prevIndex.set(e.nom.toLowerCase().trim(), { percentile: e.percentile, value: e.percentile_value, domain: d.nom })
+      }
+    }
+    let progres = 0, stable = 0, regression = 0, nouvelles = 0
+    const progresList: string[] = []
+    const regressionList: string[] = []
+    const nouvellesList: string[] = []
+    for (const d of structure!.domains) {
+      for (const e of d.epreuves) {
+        const prev = prevIndex.get(e.nom.toLowerCase().trim())
+        if (!prev) {
+          nouvelles++
+          nouvellesList.push(e.nom)
+          continue
+        }
+        const delta = e.percentile_value - prev.value
+        if (delta >= 10) { progres++; progresList.push(e.nom) }
+        else if (delta <= -10) { regression++; regressionList.push(e.nom) }
+        else stable++
       }
     }
 
+    // Badge évolution globale centré
+    let badgeText: string, badgeColor: string, badgeBg: string
+    if (progres > regression * 2 && progres >= 3) {
+      badgeText = `✓ PROGRESSION SIGNIFICATIVE · ${progres} épreuve${progres > 1 ? 's' : ''} en progrès`
+      badgeColor = '1B5E20'; badgeBg = 'C8E6C9'
+    } else if (regression > progres && regression >= 2) {
+      badgeText = `↓ RÉGRESSION OBSERVÉE · ${regression} épreuve${regression > 1 ? 's' : ''} en baisse`
+      badgeColor = 'B71C1C'; badgeBg = 'FFCDD2'
+    } else {
+      badgeText = `≈ PROFIL GLOBALEMENT STABLE · ${progres} progrès · ${stable} stable · ${regression} régression`
+      badgeColor = '424242'; badgeBg = 'E0E0E0'
+    }
+    children.push(new Paragraph({
+      alignment: AlignmentType.CENTER,
+      spacing: { before: 100, after: 200 },
+      children: [new TextRun({
+        text: `  ${badgeText}  `,
+        bold: true,
+        size: FONT_SIZE_NORMAL,
+        font: FONT,
+        color: badgeColor,
+        shading: { type: ShadingType.CLEAR, fill: badgeBg, color: 'auto' },
+      } as any)],
+    }))
+
+    // Mini-récap : points forts nouveaux + difficultés persistantes
+    if (progresList.length > 0) {
+      children.push(new Paragraph({
+        spacing: { before: 100, after: 60 },
+        children: [
+          new TextRun({ text: '🌱 Domaines en progrès :', bold: true, size: FONT_SIZE_NORMAL - 2, font: FONT, color: '1B5E20' }),
+        ],
+      }))
+      children.push(new Paragraph({
+        spacing: { after: 120 },
+        children: [new TextRun({ text: progresList.slice(0, 8).join(' · '), size: FONT_SIZE_NORMAL - 2, font: FONT, color: '424242' })],
+      }))
+    }
+    if (regressionList.length > 0) {
+      children.push(new Paragraph({
+        spacing: { before: 60, after: 60 },
+        children: [
+          new TextRun({ text: '⚠ Domaines en régression à surveiller :', bold: true, size: FONT_SIZE_NORMAL - 2, font: FONT, color: 'B71C1C' }),
+        ],
+      }))
+      children.push(new Paragraph({
+        spacing: { after: 120 },
+        children: [new TextRun({ text: regressionList.slice(0, 8).join(' · '), size: FONT_SIZE_NORMAL - 2, font: FONT, color: '424242' })],
+      }))
+    }
+    if (nouvellesList.length > 0) {
+      children.push(new Paragraph({
+        spacing: { before: 60, after: 60 },
+        children: [
+          new TextRun({ text: '✨ Épreuves ajoutées ce bilan :', bold: true, size: FONT_SIZE_NORMAL - 2, font: FONT, color: '1565C0' }),
+        ],
+      }))
+      children.push(new Paragraph({
+        spacing: { after: 120 },
+        children: [new TextRun({ text: nouvellesList.slice(0, 8).join(' · '), size: FONT_SIZE_NORMAL - 2, font: FONT, color: '424242' })],
+      }))
+    }
+
+    // Tableau comparatif détaillé (côte à côte, grouppé par domaine)
+    const compRows = [
+      new TableRow({ children: [
+        createCell('Domaine / Épreuve', { bold: true, width: 40, shading: 'E8F5E9' }),
+        createCell(previousBilanDate ? new Date(previousBilanDate).toLocaleDateString('fr-FR') : 'Précédent', { bold: true, width: 22, shading: 'E8F5E9', alignment: AlignmentType.CENTER }),
+        createCell(bilanDateFormatted || 'Actuel', { bold: true, width: 22, shading: 'E8F5E9', alignment: AlignmentType.CENTER }),
+        createCell('Δ Évolution', { bold: true, width: 16, shading: 'E8F5E9', alignment: AlignmentType.CENTER }),
+      ]}),
+    ]
+
     for (const d of structure!.domains) {
+      // Row domaine (en-tête de groupe)
+      compRows.push(new TableRow({ children: [
+        new TableCell({
+          columnSpan: 4,
+          width: { size: 100, type: WidthType.PERCENTAGE },
+          shading: { fill: 'F1F8E9', type: ShadingType.CLEAR },
+          children: [new Paragraph({
+            children: [new TextRun({ text: d.nom, bold: true, size: FONT_SIZE_NORMAL - 1, font: FONT, color: COLOR_GREEN })],
+          })],
+          borders: {
+            top:    { style: BorderStyle.SINGLE, size: 1, color: 'BFBFBF' },
+            bottom: { style: BorderStyle.SINGLE, size: 1, color: 'BFBFBF' },
+            left:   { style: BorderStyle.SINGLE, size: 1, color: 'BFBFBF' },
+            right:  { style: BorderStyle.SINGLE, size: 1, color: 'BFBFBF' },
+          },
+        }),
+      ]}))
+
       for (const e of d.epreuves) {
         const prev = prevIndex.get(e.nom.toLowerCase().trim())
         const prevLabel = prev ? prev.percentile : '—'
         const curLabel = e.percentile
-        let arrow = '='
-        let arrowColor = '9E9E9E'
+        let arrow = '→'
+        let arrowLabel = 'Stable'
+        let arrowColor = '616161'
         if (prev) {
           const delta = e.percentile_value - prev.value
-          if (delta >= 10) { arrow = '↑ Progrès'; arrowColor = '1B5E20' }
-          else if (delta <= -10) { arrow = '↓ Régression'; arrowColor = 'C62828' }
-          else { arrow = '= Stable'; arrowColor = '616161' }
+          if (delta >= 10) { arrow = '↑'; arrowLabel = `+${Math.round(delta)}`; arrowColor = '1B5E20' }
+          else if (delta <= -10) { arrow = '↓'; arrowLabel = `${Math.round(delta)}`; arrowColor = 'C62828' }
+          else { arrow = '→'; arrowLabel = 'Stable'; arrowColor = '616161' }
         } else {
-          arrow = 'Nouvelle'
+          arrow = '✦'
+          arrowLabel = 'Nouvelle'
           arrowColor = '1565C0'
         }
         compRows.push(new TableRow({ children: [
-          createCell(e.nom, { width: 40 }),
-          createCell(prevLabel, { width: 22, alignment: AlignmentType.CENTER }),
+          createCell(`  ${e.nom}`, { width: 40 }), // indentation pour voir que c'est une sous-épreuve du domaine
+          createCell(prevLabel, { width: 22, alignment: AlignmentType.CENTER, shading: prev ? getPercentileColor(prev.value) : 'F5F5F5' }),
           createCell(curLabel, { width: 22, alignment: AlignmentType.CENTER, shading: getPercentileColor(e.percentile_value) }),
           new TableCell({
             width: { size: 16, type: WidthType.PERCENTAGE },
             children: [new Paragraph({
               alignment: AlignmentType.CENTER,
-              children: [new TextRun({ text: arrow, bold: true, size: FONT_SIZE_NORMAL - 2, font: FONT, color: arrowColor })],
+              children: [
+                new TextRun({ text: arrow + ' ', bold: true, size: FONT_SIZE_NORMAL + 2, font: FONT, color: arrowColor }),
+                new TextRun({ text: arrowLabel, bold: true, size: FONT_SIZE_NORMAL - 2, font: FONT, color: arrowColor }),
+              ],
             })],
             borders: {
               top:    { style: BorderStyle.SINGLE, size: 1, color: 'BFBFBF' },
