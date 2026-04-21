@@ -11,28 +11,30 @@ Compte configuré en plan **Pro illimité** (crbo_limit 9 999) pour que les beta
 ## Ce qui est pré-chargé
 
 ### Profil orthophoniste (onglet *Mon profil*)
-- **Sophie DEMO** — 24 avenue de la République, 75011 Paris
+- **Laurie Berrio** — 24 avenue de la République, 75011 Paris
 - 01 43 00 00 00 — demo@ortho-ia.fr
 
-### 5 patients couvrant les profils cliniques variés (onglet *Mes patients*)
+### 6 patients couvrant les profils cliniques variés (onglet *Mes patients*)
 
 | Prénom · Nom | DDN | Classe | École | Médecin |
 |---|---|---|---|---|
+| **Delyss** D. | 07/10/2013 | CE2 | — | Dr Martin (pédiatre) |
 | **Noah** BERTRAND | 10/08/2016 | CM2 | École du Parc | Dr Claire LEVY |
 | **Chloé** RICHARD | 12/04/2016 | CM1 | École Jean Moulin | Dr Pauline BERTIN |
 | **Gabriel** LEGRAND | 25/11/2020 | GS | École Paul Eluard | Dr Marc HENRY |
 | **Inès** DUBOIS | 14/02/2013 | 5ème | Collège Rousseau | Dr Claire LEVY |
 | **Michel** FONTAINE | 03/07/1958 | Adulte | — | Dr Isabelle FOUCHÉ |
 
-### 5 CRBOs de qualité professionnelle (onglet *Historique* + Kanban)
+### 6 CRBOs de qualité professionnelle (onglet *Historique* + Kanban)
 
 | # | Patient | Test | Sévérité | Statut | Profil clinique clé |
 |---|---|---|---|---|---|
-| 1 | **Noah** (CM2) | Exalang 8-11 | 🔴 Sévère | Terminé | **Dyslexie mixte sévère** — les 2 voies de lecture atteintes + fragilité métaphonologique profonde + suspicion TDA associé. PPS/MDPH indiqué. |
-| 2 | **Chloé** (CM1) | Examath | 🟠 Modéré | Terminé | **Dyscalculie développementale** — déficit central du sens du nombre, géométrie préservée (critère différentiel). Anxiété maths secondaire. PAP. |
-| 3 | **Gabriel** (GS, 5 ans) | Exalang 3-6 + ELO | 🔴 Sévère | Terminé | **TDL (Trouble Développemental du Langage) sévère** — atteinte bilatérale réceptive/expressive + phonologique. Orientation CRTLA urgente. |
-| 4 | **Inès** (5ème) | Exalang 11-15 | 🟢 Léger | À relire | **Renouvellement** — dyslexie compensée après 3 ans de PEC, lecture normalisée (P5→P25), orthographe résiduelle. Synthèse d'évolution avec progrès. |
-| 5 | **Michel** (68 ans) | MoCA + BETL | 🟠 Modéré | À relire | **Trouble cognitif léger adulte** — atteinte mnésique + lexico-sémantique, orientation neurologue + neuropsy. Composante thymique à évaluer. |
+| 1 | **Delyss** (CE2) | Exalang 8-11 | 🔴 Sévère | Terminé | **Données RÉELLES du PDF** — Dyslexie-dysorthographie mixte sévère, fluence sémantique préservée P90 (point d'appui). 25 épreuves, diagnostic niveau senior complet. |
+| 2 | **Noah** (CM2) | Exalang 8-11 | 🔴 Sévère | Terminé | **Dyslexie mixte sévère** — les 2 voies de lecture atteintes + fragilité métaphonologique profonde + suspicion TDA associé. PPS/MDPH indiqué. |
+| 3 | **Chloé** (CM1) | Examath | 🟠 Modéré | Terminé | **Dyscalculie développementale** — déficit central du sens du nombre, géométrie préservée (critère différentiel). Anxiété maths secondaire. PAP. |
+| 4 | **Gabriel** (GS, 5 ans) | Exalang 3-6 + ELO | 🔴 Sévère | Terminé | **TDL (Trouble Développemental du Langage) sévère** — atteinte bilatérale réceptive/expressive + phonologique. Orientation CRTLA urgente. |
+| 5 | **Inès** (5ème) | Exalang 11-15 | 🟢 Léger | À relire | **Renouvellement** — dyslexie compensée après 3 ans de PEC, lecture normalisée (P5→P25), orthographe résiduelle. Synthèse d'évolution avec progrès. |
+| 6 | **Michel** (68 ans) | MoCA + BETL | 🟠 Modéré | À relire | **Trouble cognitif léger adulte** — atteinte mnésique + lexico-sémantique, orientation neurologue + neuropsy. Composante thymique à évaluer. |
 
 Chaque CRBO contient :
 - Anamnèse rédigée en prose professionnelle (150-400 mots, 3ème personne)
