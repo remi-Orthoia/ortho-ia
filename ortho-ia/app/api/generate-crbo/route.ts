@@ -10,6 +10,10 @@ import { anonymize, rehydrate } from '@/lib/anonymizer'
 import { createServerSupabaseClient } from '@/lib/supabase-server'
 import { withRetry } from '@/lib/retry'
 
+// Vercel Pro / Enterprise : autorise jusqu'à 300s (vs 10s Hobby default).
+// Bilans complexes (Exalang 8-11, Examath complet) peuvent prendre 90-150s.
+export const maxDuration = 300
+
 /** Calcule l'âge "X ans Y mois" à partir de DDN et date du bilan (ou date du jour). */
 function computePatientAge(ddnISO: string, bilanISO?: string): string {
   if (!ddnISO) return ''
@@ -222,9 +226,11 @@ export async function POST(request: NextRequest) {
       bilan_precedent_date: formData.bilan_precedent_date ? formatDateFR(formData.bilan_precedent_date) : undefined,
     })
 
-    // Timeout explicite — 45s max
+    // Timeout explicite — 180s max. Les bilans complexes (Exalang 8-11 avec
+    // 25+ épreuves, glossaire, 12 PAP) peuvent dépasser 2 minutes de génération.
+    // Test mesuré en prod : Delyss = 148s (31 épreuves, 9 domaines, 664 mots de diagnostic).
     const abortController = new AbortController()
-    const timeoutId = setTimeout(() => abortController.abort(), 45_000)
+    const timeoutId = setTimeout(() => abortController.abort(), 180_000)
 
     // Prompt caching sur system prompt : économise ~80% de coût en entrée sur
     // les requêtes successives (le prompt système pèse ~15k tokens avec les
@@ -244,7 +250,7 @@ export async function POST(request: NextRequest) {
         () => anthropic.messages.create(
           {
             model: 'claude-sonnet-4-6',
-            max_tokens: 8192,
+            max_tokens: 16384,
             system: systemBlocks,
             tools: [CRBO_TOOL],
             tool_choice: { type: 'tool', name: 'generate_crbo' },
@@ -293,7 +299,7 @@ export async function POST(request: NextRequest) {
 
     if (error?.name === 'AbortError') {
       return NextResponse.json(
-        { error: 'La génération a dépassé le délai de 45 secondes. Veuillez réessayer.' },
+        { error: 'La génération a dépassé 3 minutes. Réessayez ou réduisez la longueur de l\'anamnèse.' },
         { status: 504 },
       )
     }
