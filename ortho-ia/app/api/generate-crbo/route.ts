@@ -107,14 +107,6 @@ function structureToText(structure: CRBOStructure): string {
   lines.push('CONCLUSION')
   lines.push(structure.conclusion.trim())
 
-  if (structure.glossaire && structure.glossaire.length > 0) {
-    lines.push('')
-    lines.push('GLOSSAIRE')
-    for (const g of structure.glossaire) {
-      lines.push(`${g.terme} : ${g.definition}`)
-    }
-  }
-
   return lines.join('\n')
 }
 
@@ -278,7 +270,7 @@ export async function POST(request: NextRequest) {
     })
 
     // Timeout explicite — 180s max. Les bilans complexes (Exalang 8-11 avec
-    // 25+ épreuves, glossaire, 12 PAP) peuvent dépasser 2 minutes de génération.
+    // 25+ épreuves, 12 PAP) peuvent dépasser 2 minutes de génération.
     // Test mesuré en prod : Delyss = 148s (31 épreuves, 9 domaines, 664 mots de diagnostic).
     const abortController = new AbortController()
     const timeoutId = setTimeout(() => abortController.abort(), 180_000)

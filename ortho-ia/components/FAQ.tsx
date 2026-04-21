@@ -111,8 +111,8 @@ const FAQS: FAQItem[] = [
           <li>
             <strong>Sortie structurée prête à envoyer</strong> — Word professionnel
             avec en-tête, graphiques de percentiles, tableaux colorés par seuil
-            clinique, glossaire pour les parents, conclusions, PAP/PPS. Pas un bloc
-            de texte à remettre en forme.
+            clinique, conclusions, PAP/PPS. Pas un bloc de texte à remettre en
+            forme.
           </li>
           <li>
             <strong>Gestion du renouvellement</strong> — comparaison automatique avec
@@ -181,7 +181,6 @@ const FAQS: FAQItem[] = [
           <li><strong>Anamnèse rédigée en prose fluide</strong> (jamais de notes brutes)</li>
           <li><strong>Tableaux par domaine</strong> avec code couleur par seuil clinique et colonne Interprétation</li>
           <li><strong>Diagnostic, comorbidités, recommandations, aménagements PAP/PPS</strong></li>
-          <li><strong>Glossaire</strong> des termes techniques pour les parents et médecins</li>
           <li>Pour un <strong>renouvellement</strong> : tableau comparatif avec flèches d&apos;évolution</li>
         </ul>
       </>

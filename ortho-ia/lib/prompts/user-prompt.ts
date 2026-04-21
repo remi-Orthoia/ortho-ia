@@ -162,7 +162,7 @@ ${data.resultats}
 ${data.notes_passation || 'Aucune note supplémentaire'}${comportementBlock}${dureeBlock}${bilanPrecBlock}
 
 === INSTRUCTION ===
-Génère le CRBO complet en appelant l'outil \`generate_crbo\`. Remplis chaque champ avec soin et respecte scrupuleusement les règles de conversion de percentiles. Inclus obligatoirement : severite_globale, comorbidites_detectees (même vide), pap_suggestions, glossaire. ${
+Génère le CRBO complet en appelant l'outil \`generate_crbo\`. Remplis chaque champ avec soin et respecte scrupuleusement les règles de conversion de percentiles. Inclus obligatoirement : severite_globale, comorbidites_detectees (même vide), pap_suggestions. ${
     isRenouvellement
       ? 'IMPÉRATIF : remplis synthese_evolution (non null) avec comparaison rigoureuse scores actuels vs précédents.'
       : 'synthese_evolution = null (bilan initial).'

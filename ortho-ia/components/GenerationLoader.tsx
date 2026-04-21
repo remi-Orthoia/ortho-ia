@@ -18,7 +18,7 @@ const STEPS: Step[] = [
   { icon: FileText, label: 'Lecture des résultats',     detail: 'Interprétation des percentiles et scores bruts' },
   { icon: Brain,    label: 'Analyse clinique',          detail: 'Corrélations inter-domaines, patterns diagnostiques' },
   { icon: PenLine,  label: 'Rédaction du CRBO',         detail: 'Anamnèse en prose, commentaires, diagnostic différentiel' },
-  { icon: Sparkles, label: 'Recommandations',           detail: 'PAP, comorbidités, glossaire' },
+  { icon: Sparkles, label: 'Recommandations',           detail: 'PAP, comorbidités, aménagements scolaires' },
 ]
 
 export default function GenerationLoader({ visible }: { visible: boolean }) {

@@ -16,7 +16,7 @@ const ROADMAP: Array<{
     quarter: 'Q2 2026 — Beta fermée (maintenant)',
     items: [
       { title: 'Génération CRBO via Claude Sonnet 4.6', status: 'done', details: '15 modules de tests (Exalang, Examath, BALE, BELEC, BILO, ELO, EVALO, MoCA, BETL, OMF…)' },
-      { title: 'Export Word professionnel', status: 'done', details: 'Graphique page 1, tableaux colorés par seuil, glossaire, badge sévérité' },
+      { title: 'Export Word professionnel', status: 'done', details: 'Graphique page 1, tableaux colorés par seuil, badge sévérité' },
       { title: 'Import PDF automatique (Claude Vision)', status: 'done', details: 'Détection test + extraction scores + percentiles' },
       { title: 'Kanban + statuts CRBO', status: 'done', details: 'Drag & drop, rollback DB, badges sévérité' },
       { title: 'Carnet patients + timeline d\'évolution', status: 'done', details: 'Multi-courbes par domaine clinique' },

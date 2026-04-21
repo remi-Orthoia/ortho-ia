@@ -85,11 +85,6 @@ Le CRBO structuré que tu produis doit contenir, dans cet ordre :
    - Stagnation = même niveau d'interprétation.
    - Dans le \`resume\` (100-300 mots) : mettre en valeur l'impact de la rééducation, les acquisitions consolidées, les axes à maintenir, les nouveaux éléments émergents.
 
-10. \`glossaire\` — **5 à 15 entrées** définissant les termes techniques employés dans le CRBO, en langage accessible pour les parents et médecins non spécialistes.
-    - Toujours inclure : **É-T**, **percentile**.
-    - Inclure les termes cliniques précis utilisés (selon profil) : **dyslexie**, **dyscalculie**, **dysorthographie**, **conscience phonologique**, **voie d'assemblage**, **voie d'adressage**, **boucle phonologique**, **anomie**, **fluence verbale**, **TDA(H)**, **trouble cognitif léger**, **dénomination**, etc.
-    - Définitions en 1-2 phrases max, ton pédagogique non infantilisant.
-
 ---
 
 ## INTERPRÉTATION DES SCORES (référence générale)

@@ -774,31 +774,6 @@ export async function generateCRBOWord(payload: WordExportPayload): Promise<Blob
     }),
   )
 
-  // ===== GLOSSAIRE (si présent, filtre entrées vides) =====
-  const glossaire = (hasStructure ? structure!.glossaire ?? [] : []).filter(
-    g => g && g.terme && g.terme.trim() && g.definition && g.definition.trim(),
-  )
-  if (glossaire.length > 0) {
-    children.push(new Paragraph({ children: [new PageBreak()] }))
-    children.push(createSectionTitle('GLOSSAIRE'))
-    children.push(new Paragraph({
-      children: [new TextRun({
-        text: 'Définition des termes techniques employés dans ce compte rendu, à destination des parents et des professionnels non spécialistes.',
-        italics: true, size: FONT_SIZE_NORMAL - 2, font: FONT, color: '666666',
-      })],
-      spacing: { after: 200 },
-    }))
-    for (const g of glossaire) {
-      children.push(new Paragraph({
-        spacing: { after: 120 },
-        children: [
-          new TextRun({ text: `${g.terme.trim()} — `, bold: true, size: FONT_SIZE_NORMAL, font: FONT, color: COLOR_GREEN }),
-          new TextRun({ text: g.definition.trim(), size: FONT_SIZE_NORMAL, font: FONT }),
-        ],
-      }))
-    }
-  }
-
   const doc = new Document({
     sections: [{
       properties: { page: { margin: { top: 720, right: 720, bottom: 720, left: 720 } } },

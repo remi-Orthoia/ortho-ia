@@ -3,10 +3,10 @@ import type Anthropic from '@anthropic-ai/sdk'
 export const CRBO_TOOL: Anthropic.Tool = {
   name: 'generate_crbo',
   description:
-    "Produit un Compte Rendu de Bilan Orthophonique (CRBO) structuré à partir des données de bilan fournies (patient, anamnèse, tests, résultats). Chaque épreuve est classée par domaine, avec percentile numérique et interprétation clinique normalisée. Inclut un score de sévérité global, la détection des comorbidités, des suggestions PAP automatiques, une synthèse d'évolution si c'est un renouvellement, et un glossaire des termes techniques.",
+    "Produit un Compte Rendu de Bilan Orthophonique (CRBO) structuré à partir des données de bilan fournies (patient, anamnèse, tests, résultats). Chaque épreuve est classée par domaine, avec percentile numérique et interprétation clinique normalisée. Inclut un score de sévérité global, la détection des comorbidités, des suggestions PAP automatiques et une synthèse d'évolution si c'est un renouvellement.",
   input_schema: {
     type: 'object',
-    required: ['anamnese_redigee', 'domains', 'diagnostic', 'recommandations', 'conclusion', 'severite_globale', 'comorbidites_detectees', 'pap_suggestions', 'glossaire'],
+    required: ['anamnese_redigee', 'domains', 'diagnostic', 'recommandations', 'conclusion', 'severite_globale', 'comorbidites_detectees', 'pap_suggestions'],
     properties: {
       anamnese_redigee: {
         type: 'string',
@@ -123,19 +123,6 @@ export const CRBO_TOOL: Anthropic.Tool = {
           },
         },
       },
-      glossaire: {
-        type: 'array',
-        description:
-          "Liste des termes techniques employés dans le CRBO, définis de façon accessible pour les parents et médecins non spécialistes. Inclure systématiquement : É-T, percentile, et tous les termes cliniques utilisés (dyslexie, dyscalculie, anomie, conscience phonologique, etc.). 5 à 15 entrées pertinentes.",
-        items: {
-          type: 'object',
-          required: ['terme', 'definition'],
-          properties: {
-            terme: { type: 'string', description: 'Terme technique.' },
-            definition: { type: 'string', description: 'Définition en langage courant (1-2 phrases).' },
-          },
-        },
-      },
     },
   },
 }
@@ -164,11 +151,6 @@ export interface SyntheseEvolution {
   domaines_regression: string[]
 }
 
-export interface GlossaireEntry {
-  terme: string
-  definition: string
-}
-
 export interface CRBOStructure {
   anamnese_redigee: string
   domains: CRBODomain[]
@@ -180,5 +162,4 @@ export interface CRBOStructure {
   comorbidites_detectees?: string[]
   pap_suggestions?: string[]
   synthese_evolution?: SyntheseEvolution | null
-  glossaire?: GlossaireEntry[]
 }

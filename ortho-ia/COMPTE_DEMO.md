@@ -45,7 +45,6 @@ Chaque CRBO contient :
 - **Comorbidités détectées** automatiquement (TDA, anxiété, thymique…)
 - **Aménagements PAP proposés** adaptés au profil
 - **Synthèse d'évolution** pour le renouvellement (CRBO 4)
-- **Glossaire** pédagogique en fin de document
 - Structure JSON complète → export Word avec graphiques et couleurs
 
 ## Tour de force pour le beta testeur
@@ -53,7 +52,7 @@ Chaque CRBO contient :
 1. **Login** `demo@ortho-ia.fr` / `DemoBeta2026!` → voir le Kanban avec badges de sévérité colorés.
 2. **Drag & drop** : essayer de déplacer une carte entre colonnes (statut persisté en DB).
 3. **Ouvrir un CRBO** : cliquer sur Noah ou Michel → voir la structure préview mise en forme.
-4. **Télécharger un Word** → vérifier : graphique page 1, badge sévérité, tableau comparatif (Inès renouvellement uniquement), colonne Interprétation colorée, glossaire final.
+4. **Télécharger un Word** → vérifier : graphique page 1, badge sévérité, tableau comparatif (Inès renouvellement uniquement), colonne Interprétation colorée.
 5. **Partage 24h** : cliquer "Partager (24h)" → copie automatique du lien → ouvrir dans un autre navigateur/incognito pour simuler un médecin qui relit.
 6. **Timeline patient** : cliquer sur un patient dans "Mes patients" → voir la fiche détaillée (avec graphique si plusieurs CRBOs).
 7. **Créer un nouveau CRBO** : tester le formulaire 5 étapes avec les tags de comportement, le raccourci ⌘+Entrée, et l'écran de génération animé.

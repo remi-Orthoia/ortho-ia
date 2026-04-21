@@ -252,23 +252,6 @@ export default function CRBOStructuredPreview({ structure, onDownload, onEdit, o
         </Section>
       )}
 
-      {/* Glossaire */}
-      {structure.glossaire && structure.glossaire.filter(g => g?.terme?.trim()).length > 0 && (
-        <Section title="Glossaire" color="gray">
-          <p className="text-sm text-gray-500 dark:text-gray-400 italic mb-3">
-            Définition des termes techniques employés, à destination des parents et professionnels non spécialistes.
-          </p>
-          <dl className="grid gap-3">
-            {structure.glossaire.filter(g => g?.terme?.trim() && g?.definition?.trim()).map((g, i) => (
-              <div key={i} className="border-l-2 border-primary-300 dark:border-primary-700 pl-3">
-                <dt className="font-semibold text-primary-700 dark:text-primary-400">{g.terme.trim()}</dt>
-                <dd className="text-sm text-gray-700 dark:text-gray-300 mt-0.5">{g.definition.trim()}</dd>
-              </div>
-            ))}
-          </dl>
-        </Section>
-      )}
-
       {/* Conclusion */}
       <Section title="Conclusion" color="primary">
         <p className="text-gray-800 dark:text-gray-200 italic text-sm">
