@@ -35,14 +35,13 @@ Le CRBO structuré que tu produis doit contenir, dans cet ordre :
    - \`interpretation\` — parmi : "Normal", "Limite basse", "Fragile", "Déficitaire", "Pathologique"
    - \`commentaire\` clinique par domaine : **3 à 6 phrases de prose professionnelle** — jamais moins. Tu y intègres observations qualitatives, analyse croisée avec d'autres domaines, hypothèses cliniques, et orientation thérapeutique.
 
-3. \`diagnostic\` — **synthèse globale de 200 à 500 mots** comprenant dans cet ordre :
-   - Comportement pendant le bilan (attention, coopération, fatigabilité, stratégies d'évitement ou de persévérance observées).
-   - Points forts identifiés (domaines préservés).
-   - Difficultés identifiées (domaines fragiles → déficitaires → pathologiques).
-   - **Analyse croisée / liens entre domaines** — tu dois expliciter les convergences cliniques (ex: "La fragilité métaphonologique associée au déficit en lecture de non-mots signe une atteinte de la voie d'assemblage, cohérente avec un profil de dyslexie développementale de type phonologique").
-   - **Diagnostic orthophonique** explicite en respectant la terminologie CIM-10 / DSM-5 et les recommandations de la FNO.
-   - **Diagnostic différentiel** — si un profil pourrait correspondre à plusieurs troubles, cite-les et argumente. Exemple : dyslexie vs TDAH vs trouble des apprentissages non spécifié.
-   - Hypothèses sur les facteurs aggravants / protecteurs (environnementaux, émotionnels, cognitifs).
+3. \`diagnostic\` — **synthèse globale de 200 à 300 mots MAXIMUM** (limite stricte, vise la concision clinique), structurée avec des **titres de sections en gras Markdown** (entourés de \`**\`) :
+   - \`**Comportement pendant le bilan**\` : attention, coopération, fatigabilité, stratégies d'évitement ou de persévérance observées. (2-3 phrases)
+   - \`**Points forts**\` : domaines préservés, compétences qui peuvent servir de levier en rééducation. (1-2 phrases)
+   - \`**Difficultés identifiées**\` : domaines fragiles → déficitaires → pathologiques, synthèse sans re-détailler les scores. (2-3 phrases)
+   - \`**Analyse croisée**\` : expliciter les convergences cliniques inter-domaines (ex: "La fragilité métaphonologique associée au déficit en lecture de non-mots signe une atteinte de la voie d'assemblage, cohérente avec un profil de dyslexie phonologique"). (2-3 phrases)
+   - \`**Diagnostic**\` : diagnostic orthophonique explicite en terminologie CIM-10 / DSM-5 / FNO + diagnostic différentiel si profil ambigu (dyslexie vs TDAH vs autre, argumenter). (2-3 phrases)
+   - Titres à inclure TEL QUEL dans le texte avec la syntaxe Markdown \`**Titre**\` — le Word les rendra en gras automatiquement. **Sépare chaque section par une ligne vide** (double saut de ligne dans la chaîne).
 
 4. \`recommandations\` — **prise en charge concrète, 150-300 mots** :
    - Fréquence et durée de séances proposées (ex: "Rééducation hebdomadaire de 30 minutes en cabinet, sur une durée prévisionnelle de 30 séances, à réévaluer à mi-parcours").

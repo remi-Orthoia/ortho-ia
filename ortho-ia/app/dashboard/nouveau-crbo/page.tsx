@@ -78,6 +78,7 @@ function NouveauCRBOContent() {
   const [generatedCRBO, setGeneratedCRBO] = useState('')
   const [generatedStructure, setGeneratedStructure] = useState<CRBOStructure | null>(null)
   const [showResult, setShowResult] = useState(false)
+  const [showPreviewModal, setShowPreviewModal] = useState(false)
   const [confettiTrigger, setConfettiTrigger] = useState(0)
   const [savedCrboId, setSavedCrboId] = useState<string | null>(null)
   const [isFirstCRBO, setIsFirstCRBO] = useState(false)
@@ -635,6 +636,7 @@ function NouveauCRBOContent() {
               <CRBOStructuredPreview
                 structure={generatedStructure}
                 onDownload={handleDownloadWord}
+                onPreview={() => setShowPreviewModal(true)}
                 onEdit={() => {
                   // Toggle vers textarea brut — l'ortho peut éditer si besoin
                   setGeneratedStructure(null)
@@ -696,6 +698,45 @@ function NouveauCRBOContent() {
           </button>
         </div>
         </div>
+
+        {/* Modal Prévisualisation plein écran — rendu focalisé avant téléchargement Word */}
+        {showPreviewModal && generatedStructure && (
+          <div
+            className="fixed inset-0 z-50 bg-black/70 backdrop-blur-sm overflow-y-auto animate-fade-in"
+            onClick={() => setShowPreviewModal(false)}
+            role="dialog"
+            aria-modal="true"
+            aria-label="Prévisualisation du CRBO"
+          >
+            <div className="min-h-screen p-3 sm:p-8">
+              <div
+                onClick={(e) => e.stopPropagation()}
+                className="max-w-4xl mx-auto bg-white dark:bg-surface-dark rounded-2xl shadow-2xl p-5 sm:p-10"
+              >
+                <div className="flex items-center justify-between mb-5 pb-3 border-b border-gray-200 dark:border-surface-dark-muted sticky top-0 bg-white dark:bg-surface-dark z-10">
+                  <h2 className="text-lg font-semibold text-gray-900 dark:text-gray-100 flex items-center gap-2">
+                    <Sparkles className="text-primary-600 dark:text-primary-400" size={18} />
+                    Prévisualisation du CRBO
+                  </h2>
+                  <button
+                    onClick={() => setShowPreviewModal(false)}
+                    className="btn-secondary text-sm"
+                    aria-label="Fermer la prévisualisation"
+                  >
+                    Fermer
+                  </button>
+                </div>
+                <CRBOStructuredPreview
+                  structure={generatedStructure}
+                  onDownload={async () => {
+                    await handleDownloadWord()
+                    setShowPreviewModal(false)
+                  }}
+                />
+              </div>
+            </div>
+          </div>
+        )}
       </>
     )
   }

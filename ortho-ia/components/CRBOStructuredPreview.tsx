@@ -1,6 +1,6 @@
 'use client'
 
-import { Download, Edit, AlertTriangle, Sparkles, BookOpen } from 'lucide-react'
+import { Download, Edit, AlertTriangle, Sparkles, BookOpen, Eye } from 'lucide-react'
 import type { CRBOStructure } from '@/lib/prompts'
 import { SEUILS, seuilFor, getPercentileColor } from '@/lib/word-export'
 
@@ -9,13 +9,57 @@ interface Props {
   onDownload: () => void
   /** Callback pour basculer en édition texte brut. */
   onEdit?: () => void
+  /** Si fourni, affiche un bouton "Prévisualiser" qui ouvre un modal plein écran. */
+  onPreview?: () => void
+}
+
+/** Rend un texte avec marqueurs Markdown `**gras**`, lignes `**Titre**` = H3, et paragraphes séparés par ligne vide. */
+function RichText({ text }: { text: string }) {
+  if (!text) return null
+  const lines = text.split('\n')
+  const out: React.ReactNode[] = []
+  let buffer: string[] = []
+  const flush = (key: number) => {
+    if (buffer.length === 0) return
+    const joined = buffer.join(' ')
+    const parts = joined.split(/(\*\*[^*]+\*\*)/g).filter((p) => p.length > 0)
+    out.push(
+      <p key={`p-${key}`} className="text-gray-800 dark:text-gray-200 leading-relaxed mb-3">
+        {parts.map((p, i) =>
+          p.startsWith('**') && p.endsWith('**') ? (
+            <strong key={i} className="font-semibold">{p.slice(2, -2)}</strong>
+          ) : (
+            <span key={i}>{p}</span>
+          ),
+        )}
+      </p>,
+    )
+    buffer = []
+  }
+  lines.forEach((line, idx) => {
+    const t = line.trim()
+    if (!t) { flush(idx); return }
+    const h3Match = t.match(/^\*\*([^*]+)\*\*\s*:?\s*$/)
+    if (h3Match) {
+      flush(idx)
+      out.push(
+        <h4 key={`h-${idx}`} className="font-bold text-primary-700 dark:text-primary-400 mt-4 mb-2">
+          {h3Match[1].trim()}
+        </h4>,
+      )
+      return
+    }
+    buffer.push(t)
+  })
+  flush(lines.length)
+  return <>{out}</>
 }
 
 /**
  * Preview mise en forme du CRBO généré — rendu lisible et professionnel
  * plutôt qu'un simple textarea. Reflète fidèlement le Word exporté.
  */
-export default function CRBOStructuredPreview({ structure, onDownload, onEdit }: Props) {
+export default function CRBOStructuredPreview({ structure, onDownload, onEdit, onPreview }: Props) {
   const sev = structure.severite_globale
   const sevColors: Record<string, { bg: string; text: string; ring: string }> = {
     'Léger':      { bg: 'bg-green-100 dark:bg-green-900/30',   text: 'text-green-800 dark:text-green-200',   ring: 'ring-green-300 dark:ring-green-800' },
@@ -37,6 +81,12 @@ export default function CRBOStructuredPreview({ structure, onDownload, onEdit }:
           </p>
         </div>
         <div className="flex items-center gap-2">
+          {onPreview && (
+            <button onClick={onPreview} className="btn-secondary text-sm">
+              <Eye size={14} />
+              Prévisualiser
+            </button>
+          )}
           {onEdit && (
             <button onClick={onEdit} className="btn-secondary text-sm">
               <Edit size={14} />
@@ -154,9 +204,7 @@ export default function CRBOStructuredPreview({ structure, onDownload, onEdit }:
       {/* Synthèse d'évolution */}
       {structure.synthese_evolution && (
         <Section title="Synthèse d'évolution" color="purple">
-          <p className="text-gray-800 dark:text-gray-200 leading-relaxed mb-3 whitespace-pre-line">
-            {structure.synthese_evolution.resume}
-          </p>
+          <RichText text={structure.synthese_evolution.resume} />
           <div className="grid sm:grid-cols-3 gap-3 text-sm">
             {structure.synthese_evolution.domaines_progres?.length > 0 && (
               <div className="p-3 rounded-lg bg-green-50 dark:bg-green-900/20 border border-green-200 dark:border-green-800/40">
@@ -180,18 +228,14 @@ export default function CRBOStructuredPreview({ structure, onDownload, onEdit }:
         </Section>
       )}
 
-      {/* Diagnostic */}
-      <Section title="Diagnostic orthophonique" color="primary">
-        <p className="text-gray-800 dark:text-gray-200 leading-relaxed whitespace-pre-line">
-          {structure.diagnostic}
-        </p>
+      {/* Synthèse et diagnostic — les H3 internes (Comportement, Points forts, …) structurent le texte */}
+      <Section title="Synthèse et diagnostic" color="primary">
+        <RichText text={structure.diagnostic} />
       </Section>
 
       {/* Recommandations */}
       <Section title="Recommandations" color="primary">
-        <p className="text-gray-800 dark:text-gray-200 leading-relaxed whitespace-pre-line">
-          {structure.recommandations}
-        </p>
+        <RichText text={structure.recommandations} />
       </Section>
 
       {/* PAP suggestions */}

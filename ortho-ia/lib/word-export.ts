@@ -17,18 +17,16 @@ import type { CRBOStructure } from './prompts'
 // --------------------- Palette cohérente seuils cliniques ---------------------
 
 export type SeuilClinique = {
-  label: 'Supérieur' | 'Normal' | 'Limite basse' | 'Fragile' | 'Déficitaire' | 'Pathologique'
+  label: 'Normal' | 'Limite basse' | 'Fragile' | 'Déficitaire' | 'Pathologique'
   min: number
   shading: string // hex sans # (pour docx)
   css: string     // avec # (pour canvas)
   range: string
 }
 
-// 6 niveaux : permet de distinguer visuellement un score supérieur (P≥75) d'une
-// simple norme basse (P25-74). Les couleurs restent alignées avec le Word export.
+// 5 niveaux alignés sur les seuils cliniques officiels des bilans orthophoniques.
 export const SEUILS: SeuilClinique[] = [
-  { label: 'Supérieur',    min: 75, shading: '66BB6A', css: '#2E7D32', range: 'P ≥ 75' },
-  { label: 'Normal',       min: 25, shading: 'C8E6C9', css: '#81C784', range: 'P25-74' },
+  { label: 'Normal',       min: 25, shading: 'C8E6C9', css: '#81C784', range: 'P ≥ 25' },
   { label: 'Limite basse', min: 16, shading: 'FFF59D', css: '#FFEE58', range: 'P16-24' },
   { label: 'Fragile',      min: 7,  shading: 'FFCC80', css: '#FFB74D', range: 'P7-15' },
   { label: 'Déficitaire',  min: 2,  shading: 'EF9A9A', css: '#E57373', range: 'P2-6' },
@@ -203,11 +201,11 @@ export async function generateCRBOWord(payload: WordExportPayload): Promise<Blob
   const calculateAge = () => {
     if (!formData.patient_ddn) return ''
     const birth = new Date(formData.patient_ddn)
-    const bilan = new Date(formData.bilan_date || new Date().toISOString())
-    if (isNaN(birth.getTime()) || isNaN(bilan.getTime())) return ''
-    let years = bilan.getFullYear() - birth.getFullYear()
-    let months = bilan.getMonth() - birth.getMonth()
-    if (bilan.getDate() < birth.getDate()) months -= 1
+    const today = new Date()
+    if (isNaN(birth.getTime())) return ''
+    let years = today.getFullYear() - birth.getFullYear()
+    let months = today.getMonth() - birth.getMonth()
+    if (today.getDate() < birth.getDate()) months -= 1
     if (months < 0) { years -= 1; months += 12 }
     if (years <= 0) return `${Math.max(0, months)} mois`
     return months > 0 ? `${years} ans et ${months} mois` : `${years} ans`
@@ -215,7 +213,8 @@ export async function generateCRBOWord(payload: WordExportPayload): Promise<Blob
 
   // ============ Construction du document ============
 
-  const bilanDateFormatted = formData.bilan_date ? new Date(formData.bilan_date).toLocaleDateString('fr-FR') : ''
+  // Date du jour de génération (l'ortho rédige souvent plusieurs jours après la passation)
+  const bilanDateFormatted = new Date().toLocaleDateString('fr-FR')
   const ddnFormatted = formData.patient_ddn ? new Date(formData.patient_ddn).toLocaleDateString('fr-FR') : ''
   const testsText = Array.isArray(formData.test_utilise) ? formData.test_utilise.join(', ') : formData.test_utilise
 
@@ -286,7 +285,7 @@ export async function generateCRBOWord(payload: WordExportPayload): Promise<Blob
   // ===== MOTIF =====
   if (formData.motif) {
     children.push(
-      new Paragraph({ children: [new TextRun({ text: 'Plaintes du patient', size: FONT_SIZE_NORMAL, font: FONT, color: COLOR_GREEN, bold: true })], spacing: { before: 200 } }),
+      new Paragraph({ children: [new TextRun({ text: 'Motif de consultation', size: FONT_SIZE_NORMAL, font: FONT, color: COLOR_GREEN, bold: true })], spacing: { before: 200 } }),
       new Paragraph({ children: [new TextRun({ text: formData.motif, size: FONT_SIZE_NORMAL, font: FONT })], spacing: { after: 200 } }),
     )
   }
@@ -620,17 +619,55 @@ export async function generateCRBOWord(payload: WordExportPayload): Promise<Blob
   children.push(createSectionTitle('SYNTHÈSE ET CONCLUSIONS'))
   if (hasStructure) {
     const s = structure!
+    // Parse un texte avec marqueurs Markdown **gras** en TextRun[] (alternance bold/normal)
+    const parseBoldRuns = (text: string) => {
+      const parts = text.split(/(\*\*[^*]+\*\*)/g).filter((p) => p.length > 0)
+      return parts.map((p) => {
+        if (p.startsWith('**') && p.endsWith('**')) {
+          return new TextRun({ text: p.slice(2, -2), bold: true, size: FONT_SIZE_NORMAL, font: FONT })
+        }
+        return new TextRun({ text: p, size: FONT_SIZE_NORMAL, font: FONT })
+      })
+    }
+    // Rend un contenu texte avec sous-titres H3 (`**Titre**` seul sur une ligne),
+    // inline bold, et saut de paragraphe sur ligne vide.
+    const renderRichContent = (content: string) => {
+      const lines = content.split('\n')
+      let lastWasEmpty = true // évite un vide en tête
+      lines.forEach((line) => {
+        const t = line.trim()
+        if (!t) {
+          if (!lastWasEmpty) {
+            children.push(new Paragraph({ children: [], spacing: { after: 60 } }))
+            lastWasEmpty = true
+          }
+          return
+        }
+        lastWasEmpty = false
+        const h3Match = t.match(/^\*\*([^*]+)\*\*\s*:?\s*$/)
+        if (h3Match) {
+          children.push(new Paragraph({
+            children: [new TextRun({ text: h3Match[1].trim(), bold: true, size: FONT_SIZE_NORMAL + 2, font: FONT, color: COLOR_GREEN })],
+            spacing: { before: 200, after: 100 },
+          }))
+          return
+        }
+        children.push(new Paragraph({
+          children: parseBoldRuns(t),
+          spacing: { after: 80 },
+        }))
+      })
+    }
     const pushBlock = (label: string, content: string) => {
       children.push(new Paragraph({
         children: [new TextRun({ text: label, bold: true, size: FONT_SIZE_NORMAL, font: FONT, color: COLOR_GREEN })],
         spacing: { before: 240, after: 80 },
       }))
-      content.split('\n').forEach((line) => {
-        const t = line.trim()
-        if (t) children.push(new Paragraph({ children: [new TextRun({ text: t, size: FONT_SIZE_NORMAL, font: FONT })], spacing: { after: 60 } }))
-      })
+      renderRichContent(content)
     }
-    pushBlock('Diagnostic orthophonique', s.diagnostic)
+    // Diagnostic rendu SANS label "Diagnostic orthophonique" — les H3 Markdown
+    // dans le texte (Comportement, Points forts, …, Diagnostic) jouent ce rôle.
+    renderRichContent(s.diagnostic)
 
     // Comorbidités détectées (filtre strings vides)
     const comorbidites = (s.comorbidites_detectees ?? []).filter(c => c && c.trim().length > 0)
@@ -653,10 +690,7 @@ export async function generateCRBOWord(payload: WordExportPayload): Promise<Blob
         children: [new TextRun({ text: "Synthèse d'évolution", bold: true, size: FONT_SIZE_NORMAL, font: FONT, color: '6A1B9A' })],
         spacing: { before: 240, after: 80 },
       }))
-      s.synthese_evolution.resume.split('\n').forEach((line: string) => {
-        const t = line.trim()
-        if (t) children.push(new Paragraph({ children: [new TextRun({ text: t, size: FONT_SIZE_NORMAL, font: FONT })], spacing: { after: 60 } }))
-      })
+      renderRichContent(s.synthese_evolution.resume)
       if (s.synthese_evolution.domaines_progres?.length) {
         children.push(new Paragraph({
           children: [
