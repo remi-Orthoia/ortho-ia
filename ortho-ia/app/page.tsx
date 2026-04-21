@@ -217,7 +217,7 @@ export default function HomePage() {
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="text-center mb-16">
             <h2 className="text-3xl sm:text-4xl font-bold text-gray-900">
-              En bref, le meilleur des outils CRBO couplé à l'IA
+              En bref, le meilleur des outils CRBO <span className="gradient-text">couplé à l&apos;IA</span>
             </h2>
           </div>
 
