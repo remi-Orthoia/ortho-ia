@@ -154,10 +154,12 @@ const FAQS: FAQItem[] = [
     answer: (
       <p>
         Vous pouvez résilier votre abonnement mensuel à tout moment depuis votre
-        espace personnel ; la résiliation prend effet en fin de période. L&apos;abonnement
-        annuel n&apos;est pas remboursable mais reste actif jusqu&apos;à échéance.
-        Vous pouvez également exporter et supprimer l&apos;ensemble de vos données
-        conformément au RGPD.
+        espace personnel ; la résiliation prend effet en fin de période. Vous pouvez
+        également <strong>mettre en pause votre abonnement mensuel à tout moment</strong>,
+        pour vos congés ou une période sans bilan — vous ne serez pas facturé·e pendant
+        la pause et vos données restent intactes. L&apos;abonnement annuel n&apos;est pas
+        remboursable mais reste actif jusqu&apos;à échéance. Vous pouvez également exporter
+        et supprimer l&apos;ensemble de vos données conformément au RGPD.
       </p>
     ),
   },
