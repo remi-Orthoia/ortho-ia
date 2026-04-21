@@ -163,6 +163,19 @@ input:focus, textarea:focus, select:focus {
   background-clip: text;
 }
 
+/* Underline brush "main levée" — stroke qui se dessine à l'entrée en vue */
+.animate-underline-draw {
+  stroke-dasharray: 420;
+  stroke-dashoffset: 420;
+  animation: underline-draw 1.4s cubic-bezier(0.65, 0, 0.35, 1) 0.3s forwards;
+}
+
+@keyframes underline-draw {
+  to {
+    stroke-dashoffset: 0;
+  }
+}
+
 /* Card hover effect */
 .card-hover {
   transition: transform 0.2s ease, box-shadow 0.2s ease;

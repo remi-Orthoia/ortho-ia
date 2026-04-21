@@ -122,9 +122,37 @@ export default function HomePage() {
             <InfographieB />
           </div>
 
-          {/* Punchline gradient */}
+          {/* Punchline : "Maudire vos CRBO," normal + "c'est du passé !" souligné main levée */}
           <p className="mt-12 text-center text-3xl sm:text-4xl lg:text-5xl font-bold leading-tight">
-            <span className="gradient-text">Maudire vos CRBO, c&apos;est du passé !</span>
+            <span className="gradient-text">Maudire vos CRBO,</span>{' '}
+            <span className="relative inline-block whitespace-nowrap">
+              <span className="gradient-text">c&apos;est du passé&nbsp;!</span>
+              {/* Underline brush main levée — 2 paths décalés pour effet crayon/pinceau */}
+              <svg
+                aria-hidden="true"
+                viewBox="0 0 300 18"
+                preserveAspectRatio="none"
+                className="pointer-events-none absolute inset-x-0 -bottom-1.5 h-[0.45em] w-full text-primary-700 dark:text-primary-500"
+              >
+                <path
+                  d="M 4 11 C 45 5, 85 14, 130 9 S 210 13, 255 8 S 290 12, 296 10"
+                  fill="none"
+                  stroke="currentColor"
+                  strokeWidth="4.5"
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                  className="animate-underline-draw"
+                />
+                <path
+                  d="M 8 13 C 60 9, 110 15, 160 11 C 210 8, 250 13, 292 12"
+                  fill="none"
+                  stroke="currentColor"
+                  strokeWidth="2"
+                  strokeLinecap="round"
+                  opacity="0.45"
+                />
+              </svg>
+            </span>
           </p>
 
           {/* Stats publiques animées */}
