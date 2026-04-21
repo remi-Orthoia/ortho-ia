@@ -65,15 +65,16 @@ const FAQS: FAQItem[] = [
     answer: (
       <>
         <p>
-          <strong>Non — et c&apos;est volontaire.</strong> Ortho.ia produit un
-          brouillon structuré, cliniquement cohérent, mais vous restez
-          entièrement responsable du diagnostic, de l&apos;interprétation et du
-          contenu final du compte-rendu.
+          <strong>Non — et c&apos;est volontaire.</strong> Ortho.ia produit un{' '}
+          <strong>brouillon complet</strong> structuré et cliniquement cohérent,
+          mais vous restez entièrement responsable du diagnostic, de
+          l&apos;interprétation et du contenu final du compte-rendu.
         </p>
         <p className="mt-2">
           L&apos;outil est conçu pour vous faire gagner du temps sur la rédaction,
-          pas pour se substituer à votre expertise. Chaque CRBO doit être
-          relu et validé avant transmission.
+          pas pour se substituer à votre expertise. Nous vous{' '}
+          <strong>conseillons de relire et valider</strong> chaque CRBO avant
+          transmission.
         </p>
       </>
     ),
