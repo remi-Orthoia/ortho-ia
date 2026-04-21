@@ -33,6 +33,9 @@ interface CRBO {
   statut: CRBOStatus
   created_at: string
   severite_globale?: 'Léger' | 'Modéré' | 'Sévère' | null
+  bilan_precedent_id?: string | null
+  /** Date du bilan précédent (résolue côté client après fetch). */
+  bilan_precedent_date?: string | null
 }
 
 /** Couleurs de badge sévérité pour les cartes Kanban. */
@@ -125,10 +128,22 @@ export default function DashboardPage() {
       .order('created_at', { ascending: false })
 
     if (crbosData) {
-      // Ajouter statut par défaut si non existant
+      // Récupérer les dates des bilans précédents pour les renouvellements
+      const precIds = crbosData.map(c => c.bilan_precedent_id).filter(Boolean) as string[]
+      const precDates = new Map<string, string>()
+      if (precIds.length > 0) {
+        const { data: precData } = await supabase
+          .from('crbos')
+          .select('id, bilan_date')
+          .in('id', precIds)
+        for (const p of precData ?? []) precDates.set(p.id, p.bilan_date)
+      }
+
+      // Ajouter statut par défaut + résolution date précédente
       const crbosWithStatus = crbosData.map(crbo => ({
         ...crbo,
-        statut: crbo.statut || 'termine'
+        statut: crbo.statut || 'termine',
+        bilan_precedent_date: crbo.bilan_precedent_id ? precDates.get(crbo.bilan_precedent_id) ?? null : null,
       }))
       setCrbos(crbosWithStatus)
 
@@ -457,15 +472,18 @@ export default function DashboardPage() {
                     </div>
                   </div>
 
-                  {/* Badges type + sévérité */}
+                  {/* Badges type + sévérité + date bilan précédent (renouvellement) */}
                   <div className="mt-2 flex items-center gap-1.5 flex-wrap">
-                    <span className={`inline-block px-2 py-0.5 rounded text-xs font-medium ${
-                      crbo.bilan_type === 'initial'
-                        ? 'bg-blue-100 text-blue-700'
-                        : 'bg-purple-100 text-purple-700'
-                    }`}>
-                      {crbo.bilan_type === 'initial' ? 'Initial' : 'Renouvellement'}
-                    </span>
+                    {crbo.bilan_type === 'renouvellement' ? (
+                      <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded text-xs font-medium bg-purple-100 text-purple-700">
+                        <span>🔄</span>
+                        Renouvellement
+                      </span>
+                    ) : (
+                      <span className="inline-block px-2 py-0.5 rounded text-xs font-medium bg-blue-100 text-blue-700">
+                        Initial
+                      </span>
+                    )}
                     {crbo.severite_globale && SEVERITE_BADGE[crbo.severite_globale] && (
                       <span className={`inline-flex items-center gap-1 px-2 py-0.5 rounded border text-xs font-medium ${SEVERITE_BADGE[crbo.severite_globale].bg} ${SEVERITE_BADGE[crbo.severite_globale].text}`}>
                         <span className={`w-1.5 h-1.5 rounded-full ${SEVERITE_BADGE[crbo.severite_globale].dot}`} />
@@ -473,6 +491,12 @@ export default function DashboardPage() {
                       </span>
                     )}
                   </div>
+                  {crbo.bilan_type === 'renouvellement' && crbo.bilan_precedent_date && (
+                    <p className="mt-1.5 text-[10px] text-purple-600 dark:text-purple-400 flex items-center gap-1">
+                      <span>↻</span>
+                      <span>Précédent : {new Date(crbo.bilan_precedent_date).toLocaleDateString('fr-FR')}</span>
+                    </p>
+                  )}
                 </div>
               ))}
 
