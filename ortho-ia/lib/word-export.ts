@@ -17,15 +17,18 @@ import type { CRBOStructure } from './prompts'
 // --------------------- Palette cohérente seuils cliniques ---------------------
 
 export type SeuilClinique = {
-  label: 'Normal' | 'Limite basse' | 'Fragile' | 'Déficitaire' | 'Pathologique'
+  label: 'Supérieur' | 'Normal' | 'Limite basse' | 'Fragile' | 'Déficitaire' | 'Pathologique'
   min: number
   shading: string // hex sans # (pour docx)
   css: string     // avec # (pour canvas)
   range: string
 }
 
+// 6 niveaux : permet de distinguer visuellement un score supérieur (P≥75) d'une
+// simple norme basse (P25-74). Les couleurs restent alignées avec le Word export.
 export const SEUILS: SeuilClinique[] = [
-  { label: 'Normal',       min: 25, shading: 'C8E6C9', css: '#81C784', range: 'P ≥ 25' },
+  { label: 'Supérieur',    min: 75, shading: '66BB6A', css: '#2E7D32', range: 'P ≥ 75' },
+  { label: 'Normal',       min: 25, shading: 'C8E6C9', css: '#81C784', range: 'P25-74' },
   { label: 'Limite basse', min: 16, shading: 'FFF59D', css: '#FFEE58', range: 'P16-24' },
   { label: 'Fragile',      min: 7,  shading: 'FFCC80', css: '#FFB74D', range: 'P7-15' },
   { label: 'Déficitaire',  min: 2,  shading: 'EF9A9A', css: '#E57373', range: 'P2-6' },
