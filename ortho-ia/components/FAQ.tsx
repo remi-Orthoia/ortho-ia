@@ -276,8 +276,8 @@ export default function FAQ() {
         <div className="mt-10 text-center">
           <p className="text-sm text-gray-600">
             Une autre question ? Écrivez-nous à{' '}
-            <Link href="mailto:remi.berrio@gmail.com" className="text-green-600 hover:underline font-medium">
-              remi.berrio@gmail.com
+            <Link href="mailto:LeBureauDuSupport@orthoia.fr" className="text-green-600 hover:underline font-medium">
+              LeBureauDuSupport@orthoia.fr
             </Link>
           </p>
         </div>
