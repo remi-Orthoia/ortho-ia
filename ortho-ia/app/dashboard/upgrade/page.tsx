@@ -75,7 +75,7 @@ export default function UpgradePage() {
           <p className="mt-2 text-sm text-green-100">
             {billingAnnual
               ? 'Facturé 178,80€/an · économisez 60€'
-              : 'Sans engagement · résiliable à tout moment'}
+              : 'Sans engagement · Mettez en pause ou résiliez à tout moment !'}
           </p>
 
           <ul className="mt-8 space-y-3">
