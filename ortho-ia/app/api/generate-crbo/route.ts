@@ -224,6 +224,7 @@ export async function POST(request: NextRequest) {
       evolution_notes: formData.evolution_notes,
       bilan_precedent_structure: formData.bilan_precedent_structure,
       bilan_precedent_date: formData.bilan_precedent_date ? formatDateFR(formData.bilan_precedent_date) : undefined,
+      bilan_precedent_anamnese: formData.bilan_precedent_anamnese,
     })
 
     // Timeout explicite — 180s max. Les bilans complexes (Exalang 8-11 avec
