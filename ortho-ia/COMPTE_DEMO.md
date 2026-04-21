@@ -56,7 +56,7 @@ Chaque CRBO contient :
 4. **Télécharger un Word** → vérifier : graphique page 1, badge sévérité, tableau comparatif (Inès renouvellement uniquement), colonne Interprétation colorée, glossaire final.
 5. **Partage 24h** : cliquer "Partager (24h)" → copie automatique du lien → ouvrir dans un autre navigateur/incognito pour simuler un médecin qui relit.
 6. **Timeline patient** : cliquer sur un patient dans "Mes patients" → voir la fiche détaillée (avec graphique si plusieurs CRBOs).
-7. **Créer un nouveau CRBO** : tester le formulaire 5 étapes avec le chronomètre, les tags de comportement, le raccourci ⌘+Entrée, et l'écran de génération animé.
+7. **Créer un nouveau CRBO** : tester le formulaire 5 étapes avec les tags de comportement, le raccourci ⌘+Entrée, et l'écran de génération animé.
 
 ## Reset du compte démo
 

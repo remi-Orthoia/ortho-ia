@@ -6,7 +6,6 @@ import { createClient } from '@/lib/supabase'
 import { CLASSES_OPTIONS, TESTS_OPTIONS, TESTS_SCREENING_OPTIONS, CRBOFormData } from '@/lib/types'
 import type { CRBOStructure, CRBODomain, CRBOEpreuve } from '@/lib/prompts'
 import { downloadCRBOWord } from '@/lib/word-export'
-import SessionTimer from '@/components/SessionTimer'
 import StepProgress from '@/components/StepProgress'
 import GenerationLoader from '@/components/GenerationLoader'
 import Tooltip from '@/components/Tooltip'
@@ -492,8 +491,6 @@ function NouveauCRBOContent() {
       playSuccessSound()
       try {
         localStorage.removeItem(DRAFT_KEY)
-        // Purge le chronomètre de séance (évite recyclage sur le prochain CRBO)
-        localStorage.removeItem('orthoia.session-timer.v2')
       } catch {}
 
       // ============ Persistance : insert CRBO PUIS increment compteur ============
@@ -1458,13 +1455,6 @@ Lecture de mots (score) : 15/100, É-T : -6.62, P5
                 className="w-full px-3 py-2 border border-indigo-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-400 text-sm resize-none bg-white"
               />
             </div>
-
-            {/* Chronomètre de séance — facturation */}
-            <SessionTimer
-              durationMinutes={formData.duree_seance_minutes}
-              sessionKey={`${formData.patient_prenom}|${formData.patient_nom}|${formData.bilan_date}`}
-              onChange={(minutes) => setFormData(prev => ({ ...prev, duree_seance_minutes: minutes }))}
-            />
 
             <div>
               <label className="block text-sm font-medium text-gray-700 mb-1">
