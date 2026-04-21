@@ -4,19 +4,21 @@ import { useState, useEffect } from 'react'
 import { useParams, useRouter } from 'next/navigation'
 import Link from 'next/link'
 import { createClient } from '@/lib/supabase'
-import { 
-  ArrowLeft, 
-  Download, 
-  Loader2, 
-  Calendar, 
+import {
+  ArrowLeft,
+  Download,
+  Loader2,
+  Calendar,
   User,
   FileText,
   Edit,
   Trash2,
   CheckCircle,
   Clock,
-  Eye
+  Eye,
+  Sparkles
 } from 'lucide-react'
+import CRBOStructuredPreview from '@/components/CRBOStructuredPreview'
 
 interface CRBO {
   id: string
@@ -60,6 +62,7 @@ export default function CRBODetailPage() {
   const [profile, setProfile] = useState<any>(null)
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState('')
+  const [showPreviewModal, setShowPreviewModal] = useState(false)
 
   useEffect(() => {
     const fetchCRBO = async () => {
@@ -282,19 +285,66 @@ export default function CRBODetailPage() {
         </div>
       </div>
 
-      {/* CRBO Content */}
-      <div className="bg-white rounded-xl border border-gray-200 overflow-hidden">
-        <div className="border-b border-gray-200 px-6 py-4">
-          <h2 className="font-semibold text-gray-900">Compte rendu de bilan orthophonique</h2>
-        </div>
-        <div className="p-6">
-          <div className="prose prose-sm max-w-none">
-            <pre className="whitespace-pre-wrap font-sans text-gray-700 leading-relaxed">
-              {crbo.crbo_text}
-            </pre>
+      {/* CRBO Content — preview structuré si structure_json, fallback texte brut sinon */}
+      {crbo.structure_json ? (
+        <CRBOStructuredPreview
+          structure={crbo.structure_json}
+          onDownload={handleDownload}
+          onPreview={() => setShowPreviewModal(true)}
+        />
+      ) : (
+        <div className="bg-white rounded-xl border border-gray-200 overflow-hidden">
+          <div className="border-b border-gray-200 px-6 py-4">
+            <h2 className="font-semibold text-gray-900">Compte rendu de bilan orthophonique</h2>
+          </div>
+          <div className="p-6">
+            <div className="prose prose-sm max-w-none">
+              <pre className="whitespace-pre-wrap font-sans text-gray-700 leading-relaxed">
+                {crbo.crbo_text}
+              </pre>
+            </div>
           </div>
         </div>
-      </div>
+      )}
+
+      {/* Modal Prévisualisation plein écran */}
+      {showPreviewModal && crbo.structure_json && (
+        <div
+          className="fixed inset-0 z-50 bg-black/70 backdrop-blur-sm overflow-y-auto animate-fade-in"
+          onClick={() => setShowPreviewModal(false)}
+          role="dialog"
+          aria-modal="true"
+          aria-label="Prévisualisation du CRBO"
+        >
+          <div className="min-h-screen p-3 sm:p-8">
+            <div
+              onClick={(e) => e.stopPropagation()}
+              className="max-w-4xl mx-auto bg-white dark:bg-surface-dark rounded-2xl shadow-2xl p-5 sm:p-10"
+            >
+              <div className="flex items-center justify-between mb-5 pb-3 border-b border-gray-200 dark:border-surface-dark-muted sticky top-0 bg-white dark:bg-surface-dark z-10">
+                <h2 className="text-lg font-semibold text-gray-900 dark:text-gray-100 flex items-center gap-2">
+                  <Sparkles className="text-primary-600 dark:text-primary-400" size={18} />
+                  Prévisualisation du CRBO — {crbo.patient_prenom} {crbo.patient_nom}
+                </h2>
+                <button
+                  onClick={() => setShowPreviewModal(false)}
+                  className="btn-secondary text-sm"
+                  aria-label="Fermer la prévisualisation"
+                >
+                  Fermer
+                </button>
+              </div>
+              <CRBOStructuredPreview
+                structure={crbo.structure_json}
+                onDownload={async () => {
+                  await handleDownload()
+                  setShowPreviewModal(false)
+                }}
+              />
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   )
 }
