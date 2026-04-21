@@ -133,20 +133,32 @@ export async function POST(request: NextRequest) {
 
     const { data: sub } = await supabase
       .from('subscriptions')
-      .select('crbo_count, crbo_limit, plan, status')
+      .select('crbo_limit, plan, status')
       .eq('user_id', user.id)
       .single()
 
-    if (sub && sub.status === 'active' && sub.crbo_count >= sub.crbo_limit) {
-      return NextResponse.json(
-        {
-          error:
-            sub.plan === 'free'
-              ? `Quota de ${sub.crbo_limit} CRBO gratuits atteint. Passez à l'offre Pro pour continuer.`
-              : `Quota mensuel de ${sub.crbo_limit} CRBO atteint.`,
-        },
-        { status: 429 },
+    // Plan Pro / Team = illimité (crbo_limit = -1). Plan Free = quota mensuel
+    // recalculé à chaque appel depuis `crbos.created_at >= date_trunc('month', NOW())` :
+    // reset implicite au 1er du mois, pas de cron nécessaire.
+    const isFreePlan = !sub || sub.plan === 'free'
+    const effectiveLimit = sub?.crbo_limit === -1 ? Infinity : (sub?.crbo_limit ?? 10)
+
+    if (isFreePlan && sub?.status !== 'canceled') {
+      const { data: monthlyCount, error: countError } = await supabase.rpc(
+        'get_monthly_crbo_count',
+        { p_user_id: user.id },
       )
+      if (countError) {
+        console.error('Erreur lecture quota mensuel:', countError.message)
+        // Fail-open : on ne bloque pas l'utilisatrice sur erreur Supabase
+      } else if ((monthlyCount ?? 0) >= effectiveLimit) {
+        return NextResponse.json(
+          {
+            error: `Vous avez atteint votre limite de ${effectiveLimit} CRBOs gratuits ce mois. Passez en Pro pour continuer.`,
+          },
+          { status: 429 },
+        )
+      }
     }
 
     const { formData } = await request.json()

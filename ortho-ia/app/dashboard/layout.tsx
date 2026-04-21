@@ -29,6 +29,7 @@ export default function DashboardLayout({ children }: DashboardLayoutProps) {
   const [sidebarOpen, setSidebarOpen] = useState(false)
   const [user, setUser] = useState<any>(null)
   const [subscription, setSubscription] = useState<any>(null)
+  const [monthlyCount, setMonthlyCount] = useState<number>(0)
   const [loading, setLoading] = useState(true)
 
   useEffect(() => {
@@ -40,16 +41,16 @@ export default function DashboardLayout({ children }: DashboardLayoutProps) {
         return
       }
       setUser(user)
-      const { data: sub } = await supabase
-        .from('subscriptions')
-        .select('*')
-        .eq('user_id', user.id)
-        .single()
+      const [{ data: sub }, { data: count }] = await Promise.all([
+        supabase.from('subscriptions').select('*').eq('user_id', user.id).single(),
+        supabase.rpc('get_monthly_crbo_count', { p_user_id: user.id }),
+      ])
       setSubscription(sub)
+      setMonthlyCount(typeof count === 'number' ? count : 0)
       setLoading(false)
     }
     checkAuth()
-  }, [router])
+  }, [router, pathname])
 
   const handleLogout = async () => {
     const supabase = createClient()
@@ -143,34 +144,49 @@ export default function DashboardLayout({ children }: DashboardLayoutProps) {
             })}
           </nav>
 
-          {/* Quota */}
-          {subscription && (
-            <div className="px-4 pb-4">
-              <div className="bg-gray-50 dark:bg-surface-dark-muted rounded-lg p-3 border border-gray-100 dark:border-surface-dark-muted">
-                <div className="flex items-center justify-between text-xs">
-                  <span className="text-gray-500 dark:text-gray-400">CRBO ce mois</span>
-                  <span className="font-semibold text-gray-900 dark:text-gray-100">
-                    {subscription.crbo_count}/{subscription.crbo_limit === -1 ? '∞' : subscription.crbo_limit}
-                  </span>
-                </div>
-                {subscription.plan !== 'free' && (
-                  <div className="mt-2 flex items-center gap-1 text-[11px] text-primary-700 dark:text-primary-300 font-medium">
-                    <Sparkles size={10} />
-                    <span className="uppercase tracking-wider">Pro · Beta 3 mois offerts</span>
+          {/* Quota — compteur mensuel recalculé depuis crbos.created_at (reset 1er du mois) */}
+          {subscription && (() => {
+            const isUnlimited = subscription.crbo_limit === -1 || subscription.plan !== 'free'
+            const limit = isUnlimited ? null : (subscription.crbo_limit ?? 10)
+            const percent = limit ? Math.min(100, Math.round((monthlyCount / limit) * 100)) : 0
+            const nearLimit = limit !== null && monthlyCount >= limit - 2 && monthlyCount < limit
+            const reached = limit !== null && monthlyCount >= limit
+            return (
+              <div className="px-4 pb-4">
+                <div className="bg-gray-50 dark:bg-surface-dark-muted rounded-lg p-3 border border-gray-100 dark:border-surface-dark-muted">
+                  <div className="flex items-center justify-between text-xs">
+                    <span className="text-gray-500 dark:text-gray-400">CRBOs ce mois</span>
+                    <span className={`font-semibold ${reached ? 'text-red-600 dark:text-red-400' : nearLimit ? 'text-amber-600 dark:text-amber-400' : 'text-gray-900 dark:text-gray-100'}`}>
+                      {monthlyCount}/{isUnlimited ? '∞' : limit}
+                    </span>
                   </div>
-                )}
-                {subscription.plan === 'free' && (
-                  <Link
-                    href="/dashboard/upgrade"
-                    className="mt-3 flex items-center justify-center gap-1.5 w-full py-2 bg-primary-600 hover:bg-primary-700 text-white text-xs font-semibold rounded-md transition"
-                  >
-                    <Sparkles size={14} />
-                    Passer Pro
-                  </Link>
-                )}
+                  {!isUnlimited && (
+                    <div className="mt-2 h-1.5 w-full bg-gray-200 dark:bg-surface-dark rounded-full overflow-hidden">
+                      <div
+                        className={`h-full transition-all duration-300 ${reached ? 'bg-red-500' : nearLimit ? 'bg-amber-500' : 'bg-primary-500'}`}
+                        style={{ width: `${percent}%` }}
+                      />
+                    </div>
+                  )}
+                  {isUnlimited && (
+                    <div className="mt-2 flex items-center gap-1 text-[11px] text-primary-700 dark:text-primary-300 font-medium">
+                      <Sparkles size={10} />
+                      <span className="uppercase tracking-wider">Pro · illimité</span>
+                    </div>
+                  )}
+                  {!isUnlimited && (
+                    <Link
+                      href="/dashboard/upgrade"
+                      className="mt-3 flex items-center justify-center gap-1.5 w-full py-2 bg-primary-600 hover:bg-primary-700 text-white text-xs font-semibold rounded-md transition"
+                    >
+                      <Sparkles size={14} />
+                      {reached ? 'Passer Pro — illimité' : 'Passer Pro'}
+                    </Link>
+                  )}
+                </div>
               </div>
-            </div>
-          )}
+            )
+          })()}
 
           {/* User */}
           <div className="px-4 py-4 border-t border-gray-200 dark:border-surface-dark-muted">

@@ -95,6 +95,7 @@ export default function DashboardPage() {
     thisMonth: 0,
     timeSaved: 0
   })
+  const [planLimit, setPlanLimit] = useState<number | null>(10) // null = illimité (Pro)
 
   useEffect(() => {
     fetchData()
@@ -119,6 +120,15 @@ export default function DashboardPage() {
     if (profile) {
       setUserName(profile.prenom || 'there')
     }
+
+    // Récupérer le plan pour afficher "X / 10" ou "X / ∞"
+    const { data: sub } = await supabase
+      .from('subscriptions')
+      .select('plan, crbo_limit')
+      .eq('user_id', user.id)
+      .single()
+    const unlimited = !sub || sub.crbo_limit === -1 || (sub.plan && sub.plan !== 'free')
+    setPlanLimit(unlimited ? null : (sub?.crbo_limit ?? 10))
 
     // Récupérer les CRBO
     const { data: crbosData } = await supabase
@@ -268,18 +278,60 @@ export default function DashboardPage() {
 
       {/* Stats modernes */}
       <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
-        {[
-          { label: 'Total CRBO', value: stats.total, color: 'text-gray-900 dark:text-gray-100' },
-          { label: 'Ce mois', value: stats.thisMonth, color: 'text-gray-900 dark:text-gray-100' },
-          { label: 'À rédiger', value: getCRBOsByStatus('a_rediger').length, color: 'text-blue-600 dark:text-blue-400' },
-          { label: 'Temps gagné', value: `${Math.floor(stats.timeSaved / 60)} h`, color: 'text-primary-600 dark:text-primary-400' },
-        ].map((s) => (
-          <div key={s.label} className="card-modern p-4">
-            <p className="text-sm text-gray-500 dark:text-gray-400">{s.label}</p>
-            <p className={`text-2xl font-bold mt-0.5 ${s.color}`}>{s.value}</p>
-          </div>
-        ))}
+        {(() => {
+          // "Ce mois" affiche le quota pour le plan Free, juste le nombre pour Pro
+          const reachedQuota = planLimit !== null && stats.thisMonth >= planLimit
+          const nearQuota = planLimit !== null && stats.thisMonth >= planLimit - 2 && !reachedQuota
+          const thisMonthValue = planLimit === null
+            ? String(stats.thisMonth)
+            : `${stats.thisMonth} / ${planLimit}`
+          const thisMonthColor = reachedQuota
+            ? 'text-red-600 dark:text-red-400'
+            : nearQuota
+              ? 'text-amber-600 dark:text-amber-400'
+              : 'text-gray-900 dark:text-gray-100'
+          const cards = [
+            { label: 'Total CRBO', value: stats.total, color: 'text-gray-900 dark:text-gray-100', sub: null as string | null },
+            {
+              label: planLimit === null ? 'Ce mois' : 'CRBOs ce mois',
+              value: thisMonthValue,
+              color: thisMonthColor,
+              sub: reachedQuota ? 'Quota atteint — passez Pro' : nearQuota ? 'Proche du quota' : null,
+            },
+            { label: 'À rédiger', value: getCRBOsByStatus('a_rediger').length, color: 'text-blue-600 dark:text-blue-400', sub: null },
+            { label: 'Temps gagné', value: `${Math.floor(stats.timeSaved / 60)} h`, color: 'text-primary-600 dark:text-primary-400', sub: null },
+          ]
+          return cards.map((s) => (
+            <div key={s.label} className="card-modern p-4">
+              <p className="text-sm text-gray-500 dark:text-gray-400">{s.label}</p>
+              <p className={`text-2xl font-bold mt-0.5 ${s.color}`}>{s.value}</p>
+              {s.sub && (
+                <p className={`text-[11px] mt-1 ${reachedQuota ? 'text-red-600 dark:text-red-400' : 'text-amber-600 dark:text-amber-400'}`}>
+                  {s.sub}
+                </p>
+              )}
+            </div>
+          ))
+        })()}
       </div>
+
+      {/* Bandeau quota atteint — CTA upgrade */}
+      {planLimit !== null && stats.thisMonth >= planLimit && (
+        <div className="rounded-2xl border border-red-200 dark:border-red-800/40 bg-gradient-to-br from-red-50 to-orange-50 dark:from-red-900/20 dark:to-orange-900/20 p-5 flex flex-col sm:flex-row items-start sm:items-center gap-4">
+          <div className="w-10 h-10 rounded-xl bg-red-100 dark:bg-red-900/40 text-red-700 dark:text-red-300 flex items-center justify-center shrink-0 font-bold">!</div>
+          <div className="flex-1">
+            <p className="font-bold text-gray-900 dark:text-gray-100">
+              Vous avez atteint votre limite de {planLimit} CRBOs gratuits ce mois.
+            </p>
+            <p className="text-sm text-gray-700 dark:text-gray-300 mt-0.5">
+              Passez en Pro pour continuer à générer des CRBOs sans limite. Votre compteur sera remis à zéro le 1er du mois prochain.
+            </p>
+          </div>
+          <Link href="/dashboard/upgrade" className="btn-primary whitespace-nowrap">
+            Passer Pro
+          </Link>
+        </div>
+      )}
 
       {/* Widget Prochain bilan / CRBO récents */}
       {recentCrbos.length > 0 && (
