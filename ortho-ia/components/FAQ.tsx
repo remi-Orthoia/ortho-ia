@@ -80,6 +80,67 @@ const FAQS: FAQItem[] = [
     ),
   },
   {
+    question: "En quoi Ortho.ia est-il meilleur que ChatGPT pour rédiger mes CRBO ?",
+    answer: (
+      <>
+        <p>
+          ChatGPT est un couteau suisse généraliste. <strong>Ortho.ia est un outil
+          clinique, conçu pour et avec des orthophonistes.</strong> La différence se
+          joue sur huit points concrets :
+        </p>
+        <ul className="list-disc pl-5 mt-2 space-y-1">
+          <li>
+            <strong>Connaissance des batteries françaises</strong> — Exalang (3-6, 5-8,
+            8-11, 11-15), Examath, ELO, EVALO, N-EEL, BILO, EVALEO, BALE, BELEC, MoCA,
+            BETL, OMF. Chaque module connaît les domaines évalués, les seuils, les
+            pièges cliniques.
+          </li>
+          <li>
+            <strong>Règles de percentiles FNO respectées</strong> — Q1 = P25, Med = P50,
+            Q3 = P75. Les normes du test priment toujours sur l&apos;écart-type.
+            ChatGPT recalcule à tort P6 depuis un É-T de -1.53 et vous transforme un
+            Normal en Déficitaire.
+          </li>
+          <li>
+            <strong>Anonymisation RGPD automatique</strong> — prénom, nom, médecin,
+            coordonnées sont tokenisés avant l&apos;API, jamais besoin de les retirer
+            à la main avant de prompter.
+          </li>
+          <li>
+            <strong>Sortie structurée prête à envoyer</strong> — Word professionnel
+            avec en-tête, graphiques de percentiles, tableaux colorés par seuil
+            clinique, glossaire pour les parents, conclusions, PAP/PPS. Pas un bloc
+            de texte à remettre en forme.
+          </li>
+          <li>
+            <strong>Gestion du renouvellement</strong> — comparaison automatique avec
+            le bilan précédent, tableau d&apos;évolution avec flèches ↑ ↓ →, synthèse
+            narrative de la progression.
+          </li>
+          <li>
+            <strong>Historique patient + carnet intégré</strong> — timeline des scores,
+            Kanban des CRBO en cours, carnet patients et médecins. ChatGPT vous oblige
+            à tout recopier à chaque session.
+          </li>
+          <li>
+            <strong>Zéro prompt à rédiger</strong> — vous remplissez un formulaire clair,
+            l&apos;outil fait le reste. Pas de formule magique à mémoriser, pas de
+            paramètres à régler, pas de &quot;tu es un orthophoniste expert…&quot;.
+          </li>
+          <li>
+            <strong>Prompts validés cliniquement</strong> — itérés avec des
+            orthophonistes en exercice sur de vrais bilans, pas par un modèle généraliste
+            qui invente parfois des épreuves qui n&apos;existent pas.
+          </li>
+        </ul>
+        <p className="mt-3 text-sm text-gray-500">
+          Autrement dit : ChatGPT peut vous aider à écrire un email ; Ortho.ia rédige
+          votre CRBO à votre place, dans le cadre clinique correct.
+        </p>
+      </>
+    ),
+  },
+  {
     question: "Comment fonctionne l'import PDF ?",
     answer: (
       <p>
