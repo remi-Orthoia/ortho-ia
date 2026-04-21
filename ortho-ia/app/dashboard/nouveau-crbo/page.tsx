@@ -269,12 +269,18 @@ function NouveauCRBOContent() {
         setError(`Aucun bilan précédent trouvé pour ${formData.patient_prenom} ${formData.patient_nom}.`)
         return
       }
+      // Extraction de l'anamnèse rédigée (prose) depuis la structure JSON si dispo,
+      // sinon fallback sur les notes brutes.
+      const anamneseRedigee = data.structure_json?.anamnese_redigee || ''
       setFormData(prev => ({
         ...prev,
         anamnese: data.anamnese,
         bilan_precedent_id: data.id,
         bilan_precedent_structure: data.structure_json ?? null,
         bilan_precedent_date: data.bilan_date,
+        bilan_precedent_anamnese: anamneseRedigee,
+        // Pré-remplissage éléments stables : anamnèse précédente (ortho peut éditer)
+        elements_stables: prev.elements_stables || anamneseRedigee || data.anamnese,
       }))
     } catch (e: any) {
       setError(e.message || "Erreur lors de l'import de l'anamnèse.")
@@ -308,6 +314,20 @@ function NouveauCRBOContent() {
       anamnese: patient.anamnese_base || prev.anamnese,
     }))
   }
+
+  // Auto-load du bilan précédent dès que renouvellement + patient existant confirmés
+  useEffect(() => {
+    if (
+      formData.bilan_type === 'renouvellement' &&
+      selectedPatientId &&
+      !formData.bilan_precedent_id &&
+      formData.patient_prenom && formData.patient_nom &&
+      !importingAnamnese
+    ) {
+      handleImportPreviousAnamnese()
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [formData.bilan_type, selectedPatientId, formData.patient_prenom, formData.patient_nom])
 
   // Réinitialiser pour nouveau patient
   const handleNewPatient = () => {
@@ -420,6 +440,23 @@ function NouveauCRBOContent() {
       return
     }
 
+    // En mode renouvellement : construit l'anamnèse à partir des éléments stables + évolutions
+    // (les deux textes, clairement séparés, sont envoyés à Claude qui saura distinguer)
+    const formDataForSubmission = { ...formData }
+    if (formData.bilan_type === 'renouvellement' && selectedPatientId) {
+      const stables = (formData.elements_stables || '').trim()
+      const evolutions = (formData.evolution_notes || '').trim()
+      if (!evolutions) {
+        setError('Renseignez les évolutions depuis le dernier bilan avant de générer.')
+        return
+      }
+      // Concaténation structurée pour que Claude comprenne les deux parties
+      formDataForSubmission.anamnese = [
+        stables && `[ÉLÉMENTS STABLES DE L'ANAMNÈSE]\n${stables}`,
+        `[ÉVOLUTIONS DEPUIS LE DERNIER BILAN]\n${evolutions}`,
+      ].filter(Boolean).join('\n\n')
+    }
+
     setGenerating(true)
     setError('')
 
@@ -427,7 +464,7 @@ function NouveauCRBOContent() {
       const response = await fetch('/api/generate-crbo', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ formData }),
+        body: JSON.stringify({ formData: formDataForSubmission }),
       })
 
       const data = await response.json()
@@ -855,6 +892,23 @@ function NouveauCRBOContent() {
             )}
 
             {/* Patient Form */}
+            {/* Bandeau info renouvellement sur patient existant */}
+            {formData.bilan_type === 'renouvellement' && selectedPatientId && (
+              <div className="bg-purple-50 dark:bg-purple-900/20 border border-purple-200 dark:border-purple-800/40 rounded-lg p-4 mb-2">
+                <div className="flex items-start gap-2">
+                  <span className="text-xl">🔄</span>
+                  <div>
+                    <p className="font-semibold text-purple-900 dark:text-purple-200 text-sm">
+                      Bilan de renouvellement — patient déjà connu
+                    </p>
+                    <p className="text-xs text-purple-700 dark:text-purple-300 mt-0.5">
+                      Les informations patient sont verrouillées (nom, prénom, date de naissance) — seule la classe peut évoluer entre deux bilans.
+                    </p>
+                  </div>
+                </div>
+              </div>
+            )}
+
             <div className="grid sm:grid-cols-2 gap-4">
               {!selectedPatientId && (
                 <>
@@ -885,18 +939,33 @@ function NouveauCRBOContent() {
                 </>
               )}
               <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">Date de naissance *</label>
+                <label className="block text-sm font-medium text-gray-700 mb-1">
+                  Date de naissance *
+                  {formData.bilan_type === 'renouvellement' && selectedPatientId && (
+                    <span className="ml-1 text-xs text-gray-400">🔒 verrouillé</span>
+                  )}
+                </label>
                 <input
                   type="date"
                   name="patient_ddn"
                   value={formData.patient_ddn}
                   onChange={handleChange}
                   required
-                  className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-green-500"
+                  readOnly={formData.bilan_type === 'renouvellement' && !!selectedPatientId}
+                  className={`w-full px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-green-500 ${
+                    formData.bilan_type === 'renouvellement' && selectedPatientId
+                      ? 'bg-gray-50 dark:bg-surface-dark-muted text-gray-600 cursor-not-allowed'
+                      : ''
+                  }`}
                 />
               </div>
               <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">Classe *</label>
+                <label className="block text-sm font-medium text-gray-700 mb-1">
+                  Classe *
+                  {formData.bilan_type === 'renouvellement' && selectedPatientId && (
+                    <span className="ml-1 text-xs text-purple-600 dark:text-purple-400">✏️ modifiable</span>
+                  )}
+                </label>
                 <select
                   name="patient_classe"
                   value={formData.patient_classe}
@@ -992,109 +1061,132 @@ function NouveauCRBOContent() {
           <div className="space-y-6">
             <div>
               <StepPhaseBadge step={4} />
-              <h2 className="text-xl font-semibold text-gray-900">Anamnèse</h2>
-              <p className="mt-1 text-sm text-gray-500">Entrez vos notes librement, l'IA les reformulera</p>
+              <h2 className="text-xl font-semibold text-gray-900">
+                {formData.bilan_type === 'renouvellement' && selectedPatientId ? '📊 Évolution depuis le dernier bilan' : 'Anamnèse'}
+              </h2>
+              <p className="mt-1 text-sm text-gray-500">
+                {formData.bilan_type === 'renouvellement' && selectedPatientId
+                  ? 'Notez ce qui a changé depuis le dernier bilan — les éléments stables sont déjà pré-remplis.'
+                  : "Entrez vos notes librement, l'IA les reformulera en prose professionnelle."}
+              </p>
             </div>
 
-            {/* Import anamnèse du bilan précédent — uniquement pour un renouvellement sur patient existant */}
-            {formData.bilan_type === 'renouvellement' && selectedPatientId && (
-              <div className="bg-emerald-50 border border-emerald-200 rounded-lg p-4 flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
-                <div>
-                  <p className="text-sm font-medium text-emerald-900">Bilan de renouvellement</p>
-                  <p className="text-xs text-emerald-700 mt-0.5">
-                    Récupérez l'anamnèse du dernier bilan de {formData.patient_prenom} {formData.patient_nom}, puis ajustez-la.
-                  </p>
-                </div>
-                <button
-                  type="button"
-                  onClick={handleImportPreviousAnamnese}
-                  disabled={importingAnamnese}
-                  className="inline-flex items-center justify-center gap-2 px-4 py-2.5 bg-white border border-emerald-300 text-emerald-700 rounded-lg text-sm font-medium hover:bg-emerald-100 transition whitespace-nowrap disabled:opacity-60"
-                >
-                  {importingAnamnese ? (
-                    <>
-                      <Loader2 className="animate-spin" size={16} />
-                      Import en cours…
-                    </>
-                  ) : (
-                    <>📥 Importer l'anamnèse du dernier bilan</>
-                  )}
-                </button>
-              </div>
-            )}
-
-            {/* ZONE 1 — Évolution depuis le dernier bilan (renouvellement uniquement) */}
-            {formData.bilan_type === 'renouvellement' && (
-              <div className="bg-purple-50 border border-purple-200 rounded-xl p-5 space-y-3">
-                <div className="flex items-center gap-2">
-                  <span className="text-2xl">📊</span>
-                  <h3 className="font-semibold text-purple-900">Évolution depuis le dernier bilan</h3>
-                </div>
-                {formData.bilan_precedent_date ? (
-                  <p className="text-xs text-purple-700">
-                    Dernier bilan du <strong>{new Date(formData.bilan_precedent_date).toLocaleDateString('fr-FR')}</strong> chargé —
-                    Claude comparera les résultats actuels aux précédents pour produire une synthèse d'évolution.
-                  </p>
-                ) : (
-                  <p className="text-xs text-purple-700">
-                    Cliquez sur « Importer l'anamnèse du dernier bilan » ci-dessus pour charger aussi les résultats précédents et activer la comparaison automatique.
-                  </p>
+            {/* ============ MODE RENOUVELLEMENT sur patient connu ============ */}
+            {formData.bilan_type === 'renouvellement' && selectedPatientId ? (
+              <>
+                {importingAnamnese && (
+                  <div className="flex items-center gap-2 text-sm text-purple-600">
+                    <Loader2 className="animate-spin" size={16} />
+                    Chargement du bilan précédent…
+                  </div>
                 )}
-                <div>
-                  <label className="block text-xs font-medium text-purple-900 mb-1">
-                    Vos observations cliniques sur l'évolution
-                  </label>
+
+                {/* Bloc 1 : Anamnèse initiale — lecture seule */}
+                {formData.bilan_precedent_anamnese && (
+                  <div className="bg-slate-50 dark:bg-surface-dark-subtle border border-slate-200 dark:border-surface-dark-muted rounded-xl p-5">
+                    <div className="flex items-center justify-between mb-2">
+                      <p className="font-semibold text-slate-900 dark:text-slate-100 text-sm flex items-center gap-1.5">
+                        <span>📚</span>
+                        Anamnèse initiale
+                      </p>
+                      {formData.bilan_precedent_date && (
+                        <span className="text-xs text-slate-500 dark:text-slate-400">
+                          Bilan du {new Date(formData.bilan_precedent_date).toLocaleDateString('fr-FR')}
+                        </span>
+                      )}
+                    </div>
+                    <div className="text-sm text-slate-600 dark:text-slate-400 leading-relaxed max-h-40 overflow-y-auto whitespace-pre-line">
+                      {formData.bilan_precedent_anamnese}
+                    </div>
+                    <p className="mt-2 text-xs text-slate-500 dark:text-slate-500 italic">
+                      🔒 Lecture seule — réinjectée automatiquement dans le prompt pour contexte.
+                    </p>
+                  </div>
+                )}
+
+                {/* Bloc 2 : Évolutions depuis le dernier bilan */}
+                <div className="bg-gradient-to-br from-purple-50 to-fuchsia-50 dark:from-purple-900/20 dark:to-fuchsia-900/20 border border-purple-200 dark:border-purple-800/40 rounded-xl p-5 space-y-3">
+                  <div className="flex items-center gap-2">
+                    <span className="text-2xl">📊</span>
+                    <h3 className="font-semibold text-purple-900 dark:text-purple-200">
+                      Évolutions depuis le dernier bilan *
+                    </h3>
+                  </div>
+                  <p className="text-xs text-purple-700 dark:text-purple-300">
+                    Notez ici ce qui a bougé depuis le {formData.bilan_precedent_date ? new Date(formData.bilan_precedent_date).toLocaleDateString('fr-FR') : 'dernier bilan'}. Pas besoin de tout réécrire.
+                  </p>
                   <textarea
                     name="evolution_notes"
                     value={formData.evolution_notes || ''}
                     onChange={handleChange}
-                    rows={4}
-                    placeholder={`Ex : "Progrès notables en lecture depuis la PEC démarrée en mars. Vitesse +40%. Orthographe grammaticale encore fragile. Conscience phonémique bien consolidée. Motivation restaurée."`}
-                    className="w-full px-3 py-2 border border-purple-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-purple-400 text-sm resize-none bg-white"
+                    rows={8}
+                    required
+                    placeholder={`• Changement de classe / établissement ?
+• Évolution des difficultés signalées par l'enseignant·e ?
+• Nouveaux suivis mis en place (neuropsy, psy, psychomot…) ?
+• Évolution loisirs, vie familiale, événements marquants ?
+• Ressenti de l'enfant et de la famille sur la prise en charge ?
+• Adaptation du PAP/PPS en cours ?`}
+                    className="w-full px-3 py-3 border border-purple-200 dark:border-purple-800/40 rounded-lg focus:outline-none focus:ring-2 focus:ring-purple-400 text-sm resize-none bg-white dark:bg-surface-dark-subtle leading-relaxed"
                   />
                 </div>
-              </div>
-            )}
 
-            {/* ZONE 2 — Anamnèse de base pré-remplie depuis la fiche patient */}
-            {formData.bilan_type === 'renouvellement' && selectedPatientId && (
-              <div className="bg-slate-50 border border-slate-200 rounded-xl p-4 text-xs text-slate-700">
-                <p className="font-semibold text-slate-900 mb-1">📋 Anamnèse de base (fiche patient)</p>
-                <p>
-                  L'anamnèse ci-dessous est pré-remplie depuis la fiche patient. Ajustez-la avec les événements survenus depuis le dernier bilan (changements de classe, suivis démarrés/arrêtés, évolution médicale…).
-                </p>
-              </div>
-            )}
+                {/* Bloc 3 : Éléments stables à conserver (pré-rempli, éditable) */}
+                <div className="bg-emerald-50 dark:bg-emerald-900/20 border border-emerald-200 dark:border-emerald-800/40 rounded-xl p-5 space-y-2">
+                  <div className="flex items-center gap-2">
+                    <span className="text-2xl">📋</span>
+                    <h3 className="font-semibold text-emerald-900 dark:text-emerald-200">
+                      Éléments stables à conserver
+                    </h3>
+                  </div>
+                  <p className="text-xs text-emerald-700 dark:text-emerald-300">
+                    Reprise de l&apos;anamnèse du bilan précédent. Modifiez uniquement si des éléments doivent être actualisés (suivis terminés, santé, etc.).
+                  </p>
+                  <textarea
+                    name="elements_stables"
+                    value={formData.elements_stables || ''}
+                    onChange={handleChange}
+                    rows={6}
+                    className="w-full px-3 py-3 border border-emerald-200 dark:border-emerald-800/40 rounded-lg focus:outline-none focus:ring-2 focus:ring-emerald-400 text-sm resize-none bg-white dark:bg-surface-dark-subtle leading-relaxed"
+                  />
+                </div>
 
-            <div className="bg-blue-50 border border-blue-200 rounded-lg p-4 text-sm text-blue-800">
-              <p className="font-medium mb-2">💡 Vous pouvez noter :</p>
-              <ul className="list-disc list-inside space-y-1 text-blue-700">
-                <li>Fratrie (nombre de frères/sœurs)</li>
-                <li>Vision/audition</li>
-                <li>Premières acquisitions (marche, premiers mots)</li>
-                <li>Suivis antérieurs (psy, psychomot, neuropsy...)</li>
-                <li>Parcours scolaire</li>
-                <li>Loisirs</li>
-              </ul>
-            </div>
+                {/* Champ caché anamnese — on le remplit à la soumission avec une concat */}
+              </>
+            ) : (
+              <>
+                {/* ============ MODE BILAN INITIAL ============ */}
+                <div className="bg-blue-50 border border-blue-200 rounded-lg p-4 text-sm text-blue-800">
+                  <p className="font-medium mb-2">💡 Vous pouvez noter :</p>
+                  <ul className="list-disc list-inside space-y-1 text-blue-700">
+                    <li>Fratrie (nombre de frères/sœurs)</li>
+                    <li>Vision/audition</li>
+                    <li>Premières acquisitions (marche, premiers mots)</li>
+                    <li>Suivis antérieurs (psy, psychomot, neuropsy...)</li>
+                    <li>Parcours scolaire</li>
+                    <li>Loisirs</li>
+                  </ul>
+                </div>
 
-            <div>
-              <label className="block text-sm font-medium text-gray-700 mb-1">Notes d'anamnèse *</label>
-              <textarea
-                name="anamnese"
-                value={formData.anamnese}
-                onChange={handleChange}
-                required
-                rows={10}
-                className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-green-500 resize-none"
-                placeholder="- fratrie : 1 grande sœur et 1 grand frère
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-1">Notes d&apos;anamnèse *</label>
+                  <textarea
+                    name="anamnese"
+                    value={formData.anamnese}
+                    onChange={handleChange}
+                    required
+                    rows={10}
+                    className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-green-500 resize-none"
+                    placeholder="- fratrie : 1 grande sœur et 1 grand frère
 - 1ères acquisitions : RAS
 - vision/audition : RAS, porte des lunettes (hypermétrope)
 - à la maison : il aime jouer avec son chat, construire des cabanes
 - autres suivis : bilan psychomot le 3/06/2020...
 - scolarité : CP très compliqué (6 maîtresses + confinement)"
-              />
-            </div>
+                  />
+                </div>
+              </>
+            )}
 
             {/* Option mémo vocal - désactivé pour le MVP */}
             <div className="opacity-50 pointer-events-none">

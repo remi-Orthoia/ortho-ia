@@ -87,11 +87,15 @@ export interface CRBOFormData {
   // Étape 4 — renouvellement uniquement
   /** Notes libres sur l'évolution depuis le dernier bilan. */
   evolution_notes?: string
+  /** Éléments d'anamnèse stables à conserver (repris du bilan initial, éditable). */
+  elements_stables?: string
   /** ID du bilan précédent (pour lier en DB et injecter dans le prompt). */
   bilan_precedent_id?: string
   /** Snapshot des résultats du bilan précédent (pour comparaison Claude). */
   bilan_precedent_structure?: import('./prompts').CRBOStructure | null
   bilan_precedent_date?: string
+  /** Anamnèse rédigée du bilan précédent — pour affichage lecture seule dans l'étape 4. */
+  bilan_precedent_anamnese?: string
 }
 
 export interface GenerateCRBORequest {
