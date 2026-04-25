@@ -9,6 +9,10 @@ import {
 import { createServerSupabaseClient } from '@/lib/supabase-server'
 import { withRetry } from '@/lib/retry'
 
+// Timeout serveur Vercel — l'extraction PDF Vision peut prendre 30-50s,
+// le défaut Hobby (10s) provoque des 504 systématiques. Aligné sur l'AbortController interne.
+export const maxDuration = 60
+
 const anthropic = new Anthropic({
   apiKey: process.env.ANTHROPIC_API_KEY,
 })
