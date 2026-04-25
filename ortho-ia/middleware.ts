@@ -59,6 +59,14 @@ export async function middleware(request: NextRequest) {
   }
 
   if ((isDashboard || isApiProtected) && !user) {
+    // Pour les routes API : 401 JSON propre (le frontend fait response.json()
+    // et un 307 vers /auth/login renvoie du HTML qui crashe le parser).
+    if (isApiProtected) {
+      return NextResponse.json(
+        { error: 'Session expirée. Reconnectez-vous pour continuer.' },
+        { status: 401 },
+      )
+    }
     const redirectUrl = request.nextUrl.clone()
     redirectUrl.pathname = '/auth/login'
     redirectUrl.searchParams.set('redirect', pathname)
