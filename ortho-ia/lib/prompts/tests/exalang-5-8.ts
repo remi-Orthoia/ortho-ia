@@ -14,6 +14,14 @@ export const exalang58: TestModule = {
     'Mémoire de travail verbale',
     'Dénomination',
   ],
+  // Groupes officiels HappyNeuron Exalang 5-8 (en-têtes de la feuille de résultats).
+  groupes: [
+    { code: 'A.1', nom: 'Langage oral' },
+    { code: 'A.2', nom: 'Métaphonologie' },
+    { code: 'B.1', nom: 'Lecture émergente' },
+    { code: 'B.2', nom: 'Production écrite émergente' },
+    { code: 'C.1', nom: 'Mémoire' },
+  ],
   epreuves: [
     'Dénomination d\'images',
     'Désignation sur définition',

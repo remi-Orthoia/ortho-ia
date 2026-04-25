@@ -33,14 +33,25 @@ Le CRBO structuré que tu produis doit contenir, dans cet ordre :
    - \`percentile\` (notation telle qu'utilisée par le test, ex: "Q1 (P25)", "P10", "Med")
    - \`percentile_value\` — valeur NUMÉRIQUE entre 0 et 100 utilisée pour les graphiques
    - \`interpretation\` — parmi : "Normal", "Limite basse", "Fragile", "Déficitaire", "Pathologique"
-   - \`commentaire\` clinique par domaine : **3 à 6 phrases de prose professionnelle** — jamais moins. Tu y intègres observations qualitatives, analyse croisée avec d'autres domaines, hypothèses cliniques, et orientation thérapeutique.
+   - \`commentaire\` clinique par domaine : **3-4 lignes max, concis et percutants** (≈ 40-70 mots). Pas de paraphrase des scores. Vise l'essentiel : interprétation clinique, analyse croisée la plus pertinente, et orientation thérapeutique en une phrase. Mieux vaut une phrase dense qu'un paragraphe dilué.
 
 3. \`diagnostic\` — **synthèse globale de 200 à 300 mots MAXIMUM** (limite stricte, vise la concision clinique), structurée avec des **titres de sections en gras Markdown** (entourés de \`**\`) :
    - \`**Comportement pendant le bilan**\` : attention, coopération, fatigabilité, stratégies d'évitement ou de persévérance observées. (2-3 phrases)
    - \`**Points forts**\` : domaines préservés, compétences qui peuvent servir de levier en rééducation. (1-2 phrases)
    - \`**Difficultés identifiées**\` : domaines fragiles → déficitaires → pathologiques, synthèse sans re-détailler les scores. (2-3 phrases)
    - \`**Analyse croisée**\` : expliciter les convergences cliniques inter-domaines (ex: "La fragilité métaphonologique associée au déficit en lecture de non-mots signe une atteinte de la voie d'assemblage, cohérente avec un profil de dyslexie phonologique"). (2-3 phrases)
-   - \`**Diagnostic**\` : diagnostic orthophonique explicite en terminologie CIM-10 / DSM-5 / FNO + diagnostic différentiel si profil ambigu (dyslexie vs TDAH vs autre, argumenter). (2-3 phrases)
+   - \`**Diagnostic**\` : diagnostic orthophonique explicite avec **code CIM-10 OBLIGATOIRE entre parenthèses**. Codes à utiliser :
+     - **F81.0** Trouble spécifique de la lecture (dyslexie)
+     - **F81.1** Trouble spécifique de l'orthographe (dysorthographie isolée)
+     - **F81.2** Trouble spécifique des acquisitions arithmétiques (dyscalculie)
+     - **F81.3** Trouble mixte des acquisitions scolaires
+     - **F80.0** Trouble spécifique de l'acquisition de l'articulation
+     - **F80.1** Trouble de l'acquisition du langage, type expressif
+     - **F80.2** Trouble de l'acquisition du langage, type réceptif (TDL/dysphasie)
+     - **F80.81** Trouble développemental du langage (TDL — terminologie DSM-5)
+     - **F90.0/F90.1** TDAH (suspicion à orienter vers neuropsy)
+     - **R47.x** Aphasies / troubles neurocognitifs adulte
+     Format : "Trouble spécifique de la lecture **(F81.0)**". Ajoute un diagnostic différentiel si profil ambigu (1 phrase d'argumentation). (2-3 phrases au total)
    - Titres à inclure TEL QUEL dans le texte avec la syntaxe Markdown \`**Titre**\` — le Word les rendra en gras automatiquement. **Sépare chaque section par une ligne vide** (double saut de ligne dans la chaîne).
 
 4. \`recommandations\` — **prise en charge concrète, 150-300 mots** :
@@ -72,11 +83,22 @@ Le CRBO structuré que tu produis doit contenir, dans cet ordre :
      * **Anxiété** : performance chutée en chronométré mais OK sans pression, auto-dévalorisation notée.
      * **Trouble neuro-cognitif adulte/senior** : manque du mot + mémoire mnésique + discours spontané pauvre.
 
-8. \`pap_suggestions\` — **liste des aménagements scolaires recommandés**, adaptés au profil détecté.
-   - **Dyslexie/dysorthographie** : "Temps majoré 1/3", "Polices adaptées (Arial 14, OpenDyslexic)", "Tolérance orthographique", "Ordinateur avec logiciel de lecture vocale", "Supports audio pour textes longs", "Pas de notation de l'orthographe hors cours de français".
-   - **Dyscalculie** : "Calculatrice autorisée", "Tables de multiplication à disposition", "Énoncés simplifiés", "Temps majoré 1/3 en maths", "Matériel manipulable toléré".
-   - **TDA/TDAH** : "Place préférentielle au calme", "Consignes reformulées oralement", "Pauses autorisées", "Segmentation des consignes", "Temps majoré 1/3 aux évaluations".
-   - **Profil sévère** : ajouter "AESH à envisager", "Utilisation d'outils numériques (tablette, ordinateur)", "Adaptation des évaluations".
+8. \`pap_suggestions\` — **liste structurée des aménagements scolaires recommandés**, adaptés au profil détecté.
+   - **FORMAT OBLIGATOIRE de chaque entrée** : \`"**Catégorie** — détail concret de l'aménagement"\` (catégorie en gras Markdown, séparée du détail par un tiret cadratin \`—\`).
+   - **Catégories à utiliser** (choisis la plus juste pour chaque entrée) :
+     - **Temps** : majoration de temps, pauses
+     - **Outils numériques** : ordinateur, tablette, logiciels (lecture vocale, dictée vocale, correcteur)
+     - **Présentation des supports** : polices adaptées, taille, espacement, schémas
+     - **Évaluations** : tolérance orthographique, énoncés reformulés, modalités spécifiques
+     - **Pédagogie** : consignes reformulées, segmentation, oral vs écrit
+     - **Environnement** : place, calme, accompagnement humain (AESH)
+     - **Oral** : restitution orale autorisée, dispense de lecture à voix haute
+   - **Exemples par profil** :
+     - Dyslexie/dysorthographie : \`"**Temps** — Temps majoré 1/3 à toutes les évaluations écrites"\`, \`"**Outils numériques** — Ordinateur autorisé avec logiciel de lecture vocale (Voice Dream, NaturalReader)"\`, \`"**Présentation des supports** — Polices adaptées (Arial 14, OpenDyslexic, interligne 1.5)"\`, \`"**Évaluations** — Tolérance orthographique hors cours de français"\`.
+     - Dyscalculie : \`"**Outils numériques** — Calculatrice autorisée à toutes les évaluations"\`, \`"**Pédagogie** — Tables de multiplication à disposition"\`, \`"**Évaluations** — Énoncés mathématiques simplifiés et reformulés"\`.
+     - TDA/TDAH : \`"**Environnement** — Place préférentielle au calme, loin des distractions"\`, \`"**Pédagogie** — Consignes reformulées oralement et segmentées"\`, \`"**Temps** — Pauses autorisées de 5 min toutes les 30 min"\`.
+     - Profil sévère : \`"**Environnement** — AESH à temps partiel à envisager via PPS/MDPH"\`.
+   - Ne mets **jamais** un aménagement sans sa catégorie en gras devant. Le rendu Word groupe automatiquement par catégorie.
 
 9. \`synthese_evolution\` — **UNIQUEMENT pour les bilans de renouvellement**, sinon \`null\`.
    - Comparer ligne par ligne les scores actuels et ceux du bilan précédent fourni dans le contexte.
@@ -184,8 +206,14 @@ export function buildSystemPrompt(tests: string[]): string {
       const domaines = m.domaines && m.domaines.length > 0
         ? `Domaines couverts : ${m.domaines.join(', ')}.`
         : ''
+      // Si le test fournit ses groupes officiels (A.1, B.2…), on les injecte
+      // comme nomenclature OBLIGATOIRE pour `domains[].nom` du JSON CRBO.
+      // Ça garantit que le graphique Word groupe correctement les barres.
+      const groupes = m.groupes && m.groupes.length > 0
+        ? `🔒 **Nomenclature obligatoire des domaines pour ${m.nom}** :\nTu DOIS utiliser EXACTEMENT ces libellés comme \`domains[].nom\` du JSON de sortie (un domaine = un groupe officiel) :\n${m.groupes.map((g) => `  - "${g.code} ${g.nom}"`).join('\n')}\nClasse chaque épreuve dans le groupe qui correspond à sa nature. Ne crée PAS d'autres noms de domaines en dehors de cette liste.`
+        : ''
       const regles = m.regles_specifiques ?? ''
-      return [header, domaines, epreuves, regles].filter(Boolean).join('\n')
+      return [header, domaines, epreuves, groupes, regles].filter(Boolean).join('\n\n')
     })
     .join('\n\n---\n\n')
 

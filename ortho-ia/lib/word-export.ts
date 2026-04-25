@@ -865,18 +865,37 @@ export async function generateCRBOWord(payload: WordExportPayload): Promise<Blob
 
     pushBlock('Recommandations', s.recommandations)
 
-    // PAP suggestions (filtre strings vides)
+    // PAP suggestions — groupement par catégorie selon le préfixe "**Catégorie** — détail"
+    // (le prompt système impose ce format ; fallback "Autres" si non respecté).
     const paps = (s.pap_suggestions ?? []).filter(p => p && p.trim().length > 0)
     if (paps.length > 0) {
+      const catRegex = /^\*\*([^*]+)\*\*\s*[—–-]\s*(.+)$/
+      const grouped = new Map<string, string[]>()
+      const ordreCategories: string[] = []
+      for (const p of paps) {
+        const m = p.trim().match(catRegex)
+        const cat = m ? m[1].trim() : 'Autres'
+        const detail = m ? m[2].trim() : p.trim()
+        if (!grouped.has(cat)) { grouped.set(cat, []); ordreCategories.push(cat) }
+        grouped.get(cat)!.push(detail)
+      }
+
       children.push(new Paragraph({
         children: [new TextRun({ text: 'Aménagements scolaires proposés (PAP)', bold: true, size: FONT_SIZE_NORMAL, font: FONT, color: '1565C0' })],
-        spacing: { before: 240, after: 80 },
+        spacing: { before: 240, after: 100 },
       }))
-      for (const p of paps) {
+
+      for (const cat of ordreCategories) {
         children.push(new Paragraph({
-          children: [new TextRun({ text: `✓ ${p.trim()}`, size: FONT_SIZE_NORMAL, font: FONT })],
-          spacing: { after: 60 },
+          children: [new TextRun({ text: cat, bold: true, size: FONT_SIZE_NORMAL, font: FONT, color: '0D47A1' })],
+          spacing: { before: 120, after: 40 },
         }))
+        for (const detail of grouped.get(cat)!) {
+          children.push(new Paragraph({
+            children: [new TextRun({ text: `  ✓ ${detail}`, size: FONT_SIZE_NORMAL, font: FONT })],
+            spacing: { after: 50 },
+          }))
+        }
       }
     }
 

@@ -59,7 +59,7 @@ export const CRBO_TOOL: Anthropic.Tool = {
             commentaire: {
               type: 'string',
               description:
-                'Commentaire clinique du domaine (3-6 phrases) : observations, interprétation, analyse croisée inter-domaines, orientation thérapeutique.',
+                'Commentaire clinique du domaine, 3-4 lignes max (≈40-70 mots) : interprétation concise, analyse croisée pertinente, orientation thérapeutique en une phrase. Pas de paraphrase des scores.',
             },
           },
         },
@@ -93,7 +93,7 @@ export const CRBO_TOOL: Anthropic.Tool = {
       pap_suggestions: {
         type: 'array',
         description:
-          "Suggestions concrètes d'aménagements scolaires (PAP / PPS) adaptées au profil clinique détecté. Ex: 'Temps majoré 1/3 aux évaluations', 'Ordinateur autorisé avec logiciel de lecture vocale', 'Tolérance orthographique', 'Place préférentielle au calme', 'Consignes reformulées oralement'. Prioriser les aménagements pertinents pour les troubles spécifiques détectés (dyslexie, dyscalculie, TDA).",
+          "Aménagements scolaires (PAP / PPS) adaptés au profil clinique. **FORMAT IMPÉRATIF** de chaque entrée : '**Catégorie** — détail concret', avec catégorie en gras Markdown séparée du détail par un tiret cadratin (—). Catégories autorisées : Temps, Outils numériques, Présentation des supports, Évaluations, Pédagogie, Environnement, Oral. Exemples : '**Temps** — Temps majoré 1/3 à toutes les évaluations écrites', '**Outils numériques** — Ordinateur autorisé avec logiciel de lecture vocale', '**Environnement** — Place préférentielle au calme'. Le rendu Word groupe automatiquement par catégorie.",
         items: { type: 'string' },
       },
       synthese_evolution: {

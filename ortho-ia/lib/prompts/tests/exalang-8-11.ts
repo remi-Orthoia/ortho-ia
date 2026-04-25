@@ -15,6 +15,15 @@ export const exalang811: TestModule = {
     'Fonctions exécutives verbales (fluences, flexibilité)',
     'Accès lexical / sémantique',
   ],
+  // Groupes officiels HappyNeuron (en-têtes alphanumériques de la feuille de résultats).
+  // Doivent être utilisés tels quels comme `domains[].nom` dans le CRBO généré.
+  groupes: [
+    { code: 'A.1', nom: 'Langage oral' },
+    { code: 'A.2', nom: 'Métaphonologie' },
+    { code: 'B.1', nom: 'Lecture' },
+    { code: 'B.2', nom: 'Orthographe' },
+    { code: 'C.1', nom: 'Mémoire' },
+  ],
   epreuves: [
     // Mémoire de travail
     'Empan auditif endroit (boucle phonologique)',

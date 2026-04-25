@@ -15,6 +15,14 @@ export const exalang1115: TestModule = {
     'Raisonnement verbal',
     'Production écrite',
   ],
+  // Groupes officiels HappyNeuron Exalang 11-15 (en-têtes de la feuille de résultats).
+  groupes: [
+    { code: 'A.1', nom: 'Langage oral' },
+    { code: 'A.2', nom: 'Métaphonologie / phonologie complexe' },
+    { code: 'B.1', nom: 'Lecture' },
+    { code: 'B.2', nom: 'Orthographe / production écrite' },
+    { code: 'C.1', nom: 'Mémoire et fonctions exécutives' },
+  ],
   epreuves: [
     'Empan auditif endroit et envers',
     'Répétition de logatomes complexes',
