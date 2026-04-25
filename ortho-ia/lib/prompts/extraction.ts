@@ -8,14 +8,19 @@ export const EXTRACTION_PROMPT = `Tu es un assistant spécialisé dans l'extract
 
 ## CONTEXTE DES DOCUMENTS HAPPYNEURON (Exalang, Examath)
 
-Les feuilles de résultats HappyNeuron ont une structure classique :
+Les feuilles de résultats HappyNeuron ont une structure hiérarchique :
 - Un en-tête avec le nom du test (Exalang 8-11, Exalang 11-15, Examath 8-15…) et parfois les informations du patient.
+- Des **en-têtes de groupes alphanumériques** (A.1, A.2, B.1, B.2, C.1…) qui regroupent les épreuves par grand domaine :
+  - **A.1 Langage oral**, **A.2 Métaphonologie**, **B.1 Lecture**, **B.2 Orthographe**, **C.1 Mémoire** (Exalang typique).
+  - **Tu DOIS reporter ce code+libellé dans le champ \`domaine\` de chaque épreuve** (ex: \`"domaine": "B.1 Lecture"\`). C'est crucial pour la mise en page du CRBO.
 - Un ou plusieurs tableaux listant les épreuves avec colonnes :
   - Nom de l'épreuve (et éventuellement sous-épreuve : temps / score / ratio)
   - Score brut (ex: "16/25", "480s", "7/10")
   - É-T (Écart-Type) — peut être positif ou négatif
   - Percentiles exprimés en **quartiles** : **Q1, Med, Q3** ou en valeurs explicites **P5, P10, P90, P95**.
-- Parfois un graphique à barres récapitulatif (ignore-le, ne recompose pas depuis les barres).
+- Les **labels d'épreuves peuvent être en vertical** (rotation 90°) sur certains tableaux, surtout dans les graphiques récapitulatifs : tourne mentalement la tête, lis-les normalement, ne les ignore pas.
+- Souvent un **graphique à barres récapitulatif coloré** : **IGNORE-LE comme source primaire**. Les couleurs des barres ne donnent qu'une indication visuelle ; la source de vérité reste les valeurs numériques du tableau (Q1/Med/Q3/Pxx). Si un score n'apparaît que dans le graphique sans être listé dans un tableau, alors et seulement alors lis-le depuis la barre.
+- Si un percentile est écrit **en toutes lettres** ("vingt-cinquième percentile", "P vingt-cinq") : convertir en valeur numérique et noter l'occurrence dans \`warnings\`.
 
 ## RÈGLES CRITIQUES (à ne JAMAIS enfreindre)
 
@@ -33,8 +38,12 @@ L'É-T peut paraître "mauvais" (ex: -1.53) mais si le percentile écrit est Q1 
 
 ### 3. Extraire TOUTES les épreuves du document
 - Chaque ligne du tableau → une entrée.
-- Inclure les sous-épreuves (temps, ratio, score partiel).
+- Inclure les sous-épreuves (temps, ratio, score partiel) **comme des entrées distinctes** : "Lecture de mots — score" et "Lecture de mots — temps" → deux entrées séparées avec leurs propres percentiles.
 - Ne rien omettre, même les lignes qui semblent redondantes.
+
+### 3 bis. Préserver la hiérarchie des groupes
+- Si le document affiche un en-tête de groupe (A.1, B.2, etc.) au-dessus d'un bloc d'épreuves, toutes les épreuves de ce bloc reçoivent ce code+libellé dans \`domaine\`.
+- Ne mélange pas les groupes : une épreuve listée sous "B.1 Lecture" ne doit jamais être classée dans "A.1 Langage oral", même si son nom semble s'y prêter.
 
 ### 4. Valeurs manquantes
 - Si une colonne est vide : utiliser \`null\`, pas "N/A" ni "—".
@@ -48,7 +57,8 @@ Identifier le test dans le champ \`test_name\` parmi :
 Si aucun test ne correspond avec certitude, utiliser \`null\` et signaler dans warnings.
 
 ### 6. Classer les épreuves par domaine
-Lors du remplissage, assigner un domaine (ex: "Mémoire de travail", "Métaphonologie", "Langage écrit — lecture", etc.) à chaque épreuve en te basant sur la structure du test. Si tu hésites, utiliser "Autre".
+- **Si le document utilise des en-têtes de groupes (A.1, A.2, B.1…) → reporte le code+libellé exact** (ex: "A.2 Métaphonologie"). C'est le cas standard pour Exalang/Examath.
+- Sinon, assigner un domaine clinique cohérent (ex: "Mémoire de travail", "Métaphonologie", "Langage écrit — lecture"). Si tu hésites, utiliser "Autre".
 
 ## INFORMATIONS PATIENT
 Si le document contient des infos patient (prénom, âge, classe, date de bilan), les extraire dans \`patient_info\`. **N'invente rien**.
@@ -59,9 +69,10 @@ Si le document contient des infos patient (prénom, âge, classe, date de bilan)
   "test_name": "Exalang 8-11",
   "patient_info": { "prenom": "Léa", "classe": "CE2", "age": "8 ans et 6 mois", "bilan_date": "15/03/2026" },
   "epreuves": [
-    { "nom": "Empan auditif endroit", "domaine": "Mémoire de travail", "score": "6/7", "et": "0.45", "percentile_raw": "P90", "percentile_value": 90 },
-    { "nom": "Boucle phonologique", "domaine": "Mémoire de travail", "score": "16/25", "et": "-1.53", "percentile_raw": "Q1", "percentile_value": 25 },
-    { "nom": "Lecture de non-mots", "domaine": "Langage écrit — lecture", "score": "14/30", "et": "-1.75", "percentile_raw": "P5", "percentile_value": 5 }
+    { "nom": "Empan auditif endroit", "domaine": "C.1 Mémoire", "score": "6/7", "et": "0.45", "percentile_raw": "P90", "percentile_value": 90 },
+    { "nom": "Boucle phonologique", "domaine": "C.1 Mémoire", "score": "16/25", "et": "-1.53", "percentile_raw": "Q1", "percentile_value": 25 },
+    { "nom": "Lecture de non-mots", "domaine": "B.1 Lecture", "score": "14/30", "et": "-1.75", "percentile_raw": "P5", "percentile_value": 5 },
+    { "nom": "Lecture de non-mots — temps", "domaine": "B.1 Lecture", "score": "180s", "et": "-2.10", "percentile_raw": "P2", "percentile_value": 2 }
   ],
   "warnings": [],
   "notes_extraction": "Tableau principal extrait. Le graphique récapitulatif a été ignoré."
