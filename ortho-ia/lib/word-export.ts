@@ -85,6 +85,12 @@ export async function generateCRBOWord(payload: WordExportPayload): Promise<Blob
   const FONT_SIZE_SECTION = 26
   const COLOR_GREEN = '2E7D32'
 
+  // A4 portrait (11906 DXA) - 720 DXA margins chaque côté = 9072 DXA de largeur
+  // utilisable. Word refuse les largeurs relatives sur certaines combinaisons
+  // (-> "contenu illisible"), donc on spécifie TOUJOURS en DXA.
+  const TOTAL_DXA = 9072
+  const pctToDxa = (pct: number) => Math.round((TOTAL_DXA * pct) / 100)
+
   const { formData, structure, fallbackCRBO = '', previousStructure, previousBilanDate } = payload
   const hasStructure = !!structure && !!structure.domains && structure.domains.length > 0
   const hasPrevious = !!previousStructure && !!previousStructure.domains && previousStructure.domains.length > 0
@@ -101,8 +107,8 @@ export async function generateCRBOWord(payload: WordExportPayload): Promise<Blob
   const createCell = (text: string, options: { bold?: boolean, width?: number, shading?: string, alignment?: any } = {}) => {
     const { bold = false, width = 25, shading, alignment = AlignmentType.LEFT } = options
     return new TableCell({
-      width: { size: width, type: WidthType.PERCENTAGE },
-      shading: shading ? { fill: shading, type: ShadingType.CLEAR } : undefined,
+      width: { size: pctToDxa(width), type: WidthType.DXA },
+      shading: shading ? { type: ShadingType.CLEAR, fill: shading, color: 'auto' } : undefined,
       children: [new Paragraph({
         alignment,
         children: [new TextRun({ text: text || '', bold, size: FONT_SIZE_NORMAL, font: FONT })],
@@ -246,7 +252,8 @@ export async function generateCRBOWord(payload: WordExportPayload): Promise<Blob
   children.push(
     new Paragraph({ children: [new TextRun({ text: 'Patient', size: FONT_SIZE_NORMAL, font: FONT, color: COLOR_GREEN, bold: true })], spacing: { before: 200 } }),
     new Table({
-      width: { size: 100, type: WidthType.PERCENTAGE },
+      width: { size: TOTAL_DXA, type: WidthType.DXA },
+      columnWidths: [pctToDxa(15), pctToDxa(35), pctToDxa(15), pctToDxa(35)],
       rows: [
         new TableRow({ children: [
           createCell('Prénom :', { width: 15 }),
@@ -270,7 +277,8 @@ export async function generateCRBOWord(payload: WordExportPayload): Promise<Blob
     children.push(
       new Paragraph({ children: [new TextRun({ text: 'Médecin prescripteur', size: FONT_SIZE_NORMAL, font: FONT, color: COLOR_GREEN, bold: true })], spacing: { before: 200 } }),
       new Table({
-        width: { size: 100, type: WidthType.PERCENTAGE },
+        width: { size: TOTAL_DXA, type: WidthType.DXA },
+        columnWidths: [pctToDxa(15), pctToDxa(45), pctToDxa(10), pctToDxa(30)],
         rows: [new TableRow({ children: [
           createCell('Nom :', { width: 15 }),
           createCell(formData.medecin_nom || '', { width: 45 }),
@@ -436,8 +444,8 @@ export async function generateCRBOWord(payload: WordExportPayload): Promise<Blob
       compRows.push(new TableRow({ children: [
         new TableCell({
           columnSpan: 4,
-          width: { size: 100, type: WidthType.PERCENTAGE },
-          shading: { fill: 'F1F8E9', type: ShadingType.CLEAR },
+          width: { size: TOTAL_DXA, type: WidthType.DXA },
+          shading: { type: ShadingType.CLEAR, fill: 'F1F8E9', color: 'auto' },
           children: [new Paragraph({
             children: [new TextRun({ text: d.nom, bold: true, size: FONT_SIZE_NORMAL - 1, font: FONT, color: COLOR_GREEN })],
           })],
@@ -472,7 +480,7 @@ export async function generateCRBOWord(payload: WordExportPayload): Promise<Blob
           createCell(prevLabel, { width: 22, alignment: AlignmentType.CENTER, shading: prev ? getPercentileColor(prev.value) : 'F5F5F5' }),
           createCell(curLabel, { width: 22, alignment: AlignmentType.CENTER, shading: getPercentileColor(e.percentile_value) }),
           new TableCell({
-            width: { size: 16, type: WidthType.PERCENTAGE },
+            width: { size: pctToDxa(16), type: WidthType.DXA },
             children: [new Paragraph({
               alignment: AlignmentType.CENTER,
               children: [
@@ -490,7 +498,14 @@ export async function generateCRBOWord(payload: WordExportPayload): Promise<Blob
         ]}))
       }
     }
-    children.push(new Table({ width: { size: 100, type: WidthType.PERCENTAGE }, rows: compRows }), new Paragraph({ children: [] }))
+    children.push(
+      new Table({
+        width: { size: TOTAL_DXA, type: WidthType.DXA },
+        columnWidths: [pctToDxa(40), pctToDxa(22), pctToDxa(22), pctToDxa(16)],
+        rows: compRows,
+      }),
+      new Paragraph({ children: [] }),
+    )
   }
 
   // ===== SYNTHÈSE VISUELLE PAGE 1 =====
@@ -527,9 +542,10 @@ export async function generateCRBOWord(payload: WordExportPayload): Promise<Blob
   children.push(
     new Paragraph({ children: [new TextRun({ text: 'Légende des scores (percentiles) :', size: 18, font: FONT, bold: true })], spacing: { before: 200, after: 100 } }),
     new Table({
-      width: { size: 100, type: WidthType.PERCENTAGE },
+      width: { size: TOTAL_DXA, type: WidthType.DXA },
+      columnWidths: SEUILS.map(() => pctToDxa(100 / SEUILS.length)),
       rows: [new TableRow({
-        children: SEUILS.map(s => createCell(`${s.label} (${s.range})`, { shading: s.shading, width: 20, alignment: AlignmentType.CENTER, bold: true })),
+        children: SEUILS.map(s => createCell(`${s.label} (${s.range})`, { shading: s.shading, width: 100 / SEUILS.length, alignment: AlignmentType.CENTER, bold: true })),
       })],
     }),
     new Paragraph({ children: [] }),
@@ -562,7 +578,14 @@ export async function generateCRBOWord(payload: WordExportPayload): Promise<Blob
           createCell(e.interpretation, { width: 18, alignment: AlignmentType.CENTER, shading: color }),
         ]}))
       })
-      children.push(new Table({ width: { size: 100, type: WidthType.PERCENTAGE }, rows: tableRows }), new Paragraph({ children: [] }))
+      children.push(
+        new Table({
+          width: { size: TOTAL_DXA, type: WidthType.DXA },
+          columnWidths: [pctToDxa(40), pctToDxa(15), pctToDxa(12), pctToDxa(15), pctToDxa(18)],
+          rows: tableRows,
+        }),
+        new Paragraph({ children: [] }),
+      )
 
       if (domain.epreuves.length > 0) {
         const chart = await generateBarChart(
@@ -609,7 +632,14 @@ export async function generateCRBOWord(payload: WordExportPayload): Promise<Blob
           createCell(centile, { width: 15, alignment: AlignmentType.CENTER, shading: color }),
         ]}))
       })
-      children.push(new Table({ width: { size: 100, type: WidthType.PERCENTAGE }, rows: tableRows }), new Paragraph({ children: [] }))
+      children.push(
+        new Table({
+          width: { size: TOTAL_DXA, type: WidthType.DXA },
+          columnWidths: [pctToDxa(50), pctToDxa(20), pctToDxa(15), pctToDxa(15)],
+          rows: tableRows,
+        }),
+        new Paragraph({ children: [] }),
+      )
     }
   }
 
