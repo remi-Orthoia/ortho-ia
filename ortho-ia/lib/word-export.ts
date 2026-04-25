@@ -40,6 +40,29 @@ export function seuilFor(value: number): SeuilClinique {
 export const getPercentileColor = (v: number): string => seuilFor(v).shading
 export const getPercentileCssColor = (v: number): string => seuilFor(v).css
 
+// --------------------- Palette du graphique (zones de performance HappyNeuron) ---------------------
+// Bandes de fond colorées + ligne médiane. Distincte de SEUILS (qui reste la source
+// pour les shadings de cellules dans les tableaux Word — ne pas casser la cohérence là-bas).
+export type ZonePerformance = {
+  label: 'Excellent' | 'Moyenne haute' | 'Moyenne basse' | 'Fragilité' | 'Difficulté' | 'Difficulté sévère'
+  min: number
+  css: string
+}
+
+export const ZONES: ZonePerformance[] = [
+  { label: 'Excellent',         min: 75, css: '#2E7D32' },
+  { label: 'Moyenne haute',     min: 50, css: '#66BB6A' },
+  { label: 'Moyenne basse',     min: 25, css: '#D4E157' },
+  { label: 'Fragilité',         min: 16, css: '#FFA726' },
+  { label: 'Difficulté',        min: 7,  css: '#EF6C00' },
+  { label: 'Difficulté sévère', min: 0,  css: '#4E342E' },
+]
+
+export function zoneFor(value: number): ZonePerformance {
+  for (const z of ZONES) if (value >= z.min) return z
+  return ZONES[ZONES.length - 1]
+}
+
 // --------------------- Payload d'entrée ---------------------
 
 export interface WordExportPayload {
@@ -128,7 +151,16 @@ export async function generateCRBOWord(payload: WordExportPayload): Promise<Blob
     border: { bottom: { color: COLOR_GREEN, space: 20, style: BorderStyle.SINGLE, size: 12 } },
   })
 
-  const generateBarChart = async (bars: { label: string; value: number }[], title: string, width = 900, height = 380) => {
+  // Graphique style HappyNeuron : bandes de fond colorées par zone de performance,
+  // ligne médiane rouge pointillée à P50, barres regroupées par sous-domaine avec
+  // séparateurs verticaux et titres de groupe, labels d'épreuve en vertical.
+  type ChartGroup = { name: string; bars: { label: string; value: number }[] }
+  const generateGroupedBarChart = async (
+    groups: ChartGroup[],
+    title: string,
+    width = 1000,
+    height = 480,
+  ) => {
     const canvas = document.createElement('canvas')
     canvas.width = width
     canvas.height = height
@@ -137,58 +169,134 @@ export async function generateCRBOWord(payload: WordExportPayload): Promise<Blob
     ctx.fillRect(0, 0, width, height)
 
     // Titre
-    ctx.fillStyle = '#2E7D32'
-    ctx.font = 'bold 16px Calibri, Arial, sans-serif'
+    ctx.fillStyle = '#1B5E20'
+    ctx.font = 'bold 17px Calibri, Arial, sans-serif'
     ctx.textAlign = 'left'
-    ctx.fillText(title, 20, 28)
+    ctx.fillText(title, 16, 26)
 
-    const padLeft = 50, padRight = 20, padTop = 50, padBottom = 100
+    const padLeft = 150, padRight = 20, padTop = 56, padBottom = 130
     const chartW = width - padLeft - padRight
     const chartH = height - padTop - padBottom
+    const yFor = (p: number) => padTop + chartH - (p / 100) * chartH
 
-    // Grille horizontale
-    ctx.strokeStyle = '#E0E0E0'
-    ctx.fillStyle = '#666'
-    ctx.font = '11px Calibri, Arial, sans-serif'
-    ctx.textAlign = 'right'
-    for (const tick of [0, 25, 50, 75, 100]) {
-      const y = padTop + chartH - (tick / 100) * chartH
-      ctx.beginPath(); ctx.moveTo(padLeft, y); ctx.lineTo(padLeft + chartW, y); ctx.stroke()
-      ctx.fillText(`P${tick}`, padLeft - 6, y + 4)
+    // ===== Bandes de fond colorées (zones de performance) =====
+    for (let i = 0; i < ZONES.length; i++) {
+      const z = ZONES[i]
+      const upper = i === 0 ? 100 : ZONES[i - 1].min
+      const y0 = yFor(upper)
+      const y1 = yFor(z.min)
+      ctx.fillStyle = z.css + '33' // hex alpha 0x33 ≈ 20%
+      ctx.fillRect(padLeft, y0, chartW, y1 - y0)
     }
 
-    // Ligne seuil P25 (Normal)
-    const yP25 = padTop + chartH - (25 / 100) * chartH
-    ctx.strokeStyle = '#4CAF50'; ctx.setLineDash([4, 3])
-    ctx.beginPath(); ctx.moveTo(padLeft, yP25); ctx.lineTo(padLeft + chartW, yP25); ctx.stroke()
-    ctx.setLineDash([])
+    // Lignes horizontales fines entre zones
+    ctx.strokeStyle = '#BDBDBD'
+    ctx.lineWidth = 0.5
+    for (let i = 1; i < ZONES.length; i++) {
+      const y = yFor(ZONES[i - 1].min)
+      ctx.beginPath(); ctx.moveTo(padLeft, y); ctx.lineTo(padLeft + chartW, y); ctx.stroke()
+    }
+    // Bordure du chart
+    ctx.strokeRect(padLeft, padTop, chartW, chartH)
 
-    // Barres
-    const n = Math.max(bars.length, 1)
-    const slot = chartW / n
-    const barW = Math.min(slot * 0.7, 70)
-    bars.forEach((b, i) => {
-      const x = padLeft + i * slot + (slot - barW) / 2
-      const v = Math.max(0, Math.min(100, b.value))
-      const h = (v / 100) * chartH
-      const y = padTop + chartH - h
-      ctx.fillStyle = getPercentileCssColor(v)
-      ctx.fillRect(x, y, barW, h)
-      ctx.strokeStyle = '#424242'; ctx.lineWidth = 1
-      ctx.strokeRect(x, y, barW, h)
-      ctx.fillStyle = '#212121'
-      ctx.font = 'bold 11px Calibri, Arial, sans-serif'
-      ctx.textAlign = 'center'
-      ctx.fillText(`P${Math.round(v)}`, x + barW / 2, y - 4)
-      const label = b.label.length > 22 ? b.label.slice(0, 21) + '…' : b.label
-      ctx.save()
-      ctx.translate(x + barW / 2, padTop + chartH + 8)
-      ctx.rotate(-Math.PI / 6)
-      ctx.fillStyle = '#333'; ctx.font = '11px Calibri, Arial, sans-serif'
-      ctx.textAlign = 'right'
-      ctx.fillText(label, 0, 0)
-      ctx.restore()
-    })
+    // Labels de zone à gauche, alignés sur le centre de la bande
+    ctx.font = 'bold 10.5px Calibri, Arial, sans-serif'
+    ctx.textAlign = 'right'
+    for (let i = 0; i < ZONES.length; i++) {
+      const z = ZONES[i]
+      const upper = i === 0 ? 100 : ZONES[i - 1].min
+      const mid = (yFor(upper) + yFor(z.min)) / 2
+      if (yFor(z.min) - yFor(upper) < 12) continue // bande trop fine
+      ctx.fillStyle = z.css
+      ctx.fillText(z.label, padLeft - 8, mid + 4)
+    }
+
+    // ===== Ligne médiane (P50) en pointillé rouge =====
+    const yMed = yFor(50)
+    ctx.strokeStyle = '#C62828'
+    ctx.lineWidth = 1.6
+    ctx.setLineDash([6, 4])
+    ctx.beginPath(); ctx.moveTo(padLeft, yMed); ctx.lineTo(padLeft + chartW, yMed); ctx.stroke()
+    ctx.setLineDash([])
+    ctx.fillStyle = '#C62828'
+    ctx.font = 'italic bold 9.5px Calibri, Arial, sans-serif'
+    ctx.textAlign = 'left'
+    ctx.fillText('Médiane (P50)', padLeft + 4, yMed - 3)
+
+    // ===== Barres regroupées par sous-domaine =====
+    const totalBars = groups.reduce((s, g) => s + g.bars.length, 0)
+    if (totalBars === 0) {
+      const blob: Blob = await new Promise((r) => canvas.toBlob((b) => r(b!), 'image/png')!)
+      return { data: await blob.arrayBuffer(), width, height }
+    }
+
+    const groupGap = 16
+    const totalGap = Math.max(0, groups.length - 1) * groupGap
+    const slotW = (chartW - totalGap) / totalBars
+    const barW = Math.min(slotW * 0.62, 30)
+
+    let cursorX = padLeft
+    for (let gi = 0; gi < groups.length; gi++) {
+      const group = groups[gi]
+      const groupSpan = group.bars.length * slotW
+      const groupStartX = cursorX
+
+      // Titre du groupe au-dessus, centré (skip si name vide)
+      if (group.name && group.name.trim()) {
+        ctx.fillStyle = '#37474F'
+        ctx.font = 'bold 11px Calibri, Arial, sans-serif'
+        ctx.textAlign = 'center'
+        const cx = groupStartX + groupSpan / 2
+        const maxChars = Math.max(8, Math.floor(groupSpan / 7))
+        const name = group.name.length > maxChars ? group.name.slice(0, maxChars - 1) + '…' : group.name
+        ctx.fillText(name, cx, padTop - 12)
+      }
+
+      for (let bi = 0; bi < group.bars.length; bi++) {
+        const b = group.bars[bi]
+        const v = Math.max(0, Math.min(100, b.value))
+        const x = groupStartX + bi * slotW + (slotW - barW) / 2
+        const yTop = yFor(v)
+        const h = padTop + chartH - yTop
+        const z = zoneFor(v)
+
+        ctx.fillStyle = z.css
+        ctx.fillRect(x, yTop, barW, h)
+        ctx.strokeStyle = '#212121'
+        ctx.lineWidth = 0.5
+        ctx.strokeRect(x, yTop, barW, h)
+
+        // Valeur P au-dessus de la barre
+        ctx.fillStyle = '#212121'
+        ctx.font = 'bold 9.5px Calibri, Arial, sans-serif'
+        ctx.textAlign = 'center'
+        ctx.fillText(`P${Math.round(v)}`, x + barW / 2, yTop - 3)
+
+        // Label vertical sous la barre
+        const lbl = b.label.length > 28 ? b.label.slice(0, 27) + '…' : b.label
+        ctx.save()
+        ctx.translate(x + barW / 2, padTop + chartH + 8)
+        ctx.rotate(-Math.PI / 2)
+        ctx.textAlign = 'right'
+        ctx.fillStyle = '#37474F'
+        ctx.font = '10px Calibri, Arial, sans-serif'
+        ctx.fillText(lbl, 0, 4)
+        ctx.restore()
+      }
+
+      cursorX += groupSpan
+
+      // Séparateur vertical pointillé entre groupes
+      if (gi < groups.length - 1) {
+        const sepX = cursorX + groupGap / 2
+        ctx.strokeStyle = '#90A4AE'
+        ctx.setLineDash([3, 3])
+        ctx.lineWidth = 1
+        ctx.beginPath(); ctx.moveTo(sepX, padTop); ctx.lineTo(sepX, padTop + chartH); ctx.stroke()
+        ctx.setLineDash([])
+        cursorX += groupGap
+      }
+    }
 
     const blob: Blob = await new Promise((r) => canvas.toBlob((b) => r(b!), 'image/png')!)
     return { data: await blob.arrayBuffer(), width, height }
@@ -508,18 +616,23 @@ export async function generateCRBOWord(payload: WordExportPayload): Promise<Blob
     )
   }
 
-  // ===== SYNTHÈSE VISUELLE PAGE 1 =====
+  // ===== SYNTHÈSE VISUELLE PAGE 1 — vue HappyNeuron groupée =====
   if (hasStructure) {
-    const recapBars = structure!.domains.map((d) => {
-      const values = d.epreuves.map((e) => e.percentile_value).filter((v) => typeof v === 'number')
-      const avg = values.length > 0 ? values.reduce((a, b) => a + b, 0) / values.length : 0
-      return { label: d.nom, value: avg }
-    })
-    const recapChart = await generateBarChart(recapBars, 'Synthèse — percentile moyen par domaine', 900, 380)
-    children.push(
-      new Paragraph({ children: [new TextRun({ text: 'Synthèse des résultats', size: FONT_SIZE_NORMAL, font: FONT, color: COLOR_GREEN, bold: true })], spacing: { before: 200 } }),
-      imageParagraph(recapChart),
-    )
+    const groups = structure!.domains.map((d) => ({
+      name: d.nom,
+      bars: d.epreuves.map((e) => ({ label: e.nom, value: e.percentile_value })),
+    })).filter((g) => g.bars.length > 0)
+    if (groups.length > 0) {
+      const recapChart = await generateGroupedBarChart(
+        groups,
+        'Profil global — percentiles par épreuve',
+        1000, 480,
+      )
+      children.push(
+        new Paragraph({ children: [new TextRun({ text: 'Synthèse des résultats', size: FONT_SIZE_NORMAL, font: FONT, color: COLOR_GREEN, bold: true })], spacing: { before: 200 } }),
+        imageParagraph(recapChart),
+      )
+    }
   }
 
   children.push(new Paragraph({ children: [new PageBreak()] }))
@@ -588,10 +701,10 @@ export async function generateCRBOWord(payload: WordExportPayload): Promise<Blob
       )
 
       if (domain.epreuves.length > 0) {
-        const chart = await generateBarChart(
-          domain.epreuves.map((e) => ({ label: e.nom, value: e.percentile_value })),
+        const chart = await generateGroupedBarChart(
+          [{ name: '', bars: domain.epreuves.map((e) => ({ label: e.nom, value: e.percentile_value })) }],
           `${domain.nom} — percentiles par épreuve`,
-          900, 360,
+          900, 420,
         )
         children.push(imageParagraph(chart))
       }
