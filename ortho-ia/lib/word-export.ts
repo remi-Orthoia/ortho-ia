@@ -145,7 +145,8 @@ export async function generateCRBOWord(payload: WordExportPayload): Promise<Blob
     })
   }
 
-  const createSectionTitle = (text: string) => new Paragraph({
+  const createSectionTitle = (text: string, opts: { centered?: boolean } = {}) => new Paragraph({
+    alignment: opts.centered ? AlignmentType.CENTER : AlignmentType.LEFT,
     children: [new TextRun({ text, bold: true, size: FONT_SIZE_SECTION, font: FONT, color: COLOR_GREEN })],
     spacing: { before: 400, after: 200 },
     border: { bottom: { color: COLOR_GREEN, space: 20, style: BorderStyle.SINGLE, size: 12 } },
@@ -354,7 +355,7 @@ export async function generateCRBOWord(payload: WordExportPayload): Promise<Blob
     }),
   )
 
-  children.push(createSectionTitle(`Bilan ${formData.bilan_type || ''} du ${bilanDateFormatted}`))
+  children.push(createSectionTitle(`Bilan ${formData.bilan_type || ''} du ${bilanDateFormatted}`, { centered: true }))
 
   // ===== PATIENT =====
   children.push(
@@ -700,15 +701,6 @@ export async function generateCRBOWord(payload: WordExportPayload): Promise<Blob
         new Paragraph({ children: [] }),
       )
 
-      if (domain.epreuves.length > 0) {
-        const chart = await generateGroupedBarChart(
-          [{ name: '', bars: domain.epreuves.map((e) => ({ label: e.nom, value: e.percentile_value })) }],
-          `${domain.nom} — percentiles par épreuve`,
-          900, 420,
-        )
-        children.push(imageParagraph(chart))
-      }
-
       if (domain.commentaire && domain.commentaire.trim()) {
         children.push(new Paragraph({
           children: [new TextRun({ text: domain.commentaire.trim(), size: FONT_SIZE_NORMAL, font: FONT, italics: true })],
@@ -772,8 +764,15 @@ export async function generateCRBOWord(payload: WordExportPayload): Promise<Blob
         return new TextRun({ text: p, size: FONT_SIZE_NORMAL, font: FONT })
       })
     }
-    // Rend un contenu texte avec sous-titres H3 (`**Titre**` seul sur une ligne),
-    // inline bold, et saut de paragraphe sur ligne vide.
+    const pushH3 = (title: string) => {
+      children.push(new Paragraph({
+        children: [new TextRun({ text: title, bold: true, size: FONT_SIZE_NORMAL + 2, font: FONT, color: COLOR_GREEN })],
+        spacing: { before: 200, after: 100 },
+      }))
+    }
+    // Rend un contenu texte avec sous-titres H3, inline bold, listes numérotées,
+    // et saut de paragraphe sur ligne vide. Le H3 est détecté que le titre soit seul
+    // sur sa ligne OU suivi d'un `:` et de contenu inline (split en titre + paragraphe).
     const renderRichContent = (content: string) => {
       const lines = content.split('\n')
       let lastWasEmpty = true // évite un vide en tête
@@ -787,11 +786,32 @@ export async function generateCRBOWord(payload: WordExportPayload): Promise<Blob
           return
         }
         lastWasEmpty = false
-        const h3Match = t.match(/^\*\*([^*]+)\*\*\s*:?\s*$/)
-        if (h3Match) {
+        // Liste numérotée : "1. ", "2)  "
+        const numMatch = t.match(/^(\d+)[.)]\s+(.+)$/)
+        if (numMatch) {
           children.push(new Paragraph({
-            children: [new TextRun({ text: h3Match[1].trim(), bold: true, size: FONT_SIZE_NORMAL + 2, font: FONT, color: COLOR_GREEN })],
-            spacing: { before: 200, after: 100 },
+            indent: { left: 360 },
+            spacing: { after: 60 },
+            children: [
+              new TextRun({ text: `${numMatch[1]}. `, bold: true, size: FONT_SIZE_NORMAL, font: FONT, color: COLOR_GREEN }),
+              ...parseBoldRuns(numMatch[2]),
+            ],
+          }))
+          return
+        }
+        // H3 seul sur sa ligne : `**Titre**` (avec `:` optionnel)
+        const h3Alone = t.match(/^\*\*([^*]+)\*\*\s*:?\s*$/)
+        if (h3Alone) {
+          pushH3(h3Alone[1].trim())
+          return
+        }
+        // H3 inline : `**Titre** : suite du paragraphe...` → split
+        const h3Inline = t.match(/^\*\*([^*]+)\*\*\s*[:—-]?\s+(.+)$/)
+        if (h3Inline) {
+          pushH3(h3Inline[1].trim())
+          children.push(new Paragraph({
+            children: parseBoldRuns(h3Inline[2].trim()),
+            spacing: { after: 80 },
           }))
           return
         }
@@ -865,41 +885,25 @@ export async function generateCRBOWord(payload: WordExportPayload): Promise<Blob
 
     pushBlock('Recommandations', s.recommandations)
 
-    // PAP suggestions — groupement par catégorie selon le préfixe "**Catégorie** — détail"
-    // (le prompt système impose ce format ; fallback "Autres" si non respecté).
+    // Aménagements scolaires — bullets condensés à plat. On strip le préfixe
+    // "**Catégorie** —" éventuel pour rester général et compact.
     const paps = (s.pap_suggestions ?? []).filter(p => p && p.trim().length > 0)
     if (paps.length > 0) {
       const catRegex = /^\*\*([^*]+)\*\*\s*[—–-]\s*(.+)$/
-      const grouped = new Map<string, string[]>()
-      const ordreCategories: string[] = []
-      for (const p of paps) {
-        const m = p.trim().match(catRegex)
-        const cat = m ? m[1].trim() : 'Autres'
-        const detail = m ? m[2].trim() : p.trim()
-        if (!grouped.has(cat)) { grouped.set(cat, []); ordreCategories.push(cat) }
-        grouped.get(cat)!.push(detail)
-      }
-
       children.push(new Paragraph({
-        children: [new TextRun({ text: 'Aménagements scolaires proposés (PAP)', bold: true, size: FONT_SIZE_NORMAL, font: FONT, color: '1565C0' })],
+        children: [new TextRun({ text: 'Aménagements scolaires conseillés', bold: true, size: FONT_SIZE_NORMAL, font: FONT, color: COLOR_GREEN })],
         spacing: { before: 240, after: 100 },
       }))
-
-      for (const cat of ordreCategories) {
+      for (const p of paps) {
+        const m = p.trim().match(catRegex)
+        const detail = m ? `${m[1].trim()} : ${m[2].trim()}` : p.trim()
         children.push(new Paragraph({
-          children: [new TextRun({ text: cat, bold: true, size: FONT_SIZE_NORMAL, font: FONT, color: '0D47A1' })],
-          spacing: { before: 120, after: 40 },
+          indent: { left: 360 },
+          spacing: { after: 50 },
+          children: [new TextRun({ text: `• ${detail}`, size: FONT_SIZE_NORMAL, font: FONT })],
         }))
-        for (const detail of grouped.get(cat)!) {
-          children.push(new Paragraph({
-            children: [new TextRun({ text: `  ✓ ${detail}`, size: FONT_SIZE_NORMAL, font: FONT })],
-            spacing: { after: 50 },
-          }))
-        }
       }
     }
-
-    pushBlock('Conclusion', s.conclusion)
   } else {
     fallbackCRBO.split('\n').forEach((line) => {
       const t = line.trim()
@@ -935,6 +939,24 @@ export async function generateCRBOWord(payload: WordExportPayload): Promise<Blob
       children: [new TextRun({ text: 'Orthophoniste', size: FONT_SIZE_NORMAL, font: FONT, italics: true })],
     }),
   )
+
+  // ===== CONCLUSION (mention légale, petite italique, en bas) =====
+  if (hasStructure && structure!.conclusion?.trim()) {
+    children.push(
+      new Paragraph({ children: [] }),
+      new Paragraph({
+        alignment: AlignmentType.CENTER,
+        spacing: { before: 600 },
+        children: [new TextRun({
+          text: structure!.conclusion.trim(),
+          size: 16,
+          font: FONT,
+          italics: true,
+          color: '707070',
+        })],
+      }),
+    )
+  }
 
   const doc = new Document({
     sections: [{
