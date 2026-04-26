@@ -205,17 +205,27 @@ export async function generateCRBOWord(payload: WordExportPayload): Promise<Blob
       ctx.fillText(z.label, padLeft - 8, mid + 4)
     }
 
-    // ===== Ligne médiane (P50) en pointillé rouge =====
+    // ===== Ligne médiane (P50) — trait plein noir =====
     const yMed = yFor(50)
-    ctx.strokeStyle = '#C62828'
+    ctx.strokeStyle = '#000000'
     ctx.lineWidth = 1.6
-    ctx.setLineDash([6, 4])
     ctx.beginPath(); ctx.moveTo(padLeft, yMed); ctx.lineTo(padLeft + chartW, yMed); ctx.stroke()
-    ctx.setLineDash([])
-    ctx.fillStyle = '#C62828'
+    ctx.fillStyle = '#000000'
     ctx.font = 'italic bold 9.5px Calibri, Arial, sans-serif'
     ctx.textAlign = 'left'
     ctx.fillText('Médiane (P50)', padLeft + 4, yMed - 3)
+
+    // ===== Ligne d'alerte clinique (P7) — trait plein rouge =====
+    // Sépare la zone "Fragilité"/"Difficulté" du reste : sous P7, profil
+    // déficitaire à pathologique. Repère visuel demandé par Laurie.
+    const yAlert = yFor(7)
+    ctx.strokeStyle = '#C62828'
+    ctx.lineWidth = 1.6
+    ctx.beginPath(); ctx.moveTo(padLeft, yAlert); ctx.lineTo(padLeft + chartW, yAlert); ctx.stroke()
+    ctx.fillStyle = '#C62828'
+    ctx.font = 'italic bold 9.5px Calibri, Arial, sans-serif'
+    ctx.textAlign = 'left'
+    ctx.fillText('Seuil d\'alerte (P7)', padLeft + 4, yAlert - 3)
 
     // ===== Barres regroupées par sous-domaine =====
     const totalBars = groups.reduce((s, g) => s + g.bars.length, 0)
