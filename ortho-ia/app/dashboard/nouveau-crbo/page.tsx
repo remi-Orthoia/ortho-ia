@@ -561,16 +561,19 @@ function NouveauCRBOContent() {
     setError('')
 
     try {
+      // ============ PHASE 1 : EXTRACTION ============
+      // Reformulation anamnèse + motif + parsing structuré des scores. Pas de
+      // diagnostic ni recommandations à ce stade — l'orthophoniste valide d'abord
+      // les extractions et ajoute ses commentaires qualitatifs sur la page suivante.
       const response = await fetch('/api/generate-crbo', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ formData: formDataForSubmission }),
+        body: JSON.stringify({ phase: 'extract', formData: formDataForSubmission }),
       })
 
       const data = await response.json()
 
       if (!response.ok) {
-        // Session expirée : on sauvegarde le brouillon + redirige login avec retour
         if (response.status === 401) {
           persistDraft()
           setError('Session expirée. Votre saisie est sauvegardée, vous serez redirigé·e vers la page de connexion.')
@@ -579,86 +582,25 @@ function NouveauCRBOContent() {
           }, 2500)
           return
         }
-        // Message serveur déjà filtré côté API (pas de fuite). On affiche tel quel.
-        throw new Error(data.error || 'Erreur lors de la génération')
+        throw new Error(data.error || 'Erreur lors de l\'extraction')
       }
 
-      setGeneratedCRBO(data.crbo)
-      setGeneratedStructure(data.structure ?? null)
-      setShowResult(true)
-      // 🎉 Moment de satisfaction
-      setConfettiTrigger(c => c + 1)
-      playSuccessSound()
+      // Persiste tout le contexte nécessaire à la page de résultats dans
+      // sessionStorage (volume potentiel > 100ko, on évite query string).
+      const handoff = {
+        formData: formDataForSubmission,
+        extracted: data.extracted,
+        selectedPatientId,
+        selectedMedecinId,
+      }
       try {
+        sessionStorage.setItem('ortho-ia:crbo-handoff', JSON.stringify(handoff))
         localStorage.removeItem(DRAFT_KEY)
-      } catch {}
-
-      // ============ Persistance : insert CRBO PUIS increment compteur ============
-      const supabase = createClient()
-      const { data: { user } } = await supabase.auth.getUser()
-
-      if (!user) {
-        console.error('CRBO généré mais utilisateur non trouvé — non sauvegardé')
-        setError('Session expirée — veuillez vous reconnecter pour sauvegarder.')
-        return
+      } catch (e) {
+        console.error('SessionStorage indisponible:', e)
       }
 
-      const { data: inserted, error: insertError } = await supabase
-        .from('crbos')
-        .insert({
-          user_id: user.id,
-          patient_id: selectedPatientId || null, // Lien patient ↔ CRBO
-          patient_prenom: formData.patient_prenom,
-          patient_nom: formData.patient_nom,
-          patient_ddn: formData.patient_ddn,
-          patient_classe: formData.patient_classe,
-          bilan_date: formData.bilan_date,
-          bilan_type: formData.bilan_type,
-          medecin_nom: formData.medecin_nom,
-          medecin_tel: formData.medecin_tel,
-          motif: formData.motif,
-          anamnese: formData.anamnese,
-          test_utilise: formData.test_utilise.join(', '),
-          resultats: formData.resultats_manuels,
-          notes_passation: formData.notes_passation,
-          crbo_genere: data.crbo,
-          structure_json: data.structure ?? null,
-          // Nouveaux champs
-          comportement_seance: formData.comportement_seance || null,
-          duree_seance_minutes: formData.duree_seance_minutes || null,
-          severite_globale: data.structure?.severite_globale ?? null,
-          bilan_precedent_id: formData.bilan_precedent_id || null,
-        })
-        .select('id')
-        .single()
-
-      if (insertError || !inserted?.id) {
-        console.error('Erreur sauvegarde CRBO:', insertError)
-        setError('Le CRBO a été généré mais n\'a pas pu être sauvegardé. Copiez-le maintenant et contactez le support.')
-        return
-      }
-      setSavedCrboId(inserted.id)
-
-      // Détection : est-ce le tout premier CRBO de l'ortho ?
-      const { count } = await supabase
-        .from('crbos')
-        .select('*', { count: 'exact', head: true })
-        .eq('user_id', user.id)
-      if (count === 1) setIsFirstCRBO(true)
-
-      // Le compteur n'est incrémenté que si l'insertion a réussi
-      const { error: rpcError } = await supabase.rpc('increment_crbo_count', { user_id: user.id })
-      if (rpcError) {
-        console.error('CRBO sauvé (id=' + inserted.id + ') mais compteur non incrémenté:', rpcError)
-      }
-
-      // Incrémenter usage_count du médecin sélectionné (banque) — best-effort
-      if (selectedMedecinId) {
-        const { error: medRpcError } = await supabase.rpc('increment_medecin_usage', { medecin_id: selectedMedecinId })
-        if (medRpcError) {
-          console.warn('Compteur médecin non incrémenté:', medRpcError)
-        }
-      }
+      router.push('/dashboard/nouveau-crbo/resultats')
     } catch (err: any) {
       setError(err.message)
     } finally {
@@ -1691,12 +1633,12 @@ Lecture de mots (score) : 15/100, É-T : -6.62, P5
               {generating ? (
                 <>
                   <Loader2 className="animate-spin" size={18} />
-                  Génération…
+                  Extraction des données…
                 </>
               ) : (
                 <>
                   <Sparkles size={18} />
-                  <span>Générer le CRBO</span>
+                  <span>Visualiser les résultats</span>
                   <kbd className="hidden lg:inline-flex items-center gap-0.5 ml-1 px-1.5 py-0.5 bg-white/20 rounded text-[10px] font-mono">
                     ⌘↵
                   </kbd>

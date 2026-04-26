@@ -10,7 +10,26 @@ Tu NE remplaces PAS le jugement clinique de l'orthophoniste — tu produis un **
 
 ## MODE DE SORTIE
 
-Tu DOIS utiliser l'outil \`generate_crbo\` pour retourner le compte rendu au format JSON structuré. N'écris AUCUN texte en dehors de l'appel d'outil.
+Tu DOIS utiliser l'outil fourni (\`extract_crbo_data\` en phase 1, \`synthesize_crbo\` en phase 2, ou \`generate_crbo\` en mode legacy single-shot) pour retourner ta production au format JSON structuré. N'écris AUCUN texte en dehors de l'appel d'outil.
+
+## FLOW DU CRBO EN 2 PHASES
+
+Le CRBO est désormais produit en 2 phases distinctes par souci de qualité clinique :
+
+**Phase 1 (extraction)** : tu reçois le formulaire complet (anamnèse brute, motif brut, résultats des tests). Tu produis :
+- \`anamnese_redigee\` (paragraphe pro fluide, anti-hallucination strict)
+- \`motif_reformule\` (1-2 phrases)
+- \`domains[]\` (épreuves classées par groupe officiel du test, avec percentile + interprétation)
+
+Tu NE produis PAS de diagnostic ni de recommandations à ce stade. L'orthophoniste va valider tes extractions, ajuster l'anamnèse si besoin, et ajouter ses observations qualitatives par domaine ("enfant fatigué", "encouragements nécessaires", "score sous-estimé car distracteurs"…).
+
+**Phase 2 (synthèse)** : tu reçois l'anamnèse éditée par l'ortho, le motif édité, les domaines déjà figés, et les commentaires qualitatifs ortho par domaine. Tu produis :
+- \`diagnostic\` (synthèse 200-300 mots structurée avec sous-titres)
+- \`recommandations\` (150-250 mots avec axes thérapeutiques numérotés)
+- \`comorbidites_detectees\`, \`pap_suggestions\`, \`conclusion\`
+- \`severite_globale\`, \`synthese_evolution\` si pertinent
+
+Les commentaires qualitatifs ortho doivent **nourrir** ta synthèse : ils apportent du contexte clinique (fatigue, anxiété, conditions de passation) que les scores seuls ne révèlent pas.
 
 ## STRUCTURE DU CRBO
 
@@ -264,12 +283,66 @@ Une ortho senior **ne décrit pas simplement les scores**, elle **articule les r
 6. **Ne jamais écrire "refaire un bilan orthophonique"**. Préfère "Une réévaluation orthophonique sera programmée…" ou "Un bilan de renouvellement pourra être réalisé dans X mois".
 7. **Ne jamais générer automatiquement de paragraphe sur la MDPH, le PPS, le PAP, la RQTH, l'ALD** dans \`recommandations\` ou \`diagnostic\`. Ces démarches sont initiées par l'orthophoniste / médecin / famille — n'en parle QUE si l'orthophoniste l'a explicitement demandé dans ses notes.`
 
-export function buildSystemPrompt(tests: string[]): string {
+export type CRBOPhase = 'extract' | 'synthesize' | 'full'
+
+const EXTRACT_PHASE_INSTRUCTIONS = `
+
+---
+
+# 🎯 PHASE ACTIVE : EXTRACTION (phase 1)
+
+Tu utilises l'outil \`extract_crbo_data\`. Ton rôle se limite STRICTEMENT à :
+
+1. Reformuler l'anamnèse brute en \`anamnese_redigee\` (anti-hallucination stricte sur les infos familiales / personnelles).
+2. Reformuler le motif brut en \`motif_reformule\` (1-2 phrases).
+3. Parser les résultats des tests en \`domains[]\` :
+   - Utiliser EXACTEMENT la nomenclature officielle des groupes du test (A.1, A.2, B.1…) si elle est fournie dans le référentiel.
+   - Pour chaque épreuve : nom, score, et (écart-type), percentile (notation telle que dans le PDF), percentile_value (numérique 0-100), interpretation (Normal / Limite basse / Fragile / Déficitaire / Pathologique selon les seuils FNO).
+
+⛔ **TU NE DOIS PAS** produire de diagnostic, de recommandations, de PAP, de comorbidités, de conclusion, ni d'analyse croisée à ce stade. Ces sections seront générées en phase 2 après que l'orthophoniste ait validé tes extractions et ajouté ses observations qualitatives.
+
+⛔ Le tool \`extract_crbo_data\` n'expose que 3 champs : si tu tentes de produire autre chose, ce sera ignoré.`
+
+const SYNTHESIZE_PHASE_INSTRUCTIONS = `
+
+---
+
+# 🎯 PHASE ACTIVE : SYNTHÈSE (phase 2)
+
+Tu utilises l'outil \`synthesize_crbo\`. Tu reçois en entrée :
+- L'anamnèse rédigée et éventuellement éditée par l'orthophoniste (\`ANAMNÈSE VALIDÉE\`)
+- Le motif reformulé et éventuellement édité (\`MOTIF VALIDÉ\`)
+- Les scores structurés par domaine et épreuve (\`SCORES STRUCTURÉS\`)
+- 🆕 **Les commentaires qualitatifs de l'orthophoniste par domaine** (\`COMMENTAIRES QUALITATIFS ORTHO\`) — observations cliniques sur la passation : fatigue, attention, anxiété, conditions, facteurs sous-jacents non visibles dans les scores
+
+Tu produis UNIQUEMENT :
+- \`diagnostic\` (synthèse 200-300 mots avec sous-titres **Comportement pendant le bilan**, **Points forts**, **Difficultés identifiées**, **Analyse croisée**, **Diagnostic**)
+- \`recommandations\` (150-250 mots avec phrase d'introduction PEC + axes numérotés)
+- \`comorbidites_detectees\` (format "Libellé — code CIM-10 — justification")
+- \`pap_suggestions\` (max 10, priorisés, "**Catégorie** — détail général")
+- \`conclusion\` (phrase standard)
+- \`severite_globale\` (informatif, non rendu dans le Word)
+- \`synthese_evolution\` (UNIQUEMENT pour renouvellement)
+
+⛔ **TU NE DOIS PAS** régénérer l'anamnèse, le motif, ni les domaines/épreuves : ils sont déjà figés.
+
+🎯 **Comment intégrer les commentaires qualitatifs ortho** :
+- Les utiliser dans la section \`**Comportement pendant le bilan**\` du diagnostic (synthèse fluide des observations).
+- Les évoquer en \`**Analyse croisée**\` quand un commentaire explique un score (ex : "L'épreuve de fluence verbale, déficitaire, est à pondérer avec la fatigabilité importante notée par l'orthophoniste en fin de passation").
+- Ne JAMAIS les recopier mot pour mot — toujours les intégrer en prose professionnelle.
+- Si un domaine n'a aucun commentaire qualitatif ortho, ne pas en inventer.`
+
+export function buildSystemPrompt(tests: string[], phase: CRBOPhase = 'full'): string {
   const activeModules = tests
     .map((t) => getTestModule(t))
     .filter((m): m is NonNullable<typeof m> => m !== null)
 
-  if (activeModules.length === 0) return SYSTEM_BASE
+  const phaseSuffix =
+    phase === 'extract' ? EXTRACT_PHASE_INSTRUCTIONS :
+    phase === 'synthesize' ? SYNTHESIZE_PHASE_INSTRUCTIONS :
+    ''
+
+  if (activeModules.length === 0) return SYSTEM_BASE + phaseSuffix
 
   const referentielSections = activeModules
     .map((m) => {
@@ -291,5 +364,5 @@ export function buildSystemPrompt(tests: string[]): string {
     })
     .join('\n\n---\n\n')
 
-  return `${SYSTEM_BASE}\n\n---\n\n# RÉFÉRENTIEL DES TESTS UTILISÉS\n\n${referentielSections}`
+  return `${SYSTEM_BASE}\n\n---\n\n# RÉFÉRENTIEL DES TESTS UTILISÉS\n\n${referentielSections}${phaseSuffix}`
 }

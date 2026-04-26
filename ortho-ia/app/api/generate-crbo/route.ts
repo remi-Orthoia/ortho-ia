@@ -3,8 +3,16 @@ import Anthropic from '@anthropic-ai/sdk'
 import {
   buildSystemPrompt,
   buildCRBOPrompt,
+  buildExtractPrompt,
+  buildSynthesizePrompt,
   CRBO_TOOL,
+  EXTRACT_CRBO_TOOL,
+  SYNTHESIZE_TOOL,
+  type CRBOPhase,
   type CRBOStructure,
+  type CRBODomain,
+  type ExtractedCRBO,
+  type SynthesizedCRBO,
 } from '@/lib/prompts'
 import { anonymize, rehydrate } from '@/lib/anonymizer'
 import { createServerSupabaseClient } from '@/lib/supabase-server'
@@ -191,11 +199,21 @@ export async function POST(request: NextRequest) {
       }
     }
 
-    const { formData } = await request.json()
+    const body = await request.json()
+    const phase: CRBOPhase = (body.phase === 'extract' || body.phase === 'synthesize') ? body.phase : 'full'
+    const formData = body.formData as any
+    const extracted = body.extracted as ExtractedCRBO | undefined
+    const edits = body.edits as { anamnese: string; motif: string; ortho_comments?: Record<string, string> } | undefined
 
     // ============ Validation des champs requis ============
     if (!formData || typeof formData !== 'object') {
       return NextResponse.json({ error: 'Données du formulaire manquantes' }, { status: 400 })
+    }
+    if (phase === 'synthesize' && !extracted) {
+      return NextResponse.json(
+        { error: 'Phase synthesize : payload "extracted" manquant.' },
+        { status: 400 },
+      )
     }
     const requiredFields: Array<[keyof typeof formData, string]> = [
       ['patient_prenom', 'Prénom du patient'],
@@ -241,7 +259,8 @@ export async function POST(request: NextRequest) {
     // DDN jamais transmise à Claude : on ne passe que l'âge calendaire calculé
     const patientAge = computePatientAge(formData.patient_ddn, formData.bilan_date)
 
-    const userPrompt = buildCRBOPrompt({
+    // ============ Construction du user prompt selon la phase ============
+    const baseInputs = {
       ortho_nom: s(anonymized.ortho_nom),
       ortho_adresse: s(anonymized.ortho_adresse),
       ortho_cp: s(anonymized.ortho_cp),
@@ -267,13 +286,50 @@ export async function POST(request: NextRequest) {
       bilan_precedent_structure: formData.bilan_precedent_structure,
       bilan_precedent_date: formData.bilan_precedent_date ? formatDateFR(formData.bilan_precedent_date) : undefined,
       bilan_precedent_anamnese: formData.bilan_precedent_anamnese,
-    })
+    }
 
-    // Timeout explicite — 180s max. Les bilans complexes (Exalang 8-11 avec
-    // 25+ épreuves, 12 PAP) peuvent dépasser 2 minutes de génération.
-    // Test mesuré en prod : Delyss = 148s (31 épreuves, 9 domaines, 664 mots de diagnostic).
+    let userPrompt: string
+    let toolToUse: Anthropic.Tool
+    let toolNameExpected: string
+    if (phase === 'extract') {
+      userPrompt = buildExtractPrompt(baseInputs)
+      toolToUse = EXTRACT_CRBO_TOOL
+      toolNameExpected = 'extract_crbo_data'
+    } else if (phase === 'synthesize') {
+      userPrompt = buildSynthesizePrompt({
+        patient_prenom: baseInputs.patient_prenom,
+        patient_nom: baseInputs.patient_nom,
+        patient_age: baseInputs.patient_age,
+        patient_classe: baseInputs.patient_classe,
+        bilan_date_display: baseInputs.bilan_date_display,
+        bilan_type: baseInputs.bilan_type,
+        medecin_nom: baseInputs.medecin_nom,
+        medecin_tel: baseInputs.medecin_tel,
+        anamnese_validee: edits?.anamnese?.trim() || extracted!.anamnese_redigee,
+        motif_valide: edits?.motif?.trim() || extracted!.motif_reformule || '',
+        domains: extracted!.domains,
+        ortho_comments: edits?.ortho_comments,
+        test_utilise: tests.join(', '),
+        notes_passation: baseInputs.notes_passation,
+        comportement_seance: baseInputs.comportement_seance,
+        duree_seance_minutes: baseInputs.duree_seance_minutes,
+        evolution_notes: baseInputs.evolution_notes,
+        bilan_precedent_structure: baseInputs.bilan_precedent_structure,
+        bilan_precedent_date: baseInputs.bilan_precedent_date,
+        bilan_precedent_anamnese: baseInputs.bilan_precedent_anamnese,
+      })
+      toolToUse = SYNTHESIZE_TOOL
+      toolNameExpected = 'synthesize_crbo'
+    } else {
+      userPrompt = buildCRBOPrompt(baseInputs)
+      toolToUse = CRBO_TOOL
+      toolNameExpected = 'generate_crbo'
+    }
+
+    // Timeout : phase=extract est plus rapide (10-30s) ; synthesize/full peuvent
+    // tourner 90-150s sur des bilans complexes.
     const abortController = new AbortController()
-    const timeoutId = setTimeout(() => abortController.abort(), 180_000)
+    const timeoutId = setTimeout(() => abortController.abort(), phase === 'extract' ? 90_000 : 180_000)
 
     // Prompt caching sur system prompt : économise ~80% de coût en entrée sur
     // les requêtes successives (le prompt système pèse ~15k tokens avec les
@@ -281,7 +337,7 @@ export async function POST(request: NextRequest) {
     const systemBlocks = [
       {
         type: 'text' as const,
-        text: buildSystemPrompt(tests),
+        text: buildSystemPrompt(tests, phase),
         cache_control: { type: 'ephemeral' as const },
       },
     ]
@@ -293,10 +349,10 @@ export async function POST(request: NextRequest) {
         () => anthropic.messages.create(
           {
             model: 'claude-sonnet-4-6',
-            max_tokens: 16384,
+            max_tokens: phase === 'extract' ? 8192 : 16384,
             system: systemBlocks,
-            tools: [CRBO_TOOL],
-            tool_choice: { type: 'tool', name: 'generate_crbo' },
+            tools: [toolToUse],
+            tool_choice: { type: 'tool', name: toolNameExpected },
             messages: [{ role: 'user', content: userPrompt }],
           },
           { signal: abortController.signal },
@@ -306,7 +362,7 @@ export async function POST(request: NextRequest) {
           initialDelayMs: 1500,
           signal: abortController.signal,
           onRetry: (attempt, error: any) => {
-            console.log(`[retry ${attempt}/3] Claude generate-crbo — ${error?.status || error?.code || error?.message?.slice(0, 60)}`)
+            console.log(`[retry ${attempt}/3] Claude ${phase} — ${error?.status || error?.code || error?.message?.slice(0, 60)}`)
           },
         },
       )
@@ -318,19 +374,69 @@ export async function POST(request: NextRequest) {
       (block): block is Anthropic.ToolUseBlock => block.type === 'tool_use',
     )
 
-    if (!toolUseBlock || toolUseBlock.name !== 'generate_crbo') {
+    if (!toolUseBlock || toolUseBlock.name !== toolNameExpected) {
       return NextResponse.json(
         { error: "Claude n'a pas renvoyé de structure CRBO exploitable." },
         { status: 502 },
       )
     }
 
-    // ============ Réhydratation après réponse API ============
+    // ============ Réponse selon la phase ============
+    if (phase === 'extract') {
+      const rawExtracted = toolUseBlock.input as ExtractedCRBO
+      // rehydrate gère un sous-ensemble : on construit une CRBOStructure partielle
+      const partialStructure: CRBOStructure = {
+        anamnese_redigee: rawExtracted.anamnese_redigee || '',
+        motif_reformule: rawExtracted.motif_reformule || '',
+        domains: rawExtracted.domains || [],
+        diagnostic: '',
+        recommandations: '',
+        conclusion: '',
+      }
+      const rehydrated = rehydrate(partialStructure, reverseMap)
+      const result: ExtractedCRBO = {
+        anamnese_redigee: rehydrated.anamnese_redigee,
+        motif_reformule: rehydrated.motif_reformule || '',
+        domains: rehydrated.domains,
+      }
+      return NextResponse.json({ success: true, phase: 'extract', extracted: result })
+    }
+
+    if (phase === 'synthesize') {
+      const rawSynth = toolUseBlock.input as SynthesizedCRBO
+      // Pour rehydrate, on injecte les champs synthèse dans une CRBOStructure
+      // factice avec anamnese/motif/domains vides — la rehydratation ne touche
+      // que les chaînes contenant les placeholders.
+      const tempStruct: CRBOStructure = {
+        anamnese_redigee: '',
+        motif_reformule: '',
+        domains: [],
+        diagnostic: rawSynth.diagnostic || '',
+        recommandations: rawSynth.recommandations || '',
+        conclusion: rawSynth.conclusion || '',
+        comorbidites_detectees: rawSynth.comorbidites_detectees,
+        pap_suggestions: rawSynth.pap_suggestions,
+        severite_globale: rawSynth.severite_globale ?? null,
+        synthese_evolution: rawSynth.synthese_evolution ?? null,
+      }
+      const rehydrated = rehydrate(tempStruct, reverseMap)
+      const result: SynthesizedCRBO = {
+        diagnostic: rehydrated.diagnostic,
+        recommandations: rehydrated.recommandations,
+        conclusion: rehydrated.conclusion,
+        comorbidites_detectees: rehydrated.comorbidites_detectees ?? [],
+        pap_suggestions: rehydrated.pap_suggestions ?? [],
+        severite_globale: rehydrated.severite_globale ?? null,
+        synthese_evolution: rehydrated.synthese_evolution ?? null,
+      }
+      return NextResponse.json({ success: true, phase: 'synthesize', synthesized: result })
+    }
+
+    // phase = 'full' (legacy)
     const rawStructure = toolUseBlock.input as CRBOStructure
     const structure = rehydrate(rawStructure, reverseMap)
     const crbo = structureToText(structure)
-
-    return NextResponse.json({ success: true, crbo, structure })
+    return NextResponse.json({ success: true, phase: 'full', crbo, structure })
   } catch (error: any) {
     // Logging SANS payload — évite fuite DDN / anamnèse / résultats dans les logs
     console.error('Erreur génération CRBO:', {

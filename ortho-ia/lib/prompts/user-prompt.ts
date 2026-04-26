@@ -1,4 +1,23 @@
-import type { CRBOStructure } from './tool-schema'
+import type { CRBODomain, CRBOStructure } from './tool-schema'
+
+/** Sérialise les domaines déjà extraits + commentaires ortho pour la phase 2. */
+function formatDomainsForSynthesize(domains: CRBODomain[], orthoComments?: Record<string, string>): string {
+  if (!domains?.length) return '(aucun domaine)'
+  const lines: string[] = []
+  for (const d of domains) {
+    lines.push(`### ${d.nom}`)
+    for (const e of d.epreuves) {
+      lines.push(`- ${e.nom} : score ${e.score} / É-T ${e.et ?? '—'} / ${e.percentile} (P${e.percentile_value}) → ${e.interpretation}`)
+    }
+    const orthoNote = (orthoComments?.[d.nom] || d.commentaire || '').trim()
+    if (orthoNote) {
+      lines.push('')
+      lines.push(`💬 Commentaire qualitatif ortho : ${orthoNote}`)
+    }
+    lines.push('')
+  }
+  return lines.join('\n')
+}
 
 /** Compacte un résumé du bilan précédent pour injection dans le prompt de renouvellement. */
 function formatBilanPrecedent(structure: CRBOStructure | null, bilanDate: string, anamneseInitiale?: string): string {
@@ -167,4 +186,129 @@ Génère le CRBO complet en appelant l'outil \`generate_crbo\`. Remplis chaque c
       ? 'IMPÉRATIF : remplis synthese_evolution (non null) avec comparaison rigoureuse scores actuels vs précédents.'
       : 'synthese_evolution = null (bilan initial).'
   }${renouvellementInstruction}`
+}
+
+// ============================================================================
+// PHASE 1 — EXTRACT : utilise le même contenu que le full prompt mais avec une
+// instruction terminale ciblée. Le système prompt phase=extract limite déjà
+// l'IA aux 3 champs anamnese / motif / domains.
+// ============================================================================
+
+export function buildExtractPrompt(data: Parameters<typeof buildCRBOPrompt>[0]): string {
+  const base = buildCRBOPrompt(data)
+  // Remplace l'instruction terminale par une version focalisée extraction.
+  return base.replace(
+    /=== INSTRUCTION ===[\s\S]*$/,
+    `=== INSTRUCTION (phase 1 — EXTRACTION) ===
+Appelle l'outil \`extract_crbo_data\`. Tu dois UNIQUEMENT remplir :
+- \`anamnese_redigee\` : reformulation pro de l'anamnèse brute (anti-hallucination familiale stricte)
+- \`motif_reformule\` : reformulation pro du motif (1-2 phrases)
+- \`domains\` : classement des résultats par groupe officiel du test, avec percentile + interpretation par épreuve
+
+⛔ NE PRODUIS PAS de diagnostic, recommandations, comorbidités, conclusion, PAP : ce n'est pas le bon moment du flow. Ces champs seront générés en phase 2 après validation par l'orthophoniste.`,
+  )
+}
+
+// ============================================================================
+// PHASE 2 — SYNTHESIZE : entrées validées par l'ortho + commentaires qualitatifs
+// ============================================================================
+
+export interface SynthesizePromptInput {
+  patient_prenom: string
+  patient_nom: string
+  patient_age: string
+  patient_classe: string
+  bilan_date_display: string
+  bilan_type: string
+  medecin_nom: string
+  medecin_tel: string
+  /** Anamnèse rédigée et validée/éditée par l'ortho. */
+  anamnese_validee: string
+  /** Motif reformulé et validé/éditée par l'ortho. */
+  motif_valide: string
+  /** Domaines + épreuves figés depuis la phase d'extraction. */
+  domains: CRBODomain[]
+  /** Commentaires qualitatifs par domaine, indexés par nom de domaine.
+   *  Optionnel : si l'ortho n'a rien commenté, l'objet est vide ou undefined. */
+  ortho_comments?: Record<string, string>
+  /** Tests utilisés (string concaténée) — utile pour rappeler le contexte. */
+  test_utilise: string
+  /** Notes de passation brutes (si fournies). */
+  notes_passation?: string
+  comportement_seance?: string
+  duree_seance_minutes?: number
+  /** Renouvellement : structure du bilan précédent + date + anamnèse précédente. */
+  bilan_precedent_structure?: CRBOStructure | null
+  bilan_precedent_date?: string
+  bilan_precedent_anamnese?: string
+  evolution_notes?: string
+}
+
+export function buildSynthesizePrompt(data: SynthesizePromptInput): string {
+  const isRenouvellement = !!data.bilan_precedent_structure && !!data.bilan_precedent_date
+
+  const bilanPrecBlock = isRenouvellement
+    ? `
+
+=== BILAN PRÉCÉDENT (contexte complet pour analyse d'évolution) ===
+${formatBilanPrecedent(data.bilan_precedent_structure!, data.bilan_precedent_date!, data.bilan_precedent_anamnese)}
+
+=== NOTES CLINICIEN·NE SUR L'ÉVOLUTION ===
+${data.evolution_notes || '(aucune note supplémentaire, déduis l\'évolution de la comparaison des scores)'}`
+    : ''
+
+  const comportementBlock = data.comportement_seance
+    ? `
+
+=== COMPORTEMENT EN SÉANCE (observations cliniques globales) ===
+${data.comportement_seance}`
+    : ''
+
+  const dureeBlock = data.duree_seance_minutes
+    ? `
+
+=== DURÉE DE LA SÉANCE ===
+${data.duree_seance_minutes} minutes`
+    : ''
+
+  return `=== INFORMATIONS PATIENT ===
+Prénom : ${data.patient_prenom}
+Nom : ${data.patient_nom}
+Âge au bilan : ${data.patient_age}
+Classe : ${data.patient_classe}
+Date du bilan : ${data.bilan_date_display}
+Type : Bilan ${data.bilan_type}${isRenouvellement ? ' 🔄' : ''}
+
+=== MÉDECIN PRESCRIPTEUR ===
+Nom : ${data.medecin_nom}
+Tél : ${data.medecin_tel || 'Non renseigné'}
+
+=== MOTIF VALIDÉ (par l'orthophoniste) ===
+${data.motif_valide || '(aucun motif fourni)'}
+
+=== ANAMNÈSE VALIDÉE (par l'orthophoniste) ===
+${data.anamnese_validee}
+
+=== TEST(S) UTILISÉ(S) ===
+${data.test_utilise}
+
+=== SCORES STRUCTURÉS + COMMENTAIRES QUALITATIFS ORTHO ===
+${formatDomainsForSynthesize(data.domains, data.ortho_comments)}
+
+=== NOTES DE PASSATION (brutes, contexte global) ===
+${data.notes_passation || 'Aucune note supplémentaire'}${comportementBlock}${dureeBlock}${bilanPrecBlock}
+
+=== INSTRUCTION (phase 2 — SYNTHÈSE) ===
+Appelle l'outil \`synthesize_crbo\`. Produis UNIQUEMENT :
+- \`diagnostic\` (200-300 mots, structure imposée par le système prompt)
+- \`recommandations\` (150-250 mots)
+- \`comorbidites_detectees\` (format "Libellé — code CIM-10 — justification", tableau vide [] si aucune)
+- \`pap_suggestions\` (max 10, priorisés)
+- \`conclusion\` (phrase standard)
+- \`severite_globale\` (Léger/Modéré/Sévère ou null)
+- \`synthese_evolution\` ${isRenouvellement ? '(NON NULL — bilan de renouvellement, comparaison rigoureuse exigée)' : '(null — bilan initial)'}
+
+🎯 **Intègre les commentaires qualitatifs ortho** dans le diagnostic — particulièrement dans la section **Comportement pendant le bilan** et **Analyse croisée**. Si un score paraît anormalement bas mais qu'un commentaire ortho mentionne fatigue/anxiété/distracteurs, mentionne-le explicitement pour pondérer l'interprétation.
+
+⛔ Ne régénère PAS l'anamnèse, le motif, ni les domaines : ils sont définitifs.`
 }

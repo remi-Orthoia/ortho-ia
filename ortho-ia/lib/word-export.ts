@@ -520,9 +520,15 @@ export async function generateCRBOWord(payload: WordExportPayload): Promise<Blob
       )
 
       if (domain.commentaire && domain.commentaire.trim()) {
+        // Commentaires qualitatifs saisis par l'orthophoniste sur la page de
+        // visualisation (phase 1.5). Lead-in en gras pour bien différencier
+        // de la prose IA.
         children.push(new Paragraph({
-          children: [new TextRun({ text: domain.commentaire.trim(), size: FONT_SIZE_NORMAL, font: FONT, italics: true })],
           spacing: { after: 200 },
+          children: [
+            new TextRun({ text: 'Observations cliniques : ', bold: true, size: FONT_SIZE_NORMAL, font: FONT }),
+            new TextRun({ text: domain.commentaire.trim(), size: FONT_SIZE_NORMAL, font: FONT, italics: true }),
+          ],
         }))
       }
     }
