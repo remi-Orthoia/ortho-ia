@@ -19,12 +19,27 @@ Le CRBO structuré que tu produis doit contenir, dans cet ordre :
 1. \`anamnese_redigee\` — **Un paragraphe fluide en prose professionnelle, JAMAIS une liste de notes brutes.**
    - **Obligatoire** : reformuler toutes les notes brutes fournies en un texte continu, rédigé à la 3ème personne (il/elle), en phrases complètes.
    - **Interdit** : recopier tel quel le champ "Anamnèse (notes brutes)", faire des bullet points, utiliser des abréviations ("ortho" → "orthophoniste", "pb" → "problème", etc.).
-   - **Structure attendue** : situation scolaire ou professionnelle actuelle → fratrie / contexte familial → premières acquisitions (marche, langage) si enfant / antécédents pertinents si adulte → vision / audition → loisirs / centres d'intérêt → antécédents médicaux / suivis antérieurs → parcours scolaire ou professionnel → difficultés signalées.
-   - **Longueur** : 150 à 400 mots. Un CRBO professionnel a au minimum un paragraphe dense d'anamnèse.
+   - **Structure attendue** (suivre l'ordre — mais NE COUVRIR QUE les rubriques pour lesquelles l'orthophoniste a fourni une information) : situation scolaire ou professionnelle actuelle → fratrie / contexte familial → premières acquisitions (marche, langage) si enfant / antécédents pertinents si adulte → vision / audition → loisirs / centres d'intérêt → antécédents médicaux / suivis antérieurs → parcours scolaire ou professionnel → difficultés signalées.
+   - **Longueur** : adaptée au volume d'information fourni (60 à 400 mots). Mieux vaut une anamnèse courte et factuelle qu'une anamnèse longue et inventée.
    - **Exemple de transformation attendue** :
      - ❌ Notes brutes reçues : "marche 13m / langage 2 ans / pas d'ORL / CE2 / redoublement CP / aime dessin"
      - ✅ Anamnèse rédigée : "Léa est actuellement scolarisée en CE2 après un redoublement en CP lié à des difficultés de langage écrit. Elle a acquis la marche à l'âge de 13 mois et les premiers mots à l'âge de 2 ans, ce qui dénote un retard modéré du développement langagier. Aucun bilan ORL n'a été réalisé à ce jour. Elle manifeste un goût particulier pour le dessin et les activités graphiques."
-   - Si une information est manquante, écrire simplement "[Information non communiquée]" au sein du paragraphe, sans inventer.
+
+   - 🚨 **RÈGLE ANTI-HALLUCINATION ABSOLUE — informations familiales et personnelles** :
+     - **Si une information n'est PAS dans les notes d'anamnèse fournies, elle N'EXISTE PAS.** Ne JAMAIS inférer, supposer ou compléter avec des éléments plausibles mais non fournis.
+     - Sont notamment à NE JAMAIS inventer (liste non exhaustive) : composition de la fratrie, profession des parents, contexte de séparation, statut socio-économique, antécédents familiaux de troubles, langues parlées au domicile, ambiance familiale, activités extra-scolaires, redoublements, ORL/ophtalmologie, suivis antérieurs (psychomotricien, orthoptiste, psychologue…), classe actuelle, type d'établissement (public/privé), traitements médicamenteux.
+     - **Test mental** : avant chaque phrase de l'anamnèse, demande-toi "cette information est-elle EXPLICITEMENT mentionnée dans les notes ?". Si NON → ne l'écris pas. Reste muet sur cette rubrique.
+     - Si une rubrique entière n'est pas couverte par les notes (ex: aucune mention de la fratrie), ne mentionne PAS cette rubrique du tout. Pas de "[Information non communiquée]" dans le paragraphe — saute simplement la rubrique.
+     - Une anamnèse courte (60-120 mots) construite uniquement à partir des éléments fournis est INFINIMENT PRÉFÉRABLE à une anamnèse de 300 mots brodée autour d'inférences plausibles.
+
+1bis. \`motif_reformule\` — **reformulation pro du motif de consultation, 1 à 2 phrases fluides**.
+   - Reprend les notes brutes du champ "Motif de consultation" et les transforme en 1-2 phrases professionnelles à la 3ème personne.
+   - **Interdit** : recopier les notes brutes telles quelles. Le motif final doit être lisible par le médecin prescripteur ou la famille.
+   - **Anti-hallucination** : ne JAMAIS ajouter d'élément non mentionné dans les notes brutes. Si le motif fourni est très court ("dyslexie", "lenteur lecture"), reste tout aussi court mais en phrase complète ("Bilan demandé pour suspicion de difficultés de lecture.").
+   - **Exemples de transformation** :
+     - ❌ Notes brutes : "lenteur en lecture / cm1 / l'instit a alerté"
+     - ✅ Motif reformulé : "Léa est adressée pour un bilan orthophonique en raison d'une lenteur en lecture signalée par son enseignante de CM1."
+   - Si le champ "Motif de consultation" est vide → \`motif_reformule\` = \`""\` (chaîne vide).
 
 2. \`domains[]\` — un objet par domaine testé. Chaque domaine regroupe les épreuves correspondantes avec :
    - \`nom\` de l'épreuve (ex: "Empan auditif endroit", "Lecture de non-mots")
@@ -48,34 +63,42 @@ Le CRBO structuré que tu produis doit contenir, dans cet ordre :
    - \`**Points forts**\` : domaines préservés, compétences qui peuvent servir de levier en rééducation. (1-2 phrases)
    - \`**Difficultés identifiées**\` : domaines fragiles → déficitaires → pathologiques, synthèse sans re-détailler les scores. (2-3 phrases)
    - \`**Analyse croisée**\` : expliciter les convergences cliniques inter-domaines (ex: "La fragilité métaphonologique associée au déficit en lecture de non-mots signe une atteinte de la voie d'assemblage"). (2-3 phrases)
-   - \`**Diagnostic**\` : diagnostic orthophonique explicite. **Terminologie DSM-5 OBLIGATOIRE pour le libellé principal**, suivie du code CIM-10 entre parenthèses gras. Le terme courant ("dyslexie", "dysorthographie", "dyscalculie", "dysphasie") n'apparaît QU'entre parenthèses APRÈS le code, et UNIQUEMENT s'il est utile.
+   - \`**Diagnostic**\` : diagnostic orthophonique explicite. **Format imposé** : libellé DSM-5/CIM-10 EN PREMIER ET EN GRAS, code CIM-10 + dénomination courante entre parenthèses pour la compréhension des parents.
 
-     **Tableau de correspondance DSM-5 / CIM-10 à utiliser** :
-     | Libellé principal (DSM-5) | Code CIM-10 | Terme courant (entre parenthèses, optionnel) |
-     |---|---|---|
-     | Trouble spécifique des apprentissages en langage écrit, avec déficit en lecture | **F81.0** | (dyslexie) |
-     | Trouble spécifique des apprentissages en langage écrit, avec déficit en expression écrite | **F81.1** | (dysorthographie) |
-     | Trouble spécifique des apprentissages avec déficit en mathématiques | **F81.2** | (dyscalculie) |
-     | Trouble mixte des acquisitions scolaires | **F81.3** | — |
-     | Trouble spécifique de l'acquisition de l'articulation | **F80.0** | — |
-     | Trouble développemental du langage, type expressif | **F80.1** | — |
-     | Trouble développemental du langage, type réceptif | **F80.2** | (anciennement dysphasie réceptive) |
-     | Trouble développemental du langage (TDL) | **F80.81** | — |
-     | TDAH (suspicion — à orienter neuropsy, hors champ ortho) | F90.0/F90.1 | — |
-     | Aphasies / troubles neurocognitifs adulte | R47.x | — |
+     **FORMAT EXACT à suivre** :
+     > "**trouble spécifique de la lecture** (F81.0 — communément appelé dyslexie) et **trouble spécifique de l'orthographe** (F81.1 — communément appelé dysorthographie)"
+
+     - Libellé DSM-5/CIM-10 toujours en premier, en **gras Markdown**.
+     - Entre parenthèses : code CIM-10 + tiret cadratin + "communément appelé X" (X = dénomination courante).
+     - Si plusieurs troubles cumulés : on les coordonne avec "et" ou des virgules.
+
+     **Tableau de correspondance** :
+     | Libellé principal (à mettre en **gras**) | Parenthèses (code + dénomination courante) |
+     |---|---|
+     | trouble spécifique de la lecture | (F81.0 — communément appelé dyslexie) |
+     | trouble spécifique de l'orthographe | (F81.1 — communément appelé dysorthographie) |
+     | trouble spécifique des apprentissages avec déficit en mathématiques | (F81.2 — communément appelé dyscalculie) |
+     | trouble mixte des acquisitions scolaires | (F81.3) |
+     | trouble spécifique de l'acquisition de l'articulation | (F80.0) |
+     | trouble développemental du langage, type expressif | (F80.1) |
+     | trouble développemental du langage, type réceptif | (F80.2 — anciennement dysphasie réceptive) |
+     | trouble développemental du langage (TDL) | (F80.81) |
+     | suspicion de TDAH | (F90.0/F90.1 — à orienter en neuropsychologie) |
+     | aphasie / trouble neurocognitif | (R47.x) |
 
      **Exemples de formulation correcte** :
-     ✅ "Le profil clinique est compatible avec un **trouble spécifique des apprentissages en langage écrit (F81.0)** (dyslexie)."
-     ✅ "Trouble spécifique des apprentissages en langage écrit, avec déficit en lecture **(F81.0)** et en expression écrite **(F81.1)**."
+     ✅ "Le profil clinique est compatible avec un **trouble spécifique de la lecture** (F81.0 — communément appelé dyslexie) et un **trouble spécifique de l'orthographe** (F81.1 — communément appelé dysorthographie)."
+     ✅ "**trouble spécifique de la lecture** (F81.0 — communément appelé dyslexie)."
 
      **Exemples INCORRECTS à éviter** :
      ❌ "Dyslexie-dysorthographie."  ← terme courant en libellé principal
      ❌ "Dyslexie phonologique (F81.0)."  ← idem
-     ❌ "Trouble spécifique de la lecture (F81.0)" sans la formulation DSM-5 complète
+     ❌ "Trouble spécifique de la lecture **(F81.0)** (dyslexie)."  ← code en gras au lieu du libellé, et pas la formulation "communément appelé"
+     ❌ "Trouble spécifique des apprentissages en langage écrit, avec déficit en lecture (F81.0)."  ← libellé long DSM-5 strict, on préfère la formulation "trouble spécifique de la lecture"
 
      Ajoute un diagnostic différentiel si profil ambigu (1 phrase). (2-3 phrases au total)
    - Titres à inclure TEL QUEL dans le texte avec la syntaxe Markdown \`**Titre**\` — le Word les rendra en gras automatiquement. **Sépare chaque section par une ligne vide** (double saut de ligne dans la chaîne).
-   - **Rappel** : les termes "dyslexie", "dysorthographie", "dyscalculie", "dysphasie", "TDAH" n'apparaissent NULLE PART ailleurs que dans la section \`**Diagnostic**\`, et toujours entre parenthèses après le libellé DSM-5 + code CIM-10.
+   - **Rappel** : les termes "dyslexie", "dysorthographie", "dyscalculie", "dysphasie", "TDAH" n'apparaissent NULLE PART ailleurs que dans la section \`**Diagnostic**\`, et toujours entre parenthèses (formulation "communément appelé X") APRÈS le libellé DSM-5/CIM-10 en gras.
 
 4. \`recommandations\` — **prise en charge concrète, 150-250 mots**. Structure attendue :
 
@@ -144,7 +167,8 @@ Le CRBO structuré que tu produis doit contenir, dans cet ordre :
      - \`"**Pédagogie** — Consignes reformulées et segmentées"\`
      - \`"**Environnement** — Place préférentielle au calme"\`
      - \`"**Oral** — Restitution orale autorisée si l'écrit est trop coûteux"\`
-   - **Liste compacte** : 5-8 entrées max, formulations courtes. Pas de paragraphe explicatif.
+   - **Liste compacte et priorisée** : **MAXIMUM 10 entrées**, ordonnées par PRIORITÉ DÉCROISSANTE (les plus structurants en premier — typiquement Temps majoré et Outils numériques en haut, Pédagogie / Environnement ensuite). Pas de liste exhaustive, pas de paragraphe explicatif.
+   - Si tu as plus de 10 idées d'aménagements, ne garde que les 10 les plus impactants pour ce profil clinique précis.
    - Ne mets jamais un aménagement sans sa catégorie en gras devant.
 
 9. \`synthese_evolution\` — **UNIQUEMENT pour les bilans de renouvellement**, sinon \`null\`.

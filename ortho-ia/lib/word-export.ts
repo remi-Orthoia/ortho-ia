@@ -118,13 +118,6 @@ export async function generateCRBOWord(payload: WordExportPayload): Promise<Blob
   const hasStructure = !!structure && !!structure.domains && structure.domains.length > 0
   const hasPrevious = !!previousStructure && !!previousStructure.domains && previousStructure.domains.length > 0
 
-  // Couleur du badge sévérité
-  const severiteColors: Record<string, { bg: string; fg: string }> = {
-    'Léger':   { bg: 'C8E6C9', fg: '1B5E20' },
-    'Modéré':  { bg: 'FFE082', fg: 'E65100' },
-    'Sévère':  { bg: 'EF9A9A', fg: '8B0000' },
-  }
-
   // ============ Helpers ============
 
   const createCell = (text: string, options: { bold?: boolean, width?: number, shading?: string, alignment?: any } = {}) => {
@@ -400,10 +393,15 @@ export async function generateCRBOWord(payload: WordExportPayload): Promise<Blob
   }
 
   // ===== MOTIF =====
-  if (formData.motif) {
+  // Si le LLM a reformulé le motif (champ structuré motif_reformule), on l'utilise
+  // en priorité — sinon on retombe sur les notes brutes du formulaire (legacy).
+  const motifText = (hasStructure && structure!.motif_reformule?.trim())
+    ? structure!.motif_reformule.trim()
+    : (formData.motif || '')
+  if (motifText) {
     children.push(
       new Paragraph({ children: [new TextRun({ text: 'Motif de consultation', size: FONT_SIZE_NORMAL, font: FONT, color: COLOR_GREEN, bold: true })], spacing: { before: 200 } }),
-      new Paragraph({ children: [new TextRun({ text: formData.motif, size: FONT_SIZE_NORMAL, font: FONT })], spacing: { after: 200 } }),
+      new Paragraph({ children: [new TextRun({ text: motifText, size: FONT_SIZE_NORMAL, font: FONT })], spacing: { after: 200 } }),
     )
   }
 
@@ -412,26 +410,6 @@ export async function generateCRBOWord(payload: WordExportPayload): Promise<Blob
     new Paragraph({ children: [new TextRun({ text: 'Tests pratiqués', size: FONT_SIZE_NORMAL, font: FONT, color: COLOR_GREEN, bold: true })], spacing: { before: 200 } }),
     new Paragraph({ children: [new TextRun({ text: `• ${testsText}`, size: FONT_SIZE_NORMAL, font: FONT })], spacing: { after: 200 } }),
   )
-
-  // ===== BADGE SÉVÉRITÉ GLOBALE =====
-  if (hasStructure && structure!.severite_globale) {
-    const sev = structure!.severite_globale
-    const colors = severiteColors[sev] ?? { bg: 'E0E0E0', fg: '212121' }
-    children.push(
-      new Paragraph({
-        spacing: { before: 200, after: 100 },
-        alignment: AlignmentType.CENTER,
-        children: [new TextRun({
-          text: `  Sévérité globale du profil : ${sev}  `,
-          bold: true,
-          size: FONT_SIZE_NORMAL + 2,
-          font: FONT,
-          color: colors.fg,
-          shading: { type: ShadingType.CLEAR, fill: colors.bg, color: 'auto' },
-        } as any)],
-      }),
-    )
-  }
 
   // ===== PAGE 1 RENOUVELLEMENT — Bloc comparatif riche =====
   if (hasStructure && hasPrevious) {

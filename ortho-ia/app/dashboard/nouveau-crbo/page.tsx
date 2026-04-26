@@ -74,6 +74,7 @@ function NouveauCRBOContent() {
   const [generating, setGenerating] = useState(false)
   const [extracting, setExtracting] = useState(false)
   const [error, setError] = useState('')
+  const [notice, setNotice] = useState('')
   const [generatedCRBO, setGeneratedCRBO] = useState('')
   const [generatedStructure, setGeneratedStructure] = useState<CRBOStructure | null>(null)
   const [showResult, setShowResult] = useState(false)
@@ -382,6 +383,7 @@ function NouveauCRBOContent() {
 
     setExtracting(true)
     setError('')
+    setNotice('')
 
     try {
       const formDataUpload = new FormData()
@@ -398,15 +400,18 @@ function NouveauCRBOContent() {
         throw new Error(data.error || 'Erreur lors de l\'extraction')
       }
 
-      // Mettre à jour les résultats
+      // Mettre à jour les résultats. On NE pré-coche PAS automatiquement le test
+      // détecté : règle clinique Laurie — un test ne doit JAMAIS apparaître dans
+      // le CRBO sans avoir été coché explicitement par l'orthophoniste.
       setFormData(prev => ({
         ...prev,
         resultats_manuels: data.resultats,
-        // Si un test a été détecté, le sélectionner
-        test_utilise: data.detectedTest && !prev.test_utilise.includes(data.detectedTest)
-          ? [...prev.test_utilise, data.detectedTest]
-          : prev.test_utilise
       }))
+      setNotice(
+        data.detectedTest
+          ? `PDF importé. Test détecté : "${data.detectedTest}" — cochez-le manuellement ci-dessus si vous souhaitez l'inclure.`
+          : 'PDF importé. Pensez à cocher le test correspondant dans la liste.'
+      )
 
     } catch (err) {
       setError(err instanceof Error ? err.message : 'Erreur lors de l\'extraction')
@@ -784,6 +789,13 @@ function NouveauCRBOContent() {
           <div className="mb-6 bg-red-50 border border-red-200 text-red-700 px-4 py-3 rounded-lg flex items-center gap-2">
             <AlertCircle size={20} />
             {error}
+          </div>
+        )}
+
+        {notice && !error && (
+          <div className="mb-6 bg-blue-50 border border-blue-200 text-blue-800 px-4 py-3 rounded-lg flex items-start gap-2">
+            <AlertCircle size={20} className="flex-shrink-0 mt-0.5" />
+            <span>{notice}</span>
           </div>
         )}
 

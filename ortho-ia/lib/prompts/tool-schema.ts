@@ -6,12 +6,17 @@ export const CRBO_TOOL: Anthropic.Tool = {
     "Produit un Compte Rendu de Bilan Orthophonique (CRBO) structuré à partir des données de bilan fournies (patient, anamnèse, tests, résultats). Chaque épreuve est classée par domaine, avec percentile numérique et interprétation clinique normalisée. Inclut un score de sévérité global, la détection des comorbidités, des suggestions PAP automatiques et une synthèse d'évolution si c'est un renouvellement.",
   input_schema: {
     type: 'object',
-    required: ['anamnese_redigee', 'domains', 'diagnostic', 'recommandations', 'conclusion', 'severite_globale', 'comorbidites_detectees', 'pap_suggestions'],
+    required: ['anamnese_redigee', 'motif_reformule', 'domains', 'diagnostic', 'recommandations', 'conclusion', 'severite_globale', 'comorbidites_detectees', 'pap_suggestions'],
     properties: {
       anamnese_redigee: {
         type: 'string',
         description:
-          "Paragraphe fluide d'anamnèse rédigé en 3e personne (150-400 mots). JAMAIS de notes brutes, toujours en prose professionnelle.",
+          "Paragraphe fluide d'anamnèse rédigé en 3e personne. JAMAIS de notes brutes, toujours en prose professionnelle. Anti-hallucination stricte : ne couvrir QUE les rubriques pour lesquelles l'orthophoniste a fourni des notes — ne JAMAIS inférer composition familiale, profession parentale, antécédents, suivis, classe, etc. si non mentionnés.",
+      },
+      motif_reformule: {
+        type: 'string',
+        description:
+          "Motif de consultation reformulé en 1-2 phrases professionnelles à la 3ème personne, à partir des notes brutes du champ 'Motif de consultation'. JAMAIS recopié tel quel. Vide ('') si aucun motif fourni. Anti-hallucination : ne pas ajouter d'élément non mentionné.",
       },
       domains: {
         type: 'array',
@@ -158,6 +163,7 @@ export interface CRBOStructure {
   recommandations: string
   conclusion: string
   // Champs étendus (CRBOs antérieurs à l'extension de schéma peuvent ne pas les avoir)
+  motif_reformule?: string
   severite_globale?: SeveriteGlobale
   comorbidites_detectees?: string[]
   pap_suggestions?: string[]
