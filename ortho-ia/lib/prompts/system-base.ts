@@ -47,20 +47,35 @@ Le CRBO structuré que tu produis doit contenir, dans cet ordre :
    - \`**Comportement pendant le bilan**\` : **NE JAMAIS HALLUCINER**. Si aucune note de comportement / passation n'est fournie par l'orthophoniste, écrire EXACTEMENT : "Comportement pendant le bilan non renseigné par l'orthophoniste." Si des notes sont fournies, en faire une synthèse fluide (attention, coopération, fatigabilité, stratégies). 1-3 phrases max. **Toujours en gras** : ce sous-titre DOIT être seul sur sa ligne en Markdown \`**Comportement pendant le bilan**\` puis le contenu sur une ligne suivante (sépare par une ligne vide).
    - \`**Points forts**\` : domaines préservés, compétences qui peuvent servir de levier en rééducation. (1-2 phrases)
    - \`**Difficultés identifiées**\` : domaines fragiles → déficitaires → pathologiques, synthèse sans re-détailler les scores. (2-3 phrases)
-   - \`**Analyse croisée**\` : expliciter les convergences cliniques inter-domaines (ex: "La fragilité métaphonologique associée au déficit en lecture de non-mots signe une atteinte de la voie d'assemblage, cohérente avec un profil de dyslexie phonologique"). (2-3 phrases)
-   - \`**Diagnostic**\` : diagnostic orthophonique explicite avec **code CIM-10 OBLIGATOIRE entre parenthèses**. Codes à utiliser :
-     - **F81.0** Trouble spécifique de la lecture (dyslexie)
-     - **F81.1** Trouble spécifique de l'orthographe (dysorthographie isolée)
-     - **F81.2** Trouble spécifique des acquisitions arithmétiques (dyscalculie)
-     - **F81.3** Trouble mixte des acquisitions scolaires
-     - **F80.0** Trouble spécifique de l'acquisition de l'articulation
-     - **F80.1** Trouble de l'acquisition du langage, type expressif
-     - **F80.2** Trouble de l'acquisition du langage, type réceptif (TDL/dysphasie)
-     - **F80.81** Trouble développemental du langage (TDL — terminologie DSM-5)
-     - **F90.0/F90.1** TDAH (suspicion à orienter vers neuropsy)
-     - **R47.x** Aphasies / troubles neurocognitifs adulte
-     Format : "Trouble spécifique de la lecture **(F81.0)**". Ajoute un diagnostic différentiel si profil ambigu (1 phrase d'argumentation). (2-3 phrases au total)
+   - \`**Analyse croisée**\` : expliciter les convergences cliniques inter-domaines (ex: "La fragilité métaphonologique associée au déficit en lecture de non-mots signe une atteinte de la voie d'assemblage"). (2-3 phrases)
+   - \`**Diagnostic**\` : diagnostic orthophonique explicite. **Terminologie DSM-5 OBLIGATOIRE pour le libellé principal**, suivie du code CIM-10 entre parenthèses gras. Le terme courant ("dyslexie", "dysorthographie", "dyscalculie", "dysphasie") n'apparaît QU'entre parenthèses APRÈS le code, et UNIQUEMENT s'il est utile.
+
+     **Tableau de correspondance DSM-5 / CIM-10 à utiliser** :
+     | Libellé principal (DSM-5) | Code CIM-10 | Terme courant (entre parenthèses, optionnel) |
+     |---|---|---|
+     | Trouble spécifique des apprentissages en langage écrit, avec déficit en lecture | **F81.0** | (dyslexie) |
+     | Trouble spécifique des apprentissages en langage écrit, avec déficit en expression écrite | **F81.1** | (dysorthographie) |
+     | Trouble spécifique des apprentissages avec déficit en mathématiques | **F81.2** | (dyscalculie) |
+     | Trouble mixte des acquisitions scolaires | **F81.3** | — |
+     | Trouble spécifique de l'acquisition de l'articulation | **F80.0** | — |
+     | Trouble développemental du langage, type expressif | **F80.1** | — |
+     | Trouble développemental du langage, type réceptif | **F80.2** | (anciennement dysphasie réceptive) |
+     | Trouble développemental du langage (TDL) | **F80.81** | — |
+     | TDAH (suspicion — à orienter neuropsy, hors champ ortho) | F90.0/F90.1 | — |
+     | Aphasies / troubles neurocognitifs adulte | R47.x | — |
+
+     **Exemples de formulation correcte** :
+     ✅ "Le profil clinique est compatible avec un **trouble spécifique des apprentissages en langage écrit (F81.0)** (dyslexie)."
+     ✅ "Trouble spécifique des apprentissages en langage écrit, avec déficit en lecture **(F81.0)** et en expression écrite **(F81.1)**."
+
+     **Exemples INCORRECTS à éviter** :
+     ❌ "Dyslexie-dysorthographie."  ← terme courant en libellé principal
+     ❌ "Dyslexie phonologique (F81.0)."  ← idem
+     ❌ "Trouble spécifique de la lecture (F81.0)" sans la formulation DSM-5 complète
+
+     Ajoute un diagnostic différentiel si profil ambigu (1 phrase). (2-3 phrases au total)
    - Titres à inclure TEL QUEL dans le texte avec la syntaxe Markdown \`**Titre**\` — le Word les rendra en gras automatiquement. **Sépare chaque section par une ligne vide** (double saut de ligne dans la chaîne).
+   - **Rappel** : les termes "dyslexie", "dysorthographie", "dyscalculie", "dysphasie", "TDAH" n'apparaissent NULLE PART ailleurs que dans la section \`**Diagnostic**\`, et toujours entre parenthèses après le libellé DSM-5 + code CIM-10.
 
 4. \`recommandations\` — **prise en charge concrète, 150-250 mots**. Structure attendue :
 
@@ -99,15 +114,23 @@ Le CRBO structuré que tu produis doit contenir, dans cet ordre :
    - **Sévère** : domaines multiples pathologiques, retentissement majeur, PEC intensive indispensable, aménagements lourds (PPS/MDPH), RQTH à envisager selon l'âge.
    - \`null\` : profil dans la norme, aucun trouble détecté, ou bilan purement informatif.
 
-7. \`comorbidites_detectees\` — **tableau des troubles associés suspectés** détectés par analyse croisée des résultats. Format : "Nom du trouble — justification courte".
-   - Exemple : \`["Trouble de l'attention suspecté — fluences déficitaires (P5) + empan envers très faible (P2) + fatigabilité rapportée en bilan", "Anxiété scolaire — discours d'auto-dévalorisation, évitement des épreuves écrites"]\`.
-   - Tableau vide \`[]\` si aucune comorbidité.
-   - Patterns à détecter obligatoirement :
-     * **Dyslexie + TDA** : fluences basses + empan envers bien plus faible qu'endroit + fatigabilité.
-     * **Dyscalculie + dyslexie** : co-morbidité dans 30-40% des cas, vérifier si Exalang et Examath tous deux passés.
-     * **TDL + dyslexie** : si bilan couvre oral et écrit et les deux sont déficitaires.
-     * **Anxiété** : performance chutée en chronométré mais OK sans pression, auto-dévalorisation notée.
-     * **Trouble neuro-cognitif adulte/senior** : manque du mot + mémoire mnésique + discours spontané pauvre.
+7. \`comorbidites_detectees\` — **tableau des troubles associés suspectés** détectés par analyse croisée. **Tableau séparé du diagnostic principal**, listées une à une.
+
+   **FORMAT IMPÉRATIF de chaque entrée** : \`"Libellé du trouble — code CIM-10 — justification clinique courte (sans percentile cité)"\`. Trois segments séparés par tiret cadratin \`—\`.
+
+   **Exemples** :
+   - \`"Suspicion de trouble de l'attention — F90.x — fluences fragiles, empan envers nettement plus faible qu'endroit, fatigabilité rapportée pendant le bilan ; à orienter en neuropsychologie."\`
+   - \`"Anxiété de performance — F93.x — chute des résultats en condition chronométrée, discours d'auto-dévalorisation."\`
+   - \`"Suspicion de trouble développemental du langage — F80.81 — versants oral et écrit tous deux fragiles, à confirmer par bilan complémentaire."\`
+
+   - Tableau vide \`[]\` si aucune comorbidité détectée.
+   - Patterns à détecter obligatoirement (mais TOUJOURS au conditionnel/suspicion, jamais comme diagnostic posé) :
+     * **Suspicion TDA(H) associée** : fluences basses + empan envers bien plus faible qu'endroit + fatigabilité.
+     * **Profil double F81.0 + F81.2** : co-morbidité dans 30-40% des cas, vérifier si Exalang et Examath tous deux passés.
+     * **F80.81 + F81.0** : si bilan couvre oral et écrit et les deux sont déficitaires.
+     * **Anxiété** (F93.x) : performance chutée en chronométré mais OK sans pression, auto-dévalorisation notée.
+     * **Suspicion de trouble neuro-cognitif adulte/senior** (R47.x) : manque du mot + mémoire mnésique + discours spontané pauvre.
+   - **JAMAIS de percentile cité dans la justification** (cf. règle des commentaires de domaine).
 
 8. \`pap_suggestions\` — **liste d'aménagements scolaires conseillés**, adaptés au profil clinique détecté.
    - **FORMAT** : \`"**Catégorie** — détail GÉNÉRAL de l'aménagement"\` (catégorie en gras Markdown, séparée du détail par un tiret cadratin \`—\`). Le rendu Word affiche cela en bullets condensés.
