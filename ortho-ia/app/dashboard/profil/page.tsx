@@ -1,10 +1,14 @@
 'use client'
 
-import { useState, useEffect } from 'react'
+import { useState, useEffect, Suspense } from 'react'
+import { useRouter, useSearchParams } from 'next/navigation'
 import { createClient } from '@/lib/supabase'
-import { Loader2, Save, CheckCircle } from 'lucide-react'
+import { Loader2, Save, CheckCircle, AlertCircle } from 'lucide-react'
 
-export default function ProfilPage() {
+function ProfilContent() {
+  const router = useRouter()
+  const searchParams = useSearchParams()
+  const isIncompleteRedirect = searchParams.get('incomplete') === '1'
   const [loading, setLoading] = useState(true)
   const [saving, setSaving] = useState(false)
   const [saved, setSaved] = useState(false)
@@ -76,6 +80,16 @@ export default function ProfilPage() {
     setSaving(false)
     if (!error) {
       setSaved(true)
+      // Si on est arrivé ici depuis le formulaire CRBO (profil incomplet), on
+      // renvoie l'utilisatrice vers le formulaire dès que les champs requis
+      // sont remplis.
+      const isComplete =
+        profile.prenom.trim() && profile.nom.trim() && profile.adresse.trim() &&
+        profile.code_postal.trim() && profile.ville.trim() && profile.telephone.trim()
+      if (isIncompleteRedirect && isComplete) {
+        setTimeout(() => router.push('/dashboard/nouveau-crbo'), 800)
+        return
+      }
       setTimeout(() => setSaved(false), 3000)
     }
   }
@@ -90,12 +104,23 @@ export default function ProfilPage() {
 
   return (
     <div className="max-w-2xl mx-auto space-y-6">
+      {isIncompleteRedirect && (
+        <div className="bg-amber-50 border border-amber-200 rounded-lg px-4 py-3 text-sm text-amber-900 flex items-start gap-3">
+          <AlertCircle size={20} className="shrink-0 mt-0.5" />
+          <div>
+            <p className="font-semibold">Complétez votre profil pour générer un CRBO</p>
+            <p className="mt-0.5">
+              Tous les champs ci-dessous sont obligatoires car ils figurent en en-tête de chaque compte rendu.
+              Vous serez redirigée vers le formulaire dès qu&apos;ils seront renseignés.
+            </p>
+          </div>
+        </div>
+      )}
       <div>
         <h1 className="text-2xl font-bold text-gray-900">Mon profil</h1>
         <p className="mt-1 text-gray-600">
           Ces informations apparaissent en en-tête de chaque CRBO généré — prénom, nom, adresse,
-          téléphone et email du cabinet. Elles sont pré-remplies automatiquement à l&apos;étape 1 de
-          chaque nouveau bilan.
+          téléphone et email du cabinet. Elles sont récupérées automatiquement à chaque nouveau bilan.
         </p>
       </div>
 
@@ -213,5 +238,13 @@ export default function ProfilPage() {
         </div>
       </div>
     </div>
+  )
+}
+
+export default function ProfilPage() {
+  return (
+    <Suspense fallback={<div className="flex items-center justify-center py-12"><Loader2 className="animate-spin" size={24} /></div>}>
+      <ProfilContent />
+    </Suspense>
   )
 }

@@ -3,9 +3,9 @@
 import { Check } from 'lucide-react'
 
 /**
- * Progress bar visuelle pour les 5 étapes du formulaire CRBO.
- * Affiche les étapes (terminée, actuelle, à venir), le temps estimé restant
- * et un résumé de la phase (En séance vs Après séance).
+ * Progress bar visuelle pour les 4 étapes du formulaire CRBO.
+ * Le profil ortho est récupéré automatiquement depuis Supabase (table profiles)
+ * — il n'apparaît plus comme étape du formulaire.
  */
 
 interface Step {
@@ -16,11 +16,10 @@ interface Step {
 }
 
 const STEPS: Step[] = [
-  { index: 1, label: 'Vos coordonnées',    phase: 'pre',          estimatedMinutes: 1 },
-  { index: 2, label: 'Patient',            phase: 'pre',          estimatedMinutes: 1 },
-  { index: 3, label: 'Médecin & Motif',    phase: 'pre',          estimatedMinutes: 1 },
-  { index: 4, label: 'Anamnèse',           phase: 'en-seance',    estimatedMinutes: 4 },
-  { index: 5, label: 'Résultats',          phase: 'post-seance',  estimatedMinutes: 5 },
+  { index: 1, label: 'Patient',            phase: 'pre',          estimatedMinutes: 1 },
+  { index: 2, label: 'Médecin & Motif',    phase: 'pre',          estimatedMinutes: 1 },
+  { index: 3, label: 'Anamnèse',           phase: 'en-seance',    estimatedMinutes: 4 },
+  { index: 4, label: 'Résultats',          phase: 'post-seance',  estimatedMinutes: 5 },
 ]
 
 const PHASE_LABEL: Record<Step['phase'], { label: string; color: string }> = {
@@ -48,7 +47,7 @@ export default function StepProgress({ currentStep, onStepClick }: Props) {
       {/* Info phase + temps estimé */}
       <div className="flex items-center justify-between mb-3 text-xs">
         <div className="flex items-center gap-2">
-          <span className="text-gray-500 dark:text-gray-400">Étape {currentStep}/5</span>
+          <span className="text-gray-500 dark:text-gray-400">Étape {currentStep}/{STEPS.length}</span>
           {phaseLabel && (
             <>
               <span className="text-gray-300 dark:text-gray-700">•</span>

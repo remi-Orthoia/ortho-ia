@@ -41,18 +41,31 @@ interface Patient {
   anamnese_base: string
 }
 
+interface Medecin {
+  id: string
+  prenom: string | null
+  nom: string
+  specialite: string | null
+  telephone: string | null
+  ville: string | null
+  code_postal: string | null
+  usage_count: number
+}
+
 const STEPS = [
-  { id: 1, name: 'Vos infos', description: 'Coordonnées orthophoniste' },
-  { id: 2, name: 'Patient', description: 'Informations patient' },
-  { id: 3, name: 'Médecin', description: 'Prescripteur & motif' },
-  { id: 4, name: 'Anamnèse', description: 'Notes cliniques' },
-  { id: 5, name: 'Résultats', description: 'Tests & scores' },
+  { id: 1, name: 'Patient', description: 'Informations patient' },
+  { id: 2, name: 'Médecin', description: 'Prescripteur & motif' },
+  { id: 3, name: 'Anamnèse', description: 'Notes cliniques' },
+  { id: 4, name: 'Résultats', description: 'Tests & scores' },
 ]
+const TOTAL_STEPS = STEPS.length
 
 const DRAFT_KEY = 'ortho-ia:crbo-draft'
 
 function StepPhaseBadge({ step }: { step: number }) {
-  if (step <= 4) {
+  // Steps 1-3 = en séance (Patient, Médecin, Anamnèse)
+  // Step 4 = post-séance (Résultats)
+  if (step <= 3) {
     return (
       <div className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full bg-blue-50 border border-blue-200 text-blue-700 text-xs font-medium mb-3">
         📋 En séance
@@ -91,6 +104,17 @@ function NouveauCRBOContent() {
   const [selectedPatientId, setSelectedPatientId] = useState<string>('')
   const [showNewPatientForm, setShowNewPatientForm] = useState(false)
 
+  // Médecins (banque)
+  const [medecins, setMedecins] = useState<Medecin[]>([])
+  const [medecinSearch, setMedecinSearch] = useState('')
+  const [selectedMedecinId, setSelectedMedecinId] = useState<string>('')
+  const [showNewMedecinForm, setShowNewMedecinForm] = useState(false)
+  const [newMedecin, setNewMedecin] = useState({
+    prenom: '', nom: '', specialite: '', telephone: '', ville: '', code_postal: '',
+  })
+  const [savingMedecin, setSavingMedecin] = useState(false)
+  const [profileChecked, setProfileChecked] = useState(false)
+
   const [formData, setFormData] = useState<CRBOFormData>({
     ortho_nom: '',
     ortho_adresse: '',
@@ -118,64 +142,91 @@ function NouveauCRBOContent() {
     const loadUserProfile = async () => {
       const supabase = createClient()
       const { data: { user } } = await supabase.auth.getUser()
-      
-      if (user) {
-        const { data: profile } = await supabase
-          .from('profiles')
-          .select('*')
-          .eq('id', user.id)
-          .single()
+      if (!user) return
 
-        if (profile) {
-          setFormData(prev => ({
-            ...prev,
-            ortho_nom: `${profile.prenom} ${profile.nom}`,
-            ortho_adresse: profile.adresse || '',
-            ortho_cp: profile.code_postal || '',
-            ortho_ville: profile.ville || '',
-            ortho_tel: profile.telephone || '',
-            ortho_email: profile.email || user.email || '',
-          }))
+      const { data: profile } = await supabase
+        .from('profiles')
+        .select('*')
+        .eq('id', user.id)
+        .single()
+
+      // Profil incomplet → redirige vers /dashboard/profil avec message.
+      // On exige nom + adresse a minima : sans ça le CRBO Word n'aura pas
+      // d'en-tête orthophoniste utilisable.
+      const isProfileComplete =
+        profile &&
+        profile.prenom?.trim() &&
+        profile.nom?.trim() &&
+        profile.adresse?.trim() &&
+        profile.code_postal?.trim() &&
+        profile.ville?.trim() &&
+        profile.telephone?.trim()
+
+      if (!isProfileComplete) {
+        router.push('/dashboard/profil?incomplete=1')
+        return
+      }
+
+      setFormData(prev => ({
+        ...prev,
+        ortho_nom: `${profile.prenom} ${profile.nom}`.trim(),
+        ortho_adresse: profile.adresse || '',
+        ortho_cp: profile.code_postal || '',
+        ortho_ville: profile.ville || '',
+        ortho_tel: profile.telephone || '',
+        ortho_email: profile.email || user.email || '',
+      }))
+      setProfileChecked(true)
+
+      // Charger les patients
+      const { data: patientsData } = await supabase
+        .from('patients')
+        .select('*')
+        .eq('user_id', user.id)
+        .order('nom', { ascending: true })
+
+      if (patientsData) {
+        setPatients(patientsData)
+      }
+
+      // Charger les médecins (banque) — triés par fréquence d'utilisation décroissante
+      const { data: medecinsData } = await supabase
+        .from('medecins')
+        .select('id, prenom, nom, specialite, telephone, ville, code_postal, usage_count')
+        .eq('user_id', user.id)
+        .order('usage_count', { ascending: false })
+        .order('nom', { ascending: true })
+
+      if (medecinsData) {
+        setMedecins(medecinsData as Medecin[])
+      }
+
+      // Si un patient est passé en URL, le sélectionner
+      const patientIdFromUrl = searchParams.get('patient')
+      if (patientIdFromUrl && patientsData) {
+        const patient = patientsData.find(p => p.id === patientIdFromUrl)
+        if (patient) {
+          handleSelectPatient(patient)
         }
+      }
 
-        // Charger les patients
-        const { data: patientsData } = await supabase
-          .from('patients')
-          .select('*')
-          .eq('user_id', user.id)
-          .order('nom', { ascending: true })
-
-        if (patientsData) {
-          setPatients(patientsData)
-        }
-
-        // Si un patient est passé en URL, le sélectionner
-        const patientIdFromUrl = searchParams.get('patient')
-        if (patientIdFromUrl && patientsData) {
-          const patient = patientsData.find(p => p.id === patientIdFromUrl)
-          if (patient) {
-            handleSelectPatient(patient)
+      // Reprendre un brouillon s'il y en a un
+      try {
+        const raw = localStorage.getItem(DRAFT_KEY)
+        if (raw && !patientIdFromUrl) {
+          const draft = JSON.parse(raw) as { step: number; formData: Partial<CRBOFormData> }
+          if (draft?.formData) {
+            setFormData(prev => ({ ...prev, ...draft.formData }))
+            setCurrentStep(draft.step || 1)
           }
         }
-
-        // Reprendre un brouillon s'il y en a un
-        try {
-          const raw = localStorage.getItem(DRAFT_KEY)
-          if (raw && !patientIdFromUrl) {
-            const draft = JSON.parse(raw) as { step: number; formData: Partial<CRBOFormData> }
-            if (draft?.formData) {
-              setFormData(prev => ({ ...prev, ...draft.formData }))
-              setCurrentStep(draft.step || 1)
-            }
-          }
-        } catch {
-          // brouillon corrompu → on l'ignore
-        }
+      } catch {
+        // brouillon corrompu → on l'ignore
       }
     }
 
     loadUserProfile()
-  }, [searchParams])
+  }, [searchParams, router])
 
   const persistDraft = () => {
     try {
@@ -221,7 +272,7 @@ function NouveauCRBOContent() {
       if (
         (e.metaKey || e.ctrlKey) &&
         e.key === 'Enter' &&
-        currentStep === 5 &&
+        currentStep === 4 &&
         !generating &&
         !showResult &&
         formData.test_utilise.length > 0 &&
@@ -348,6 +399,50 @@ function NouveauCRBOContent() {
     setFormData(prev => ({ ...prev, [name]: value }))
   }
 
+  // Sauvegarde un nouveau médecin dans la banque, le sélectionne, et pré-remplit
+  // le formulaire CRBO avec son nom + téléphone.
+  const handleSaveNewMedecin = async () => {
+    if (!newMedecin.nom.trim()) return
+    setSavingMedecin(true)
+    setError('')
+    try {
+      const supabase = createClient()
+      const { data: { user } } = await supabase.auth.getUser()
+      if (!user) throw new Error('Session expirée')
+      const payload = {
+        user_id: user.id,
+        prenom: newMedecin.prenom.trim() || null,
+        nom: newMedecin.nom.trim(),
+        specialite: newMedecin.specialite.trim() || null,
+        telephone: newMedecin.telephone.trim() || null,
+        ville: newMedecin.ville.trim() || null,
+        code_postal: newMedecin.code_postal.trim() || null,
+        usage_count: 0,
+      }
+      const { data, error: insertError } = await supabase
+        .from('medecins')
+        .insert(payload)
+        .select('id, prenom, nom, specialite, telephone, ville, code_postal, usage_count')
+        .single()
+      if (insertError) throw insertError
+      const created = data as Medecin
+      const fullName = `${created.prenom ? created.prenom + ' ' : ''}${created.nom}`.trim()
+      setMedecins(prev => [created, ...prev])
+      setSelectedMedecinId(created.id)
+      setFormData(prev => ({
+        ...prev,
+        medecin_nom: fullName,
+        medecin_tel: created.telephone || '',
+      }))
+      setShowNewMedecinForm(false)
+      setNewMedecin({ prenom: '', nom: '', specialite: '', telephone: '', ville: '', code_postal: '' })
+    } catch (e: any) {
+      setError(e?.message || "Impossible d'enregistrer le médecin.")
+    } finally {
+      setSavingMedecin(false)
+    }
+  }
+
   const handleTestChange = (test: string) => {
     setFormData(prev => ({
       ...prev,
@@ -423,7 +518,7 @@ function NouveauCRBOContent() {
   }
 
   const nextStep = () => {
-    if (currentStep < 5) {
+    if (currentStep < TOTAL_STEPS) {
       setCurrentStep(prev => prev + 1)
     }
   }
@@ -555,6 +650,14 @@ function NouveauCRBOContent() {
       const { error: rpcError } = await supabase.rpc('increment_crbo_count', { user_id: user.id })
       if (rpcError) {
         console.error('CRBO sauvé (id=' + inserted.id + ') mais compteur non incrémenté:', rpcError)
+      }
+
+      // Incrémenter usage_count du médecin sélectionné (banque) — best-effort
+      if (selectedMedecinId) {
+        const { error: medRpcError } = await supabase.rpc('increment_medecin_usage', { medecin_id: selectedMedecinId })
+        if (medRpcError) {
+          console.warn('Compteur médecin non incrémenté:', medRpcError)
+        }
       }
     } catch (err: any) {
       setError(err.message)
@@ -744,7 +847,7 @@ function NouveauCRBOContent() {
   }
 
   const patientBannerVisible =
-    currentStep >= 2 && currentStep <= 5 &&
+    currentStep >= 1 && currentStep <= TOTAL_STEPS &&
     (formData.patient_prenom || formData.patient_nom)
 
   return (
@@ -766,7 +869,7 @@ function NouveauCRBOContent() {
           </div>
           <button
             type="button"
-            onClick={() => setCurrentStep(2)}
+            onClick={() => setCurrentStep(1)}
             className="text-xs font-medium text-green-700 hover:text-green-900 underline decoration-dotted whitespace-nowrap"
           >
             Changer
@@ -799,103 +902,11 @@ function NouveauCRBOContent() {
           </div>
         )}
 
-        {/* Step 1: Infos orthophoniste */}
+        {/* Step 1: Infos patient (les coordonnées orthophoniste viennent du profil Supabase) */}
         {currentStep === 1 && (
           <div className="space-y-6">
             <div>
               <StepPhaseBadge step={1} />
-              <h2 className="text-xl font-semibold text-gray-900">Vos coordonnées</h2>
-              <p className="mt-1 text-sm text-gray-500">Ces informations apparaîtront sur le CRBO</p>
-            </div>
-
-            {(!formData.ortho_nom || !formData.ortho_adresse) && (
-              <div className="bg-amber-50 border border-amber-200 rounded-lg px-4 py-3 text-sm text-amber-900 flex items-start gap-3">
-                <AlertCircle size={18} className="shrink-0 mt-0.5" />
-                <div>
-                  <p className="font-semibold">Profil incomplet</p>
-                  <p className="mt-0.5">
-                    Complétez vos informations dans <a href="/dashboard/profil" className="underline font-semibold">Mon profil</a> pour les pré-remplir automatiquement à chaque CRBO.
-                  </p>
-                </div>
-              </div>
-            )}
-
-            <div className="grid sm:grid-cols-2 gap-4">
-              <div className="sm:col-span-2">
-                <label className="block text-sm font-medium text-gray-700 mb-1">Nom complet</label>
-                <input
-                  type="text"
-                  name="ortho_nom"
-                  value={formData.ortho_nom}
-                  onChange={handleChange}
-                  className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-green-500"
-                  placeholder="Marie Dupont"
-                />
-              </div>
-              <div className="sm:col-span-2">
-                <label className="block text-sm font-medium text-gray-700 mb-1">Adresse</label>
-                <input
-                  type="text"
-                  name="ortho_adresse"
-                  value={formData.ortho_adresse}
-                  onChange={handleChange}
-                  className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-green-500"
-                  placeholder="10 rue des Lilas"
-                />
-              </div>
-              <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">Code postal</label>
-                <input
-                  type="text"
-                  name="ortho_cp"
-                  value={formData.ortho_cp}
-                  onChange={handleChange}
-                  className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-green-500"
-                  placeholder="75015"
-                />
-              </div>
-              <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">Ville</label>
-                <input
-                  type="text"
-                  name="ortho_ville"
-                  value={formData.ortho_ville}
-                  onChange={handleChange}
-                  className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-green-500"
-                  placeholder="Paris"
-                />
-              </div>
-              <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">Téléphone</label>
-                <input
-                  type="tel"
-                  name="ortho_tel"
-                  value={formData.ortho_tel}
-                  onChange={handleChange}
-                  className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-green-500"
-                  placeholder="06 12 34 56 78"
-                />
-              </div>
-              <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">Email</label>
-                <input
-                  type="email"
-                  name="ortho_email"
-                  value={formData.ortho_email}
-                  onChange={handleChange}
-                  className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-green-500"
-                  placeholder="marie.dupont@gmail.com"
-                />
-              </div>
-            </div>
-          </div>
-        )}
-
-        {/* Step 2: Infos patient */}
-        {currentStep === 2 && (
-          <div className="space-y-6">
-            <div>
-              <StepPhaseBadge step={2} />
               <h2 className="text-xl font-semibold text-gray-900">Informations patient</h2>
               <p className="mt-1 text-sm text-gray-500">Sélectionnez un patient existant ou créez-en un nouveau</p>
             </div>
@@ -1057,15 +1068,171 @@ function NouveauCRBOContent() {
           </div>
         )}
 
-        {/* Step 3: Médecin & Motif */}
-        {currentStep === 3 && (
+        {/* Step 2: Médecin & Motif (avec banque de médecins) */}
+        {currentStep === 2 && (
           <div className="space-y-6">
             <div>
-              <StepPhaseBadge step={3} />
+              <StepPhaseBadge step={2} />
               <h2 className="text-xl font-semibold text-gray-900">Médecin prescripteur & Motif</h2>
-              <p className="mt-1 text-sm text-gray-500">Informations sur la prescription et motif de consultation</p>
+              <p className="mt-1 text-sm text-gray-500">Sélectionnez un médecin de votre carnet ou ajoutez-en un nouveau</p>
             </div>
 
+            {/* Banque médecins — autocomplete filtré par user_id, trié par fréquence */}
+            {medecins.length > 0 && !showNewMedecinForm && (
+              <div className="bg-gray-50 rounded-lg p-4 space-y-3">
+                <div className="flex items-center gap-2 text-sm font-medium text-gray-700">
+                  <Users size={18} />
+                  Rechercher dans votre carnet ({medecins.length})
+                </div>
+                <input
+                  type="text"
+                  value={medecinSearch}
+                  onChange={(e) => setMedecinSearch(e.target.value)}
+                  placeholder="Rechercher un médecin… (nom, ville, spécialité)"
+                  className="w-full px-4 py-2.5 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-green-500 text-sm"
+                />
+                <div className="max-h-56 overflow-y-auto space-y-1.5">
+                  {medecins
+                    .filter((m) => {
+                      const q = medecinSearch.trim().toLowerCase()
+                      if (!q) return true
+                      return [m.nom, m.prenom, m.specialite, m.ville]
+                        .filter(Boolean)
+                        .some((s) => s!.toLowerCase().includes(q))
+                    })
+                    .slice(0, 30)
+                    .map((m) => {
+                      const fullName = `${m.prenom ? m.prenom + ' ' : ''}${m.nom}`.trim()
+                      const isSelected = selectedMedecinId === m.id
+                      return (
+                        <button
+                          key={m.id}
+                          type="button"
+                          onClick={() => {
+                            setSelectedMedecinId(m.id)
+                            setFormData((prev) => ({
+                              ...prev,
+                              medecin_nom: fullName,
+                              medecin_tel: m.telephone || '',
+                            }))
+                          }}
+                          className={`w-full text-left px-3 py-2 rounded-md border transition flex items-center justify-between ${
+                            isSelected
+                              ? 'bg-green-100 border-green-400 text-green-900'
+                              : 'bg-white border-gray-200 hover:border-green-300 hover:bg-green-50'
+                          }`}
+                        >
+                          <div className="min-w-0">
+                            <div className="text-sm font-medium truncate">{fullName}</div>
+                            <div className="text-xs text-gray-500 truncate">
+                              {[m.specialite, m.ville, m.telephone].filter(Boolean).join(' · ') || '—'}
+                            </div>
+                          </div>
+                          {m.usage_count > 0 && (
+                            <span className="ml-2 text-[10px] text-gray-400 whitespace-nowrap">
+                              {m.usage_count}× utilisé
+                            </span>
+                          )}
+                        </button>
+                      )
+                    })}
+                  {medecins.filter((m) => {
+                    const q = medecinSearch.trim().toLowerCase()
+                    if (!q) return true
+                    return [m.nom, m.prenom, m.specialite, m.ville]
+                      .filter(Boolean)
+                      .some((s) => s!.toLowerCase().includes(q))
+                  }).length === 0 && (
+                    <p className="text-sm text-gray-500 italic px-2 py-1">Aucun résultat.</p>
+                  )}
+                </div>
+              </div>
+            )}
+
+            {!showNewMedecinForm && (
+              <button
+                type="button"
+                onClick={() => {
+                  setShowNewMedecinForm(true)
+                  setSelectedMedecinId('')
+                  setNewMedecin({ prenom: '', nom: '', specialite: '', telephone: '', ville: '', code_postal: '' })
+                }}
+                className="inline-flex items-center gap-2 text-sm font-medium text-green-700 hover:text-green-800"
+              >
+                <UserPlus size={16} />
+                Nouveau médecin
+              </button>
+            )}
+
+            {/* Formulaire inline nouveau médecin */}
+            {showNewMedecinForm && (
+              <div className="bg-green-50 border border-green-200 rounded-lg p-4 space-y-3">
+                <div className="flex items-center justify-between">
+                  <div className="text-sm font-semibold text-green-900">Nouveau médecin</div>
+                  <button
+                    type="button"
+                    onClick={() => setShowNewMedecinForm(false)}
+                    className="text-xs text-green-700 hover:text-green-900 underline"
+                  >
+                    Annuler
+                  </button>
+                </div>
+                <div className="grid sm:grid-cols-2 gap-3">
+                  <input
+                    type="text"
+                    value={newMedecin.prenom}
+                    onChange={(e) => setNewMedecin((p) => ({ ...p, prenom: e.target.value }))}
+                    placeholder="Prénom"
+                    className="px-3 py-2 border border-gray-300 rounded-md text-sm"
+                  />
+                  <input
+                    type="text"
+                    value={newMedecin.nom}
+                    onChange={(e) => setNewMedecin((p) => ({ ...p, nom: e.target.value }))}
+                    placeholder="Nom *"
+                    className="px-3 py-2 border border-gray-300 rounded-md text-sm"
+                  />
+                  <input
+                    type="text"
+                    value={newMedecin.specialite}
+                    onChange={(e) => setNewMedecin((p) => ({ ...p, specialite: e.target.value }))}
+                    placeholder="Spécialité (ex: Pédiatre)"
+                    className="px-3 py-2 border border-gray-300 rounded-md text-sm"
+                  />
+                  <input
+                    type="tel"
+                    value={newMedecin.telephone}
+                    onChange={(e) => setNewMedecin((p) => ({ ...p, telephone: e.target.value }))}
+                    placeholder="Téléphone"
+                    className="px-3 py-2 border border-gray-300 rounded-md text-sm"
+                  />
+                  <input
+                    type="text"
+                    value={newMedecin.code_postal}
+                    onChange={(e) => setNewMedecin((p) => ({ ...p, code_postal: e.target.value }))}
+                    placeholder="Code postal"
+                    className="px-3 py-2 border border-gray-300 rounded-md text-sm"
+                  />
+                  <input
+                    type="text"
+                    value={newMedecin.ville}
+                    onChange={(e) => setNewMedecin((p) => ({ ...p, ville: e.target.value }))}
+                    placeholder="Ville"
+                    className="px-3 py-2 border border-gray-300 rounded-md text-sm"
+                  />
+                </div>
+                <button
+                  type="button"
+                  disabled={savingMedecin || !newMedecin.nom.trim()}
+                  onClick={handleSaveNewMedecin}
+                  className="bg-green-600 text-white px-4 py-2 rounded-md text-sm font-medium hover:bg-green-700 disabled:opacity-50"
+                >
+                  {savingMedecin ? 'Enregistrement…' : 'Enregistrer et utiliser'}
+                </button>
+              </div>
+            )}
+
+            {/* Champs nom/téléphone (modifiables, pré-remplis si un médecin est sélectionné) */}
             <div className="grid sm:grid-cols-2 gap-4">
               <div>
                 <label className="block text-sm font-medium text-gray-700 mb-1">Nom du médecin *</label>
@@ -1106,11 +1273,11 @@ function NouveauCRBOContent() {
           </div>
         )}
 
-        {/* Step 4: Anamnèse */}
-        {currentStep === 4 && (
+        {/* Step 3: Anamnèse */}
+        {currentStep === 3 && (
           <div className="space-y-6">
             <div>
-              <StepPhaseBadge step={4} />
+              <StepPhaseBadge step={3} />
               <h2 className="text-xl font-semibold text-gray-900">
                 {formData.bilan_type === 'renouvellement' && selectedPatientId ? '📊 Évolution depuis le dernier bilan' : 'Anamnèse'}
               </h2>
@@ -1275,10 +1442,10 @@ function NouveauCRBOContent() {
         )}
 
         {/* Step 5: Résultats */}
-        {currentStep === 5 && (
+        {currentStep === 4 && (
           <div className="space-y-6">
             <div>
-              <StepPhaseBadge step={5} />
+              <StepPhaseBadge step={4} />
               <h2 className="text-xl font-semibold text-gray-900">Résultats des tests</h2>
               <p className="mt-1 text-sm text-gray-500">Sélectionnez les tests utilisés et entrez les résultats</p>
             </div>
@@ -1504,7 +1671,7 @@ Lecture de mots (score) : 15/100, É-T : -6.62, P5
             Précédent
           </button>
 
-          {currentStep < 5 ? (
+          {currentStep < TOTAL_STEPS ? (
             <button
               type="button"
               onClick={nextStep}
