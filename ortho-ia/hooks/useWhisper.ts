@@ -47,7 +47,7 @@ export function useWhisper(options: UseWhisperOptions = {}) {
     }
   }, [])
 
-  const start = useCallback(async () => {
+  const startRecording = useCallback(async () => {
     setError(null)
     setLastText('')
     if (typeof window === 'undefined' || !navigator.mediaDevices?.getUserMedia) {
@@ -110,7 +110,7 @@ export function useWhisper(options: UseWhisperOptions = {}) {
     }
   }, [options])
 
-  const stop = useCallback(() => {
+  const stopRecording = useCallback(() => {
     const rec = recorderRef.current
     if (rec && rec.state !== 'inactive') {
       try { rec.stop() } catch {}
@@ -130,5 +130,11 @@ export function useWhisper(options: UseWhisperOptions = {}) {
     setError(null)
   }, [])
 
-  return { state, error, lastText, start, stop, cancel }
+  return {
+    state, error, lastText,
+    startRecording, stopRecording, cancel,
+    // Aliases compat (utilisés par MicButton avec l'ancien naming)
+    start: startRecording,
+    stop: stopRecording,
+  }
 }

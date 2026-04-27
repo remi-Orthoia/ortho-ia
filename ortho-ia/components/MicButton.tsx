@@ -2,7 +2,7 @@
 
 import { useEffect, useRef, useState } from 'react'
 import { Mic, MicOff, Loader2, Square } from 'lucide-react'
-import { useWhisper } from '@/lib/use-whisper'
+import { useWhisper } from '@/hooks/useWhisper'
 
 interface Props {
   /** Valeur courante du textarea cible. */
