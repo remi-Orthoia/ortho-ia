@@ -446,8 +446,9 @@ export default function DashboardPage() {
         </div>
       )}
 
-      {/* Kanban Board */}
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
+      {/* Kanban Board — 3 colonnes occupant toute la largeur disponible.
+          Mobile : 1 colonne empilée. md+ : 3 colonnes égales (1/3 chacune). */}
+      <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
         {columns.map(column => (
           <div
             key={column.id}
