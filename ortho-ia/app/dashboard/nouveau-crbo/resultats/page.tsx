@@ -156,6 +156,7 @@ export default function ResultatsPage() {
         body: JSON.stringify({
           phase: 'synthesize',
           formData: handoff.formData,
+          format: handoff.formData.format_crbo || 'complet',
           extracted: handoff.extracted,
           edits: {
             anamnese: anamneseEdit,

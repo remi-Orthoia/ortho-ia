@@ -77,6 +77,13 @@ export interface CRBOFormData {
   resultats_pdf?: File
   resultats_manuels: string
   notes_analyse: string
+  /**
+   * Format du CRBO produit par l'IA :
+   *  - 'complet' (défaut, 4-6 pages) : commentaires longs, analyse détaillée, recommandations complètes
+   *  - 'synthetique' (2-3 pages) : commentaires concis, recommandations top 5-7, focus sur l'essentiel
+   * Le toggle est visible dans l'étape Résultats du formulaire.
+   */
+  format_crbo?: 'complet' | 'synthetique'
 
   // Étape 5 — state of the art
   /** Observations du clinicien sur le comportement du patient pendant la séance. */

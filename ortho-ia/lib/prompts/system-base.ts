@@ -332,7 +332,43 @@ Tu produis UNIQUEMENT :
 - Ne JAMAIS les recopier mot pour mot — toujours les intégrer en prose professionnelle.
 - Si un domaine n'a aucun commentaire qualitatif ortho, ne pas en inventer.`
 
-export function buildSystemPrompt(tests: string[], phase: CRBOPhase = 'full'): string {
+export type CRBOFormat = 'complet' | 'synthetique'
+
+const FORMAT_SYNTHETIQUE_INSTRUCTIONS = `
+
+---
+
+# 📐 FORMAT DEMANDÉ : SYNTHÉTIQUE (2-3 pages)
+
+L'orthophoniste a choisi le format **Synthétique**. Tu DOIS produire un CRBO concis (2-3 pages au total). Adapte chaque section aux contraintes ci-dessous :
+
+- **\`anamnese_redigee\`** : complète, pas de raccourci forcé — paragraphe fluide qui couvre toutes les rubriques avec contenu fourni. Aucune contrainte de longueur supplémentaire (la limite anti-hallucination reste prioritaire).
+- **\`domains[].commentaire\`** : **2-3 lignes max par domaine** (≈ 30-50 mots). Uniquement sur les épreuves cliniquement significatives (déficitaires / pathologiques). Si un domaine est globalement préservé, ne mets RIEN ou une phrase ultra-courte type "Performances préservées." Ne paraphrase pas les scores.
+- **\`diagnostic\`** :
+  * **Comportement pendant le bilan** : 1-2 phrases (vs 2-3 en complet)
+  * **Points forts** : 1 phrase
+  * **Difficultés identifiées** : 1-2 phrases
+  * **Analyse croisée** : **3-4 lignes max**, uniquement les liens cliniques les plus importants. Pas d'inventaire exhaustif.
+  * **Diagnostic** : complet avec terminologie DSM-5 + code CIM-10 (cette section reste prioritaire et complète).
+- **\`recommandations\`** : sous forme de **5-7 bullets numérotés priorisés** (pas de paragraphe long). Phrase d'introduction PEC standard + axes thérapeutiques en liste courte.
+- **\`pap_suggestions\`** : **5-7 entrées maximum** priorisées (vs 10 en complet). Garde uniquement les aménagements les plus impactants.
+- **\`comorbidites_detectees\`** : 0-2 entrées max, uniquement les plus probables.
+
+🎯 Objectif : un CRBO lisible en 5 minutes par le médecin / la famille, avec l'essentiel sans dilution. Préfère systématiquement la phrase courte et dense à l'enchaînement de paraphrases.`
+
+const FORMAT_COMPLET_INSTRUCTIONS = `
+
+---
+
+# 📐 FORMAT DEMANDÉ : COMPLET (4-6 pages)
+
+Format détaillé standard. Tu produis le CRBO complet selon les règles déjà spécifiées plus haut (commentaires de domaine 3-4 lignes, recommandations 150-250 mots avec axes numérotés détaillés, jusqu'à 10 PAP, analyse croisée riche, etc.).`
+
+export function buildSystemPrompt(
+  tests: string[],
+  phase: CRBOPhase = 'full',
+  format: CRBOFormat = 'complet',
+): string {
   const activeModules = tests
     .map((t) => getTestModule(t))
     .filter((m): m is NonNullable<typeof m> => m !== null)
@@ -342,7 +378,14 @@ export function buildSystemPrompt(tests: string[], phase: CRBOPhase = 'full'): s
     phase === 'synthesize' ? SYNTHESIZE_PHASE_INSTRUCTIONS :
     ''
 
-  if (activeModules.length === 0) return SYSTEM_BASE + phaseSuffix
+  // Le format n'influence que la phase de synthèse (et le full legacy).
+  // En phase d'extraction on n'écrit aucun commentaire / synthèse, donc inutile.
+  const formatSuffix =
+    phase === 'extract' ? '' :
+    format === 'synthetique' ? FORMAT_SYNTHETIQUE_INSTRUCTIONS :
+    FORMAT_COMPLET_INSTRUCTIONS
+
+  if (activeModules.length === 0) return SYSTEM_BASE + phaseSuffix + formatSuffix
 
   const referentielSections = activeModules
     .map((m) => {
@@ -364,5 +407,5 @@ export function buildSystemPrompt(tests: string[], phase: CRBOPhase = 'full'): s
     })
     .join('\n\n---\n\n')
 
-  return `${SYSTEM_BASE}\n\n---\n\n# RÉFÉRENTIEL DES TESTS UTILISÉS\n\n${referentielSections}${phaseSuffix}`
+  return `${SYSTEM_BASE}\n\n---\n\n# RÉFÉRENTIEL DES TESTS UTILISÉS\n\n${referentielSections}${phaseSuffix}${formatSuffix}`
 }

@@ -149,11 +149,14 @@ export async function generateCRBOWord(payload: WordExportPayload): Promise<Blob
   const calculateAge = () => {
     if (!formData.patient_ddn) return ''
     const birth = new Date(formData.patient_ddn)
-    const today = new Date()
     if (isNaN(birth.getTime())) return ''
-    let years = today.getFullYear() - birth.getFullYear()
-    let months = today.getMonth() - birth.getMonth()
-    if (today.getDate() < birth.getDate()) months -= 1
+    // Référence = date du bilan saisie dans le formulaire (pas la date du jour).
+    // Fallback sur today si bilan_date est absent.
+    const ref = formData.bilan_date ? new Date(formData.bilan_date) : new Date()
+    if (isNaN(ref.getTime())) return ''
+    let years = ref.getFullYear() - birth.getFullYear()
+    let months = ref.getMonth() - birth.getMonth()
+    if (ref.getDate() < birth.getDate()) months -= 1
     if (months < 0) { years -= 1; months += 12 }
     if (years <= 0) return `${Math.max(0, months)} mois`
     return months > 0 ? `${years} ans et ${months} mois` : `${years} ans`
@@ -161,8 +164,17 @@ export async function generateCRBOWord(payload: WordExportPayload): Promise<Blob
 
   // ============ Construction du document ============
 
-  // Date du jour de génération (l'ortho rédige souvent plusieurs jours après la passation)
-  const bilanDateFormatted = new Date().toLocaleDateString('fr-FR')
+  // Date affichée = date saisie dans le formulaire (bilan_date), formatée FR long
+  // ("25 avril 2026"). Fallback sur la date du jour si bilan_date absente.
+  const formatFrLong = (iso?: string) => {
+    if (!iso) return ''
+    const d = new Date(iso)
+    if (isNaN(d.getTime())) return ''
+    return d.toLocaleDateString('fr-FR', { day: 'numeric', month: 'long', year: 'numeric' })
+  }
+  const bilanDateFormatted =
+    formatFrLong(formData.bilan_date) ||
+    new Date().toLocaleDateString('fr-FR', { day: 'numeric', month: 'long', year: 'numeric' })
   const ddnFormatted = formData.patient_ddn ? new Date(formData.patient_ddn).toLocaleDateString('fr-FR') : ''
   const testsText = Array.isArray(formData.test_utilise) ? formData.test_utilise.join(', ') : formData.test_utilise
 

@@ -9,6 +9,7 @@ import {
   EXTRACT_CRBO_TOOL,
   SYNTHESIZE_TOOL,
   type CRBOPhase,
+  type CRBOFormat,
   type CRBOStructure,
   type CRBODomain,
   type ExtractedCRBO,
@@ -201,6 +202,7 @@ export async function POST(request: NextRequest) {
 
     const body = await request.json()
     const phase: CRBOPhase = (body.phase === 'extract' || body.phase === 'synthesize') ? body.phase : 'full'
+    const format: CRBOFormat = body.format === 'synthetique' ? 'synthetique' : 'complet'
     const formData = body.formData as any
     const extracted = body.extracted as ExtractedCRBO | undefined
     const edits = body.edits as { anamnese: string; motif: string; ortho_comments?: Record<string, string> } | undefined
@@ -337,7 +339,7 @@ export async function POST(request: NextRequest) {
     const systemBlocks = [
       {
         type: 'text' as const,
-        text: buildSystemPrompt(tests, phase),
+        text: buildSystemPrompt(tests, phase, format),
         cache_control: { type: 'ephemeral' as const },
       },
     ]

@@ -1,4 +1,4 @@
-export { buildSystemPrompt, type CRBOPhase } from './system-base'
+export { buildSystemPrompt, type CRBOPhase, type CRBOFormat } from './system-base'
 export { buildCRBOPrompt, buildExtractPrompt, buildSynthesizePrompt, type SynthesizePromptInput } from './user-prompt'
 export {
   EXTRACTION_PROMPT,
