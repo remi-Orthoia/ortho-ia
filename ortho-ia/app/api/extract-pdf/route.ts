@@ -13,10 +13,6 @@ import { withRetry } from '@/lib/retry'
 // le défaut Hobby (10s) provoque des 504 systématiques. Aligné sur l'AbortController interne.
 export const maxDuration = 60
 
-const anthropic = new Anthropic({
-  apiKey: process.env.ANTHROPIC_API_KEY,
-})
-
 function isSupabaseUnavailable(err: any): boolean {
   if (!err) return false
   const code = err?.code ?? err?.cause?.code
@@ -67,6 +63,14 @@ export async function POST(request: NextRequest) {
         { status: 413 },
       )
     }
+
+    if (!process.env.ANTHROPIC_API_KEY) {
+      return NextResponse.json(
+        { error: 'Service de génération non configuré.' },
+        { status: 500 },
+      )
+    }
+    const anthropic = new Anthropic({ apiKey: process.env.ANTHROPIC_API_KEY })
 
     const bytes = await file.arrayBuffer()
     const base64 = Buffer.from(bytes).toString('base64')

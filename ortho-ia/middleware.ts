@@ -45,7 +45,9 @@ export async function middleware(request: NextRequest) {
   const isDashboard = pathname.startsWith('/dashboard')
   const isApiProtected =
     pathname.startsWith('/api/generate-crbo') ||
-    pathname.startsWith('/api/extract-pdf')
+    pathname.startsWith('/api/extract-pdf') ||
+    pathname.startsWith('/api/transcribe') ||
+    pathname.startsWith('/api/account/')
   // Pages /dev/* : outils internes — bloquées en prod, accessibles en dev local
   const isDevRoute = pathname.startsWith('/dev')
   const isProd = process.env.NODE_ENV === 'production'
@@ -81,6 +83,8 @@ export const config = {
     '/dashboard/:path*',
     '/api/generate-crbo/:path*',
     '/api/extract-pdf/:path*',
+    '/api/transcribe/:path*',
+    '/api/account/:path*',
     '/dev/:path*',
   ],
 }

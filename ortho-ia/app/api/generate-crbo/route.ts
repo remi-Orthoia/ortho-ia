@@ -11,7 +11,6 @@ import {
   type CRBOPhase,
   type CRBOFormat,
   type CRBOStructure,
-  type CRBODomain,
   type ExtractedCRBO,
   type SynthesizedCRBO,
 } from '@/lib/prompts'
