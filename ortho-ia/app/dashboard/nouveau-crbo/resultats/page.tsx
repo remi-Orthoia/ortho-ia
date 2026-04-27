@@ -32,7 +32,7 @@ import {
 import { createClient } from '@/lib/supabase'
 import type { CRBOStructure, CRBOEpreuve, CRBODomain, ExtractedCRBO, SynthesizedCRBO } from '@/lib/prompts'
 import type { CRBOFormData } from '@/lib/types'
-import { drawHappyNeuronChart, type ChartGroup } from '@/lib/chart'
+import { drawHappyNeuronChart, computeChartHeight, type ChartGroup } from '@/lib/chart'
 import { downloadCRBOWord, SEUILS, getPercentileColor, seuilFor } from '@/lib/word-export'
 import MicButton from '@/components/MicButton'
 
@@ -50,7 +50,11 @@ function HappyNeuronCanvas({ groups, title }: { groups: ChartGroup[]; title: str
   useEffect(() => {
     const canvas = ref.current
     if (!canvas) return
-    const w = 1000, h = 480
+    const w = 1000
+    // Hauteur auto-ajustée : si certains labels d'épreuves sont longs (ou les
+    // titres de groupes nécessitent un wrap), on agrandit le canvas pour ne
+    // jamais tronquer. Cohérent avec le rendu PNG embarqué dans le Word.
+    const h = computeChartHeight(w, groups, 480)
     canvas.width = w
     canvas.height = h
     const ctx = canvas.getContext('2d')

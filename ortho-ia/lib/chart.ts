@@ -37,11 +37,106 @@ export function zoneFor(value: number): ZonePerformance {
 export type ChartBar = { label: string; value: number }
 export type ChartGroup = { name: string; bars: ChartBar[] }
 
+// --------------------- Constantes de mise en page ---------------------
+
+const PAD_LEFT = 150
+const PAD_RIGHT = 20
+const PAD_TOP_BASE = 56          // espace minimum pour le titre du chart
+const PAD_BOTTOM_MIN = 40        // marge sous chart même sans labels
+const LABEL_FONT_PX = 10         // épreuves verticales
+const GROUP_TITLE_FONT_PX = 11   // titres de groupe
+const GROUP_TITLE_LINE_H = 14    // hauteur de ligne pour titres groupe
+const GROUP_TITLE_MAX_LINES = 2  // wrap sur 2 lignes max
+const GROUP_GAP = 16
+const MIN_CHART_AREA_H = 220
+
+// --------------------- Helpers de wrap & mesure ---------------------
+
+/** Découpe un texte en lignes pour qu'il tienne dans `maxWidth` (greedy word wrap). */
+function wrapTextByWords(ctx: CanvasRenderingContext2D, text: string, maxWidth: number, maxLines: number): string[] {
+  const trimmed = text.trim()
+  if (!trimmed) return []
+  if (ctx.measureText(trimmed).width <= maxWidth) return [trimmed]
+
+  const tokens = trimmed.split(/\s+/)
+  if (tokens.length === 1) return [trimmed] // pas de séparateur, on laisse — la mesure peut déborder mais on n'ampute pas
+  const lines: string[] = []
+  let current = ''
+  for (const tok of tokens) {
+    const candidate = current ? `${current} ${tok}` : tok
+    if (ctx.measureText(candidate).width <= maxWidth) {
+      current = candidate
+    } else {
+      if (current) lines.push(current)
+      current = tok
+      if (lines.length >= maxLines - 1) {
+        // dernière ligne autorisée : on y met tous les tokens restants — pas de troncation
+        const idx = tokens.indexOf(tok)
+        const rest = tokens.slice(idx).join(' ')
+        lines.push(rest)
+        return lines
+      }
+    }
+  }
+  if (current) lines.push(current)
+  return lines
+}
+
+/**
+ * Calcule la hauteur de canvas optimale pour afficher tous les labels et titres
+ * sans amputation. Renvoie une valeur ≥ minHeight.
+ */
+export function computeChartHeight(
+  width: number,
+  groups: ChartGroup[],
+  minHeight = 480,
+): number {
+  if (typeof document === 'undefined') return minHeight
+  const canvas = document.createElement('canvas')
+  const ctx = canvas.getContext('2d')
+  if (!ctx) return minHeight
+
+  // Pad bottom : largeur du plus long label vertical + marge
+  ctx.font = `${LABEL_FONT_PX}px Calibri, Arial, sans-serif`
+  const allLabels = groups.flatMap(g => g.bars.map(b => b.label))
+  const maxLabelW = allLabels.reduce(
+    (max, t) => Math.max(max, ctx.measureText(t || '').width),
+    0,
+  )
+  const padBottom = Math.ceil(maxLabelW) + PAD_BOTTOM_MIN
+
+  // Pad top : nombre de lignes max occupées par les titres de groupe
+  ctx.font = `bold ${GROUP_TITLE_FONT_PX}px Calibri, Arial, sans-serif`
+  const chartW = width - PAD_LEFT - PAD_RIGHT
+  const totalBars = groups.reduce((s, g) => s + g.bars.length, 0)
+  const totalGap = Math.max(0, groups.length - 1) * GROUP_GAP
+  const slotW = totalBars > 0 ? (chartW - totalGap) / totalBars : chartW
+  let maxLines = 1
+  for (const g of groups) {
+    if (!g.name?.trim()) continue
+    const groupSpan = Math.max(40, g.bars.length * slotW) // mini 40px pour ne pas exploser le wrap
+    const lines = wrapTextByWords(ctx, g.name, groupSpan - 4, GROUP_TITLE_MAX_LINES)
+    if (lines.length > maxLines) maxLines = lines.length
+  }
+  const padTop = PAD_TOP_BASE + Math.max(0, maxLines - 1) * GROUP_TITLE_LINE_H
+
+  return Math.max(minHeight, padTop + MIN_CHART_AREA_H + padBottom)
+}
+
 // --------------------- Rendu canvas ---------------------
 
 /**
  * Dessine le graphique HappyNeuron sur le canvas fourni. Le canvas doit avoir
  * `width` et `height` déjà configurés (en CSS pixels). Le rendu est synchrone.
+ *
+ * Pour garantir l'affichage complet de tous les labels :
+ *  - padBottom est calculé dynamiquement à partir de la longueur (pixels) du
+ *    plus long label d'épreuve (rotation -90°) ;
+ *  - les titres de groupe sont wrappés sur 2 lignes max (pas de troncation
+ *    avec "…").
+ *
+ * Pour pré-calculer la hauteur idéale, appeler `computeChartHeight()` puis
+ * créer le canvas à cette taille avant d'appeler ce drawer.
  */
 export function drawHappyNeuronChart(
   ctx: CanvasRenderingContext2D,
@@ -59,9 +154,32 @@ export function drawHappyNeuronChart(
   ctx.textAlign = 'left'
   ctx.fillText(title, 16, 26)
 
-  const padLeft = 150, padRight = 20, padTop = 56, padBottom = 130
+  // ===== Calcul des padding dynamiques =====
+  ctx.font = `${LABEL_FONT_PX}px Calibri, Arial, sans-serif`
+  const allLabels = groups.flatMap(g => g.bars.map(b => b.label))
+  const maxLabelW = allLabels.reduce(
+    (max, t) => Math.max(max, ctx.measureText(t || '').width),
+    0,
+  )
+  const padBottom = Math.ceil(maxLabelW) + PAD_BOTTOM_MIN
+
+  const padLeft = PAD_LEFT, padRight = PAD_RIGHT
   const chartW = width - padLeft - padRight
-  const chartH = height - padTop - padBottom
+  const totalBars = groups.reduce((s, g) => s + g.bars.length, 0)
+  const totalGap = Math.max(0, groups.length - 1) * GROUP_GAP
+  const slotW = totalBars > 0 ? (chartW - totalGap) / totalBars : chartW
+
+  // Pré-wrap des titres de groupe pour calculer maxLines → padTop
+  ctx.font = `bold ${GROUP_TITLE_FONT_PX}px Calibri, Arial, sans-serif`
+  const wrappedTitles: string[][] = groups.map(g => {
+    if (!g.name?.trim()) return []
+    const groupSpan = Math.max(40, g.bars.length * slotW)
+    return wrapTextByWords(ctx, g.name, groupSpan - 4, GROUP_TITLE_MAX_LINES)
+  })
+  const maxTitleLines = wrappedTitles.reduce((m, lines) => Math.max(m, lines.length), 1)
+  const padTop = PAD_TOP_BASE + Math.max(0, maxTitleLines - 1) * GROUP_TITLE_LINE_H
+
+  const chartH = Math.max(MIN_CHART_AREA_H, height - padTop - padBottom)
   const yFor = (p: number) => padTop + chartH - (p / 100) * chartH
 
   // ===== Bandes de fond colorées (zones de performance) =====
@@ -119,12 +237,8 @@ export function drawHappyNeuronChart(
   ctx.fillText("Seuil d'alerte (P10)", padLeft + 4, yAlert - 3)
 
   // ===== Barres regroupées par sous-domaine =====
-  const totalBars = groups.reduce((s, g) => s + g.bars.length, 0)
   if (totalBars === 0) return
 
-  const groupGap = 16
-  const totalGap = Math.max(0, groups.length - 1) * groupGap
-  const slotW = (chartW - totalGap) / totalBars
   const barW = Math.min(slotW * 0.62, 30)
 
   let cursorX = padLeft
@@ -133,15 +247,19 @@ export function drawHappyNeuronChart(
     const groupSpan = group.bars.length * slotW
     const groupStartX = cursorX
 
-    // Titre du groupe au-dessus, centré (skip si name vide)
-    if (group.name && group.name.trim()) {
+    // Titre du groupe au-dessus, centré, wrappé sur ≤ 2 lignes (pas de "…")
+    const titleLines = wrappedTitles[gi]
+    if (titleLines && titleLines.length > 0) {
       ctx.fillStyle = '#37474F'
-      ctx.font = 'bold 11px Calibri, Arial, sans-serif'
+      ctx.font = `bold ${GROUP_TITLE_FONT_PX}px Calibri, Arial, sans-serif`
       ctx.textAlign = 'center'
       const cx = groupStartX + groupSpan / 2
-      const maxChars = Math.max(8, Math.floor(groupSpan / 7))
-      const name = group.name.length > maxChars ? group.name.slice(0, maxChars - 1) + '…' : group.name
-      ctx.fillText(name, cx, padTop - 12)
+      // Lignes affichées du bas vers le haut depuis padTop - 6
+      const baseY = padTop - 6
+      for (let li = 0; li < titleLines.length; li++) {
+        const yLine = baseY - (titleLines.length - 1 - li) * GROUP_TITLE_LINE_H
+        ctx.fillText(titleLines[li], cx, yLine)
+      }
     }
 
     for (let bi = 0; bi < group.bars.length; bi++) {
@@ -164,15 +282,14 @@ export function drawHappyNeuronChart(
       ctx.textAlign = 'center'
       ctx.fillText(`P${Math.round(v)}`, x + barW / 2, yTop - 3)
 
-      // Label vertical sous la barre
-      const lbl = b.label.length > 28 ? b.label.slice(0, 27) + '…' : b.label
+      // Label vertical sous la barre — texte intégral, jamais tronqué.
       ctx.save()
       ctx.translate(x + barW / 2, padTop + chartH + 8)
       ctx.rotate(-Math.PI / 2)
       ctx.textAlign = 'right'
       ctx.fillStyle = '#37474F'
-      ctx.font = '10px Calibri, Arial, sans-serif'
-      ctx.fillText(lbl, 0, 4)
+      ctx.font = `${LABEL_FONT_PX}px Calibri, Arial, sans-serif`
+      ctx.fillText(b.label, 0, 4)
       ctx.restore()
     }
 
@@ -180,28 +297,30 @@ export function drawHappyNeuronChart(
 
     // Séparateur vertical pointillé entre groupes
     if (gi < groups.length - 1) {
-      const sepX = cursorX + groupGap / 2
+      const sepX = cursorX + GROUP_GAP / 2
       ctx.strokeStyle = '#90A4AE'
       ctx.setLineDash([3, 3])
       ctx.lineWidth = 1
       ctx.beginPath(); ctx.moveTo(sepX, padTop); ctx.lineTo(sepX, padTop + chartH); ctx.stroke()
       ctx.setLineDash([])
-      cursorX += groupGap
+      cursorX += GROUP_GAP
     }
   }
 }
 
 /**
  * Génère un PNG (ArrayBuffer) du graphique pour embarquer dans le Word.
- * Utilise un canvas hors-DOM. Module client-only.
+ * La hauteur du canvas est auto-ajustée si les labels sont longs (pas de
+ * troncation). Module client-only.
  */
 export async function happyNeuronChartToPng(
   groups: ChartGroup[],
   title: string,
   width = 1000,
-  height = 480,
+  minHeight = 480,
 ): Promise<{ data: ArrayBuffer; width: number; height: number }> {
   const canvas = document.createElement('canvas')
+  const height = computeChartHeight(width, groups, minHeight)
   canvas.width = width
   canvas.height = height
   const ctx = canvas.getContext('2d')!
