@@ -20,27 +20,58 @@ export { ZONES, zoneFor } from './chart'
 export type { ZonePerformance } from './chart'
 
 // --------------------- Palette cohérente seuils cliniques ---------------------
+//
+// Grille alignée sur la documentation officielle Exalang/HappyNeuron :
+//  - P > 25 (strictement)        → Dans la norme        (vert)
+//  - P10 à P25 (Q1 inclus)       → Zone de fragilité    (jaune/orange)
+//  - P5 à P9                     → Zone de difficulté   (orange foncé)
+//  - P < 5                       → Zone de difficulté sévère (rouge)
+//
+// Note : Q1 (P25) est en zone de fragilité, PAS dans la norme — c'est le point
+// le plus piégeux de la conversion HappyNeuron. seuilFor() utilise min=26 pour
+// que les valeurs entières usuelles (5, 10, 25, 50, 75) se classent correctement.
 
 export type SeuilClinique = {
-  label: 'Normal' | 'Limite basse' | 'Fragile' | 'Déficitaire' | 'Pathologique'
+  label: 'Dans la norme' | 'Zone de fragilité' | 'Zone de difficulté' | 'Zone de difficulté sévère'
   min: number
   shading: string // hex sans # (pour docx)
   css: string     // avec # (pour canvas)
   range: string
 }
 
-// 5 niveaux alignés sur les seuils cliniques officiels des bilans orthophoniques.
 export const SEUILS: SeuilClinique[] = [
-  { label: 'Normal',       min: 25, shading: 'C8E6C9', css: '#81C784', range: 'P ≥ 25' },
-  { label: 'Limite basse', min: 16, shading: 'FFF59D', css: '#FFEE58', range: 'P16-24' },
-  { label: 'Fragile',      min: 7,  shading: 'FFCC80', css: '#FFB74D', range: 'P7-15' },
-  { label: 'Déficitaire',  min: 2,  shading: 'EF9A9A', css: '#E57373', range: 'P2-6' },
-  { label: 'Pathologique', min: 0,  shading: 'E57373', css: '#C62828', range: 'P < 2' },
+  { label: 'Dans la norme',              min: 26, shading: 'C8E6C9', css: '#2E7D32', range: 'P > 25' },
+  { label: 'Zone de fragilité',          min: 10, shading: 'FFE082', css: '#FFA726', range: 'P10-25' },
+  { label: 'Zone de difficulté',         min: 5,  shading: 'FFAB91', css: '#EF6C00', range: 'P5-9' },
+  { label: 'Zone de difficulté sévère',  min: 0,  shading: 'EF9A9A', css: '#C62828', range: 'P < 5' },
 ]
 
 export function seuilFor(value: number): SeuilClinique {
   for (const s of SEUILS) if (value >= s.min) return s
   return SEUILS[SEUILS.length - 1]
+}
+
+/**
+ * Mappe les anciens labels d'interprétation (CRBO legacy en DB) vers les
+ * nouveaux labels de la grille Exalang. Utilisé au rendu pour assurer la
+ * cohérence avec la couleur dérivée de percentile_value.
+ */
+export function normalizeInterpretation(stored: string | undefined): SeuilClinique['label'] | undefined {
+  if (!stored) return undefined
+  switch (stored) {
+    case 'Normal': return 'Dans la norme'
+    case 'Limite basse':
+    case 'Fragile': return 'Zone de fragilité'
+    case 'Déficitaire': return 'Zone de difficulté'
+    case 'Pathologique': return 'Zone de difficulté sévère'
+    case 'Dans la norme':
+    case 'Zone de fragilité':
+    case 'Zone de difficulté':
+    case 'Zone de difficulté sévère':
+      return stored
+    default:
+      return undefined
+  }
 }
 export const getPercentileColor = (v: number): string => seuilFor(v).shading
 export const getPercentileCssColor = (v: number): string => seuilFor(v).css
@@ -519,7 +550,7 @@ export async function generateCRBOWord(payload: WordExportPayload): Promise<Blob
           createCell(e.score, { width: 15, alignment: AlignmentType.CENTER, shading: color }),
           createCell(e.et ?? '—', { width: 12, alignment: AlignmentType.CENTER, shading: color }),
           createCell(e.percentile, { width: 15, alignment: AlignmentType.CENTER, shading: color }),
-          createCell(e.interpretation, { width: 18, alignment: AlignmentType.CENTER, shading: color }),
+          createCell(seuilFor(e.percentile_value).label, { width: 18, alignment: AlignmentType.CENTER, shading: color }),
         ]}))
       })
       children.push(

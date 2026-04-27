@@ -7,20 +7,24 @@
  */
 
 // --------------------- Palette : zones de performance ---------------------
+//
+// Grille alignée sur la documentation officielle Exalang/HappyNeuron :
+//  - P > 25 (strictement) → Dans la norme         (vert)
+//  - P10 à P25 (Q1 inclus) → Zone de fragilité    (jaune/orange)
+//  - P5 à P9               → Zone de difficulté   (orange foncé)
+//  - P < 5                 → Zone de difficulté sévère (rouge/marron)
 
 export type ZonePerformance = {
-  label: 'Excellent' | 'Moyenne haute' | 'Moyenne basse' | 'Fragilité' | 'Difficulté' | 'Difficulté sévère'
+  label: 'Dans la norme' | 'Zone de fragilité' | 'Zone de difficulté' | 'Zone de difficulté sévère'
   min: number
   css: string
 }
 
 export const ZONES: ZonePerformance[] = [
-  { label: 'Excellent',         min: 75, css: '#2E7D32' },
-  { label: 'Moyenne haute',     min: 50, css: '#66BB6A' },
-  { label: 'Moyenne basse',     min: 25, css: '#D4E157' },
-  { label: 'Fragilité',         min: 16, css: '#FFA726' },
-  { label: 'Difficulté',        min: 7,  css: '#EF6C00' },
-  { label: 'Difficulté sévère', min: 0,  css: '#4E342E' },
+  { label: 'Dans la norme',              min: 26, css: '#2E7D32' },
+  { label: 'Zone de fragilité',          min: 10, css: '#FFA726' },
+  { label: 'Zone de difficulté',         min: 5,  css: '#EF6C00' },
+  { label: 'Zone de difficulté sévère',  min: 0,  css: '#4E342E' },
 ]
 
 export function zoneFor(value: number): ZonePerformance {
@@ -102,15 +106,17 @@ export function drawHappyNeuronChart(
   ctx.textAlign = 'left'
   ctx.fillText('Médiane (P50)', padLeft + 4, yMed - 3)
 
-  // ===== Ligne d'alerte clinique (P7) — trait plein rouge =====
-  const yAlert = yFor(7)
+  // ===== Ligne d'alerte clinique — trait plein rouge à P10 =====
+  // Marque la frontière entre la zone de fragilité (P10-25) et la zone de
+  // difficulté (P5-9) selon la grille Exalang/HappyNeuron.
+  const yAlert = yFor(10)
   ctx.strokeStyle = '#C62828'
   ctx.lineWidth = 1.6
   ctx.beginPath(); ctx.moveTo(padLeft, yAlert); ctx.lineTo(padLeft + chartW, yAlert); ctx.stroke()
   ctx.fillStyle = '#C62828'
   ctx.font = 'italic bold 9.5px Calibri, Arial, sans-serif'
   ctx.textAlign = 'left'
-  ctx.fillText("Seuil d'alerte (P7)", padLeft + 4, yAlert - 3)
+  ctx.fillText("Seuil d'alerte (P10)", padLeft + 4, yAlert - 3)
 
   // ===== Barres regroupées par sous-domaine =====
   const totalBars = groups.reduce((s, g) => s + g.bars.length, 0)

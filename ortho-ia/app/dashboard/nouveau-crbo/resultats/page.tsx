@@ -33,7 +33,7 @@ import { createClient } from '@/lib/supabase'
 import type { CRBOStructure, CRBOEpreuve, CRBODomain, ExtractedCRBO, SynthesizedCRBO } from '@/lib/prompts'
 import type { CRBOFormData } from '@/lib/types'
 import { drawHappyNeuronChart, type ChartGroup } from '@/lib/chart'
-import { downloadCRBOWord, SEUILS, getPercentileColor } from '@/lib/word-export'
+import { downloadCRBOWord, SEUILS, getPercentileColor, seuilFor } from '@/lib/word-export'
 import MicButton from '@/components/MicButton'
 
 interface Handoff {
@@ -92,7 +92,7 @@ function DomainTable({ domain }: { domain: CRBODomain }) {
                 </td>
                 <td className="py-2 pl-2 text-center">
                   <span className="inline-block px-2 py-0.5 rounded text-xs font-semibold" style={{ backgroundColor: '#' + color, color: '#000' }}>
-                    {e.interpretation}
+                    {seuilFor(e.percentile_value).label}
                   </span>
                 </td>
               </tr>

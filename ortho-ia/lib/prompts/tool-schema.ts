@@ -28,8 +28,11 @@ const EPREUVE_SCHEMA = {
     },
     interpretation: {
       type: 'string' as const,
-      enum: ['Normal', 'Limite basse', 'Fragile', 'Déficitaire', 'Pathologique'],
-      description: 'Interprétation clinique basée sur les seuils officiels.',
+      enum: ['Dans la norme', 'Zone de fragilité', 'Zone de difficulté', 'Zone de difficulté sévère'],
+      description:
+        "Interprétation clinique selon la grille officielle Exalang/HappyNeuron : " +
+        "'Dans la norme' pour P > 25 (strictement) ; 'Zone de fragilité' pour P10-P25 (Q1 inclus, **PAS** dans la norme) ; " +
+        "'Zone de difficulté' pour P5-P9 ; 'Zone de difficulté sévère' pour P < 5.",
     },
   },
 }
@@ -211,7 +214,13 @@ export interface CRBOEpreuve {
   et: string | null
   percentile: string
   percentile_value: number
-  interpretation: 'Normal' | 'Limite basse' | 'Fragile' | 'Déficitaire' | 'Pathologique'
+  /**
+   * Nouvelle nomenclature Exalang/HappyNeuron. Les CRBO legacy stockent
+   * encore les anciens labels ('Normal' | 'Limite basse' | 'Fragile' |
+   * 'Déficitaire' | 'Pathologique'), c'est pourquoi le type accepte string.
+   * Au rendu, normalizeInterpretation() de lib/word-export les remappe.
+   */
+  interpretation: string
 }
 
 export interface CRBODomain {

@@ -181,7 +181,7 @@ export default function CRBOStructuredPreview({ structure, onDownload, onEdit, o
                           </td>
                           <td className="py-2 pl-2 text-center">
                             <span className="inline-block px-2 py-0.5 rounded text-xs font-semibold" style={{ backgroundColor: '#' + color, color: '#000' }}>
-                              {e.interpretation}
+                              {seuilFor(e.percentile_value).label}
                             </span>
                           </td>
                         </tr>

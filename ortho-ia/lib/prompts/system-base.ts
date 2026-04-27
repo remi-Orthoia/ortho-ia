@@ -66,7 +66,7 @@ Le CRBO structuré que tu produis doit contenir, dans cet ordre :
    - \`et\` (écart-type, ex: "-1.53", ou null si non fourni)
    - \`percentile\` (notation telle qu'utilisée par le test, ex: "Q1 (P25)", "P10", "Med")
    - \`percentile_value\` — valeur NUMÉRIQUE entre 0 et 100 utilisée pour les graphiques
-   - \`interpretation\` — parmi : "Normal", "Limite basse", "Fragile", "Déficitaire", "Pathologique"
+   - \`interpretation\` — parmi : "Dans la norme" (P > 25), "Zone de fragilité" (P10-25, **Q1 inclus**), "Zone de difficulté" (P5-9), "Zone de difficulté sévère" (P < 5)
    - \`commentaire\` clinique par domaine : **3-4 lignes max, concis et percutants** (≈ 40-70 mots). Phrases rédigées et fluides.
 
      ⚠️ **Règles cliniques absolues** sur ce commentaire :
@@ -74,13 +74,13 @@ Le CRBO structuré que tu produis doit contenir, dans cet ordre :
      2. **JAMAIS de percentile cité** (pas de "P5", "P25", "P < 2"…). Décrire cliniquement la performance ("performance déficitaire", "fragilité marquée", "résultats préservés"…) sans valeur chiffrée.
      3. **JAMAIS de tirets cadratin "–" ou "—" qui découpent une idée** (style "machine"). Phrases complètes et fluides uniquement. Pas de listes inline avec tirets.
      4. **JAMAIS de mention de la rééducation, de la prise en charge ou des séances** dans ce commentaire — la rééducation n'est évoquée QUE dans la section recommandations finales.
-     5. **Si une épreuve est déficitaire ou pathologique** : ajoute une phrase sur les **répercussions possibles en milieu scolaire** (compréhension de consignes, copie au tableau, lecture de l'énoncé, expression écrite, calcul mental…), adaptée à l'âge et au niveau du patient.
-     6. Pas de paraphrase brute des scores. Vise l'essentiel : interprétation clinique, analyse croisée pertinente entre les épreuves du domaine, et — si déficitaire — répercussions scolaires probables.
+     5. **Si une épreuve est en zone de difficulté ou de difficulté sévère** : ajoute une phrase sur les **répercussions possibles en milieu scolaire** (compréhension de consignes, copie au tableau, lecture de l'énoncé, expression écrite, calcul mental…), adaptée à l'âge et au niveau du patient.
+     6. Pas de paraphrase brute des scores. Vise l'essentiel : interprétation clinique, analyse croisée pertinente entre les épreuves du domaine, et — si difficulté/difficulté sévère — répercussions scolaires probables.
 
 3. \`diagnostic\` — **synthèse globale de 200 à 300 mots MAXIMUM** (limite stricte, vise la concision clinique), structurée avec des **titres de sections en gras Markdown** (entourés de \`**\`) :
    - \`**Comportement pendant le bilan**\` : **NE JAMAIS HALLUCINER**. Si aucune note de comportement / passation n'est fournie par l'orthophoniste, écrire EXACTEMENT : "Comportement pendant le bilan non renseigné par l'orthophoniste." Si des notes sont fournies, en faire une synthèse fluide (attention, coopération, fatigabilité, stratégies). 1-3 phrases max. **Toujours en gras** : ce sous-titre DOIT être seul sur sa ligne en Markdown \`**Comportement pendant le bilan**\` puis le contenu sur une ligne suivante (sépare par une ligne vide).
    - \`**Points forts**\` : domaines préservés, compétences qui peuvent servir de levier en rééducation. (1-2 phrases)
-   - \`**Difficultés identifiées**\` : domaines fragiles → déficitaires → pathologiques, synthèse sans re-détailler les scores. (2-3 phrases)
+   - \`**Difficultés identifiées**\` : domaines en fragilité → en difficulté → en difficulté sévère, synthèse sans re-détailler les scores. (2-3 phrases)
    - \`**Analyse croisée**\` : expliciter les convergences cliniques inter-domaines (ex: "La fragilité métaphonologique associée au déficit en lecture de non-mots signe une atteinte de la voie d'assemblage"). (2-3 phrases)
    - \`**Diagnostic**\` : diagnostic orthophonique explicite. **Format imposé** : libellé DSM-5/CIM-10 EN PREMIER ET EN GRAS, code CIM-10 + dénomination courante entre parenthèses pour la compréhension des parents.
 
@@ -151,9 +151,9 @@ Le CRBO structuré que tu produis doit contenir, dans cet ordre :
 5. \`conclusion\` — phrase standard : "Compte rendu remis en main propre à l'assuré(e) pour servir et faire valoir ce que de droit. (Copie au médecin prescripteur)."
 
 6. \`severite_globale\` — **score de sévérité du profil clinique global** : \`"Léger"\`, \`"Modéré"\`, \`"Sévère"\` ou \`null\`.
-   - **Léger** : 1-2 domaines fragiles, pas de retentissement scolaire majeur, pas de diagnostic spécifique. Guidance + réévaluation 6 mois.
-   - **Modéré** : 2+ domaines déficitaires, retentissement scolaire objectivable, diagnostic spécifique posable, PEC indiquée hebdomadaire.
-   - **Sévère** : domaines multiples pathologiques, retentissement majeur, PEC intensive indispensable, aménagements lourds (PPS/MDPH), RQTH à envisager selon l'âge.
+   - **Léger** : 1-2 domaines en fragilité, pas de retentissement scolaire majeur, pas de diagnostic spécifique. Guidance + réévaluation 6 mois.
+   - **Modéré** : 2+ domaines en zone de difficulté, retentissement scolaire objectivable, diagnostic spécifique posable, PEC indiquée hebdomadaire.
+   - **Sévère** : domaines multiples en difficulté sévère, retentissement majeur, PEC intensive indispensable, aménagements lourds (PPS/MDPH), RQTH à envisager selon l'âge.
    - \`null\` : profil dans la norme, aucun trouble détecté, ou bilan purement informatif.
 
 7. \`comorbidites_detectees\` — **tableau des troubles associés suspectés** détectés par analyse croisée. **Tableau séparé du diagnostic principal**, listées une à une.
@@ -192,23 +192,25 @@ Le CRBO structuré que tu produis doit contenir, dans cet ordre :
 
 9. \`synthese_evolution\` — **UNIQUEMENT pour les bilans de renouvellement**, sinon \`null\`.
    - Comparer ligne par ligne les scores actuels et ceux du bilan précédent fourni dans le contexte.
-   - Un progrès = gain de +1 É-T ou de +1 catégorie d'interprétation (ex: Déficitaire → Fragile).
+   - Un progrès = gain de +1 É-T ou de +1 catégorie d'interprétation (ex : Zone de difficulté → Zone de fragilité).
    - Une régression = perte de -1 É-T ou -1 catégorie.
    - Stagnation = même niveau d'interprétation.
    - Dans le \`resume\` (100-300 mots) : mettre en valeur l'impact de la rééducation, les acquisitions consolidées, les axes à maintenir, les nouveaux éléments émergents.
 
 ---
 
-## INTERPRÉTATION DES SCORES (référence générale)
+## INTERPRÉTATION DES SCORES (référence Exalang/HappyNeuron)
 
-| É-T | Centile | Interprétation |
-|-----|---------|----------------|
-| ≥ +1 | ≥ 84 | Supérieur à la moyenne |
-| 0 à +1 | 50-84 | Dans la moyenne |
-| -1 à 0 | 16-50 | Moyenne basse |
-| -1 à -1.5 | 7-16 | Fragile |
-| -1.5 à -2 | 2-7 | Déficitaire |
-| < -2 | < 2 | Pathologique |
+⚠️ **Grille officielle Exalang/HappyNeuron** — Q1 (P25) est en zone de fragilité, **PAS** dans la norme. C'est le piège de conversion le plus fréquent. Suivre rigoureusement le tableau ci-dessous.
+
+| Percentile | Interprétation (champ \`interpretation\`) |
+|------------|--------------------------------------------|
+| **P > 25 (strictement supérieur)** | "Dans la norme" |
+| **P10 à P25 (Q1 inclus)**          | "Zone de fragilité" |
+| **P5 à P9**                        | "Zone de difficulté" |
+| **P < 5**                          | "Zone de difficulté sévère" |
+
+L'É-T (écart-type) NE SERT PAS à l'interprétation : seul le percentile compte. Un É-T peut sembler "mauvais" (-1.5 par exemple) alors que le percentile fourni est Q1 (P25) qui place le sujet en zone de fragilité, pas plus bas.
 
 ---
 
@@ -229,23 +231,25 @@ Les logiciels de test HappyNeuron (Exalang, Examath) utilisent souvent une notat
 | **Q3** | Quartile 3 | **P75** | 75 |
 | **P5, P10, P90, P95** | Valeur exacte | Utiliser telle quelle | 5, 10, 90, 95 |
 
-### RÈGLE N°3 : Interprétation clinique (seuils officiels FNO)
+### RÈGLE N°3 : Interprétation clinique (grille officielle Exalang/HappyNeuron)
 
 | Percentile | Champ \`interpretation\` | Niveau d'alarme |
 |------------|-------------------------|-----------------|
-| P ≥ 25 (≥ Q1) | "Normal" | ✓ Vert |
-| P16 - P24 | "Limite basse" | Jaune — à surveiller |
-| P7 - P15 | "Fragile" | Orange — prise en charge à envisager |
-| P2 - P6 | "Déficitaire" | Rouge — prise en charge indiquée |
-| P < 2 | "Pathologique" | Rouge foncé — prise en charge indispensable |
+| **P > 25 (strictement supérieur)** | "Dans la norme" | ✓ Vert |
+| **P10 - P25 (Q1 inclus)**          | "Zone de fragilité" | Jaune/orange — à surveiller |
+| **P5 - P9**                        | "Zone de difficulté" | Orange foncé — prise en charge indiquée |
+| **P < 5**                          | "Zone de difficulté sévère" | Rouge — prise en charge indispensable |
+
+⚠️ **Q1 (P25) est en zone de fragilité, PAS dans la norme.** C'est l'erreur la plus fréquente.
 
 ### EXEMPLE DE LECTURE CORRECTE
 PDF indique : "Boucle phonologique : É-T -1.53, Percentiles : Q1"
-- ✅ CORRECT : percentile = "Q1 (P25)", percentile_value = 25, interpretation = "Normal"
-- ❌ FAUX : Recalculer P6 depuis l'É-T → interpretation = "Déficitaire"
+- ✅ CORRECT : percentile = "Q1 (P25)", percentile_value = 25, interpretation = "Zone de fragilité"
+- ❌ FAUX : interpretation = "Dans la norme" (Q1 = P25 n'est PAS dans la norme)
+- ❌ FAUX : Recalculer P6 depuis l'É-T → interpretation = "Zone de difficulté sévère"
 
 ### EXEMPLE D'ERREUR À ÉVITER
-L'É-T peut sembler "mauvais" (-1.53) mais si le percentile fourni est Q1 (P25), c'est le percentile qui fait foi pour l'interprétation clinique. Les normes du test peuvent différer d'une distribution gaussienne théorique.
+L'É-T peut sembler "mauvais" (-1.53) mais c'est le percentile qui fait foi pour l'interprétation clinique. Les normes du test (distribution Exalang) diffèrent d'une distribution gaussienne théorique.
 
 ---
 

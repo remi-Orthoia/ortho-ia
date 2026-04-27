@@ -19,13 +19,13 @@ const MOCK_STRUCTURE: CRBOStructure = {
       commentaire:
         "Échantillon conçu pour couvrir l'ensemble des seuils cliniques : du Normal (P≥25) au Pathologique (P<2). Les couleurs des cellules doivent respecter le dégradé vert → jaune → orange → rouge clair → rouge foncé.",
       epreuves: [
-        { nom: 'Épreuve Normal (P75 = Q3)', score: '18/20', et: '+0.67', percentile: 'Q3 (P75)', percentile_value: 75, interpretation: 'Normal' },
-        { nom: 'Épreuve Normal (P50 = Med)', score: '16/20', et: '+0.2', percentile: 'Med (P50)', percentile_value: 50, interpretation: 'Normal' },
-        { nom: 'Épreuve Normal (P25 = Q1)', score: '14/20', et: '-0.67', percentile: 'Q1 (P25)', percentile_value: 25, interpretation: 'Normal' },
-        { nom: 'Épreuve Limite basse (P20)', score: '12/20', et: '-0.84', percentile: 'P20', percentile_value: 20, interpretation: 'Limite basse' },
-        { nom: 'Épreuve Fragile (P10)', score: '9/20', et: '-1.28', percentile: 'P10', percentile_value: 10, interpretation: 'Fragile' },
-        { nom: 'Épreuve Déficitaire (P5)', score: '7/20', et: '-1.65', percentile: 'P5', percentile_value: 5, interpretation: 'Déficitaire' },
-        { nom: 'Épreuve Pathologique (P1)', score: '3/20', et: '-2.4', percentile: 'P1', percentile_value: 1, interpretation: 'Pathologique' },
+        { nom: 'Épreuve Dans la norme (P75 = Q3)', score: '18/20', et: '+0.67', percentile: 'Q3 (P75)', percentile_value: 75, interpretation: 'Dans la norme' },
+        { nom: 'Épreuve Dans la norme (P50 = Med)', score: '16/20', et: '+0.2', percentile: 'Med (P50)', percentile_value: 50, interpretation: 'Dans la norme' },
+        { nom: 'Épreuve Fragilité (P25 = Q1)', score: '14/20', et: '-0.67', percentile: 'Q1 (P25)', percentile_value: 25, interpretation: 'Zone de fragilité' },
+        { nom: 'Épreuve Fragilité (P20)', score: '12/20', et: '-0.84', percentile: 'P20', percentile_value: 20, interpretation: 'Zone de fragilité' },
+        { nom: 'Épreuve Fragilité (P10)', score: '9/20', et: '-1.28', percentile: 'P10', percentile_value: 10, interpretation: 'Zone de fragilité' },
+        { nom: 'Épreuve Difficulté (P7)', score: '7/20', et: '-1.65', percentile: 'P7', percentile_value: 7, interpretation: 'Zone de difficulté' },
+        { nom: 'Épreuve Difficulté sévère (P3)', score: '3/20', et: '-2.4', percentile: 'P3', percentile_value: 3, interpretation: 'Zone de difficulté sévère' },
       ],
     },
     {
@@ -33,10 +33,10 @@ const MOCK_STRUCTURE: CRBOStructure = {
       commentaire:
         "La lecture de mots est dans la norme, avec une voie d'adressage fonctionnelle. En revanche, la lecture de non-mots est déficitaire, signant une atteinte de la voie d'assemblage et orientant vers une dyslexie de type phonologique. La leximétrie confirme un ralentissement significatif.",
       epreuves: [
-        { nom: 'Lecture de mots', score: '28/30', et: '-0.3', percentile: 'Med (P50)', percentile_value: 50, interpretation: 'Normal' },
-        { nom: 'Lecture de non-mots', score: '14/30', et: '-1.75', percentile: 'P5', percentile_value: 5, interpretation: 'Déficitaire' },
-        { nom: 'Leximétrie', score: '58 mots/min', et: '-1.55', percentile: 'P7', percentile_value: 7, interpretation: 'Fragile' },
-        { nom: 'DRA — orthographe', score: '6/20', et: '-1.85', percentile: 'P3', percentile_value: 3, interpretation: 'Déficitaire' },
+        { nom: 'Lecture de mots', score: '28/30', et: '-0.3', percentile: 'Med (P50)', percentile_value: 50, interpretation: 'Dans la norme' },
+        { nom: 'Lecture de non-mots', score: '14/30', et: '-1.75', percentile: 'P5', percentile_value: 5, interpretation: 'Zone de difficulté' },
+        { nom: 'Leximétrie', score: '58 mots/min', et: '-1.55', percentile: 'P7', percentile_value: 7, interpretation: 'Zone de difficulté' },
+        { nom: 'DRA — orthographe', score: '6/20', et: '-1.85', percentile: 'P3', percentile_value: 3, interpretation: 'Zone de difficulté sévère' },
       ],
     },
   ],
