@@ -15,7 +15,7 @@ import {
   type ExtractedCRBO,
   type SynthesizedCRBO,
 } from '@/lib/prompts'
-import { anonymize, rehydrate } from '@/lib/anonymizer'
+import { anonymize, rehydrate, buildScrubList, scrubText, scrubObjectStrings } from '@/lib/anonymizer'
 import { createServerSupabaseClient } from '@/lib/supabase-server'
 import { withRetry } from '@/lib/retry'
 
@@ -258,6 +258,44 @@ export async function POST(request: NextRequest) {
     const { anonymized, reverseMap } = anonymize(formData)
     const s = (v: string | undefined) => v ?? ''
 
+    // Phase synthesize : `extracted` (réhydraté en phase 1) et `edits` (saisi
+    // par l'ortho sur la page résultats) peuvent contenir des noms réels —
+    // notamment dans les commentaires qualitatifs ortho. On les anonymise
+    // avec la même liste de tokens que pour formData → la rehydratation post-IA
+    // les remettra en clair.
+    const scrubList = buildScrubList(formData)
+    const sanitizeFreeText = (t: string | undefined) => scrubText(t, scrubList) ?? ''
+    const anonymizedExtracted: ExtractedCRBO | undefined = extracted
+      ? {
+          anamnese_redigee: sanitizeFreeText(extracted.anamnese_redigee),
+          motif_reformule: sanitizeFreeText(extracted.motif_reformule),
+          domains: (extracted.domains || []).map((d) => ({
+            ...d,
+            nom: d.nom, // codes A.1, B.2... pas de PII
+            commentaire: sanitizeFreeText(d.commentaire),
+            // épreuves : nom/score/percentile = données techniques, pas de PII
+            epreuves: d.epreuves,
+          })),
+        }
+      : undefined
+    const anonymizedEdits = edits
+      ? {
+          anamnese: sanitizeFreeText(edits.anamnese),
+          motif: sanitizeFreeText(edits.motif),
+          ortho_comments: edits.ortho_comments
+            ? Object.fromEntries(
+                Object.entries(edits.ortho_comments).map(([k, v]) => [k, sanitizeFreeText(v)]),
+              )
+            : undefined,
+        }
+      : undefined
+    // bilan_precedent_structure (renouvellement) : peut aussi contenir des
+    // noms dans diagnostic / recommandations. On rehydrate récursivement
+    // contre le même formData pour scrubber tous les strings.
+    const anonymizedPrevStructure = formData.bilan_precedent_structure
+      ? scrubObjectStrings(formData.bilan_precedent_structure, scrubList)
+      : null
+
     // DDN jamais transmise à Claude : on ne passe que l'âge calendaire calculé
     const patientAge = computePatientAge(formData.patient_ddn, formData.bilan_date)
 
@@ -298,6 +336,12 @@ export async function POST(request: NextRequest) {
       toolToUse = EXTRACT_CRBO_TOOL
       toolNameExpected = 'extract_crbo_data'
     } else if (phase === 'synthesize') {
+      // ⚠️ Tous les inputs free-text de phase 2 (extracted + edits + bilan
+      // précédent) sont anonymisés avec la même scrubList que formData.
+      // C'est le seul moyen d'éviter qu'un nom réel saisi par l'ortho dans
+      // un commentaire qualitatif ne fuite vers Anthropic.
+      const safeExtracted = anonymizedExtracted!
+      const safeEdits = anonymizedEdits
       userPrompt = buildSynthesizePrompt({
         patient_prenom: baseInputs.patient_prenom,
         patient_nom: baseInputs.patient_nom,
@@ -307,18 +351,20 @@ export async function POST(request: NextRequest) {
         bilan_type: baseInputs.bilan_type,
         medecin_nom: baseInputs.medecin_nom,
         medecin_tel: baseInputs.medecin_tel,
-        anamnese_validee: edits?.anamnese?.trim() || extracted!.anamnese_redigee,
-        motif_valide: edits?.motif?.trim() || extracted!.motif_reformule || '',
-        domains: extracted!.domains,
-        ortho_comments: edits?.ortho_comments,
+        anamnese_validee: safeEdits?.anamnese?.trim() || safeExtracted.anamnese_redigee,
+        motif_valide: safeEdits?.motif?.trim() || safeExtracted.motif_reformule || '',
+        domains: safeExtracted.domains,
+        ortho_comments: safeEdits?.ortho_comments,
         test_utilise: tests.join(', '),
         notes_analyse: baseInputs.notes_analyse,
         comportement_seance: baseInputs.comportement_seance,
         duree_seance_minutes: baseInputs.duree_seance_minutes,
         evolution_notes: baseInputs.evolution_notes,
-        bilan_precedent_structure: baseInputs.bilan_precedent_structure,
+        bilan_precedent_structure: anonymizedPrevStructure,
         bilan_precedent_date: baseInputs.bilan_precedent_date,
-        bilan_precedent_anamnese: baseInputs.bilan_precedent_anamnese,
+        bilan_precedent_anamnese: baseInputs.bilan_precedent_anamnese
+          ? scrubText(baseInputs.bilan_precedent_anamnese, scrubList) ?? baseInputs.bilan_precedent_anamnese
+          : undefined,
       })
       toolToUse = SYNTHESIZE_TOOL
       toolNameExpected = 'synthesize_crbo'

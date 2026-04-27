@@ -285,7 +285,7 @@ export default function TestWordPage() {
             <li>Médecin : Dr Marie-Christine Ricard Hibert · 07 84 53 32 10</li>
             <li>Motif : <strong>reformulé</strong> en 1-2 phrases pro (pas les notes brutes)</li>
             <li>Anamnèse : aucune info inférée (pas de profession parents, pas de fratrie inventée…)</li>
-            <li>Page 1 : <strong>UN SEUL</strong> graphique HappyNeuron, médiane noire, ligne rouge à <strong>P10</strong></li>
+            <li>Page 1 : <strong>UN SEUL</strong> graphique HappyNeuron, médiane noire, ligne rouge à <strong>P7</strong></li>
             <li>Graphique : <strong>tous les labels visibles intégralement</strong> (pas de &ldquo;…&rdquo;) · titres groupes wrappés sur 2 lignes si besoin</li>
             <li>Q1 (P25) → cellules <strong>jaune (zone de fragilité)</strong>, PAS vert</li>
             <li>P10 → jaune (fragilité). P5 → orange (difficulté). Pas de cellule rouge sévère ici</li>

@@ -49,8 +49,11 @@ const TOKEN_ORTHO_EMAIL = '__O_EMAIL__'
 const TOKEN_ORTHO_TEL = '__O_TEL__'
 const TOKEN_ORTHO_ADRESSE = '__O_ADR__'
 
+/** Liste des remplacements (valeur réelle → token) à appliquer aux textes libres. */
+export type ScrubList = Array<[string | undefined, string]>
+
 /** Remplace toutes les occurrences d'une valeur sensible dans un texte libre. */
-function scrubText(text: string | undefined, replacements: Array<[string | undefined, string]>): string | undefined {
+export function scrubText(text: string | undefined, replacements: ScrubList): string | undefined {
   if (!text) return text
   let out = text
   for (const [value, token] of replacements) {
@@ -63,6 +66,22 @@ function scrubText(text: string | undefined, replacements: Array<[string | undef
     out = out.replace(re, token)
   }
   return out
+}
+
+/**
+ * Construit la liste de scrub depuis les noms du formulaire — utilisable pour
+ * anonymiser des inputs additionnels (commentaires qualitatifs ortho, anamnèse
+ * éditée par l'ortho, structure bilan précédent…) sans repasser par anonymize().
+ * Les tokens sont identiques à ceux d'anonymize() pour que la rehydratation
+ * post-IA fonctionne avec la même reverseMap.
+ */
+export function buildScrubList(data: Pick<CRBOFormData, 'patient_prenom' | 'patient_nom' | 'medecin_nom' | 'ortho_nom'>): ScrubList {
+  return [
+    [data.patient_prenom, TOKEN_PATIENT_PRENOM],
+    [data.patient_nom, TOKEN_PATIENT_NOM],
+    [data.medecin_nom, TOKEN_MEDECIN_NOM],
+    [data.ortho_nom, TOKEN_ORTHO_NOM],
+  ]
 }
 
 export function anonymize(data: CRBOFormData): {
@@ -110,6 +129,25 @@ export function anonymize(data: CRBOFormData): {
   }
 
   return { anonymized, reverseMap }
+}
+
+/**
+ * Applique scrubText à toutes les chaînes d'un objet (récursivement).
+ * Utile pour anonymiser des structures imbriquées (CRBOStructure du bilan
+ * précédent, par exemple) sans avoir à connaître la forme exacte.
+ */
+export function scrubObjectStrings<T>(obj: T, scrubList: ScrubList): T {
+  if (obj == null) return obj
+  if (typeof obj === 'string') return (scrubText(obj, scrubList) ?? obj) as unknown as T
+  if (Array.isArray(obj)) return obj.map((item) => scrubObjectStrings(item, scrubList)) as unknown as T
+  if (typeof obj === 'object') {
+    const out: Record<string, unknown> = {}
+    for (const [k, v] of Object.entries(obj as Record<string, unknown>)) {
+      out[k] = scrubObjectStrings(v, scrubList)
+    }
+    return out as T
+  }
+  return obj
 }
 
 /** Remplace les tokens par les vraies valeurs dans un string. */

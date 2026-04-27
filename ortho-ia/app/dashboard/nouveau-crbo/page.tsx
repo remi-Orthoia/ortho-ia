@@ -800,9 +800,9 @@ function NouveauCRBOContent() {
 
   return (
     <div className="max-w-3xl mx-auto">
-      {/* Bandeau patient — rappel du dossier actif */}
+      {/* Bandeau patient — rappel du dossier actif, sticky en haut sur toutes les étapes */}
       {patientBannerVisible && (
-        <div className="mb-4 flex items-center justify-between gap-3 bg-gradient-to-r from-green-50 to-emerald-50 border border-green-200 rounded-lg px-4 py-2.5">
+        <div className="sticky top-2 z-30 mb-4 flex items-center justify-between gap-3 bg-gradient-to-r from-green-50 to-emerald-50 border border-green-200 rounded-lg px-4 py-2.5 shadow-sm backdrop-blur-sm">
           <div className="flex items-center gap-2.5 text-sm text-green-900 min-w-0">
             <span aria-hidden>👤</span>
             <span className="font-semibold truncate">

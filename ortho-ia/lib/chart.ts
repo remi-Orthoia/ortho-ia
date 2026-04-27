@@ -224,17 +224,19 @@ export function drawHappyNeuronChart(
   ctx.textAlign = 'left'
   ctx.fillText('Médiane (P50)', padLeft + 4, yMed - 3)
 
-  // ===== Ligne d'alerte clinique — trait plein rouge à P10 =====
-  // Marque la frontière entre la zone de fragilité (P10-25) et la zone de
-  // difficulté (P5-9) selon la grille Exalang/HappyNeuron.
-  const yAlert = yFor(10)
+  // ===== Ligne d'alerte clinique — trait plein rouge à P7 =====
+  // Repère visuel d'alerte clinique demandé explicitement par Laurie.
+  // Note : avec la grille Exalang, P7 est dans la zone de difficulté (P5-9),
+  // pas exactement à la frontière fragilité/difficulté (qui est à P9-10).
+  // Conservé à P7 par cohérence avec la spec et l'usage clinique.
+  const yAlert = yFor(7)
   ctx.strokeStyle = '#C62828'
   ctx.lineWidth = 1.6
   ctx.beginPath(); ctx.moveTo(padLeft, yAlert); ctx.lineTo(padLeft + chartW, yAlert); ctx.stroke()
   ctx.fillStyle = '#C62828'
   ctx.font = 'italic bold 9.5px Calibri, Arial, sans-serif'
   ctx.textAlign = 'left'
-  ctx.fillText("Seuil d'alerte (P10)", padLeft + 4, yAlert - 3)
+  ctx.fillText("Seuil d'alerte (P7)", padLeft + 4, yAlert - 3)
 
   // ===== Barres regroupées par sous-domaine =====
   if (totalBars === 0) return
