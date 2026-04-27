@@ -275,9 +275,11 @@ export default function ResultatsPage() {
           duree_seance_minutes: fd.duree_seance_minutes || null,
           severite_globale: finalStructure.severite_globale ?? null,
           bilan_precedent_id: fd.bilan_precedent_id || null,
-          // Bug fix kanban : statut "à relire" après génération réussie pour que
-          // la carte aille directement dans la bonne colonne du kanban.
-          statut: 'a_relire',
+          // Statut kanban après génération : "à rédiger". Le CRBO vient d'être
+          // produit par l'IA mais reste à valider/rédiger par l'orthophoniste.
+          // Une fois validé, l'ortho pourra le passer manuellement en "à relire"
+          // ou "terminé" via le drag-and-drop du kanban.
+          statut: 'a_rediger',
         })
         .select('id')
         .single()
