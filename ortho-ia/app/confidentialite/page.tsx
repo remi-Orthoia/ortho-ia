@@ -24,8 +24,14 @@ export default function ConfidentialitePage() {
         <h1 className="text-3xl font-bold text-gray-900">Politique de confidentialité</h1>
         <p className="text-sm text-gray-500 mt-2">Dernière mise à jour : 20 avril 2026</p>
 
-        <Section title="1. Responsable du traitement">
-          <p>Rémi Berrio — contact : remi.berrio@gmail.com.</p>
+        <Section title="1. Responsable du traitement & Délégué à la Protection des Données (DPO)">
+          <p>
+            Ortho.ia est édité par Rémi Berrio. Pour toute question relative à vos données personnelles
+            ou pour exercer vos droits, contactez le DPO à l&apos;adresse :
+            <a href="mailto:contact@ortho-ia.fr" className="text-green-600 hover:underline ml-1">
+              contact@ortho-ia.fr
+            </a>.
+          </p>
         </Section>
 
         <Section title="2. Données collectées">
@@ -52,53 +58,68 @@ export default function ConfidentialitePage() {
           </p>
         </Section>
 
-        <Section title="5. Transmission à des sous-traitants">
+        <Section title="5. Anonymisation des données patient avant traitement IA">
           <p>
-            Les données nominatives liées aux <strong>patients</strong> sont <strong>anonymisées avant
-            transmission à l&apos;API Claude</strong> (Anthropic, Inc.) pour la génération des brouillons
-            de comptes-rendus. Les identifiants réels (prénom, nom du patient, nom du médecin, coordonnées
-            de l&apos;orthophoniste) ne quittent jamais notre infrastructure en clair.
+            <strong>Garantie centrale d&apos;Ortho.ia :</strong> les données patient sont
+            systématiquement anonymisées avant tout traitement par notre modèle d&apos;intelligence
+            artificielle. <strong>Aucune donnée nominative n&apos;est transmise au modèle d&apos;IA.</strong>
           </p>
-          <p>Nos sous-traitants :</p>
+          <p>
+            Concrètement, avant chaque appel à notre modèle, les identifiants réels (prénom et nom du
+            patient, prénom et nom du médecin prescripteur, coordonnées de l&apos;orthophoniste, ville et
+            code postal du patient) sont remplacés à la volée par des identifiants techniques non
+            signifiants (jetons aléatoires). Les valeurs réelles ne sont réintégrées qu&apos;après
+            réception de la réponse, exclusivement côté serveur.
+          </p>
+          <p>Nos sous-traitants techniques :</p>
           <ul className="list-disc pl-6 space-y-1">
-            <li><strong>Supabase</strong> (hébergement base de données, région Paris eu-west-3) ;</li>
-            <li><strong>Vercel</strong> (hébergement de l&apos;application) ;</li>
-            <li><strong>Anthropic</strong> (API Claude, données anonymisées uniquement) ;</li>
+            <li><strong>Supabase</strong> (hébergement base de données, région UE) ;</li>
+            <li><strong>Vercel</strong> (hébergement de l&apos;application, région UE) ;</li>
+            <li>
+              Modèle d&apos;intelligence artificielle propriétaire entraîné pour l&apos;orthophonie
+              francophone, alimenté en données <em>anonymisées uniquement</em> ;
+            </li>
             <li><strong>Stripe</strong> (paiements, lorsque applicable).</li>
           </ul>
           <p className="mt-3 text-sm text-amber-700 bg-amber-50 border border-amber-200 rounded px-3 py-2">
             ⚠️ L&apos;hébergement actuel n&apos;est pas certifié HDS. Une migration vers un hébergeur
-            HDS (Scaleway ou Clever Cloud) est prévue avant la montée en charge commerciale.
+            HDS (Hébergeur de Données de Santé) est prévue avant la montée en charge commerciale.
           </p>
         </Section>
 
         <Section title="6. Durée de conservation">
           <p>
-            Les données du compte sont conservées tant que le compte est actif, puis 12 mois après
-            résiliation avant suppression définitive (sauf obligation légale de conservation plus longue
-            pour la comptabilité).
+            Les données du compte et des CRBO sont conservées tant que le compte est actif. Elles sont
+            supprimées sur simple demande via la page profil (bouton « Supprimer mon compte ») ou par
+            email au DPO. Aucune conservation au-delà de la demande, sauf obligation légale (par exemple
+            comptabilité).
           </p>
           <p>
-            Les comptes-rendus peuvent être supprimés à tout moment par l&apos;utilisateur·rice depuis
-            l&apos;espace personnel.
+            Les comptes-rendus individuels peuvent être supprimés à tout moment par l&apos;utilisateur·rice
+            depuis l&apos;espace personnel (suppression immédiate et définitive).
           </p>
         </Section>
 
         <Section title="7. Vos droits">
-          <p>Conformément au RGPD, vous disposez des droits suivants :</p>
+          <p>Conformément au RGPD (articles 15 à 22), vous disposez des droits suivants :</p>
           <ul className="list-disc pl-6 space-y-1">
-            <li>Droit d&apos;accès et de rectification ;</li>
-            <li>Droit à l&apos;effacement (&ldquo;droit à l&apos;oubli&rdquo;) ;</li>
-            <li>Droit à la limitation du traitement ;</li>
-            <li>Droit à la portabilité (export de vos données au format JSON/CSV) ;</li>
-            <li>Droit d&apos;opposition ;</li>
+            <li><strong>Droit d&apos;accès</strong> : obtenir copie de toutes les données vous concernant ;</li>
+            <li><strong>Droit de rectification</strong> : corriger toute information inexacte ;</li>
+            <li>
+              <strong>Droit à l&apos;effacement</strong> (« droit à l&apos;oubli ») : implémenté
+              directement dans l&apos;application — bouton « Supprimer mon compte » dans votre profil.
+              Suppression immédiate et irréversible de l&apos;ensemble de vos données ;
+            </li>
+            <li><strong>Droit à la limitation</strong> du traitement ;</li>
+            <li><strong>Droit à la portabilité</strong> : export de vos données au format JSON/CSV sur demande ;</li>
+            <li><strong>Droit d&apos;opposition</strong> au traitement ;</li>
             <li>Droit d&apos;introduire une réclamation auprès de la CNIL.</li>
           </ul>
           <p className="mt-2">
-            Pour exercer ces droits, contactez-nous à{' '}
-            <a href="mailto:remi.berrio@gmail.com" className="text-green-600 hover:underline">
-              remi.berrio@gmail.com
-            </a>.
+            Pour exercer un de ces droits autrement que via l&apos;application, contactez le DPO à{' '}
+            <a href="mailto:contact@ortho-ia.fr" className="text-green-600 hover:underline">
+              contact@ortho-ia.fr
+            </a>. Une réponse vous sera apportée dans un délai maximum d&apos;un mois.
           </p>
         </Section>
 

@@ -41,15 +41,17 @@ export default function CGUPage() {
 
         <Section title="3. Utilisation de l'intelligence artificielle">
           <p>
-            <strong>Génération par IA :</strong> Le Service utilise l&apos;API Claude (Anthropic, Inc.)
-            pour générer automatiquement des brouillons de compte-rendus à partir des informations saisies
-            par l&apos;utilisateur (anamnèse, résultats de tests, notes de passation).
+            <strong>Génération par IA :</strong> Le Service utilise un modèle d&apos;intelligence
+            artificielle propriétaire entraîné pour l&apos;orthophonie francophone, afin de générer
+            automatiquement des brouillons de comptes-rendus à partir des informations saisies par
+            l&apos;utilisateur (anamnèse, résultats de tests, notes d&apos;analyse).
           </p>
           <p>
-            <strong>Anonymisation préalable :</strong> Avant transmission à l&apos;API Claude, les données
-            nominatives (prénom et nom du patient, prénom et nom du médecin prescripteur, coordonnées de
-            l&apos;orthophoniste) sont remplacées par des identifiants techniques non-signifiants.
-            Les valeurs réelles sont réintégrées uniquement côté serveur après réception de la réponse.
+            <strong>Anonymisation préalable :</strong> Avant tout traitement par notre modèle d&apos;IA,
+            les données nominatives (prénom et nom du patient, prénom et nom du médecin prescripteur,
+            coordonnées de l&apos;orthophoniste) sont remplacées par des identifiants techniques non
+            signifiants. Aucune donnée nominative n&apos;est transmise au modèle. Les valeurs réelles
+            sont réintégrées uniquement côté serveur après réception de la réponse.
           </p>
           <p>
             <strong>Responsabilité clinique :</strong> Les contenus générés par l&apos;IA constituent
@@ -59,9 +61,8 @@ export default function CGUPage() {
             et validation clinique avant envoi est obligatoire.
           </p>
           <p>
-            <strong>Hébergement actuel :</strong> À la date des présentes, l&apos;application est hébergée
-            sur Vercel (Amazon Web Services) et la base de données sur Supabase. Une migration vers un
-            hébergeur certifié HDS (Hébergeur de Données de Santé) est planifiée.
+            <strong>Hébergement :</strong> L&apos;application est hébergée dans l&apos;Union Européenne.
+            Une migration vers un hébergeur certifié HDS (Hébergeur de Données de Santé) est planifiée.
           </p>
         </Section>
 
@@ -79,12 +80,13 @@ export default function CGUPage() {
 
         <Section title="5. Abonnement et tarification">
           <p>
-            Un essai gratuit de 3 CRBO est offert à chaque nouvel·le inscrit·e, sans carte bancaire ni
-            engagement.
+            <strong>Phase beta :</strong> Pendant la période beta, l&apos;accès au Service est gratuit
+            et sans engagement. Aucune carte bancaire n&apos;est demandée à l&apos;inscription.
           </p>
           <p>
-            L&apos;abonnement Pro est proposé à 19,90 €/mois (facturation mensuelle sans engagement) ou
-            14,90 €/mois en facturation annuelle (178,80 €/an prélevés à l&apos;avance, soit une économie de 60 €). Les prix sont indiqués TTC.
+            <strong>Offre Pro (à venir) :</strong> 24,90 €/mois en facturation mensuelle sans engagement,
+            ou 199 €/an en facturation annuelle (économie ~33 % par rapport au mensuel). Les prix sont
+            indiqués TTC.
           </p>
           <p>
             L&apos;abonnement mensuel est résiliable à tout moment depuis l&apos;espace client. La

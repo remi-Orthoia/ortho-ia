@@ -3,12 +3,16 @@
 import { useState, useEffect, Suspense } from 'react'
 import { useRouter, useSearchParams } from 'next/navigation'
 import { createClient } from '@/lib/supabase'
-import { Loader2, Save, CheckCircle, AlertCircle } from 'lucide-react'
+import { Loader2, Save, CheckCircle, AlertCircle, Trash2 } from 'lucide-react'
 
 function ProfilContent() {
   const router = useRouter()
   const searchParams = useSearchParams()
   const isIncompleteRedirect = searchParams.get('incomplete') === '1'
+  const [showDeleteModal, setShowDeleteModal] = useState(false)
+  const [deleteConfirmText, setDeleteConfirmText] = useState('')
+  const [deleting, setDeleting] = useState(false)
+  const [deleteError, setDeleteError] = useState('')
   const [loading, setLoading] = useState(true)
   const [saving, setSaving] = useState(false)
   const [saved, setSaved] = useState(false)
@@ -237,6 +241,93 @@ function ProfilContent() {
           )}
         </div>
       </div>
+
+      {/* Zone dangereuse RGPD : suppression complète du compte */}
+      <div className="mt-10 rounded-2xl border-2 border-red-200 bg-red-50/50 p-5 sm:p-6">
+        <h2 className="text-lg font-semibold text-red-900 mb-1 flex items-center gap-2">
+          <Trash2 size={18} />
+          Zone dangereuse
+        </h2>
+        <p className="text-sm text-red-800 mb-4">
+          Supprimer mon compte efface immédiatement et définitivement l&apos;ensemble de vos données :
+          profil, CRBOs, patients, médecins, abonnement, feedbacks. Conformément au RGPD, cette action
+          est <strong>irréversible</strong> et ne peut pas être annulée.
+        </p>
+        <button
+          type="button"
+          onClick={() => { setShowDeleteModal(true); setDeleteConfirmText(''); setDeleteError('') }}
+          className="inline-flex items-center gap-2 px-4 py-2 bg-red-600 hover:bg-red-700 text-white font-medium rounded-lg transition"
+        >
+          <Trash2 size={16} />
+          Supprimer mon compte
+        </button>
+      </div>
+
+      {/* Modale confirmation */}
+      {showDeleteModal && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 p-4" role="dialog" aria-modal="true">
+          <div className="bg-white rounded-2xl shadow-xl w-full max-w-md p-6">
+            <h3 className="text-lg font-bold text-gray-900 flex items-center gap-2">
+              <AlertCircle className="text-red-600" size={20} />
+              Confirmation requise
+            </h3>
+            <p className="mt-3 text-sm text-gray-700 leading-relaxed">
+              Cette action est <strong>irréversible</strong>. Toutes vos données vont être supprimées
+              de manière définitive. Pour confirmer, tapez <code className="px-1.5 py-0.5 rounded bg-gray-100 text-red-700 font-mono">SUPPRIMER</code> ci-dessous.
+            </p>
+            <input
+              type="text"
+              value={deleteConfirmText}
+              onChange={(e) => setDeleteConfirmText(e.target.value)}
+              placeholder="SUPPRIMER"
+              className="mt-4 w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-red-500"
+              autoFocus
+            />
+            {deleteError && (
+              <p className="mt-3 text-sm text-red-700 bg-red-50 border border-red-200 rounded px-3 py-2">
+                {deleteError}
+              </p>
+            )}
+            <div className="mt-5 flex items-center justify-end gap-2">
+              <button
+                type="button"
+                onClick={() => setShowDeleteModal(false)}
+                disabled={deleting}
+                className="px-4 py-2 text-gray-700 hover:bg-gray-100 rounded-lg font-medium transition disabled:opacity-50"
+              >
+                Annuler
+              </button>
+              <button
+                type="button"
+                disabled={deleteConfirmText.trim() !== 'SUPPRIMER' || deleting}
+                onClick={async () => {
+                  setDeleting(true)
+                  setDeleteError('')
+                  try {
+                    const res = await fetch('/api/account/delete', { method: 'POST' })
+                    const data = await res.json().catch(() => ({}))
+                    if (!res.ok) {
+                      throw new Error(data?.error || 'La suppression a échoué.')
+                    }
+                    // Redirection vers l'accueil — la session est déjà signée out côté serveur.
+                    router.push('/?account-deleted=1')
+                  } catch (e: any) {
+                    setDeleteError(e?.message || 'Erreur inattendue.')
+                    setDeleting(false)
+                  }
+                }}
+                className="inline-flex items-center gap-2 px-4 py-2 bg-red-600 hover:bg-red-700 text-white font-medium rounded-lg transition disabled:opacity-50 disabled:cursor-not-allowed"
+              >
+                {deleting ? (
+                  <><Loader2 className="animate-spin" size={16} /> Suppression…</>
+                ) : (
+                  <><Trash2 size={16} /> Supprimer définitivement</>
+                )}
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   )
 }
