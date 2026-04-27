@@ -12,6 +12,7 @@ import Tooltip from '@/components/Tooltip'
 import ConfettiBurst from '@/components/ConfettiBurst'
 import CRBOStructuredPreview from '@/components/CRBOStructuredPreview'
 import ShareCRBOButton from '@/components/ShareCRBOButton'
+import MicButton from '@/components/MicButton'
 import { playSuccessSound } from '@/lib/success-sound'
 import { 
   ChevronRight, 
@@ -134,7 +135,7 @@ function NouveauCRBOContent() {
     anamnese: '',
     test_utilise: [],
     resultats_manuels: '',
-    notes_passation: '',
+    notes_analyse: '',
   })
 
   // Charger les infos utilisateur et patients au démarrage
@@ -729,7 +730,7 @@ function NouveauCRBOContent() {
                 anamnese: '',
                 test_utilise: [],
                 resultats_manuels: '',
-                notes_passation: '',
+                notes_analyse: '',
               })
               setCurrentStep(1)
             }}
@@ -1200,7 +1201,14 @@ function NouveauCRBOContent() {
                 />
               </div>
               <div className="sm:col-span-2">
-                <label className="block text-sm font-medium text-gray-700 mb-1">Motif de consultation *</label>
+                <div className="flex items-center justify-between mb-1">
+                  <label className="block text-sm font-medium text-gray-700">Motif de consultation *</label>
+                  <MicButton
+                    value={formData.motif}
+                    onChange={(v) => setFormData(prev => ({ ...prev, motif: v }))}
+                    onError={(msg) => setError(msg)}
+                  />
+                </div>
                 <textarea
                   name="motif"
                   value={formData.motif}
@@ -1274,6 +1282,13 @@ function NouveauCRBOContent() {
                   <p className="text-xs text-purple-700 dark:text-purple-300">
                     Notez ici ce qui a bougé depuis le {formData.bilan_precedent_date ? new Date(formData.bilan_precedent_date).toLocaleDateString('fr-FR') : 'dernier bilan'}. Pas besoin de tout réécrire.
                   </p>
+                  <div className="flex justify-end mb-1">
+                    <MicButton
+                      value={formData.evolution_notes || ''}
+                      onChange={(v) => setFormData(prev => ({ ...prev, evolution_notes: v }))}
+                      onError={(msg) => setError(msg)}
+                    />
+                  </div>
                   <textarea
                     name="evolution_notes"
                     value={formData.evolution_notes || ''}
@@ -1301,6 +1316,13 @@ function NouveauCRBOContent() {
                   <p className="text-xs text-emerald-700 dark:text-emerald-300">
                     Reprise de l&apos;anamnèse du bilan précédent. Modifiez uniquement si des éléments doivent être actualisés (suivis terminés, santé, etc.).
                   </p>
+                  <div className="flex justify-end mb-1">
+                    <MicButton
+                      value={formData.elements_stables || ''}
+                      onChange={(v) => setFormData(prev => ({ ...prev, elements_stables: v }))}
+                      onError={(msg) => setError(msg)}
+                    />
+                  </div>
                   <textarea
                     name="elements_stables"
                     value={formData.elements_stables || ''}
@@ -1328,7 +1350,14 @@ function NouveauCRBOContent() {
                 </div>
 
                 <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-1">Notes d&apos;anamnèse *</label>
+                  <div className="flex items-center justify-between mb-1">
+                    <label className="block text-sm font-medium text-gray-700">Notes d&apos;anamnèse *</label>
+                    <MicButton
+                      value={formData.anamnese}
+                      onChange={(v) => setFormData(prev => ({ ...prev, anamnese: v }))}
+                      onError={(msg) => setError(msg)}
+                    />
+                  </div>
                   <textarea
                     name="anamnese"
                     value={formData.anamnese}
@@ -1568,6 +1597,13 @@ Lecture de mots (score) : 15/100, É-T : -6.62, P5
                 })}
               </div>
 
+              <div className="flex justify-end">
+                <MicButton
+                  value={formData.comportement_seance || ''}
+                  onChange={(v) => setFormData(prev => ({ ...prev, comportement_seance: v }))}
+                  onError={(msg) => setError(msg)}
+                />
+              </div>
               <textarea
                 value={formData.comportement_seance || ''}
                 onChange={e => setFormData(prev => ({ ...prev, comportement_seance: e.target.value }))}
@@ -1578,12 +1614,19 @@ Lecture de mots (score) : 15/100, É-T : -6.62, P5
             </div>
 
             <div>
-              <label className="block text-sm font-medium text-gray-700 mb-1">
-                Notes de passation (optionnel)
-              </label>
+              <div className="flex items-center justify-between mb-1">
+                <label className="block text-sm font-medium text-gray-700">
+                  Notes d&apos;analyse (optionnel)
+                </label>
+                <MicButton
+                  value={formData.notes_analyse}
+                  onChange={(v) => setFormData(prev => ({ ...prev, notes_analyse: v }))}
+                  onError={(msg) => setError(msg)}
+                />
+              </div>
               <textarea
-                name="notes_passation"
-                value={formData.notes_passation}
+                name="notes_analyse"
+                value={formData.notes_analyse}
                 onChange={handleChange}
                 rows={3}
                 className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-green-500 resize-none"

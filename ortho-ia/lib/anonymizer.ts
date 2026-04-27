@@ -30,7 +30,7 @@ export interface CRBOFormData {
   anamnese?: string
   test_utilise: string | string[]
   resultats_manuels?: string
-  notes_passation?: string
+  notes_analyse?: string
 }
 
 export interface ReverseMap {
@@ -101,7 +101,7 @@ export function anonymize(data: CRBOFormData): {
     motif: scrubText(data.motif, scrubList),
     anamnese: scrubText(data.anamnese, scrubList),
     resultats_manuels: scrubText(data.resultats_manuels, scrubList),
-    notes_passation: scrubText(data.notes_passation, scrubList),
+    notes_analyse: scrubText(data.notes_analyse, scrubList),
   }
 
   const reverseMap: ReverseMap = {

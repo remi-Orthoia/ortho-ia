@@ -34,7 +34,7 @@ export interface TestProfile {
     anamnese: string
     test_utilise: string[]
     resultats_manuels: string
-    notes_passation: string
+    notes_analyse: string
     comportement_seance?: string
     duree_seance_minutes?: number
     evolution_notes?: string
@@ -98,7 +98,7 @@ Leximétrie (CE2) : 58 mots/min, É-T : -1.55, P7
 DRA orthographe lexicale : 12/20, É-T : -1.3, P10
 DRA orthographe grammaticale : 8/15, É-T : -1.15, Q1 (P25)
 Closure de texte : 15/20, É-T : -0.55, Med (P50)`,
-      notes_passation:
+      notes_analyse:
         'Bilan en 2 séances de 45 min. Bonne coopération, Léa est appliquée. Pleurs lors de la dictée quand elle voit qu\'elle ne connaît pas l\'orthographe. Fatigabilité nette en fin de chaque séance.',
     },
   },
@@ -152,7 +152,7 @@ Production écrite narrative : récit pauvre 45 mots, écart sévère
 
 # Raisonnement verbal
 Analogies : 4/12, É-T : -1.3, P10`,
-      notes_passation:
+      notes_analyse:
         'Bilan très difficile à mener : Lucas se lève, fait autre chose, répond vite pour "finir". Fatigabilité majeure dès 20 min. A fallu 3 séances (vs 2 habituel). Semble intelligent dans les conversations libres, mais ne peut pas soutenir l\'effort attentionnel. Comportement d\'évitement : "de toute façon je suis nul".',
     },
   },
@@ -205,7 +205,7 @@ Estimation ligne 0-100 : erreur moyenne 18 points, É-T : -1.85, P5
 # Géométrie (épargnée)
 Reproduction figure simple : 9/10, É-T : 0.25, Med (P50)
 Reproduction figure complexe : 15/20, É-T : -0.3, Med (P50)`,
-      notes_passation:
+      notes_analyse:
         'Bilan en 2 séances. Emma participe bien mais dit "je suis nulle en maths" plusieurs fois. Compte sur les doigts systématiquement, même pour 2+3. Blocage émotionnel visible sur les énoncés de problèmes. Excellente sur la géométrie, travail soigné et précis.',
     },
   },
@@ -260,7 +260,7 @@ Lecture de mots : 0/10, écart sévère
 # Compléments ELO
 Expression morphosyntaxique : 6/15, É-T : -1.9, P3
 Récit d'image : pauvre, 5 phrases simples`,
-      notes_passation:
+      notes_analyse:
         "Bilan en 3 séances. Tom est doux, coopératif, mais on voit bien qu'il ne comprend pas toujours les consignes. Il fait souvent répéter. Parle peu, phrases courtes et parfois agrammaticales. Bonne volonté mais fatigabilité rapide. Résultats très en deçà de l'attendu en CP.",
     },
   },
@@ -311,7 +311,7 @@ Répétition de phrases : 8/10, É-T : -1.1, Q1 (P25)
 Lecture à voix haute : préservée, 95/100, Med (P50)
 Compréhension écrite : 12/15, É-T : -1.2, P10
 Dictée de phrases : 14/20, É-T : -1.25, P10`,
-      notes_passation:
+      notes_analyse:
         'Bilan en 2 séances. Monsieur Bernard coopératif mais fatigabilité nette. Plusieurs recherches de mots observées dans le discours spontané ("cette chose qui…"). Paraphasies sémantiques (hippopotame au lieu de rhinocéros). Manque du mot à plusieurs reprises. Épouse confirme perte progressive d\'autonomie cognitive depuis 18 mois.',
     },
   },
@@ -358,7 +358,7 @@ Répétition logatomes : P15, É-T -1.05
 
 # Métaphonologie (émergente)
 Rimes : P25, É-T -0.7`,
-      notes_passation:
+      notes_analyse:
         'Bilan en 1 séance de 40 min. Hugo coopératif mais timide. Phrases courtes, syntaxe simple. Interaction adaptée. Pas de trouble articulatoire majeur.',
     },
   },
@@ -403,7 +403,7 @@ Compréhension inférentielle : 16/20, É-T -0.25, Med (P50)
 DRA lexicale : 14/20, É-T -1.15, P15
 DRA grammaticale : 11/15, É-T -0.85, Q1 (P25)
 Production écrite : correct, syntaxe riche`,
-      notes_passation:
+      notes_analyse:
         'Bilan 45 min. Théo à l\'aise, bon oral, stratégies métacognitives développées. Conscient de ses difficultés, demande aménagements Brevet. Fatigabilité à la fin.',
       // Simule une anamnèse déjà pré-remplie depuis le dernier bilan
       evolution_notes: "Progrès nets en lecture depuis le dernier bilan il y a 2 ans. Vitesse de lecture désormais dans la norme. Orthographe reste le point faible résiduel. Stratégies métacognitives bien installées.",
@@ -463,7 +463,7 @@ Ronflements rapportés
 # Articulation
 Sigmatisme interdental [s], [z], [∫], [ʒ]
 Autres phonèmes acquis`,
-      notes_passation:
+      notes_analyse:
         'Bilan 45 min. Sarah coopérative. Sensible au regard sur sa bouche. Consciente du défaut articulatoire, en souffre à l\'école. Maman attentive, collaboration orthodontiste confirmée.',
     },
   },
@@ -516,7 +516,7 @@ Problèmes à étapes (sans chrono) : 5/8, P25
 
 # Géométrie
 Reproduction figure complexe : 19/20, Med (P50)`,
-      notes_passation:
+      notes_analyse:
         'Bilan 2 séances. Inès en larmes à l\'annonce de l\'épreuve chronométrée. A fallu couper le chrono et reprendre à froid. Dit "je déteste les maths, je suis nulle". Mère confirme que les notes chutent précisément aux évaluations chronométrées, alors qu\'en devoirs maison les résultats sont corrects.',
     },
   },
@@ -564,7 +564,7 @@ Syllabes : 1/10, P2, É-T -2.1
 # N-EEL (complément)
 Compréhension morphosyntaxique : score pathologique
 Empan auditif : 2/6, P2`,
-      notes_passation:
+      notes_analyse:
         'Bilan 2 séances 30 min. Noé coopératif mais fatigabilité rapide. Communication non verbale adaptée (pointage, intérêt pour autrui, tours de parole). Interaction préservée, pas de signes autistiques (éliminés par pédiatre). Prononciation très déformée, plusieurs phonèmes non acquis. Souffrance scolaire palpable.',
     },
   },

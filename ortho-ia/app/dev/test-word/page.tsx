@@ -67,7 +67,7 @@ const MOCK_FORM_DATA = {
   anamnese: 'marche 13m / premiers mots 22m / CE2 / aime dessin',
   test_utilise: ['Exalang 8-11'] as string[],
   resultats_manuels: '',
-  notes_passation: '',
+  notes_analyse: '',
 }
 
 export default function TestWordPage() {

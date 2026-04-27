@@ -74,7 +74,7 @@ export function buildCRBOPrompt(data: {
   anamnese: string
   test_utilise: string
   resultats: string
-  notes_passation: string
+  notes_analyse: string
   /** Nouveau : observations en séance (comportement, anxiété, stratégies). */
   comportement_seance?: string
   /** Nouveau : durée totale de la séance en minutes. */
@@ -177,8 +177,8 @@ ${data.test_utilise}
 === RÉSULTATS DU TEST ===
 ${data.resultats}
 
-=== NOTES DE PASSATION ===
-${data.notes_passation || 'Aucune note supplémentaire'}${comportementBlock}${dureeBlock}${bilanPrecBlock}
+=== NOTES D'ANALYSE ===
+${data.notes_analyse || 'Aucune note supplémentaire'}${comportementBlock}${dureeBlock}${bilanPrecBlock}
 
 === INSTRUCTION ===
 Génère le CRBO complet en appelant l'outil \`generate_crbo\`. Remplis chaque champ avec soin et respecte scrupuleusement les règles de conversion de percentiles. Inclus obligatoirement : severite_globale, comorbidites_detectees (même vide), pap_suggestions. ${
@@ -234,7 +234,7 @@ export interface SynthesizePromptInput {
   /** Tests utilisés (string concaténée) — utile pour rappeler le contexte. */
   test_utilise: string
   /** Notes de passation brutes (si fournies). */
-  notes_passation?: string
+  notes_analyse?: string
   comportement_seance?: string
   duree_seance_minutes?: number
   /** Renouvellement : structure du bilan précédent + date + anamnèse précédente. */
@@ -295,8 +295,8 @@ ${data.test_utilise}
 === SCORES STRUCTURÉS + COMMENTAIRES QUALITATIFS ORTHO ===
 ${formatDomainsForSynthesize(data.domains, data.ortho_comments)}
 
-=== NOTES DE PASSATION (brutes, contexte global) ===
-${data.notes_passation || 'Aucune note supplémentaire'}${comportementBlock}${dureeBlock}${bilanPrecBlock}
+=== NOTES D'ANALYSE (brutes, contexte global) ===
+${data.notes_analyse || 'Aucune note supplémentaire'}${comportementBlock}${dureeBlock}${bilanPrecBlock}
 
 === INSTRUCTION (phase 2 — SYNTHÈSE) ===
 Appelle l'outil \`synthesize_crbo\`. Produis UNIQUEMENT :

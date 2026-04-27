@@ -40,7 +40,7 @@ interface CRBO {
   motif?: string | null
   anamnese?: string | null
   resultats?: string | null
-  notes_passation?: string | null
+  notes_analyse?: string | null
   structure_json?: any
   severite_globale?: 'Léger' | 'Modéré' | 'Sévère' | null
   bilan_precedent_id?: string | null

@@ -49,7 +49,7 @@ CREATE TABLE IF NOT EXISTS crbos (
   anamnese TEXT,
   test_utilise TEXT,
   resultats TEXT,
-  notes_passation TEXT,
+  notes_analyse TEXT,
   crbo_genere TEXT,
   document_url TEXT,
   created_at TIMESTAMP WITH TIME ZONE DEFAULT NOW()

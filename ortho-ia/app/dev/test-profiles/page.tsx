@@ -146,7 +146,7 @@ export default function TestProfilesPage() {
                         Données d&apos;entrée (anamnèse brute + résultats)
                       </summary>
                       <pre className="mt-3 text-xs whitespace-pre-wrap text-gray-700">
-                        {`--- ANAMNÈSE BRUTE ---\n${profile.formData.anamnese}\n\n--- RÉSULTATS ---\n${profile.formData.resultats_manuels}\n\n--- NOTES PASSATION ---\n${profile.formData.notes_passation}`}
+                        {`--- ANAMNÈSE BRUTE ---\n${profile.formData.anamnese}\n\n--- RÉSULTATS ---\n${profile.formData.resultats_manuels}\n\n--- NOTES D'ANALYSE ---\n${profile.formData.notes_analyse}`}
                       </pre>
                     </details>
 

@@ -40,7 +40,7 @@ export interface CRBO {
   anamnese: string
   test_utilise: string
   resultats: string
-  notes_passation?: string
+  notes_analyse?: string
   crbo_genere: string
   document_url?: string
   created_at: string
@@ -76,7 +76,7 @@ export interface CRBOFormData {
   test_utilise: string[]
   resultats_pdf?: File
   resultats_manuels: string
-  notes_passation: string
+  notes_analyse: string
 
   // Étape 5 — state of the art
   /** Observations du clinicien sur le comportement du patient pendant la séance. */

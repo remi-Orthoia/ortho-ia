@@ -34,6 +34,7 @@ import type { CRBOStructure, CRBOEpreuve, CRBODomain, ExtractedCRBO, Synthesized
 import type { CRBOFormData } from '@/lib/types'
 import { drawHappyNeuronChart, type ChartGroup } from '@/lib/chart'
 import { downloadCRBOWord, SEUILS, getPercentileColor } from '@/lib/word-export'
+import MicButton from '@/components/MicButton'
 
 interface Handoff {
   formData: CRBOFormData
@@ -269,7 +270,7 @@ export default function ResultatsPage() {
           anamnese: fd.anamnese,
           test_utilise: Array.isArray(fd.test_utilise) ? fd.test_utilise.join(', ') : (fd.test_utilise || ''),
           resultats: fd.resultats_manuels,
-          notes_passation: fd.notes_passation,
+          notes_analyse: fd.notes_analyse,
           structure_json: finalStructure,
           comportement_seance: fd.comportement_seance || null,
           duree_seance_minutes: fd.duree_seance_minutes || null,
@@ -375,11 +376,18 @@ export default function ResultatsPage() {
 
       {/* Anamnèse éditable */}
       <section className="card-modern p-5 space-y-3">
-        <div>
-          <h2 className="font-bold text-primary-700 dark:text-primary-400">Anamnèse reformulée</h2>
-          <p className="text-xs text-gray-500 dark:text-gray-400 mt-0.5">
-            Texte généré par l&apos;IA depuis vos notes brutes. Vous pouvez l&apos;éditer librement avant la génération finale.
-          </p>
+        <div className="flex items-start justify-between gap-3">
+          <div>
+            <h2 className="font-bold text-primary-700 dark:text-primary-400">Anamnèse reformulée</h2>
+            <p className="text-xs text-gray-500 dark:text-gray-400 mt-0.5">
+              Texte généré par l&apos;IA depuis vos notes brutes. Vous pouvez l&apos;éditer librement avant la génération finale.
+            </p>
+          </div>
+          <MicButton
+            value={anamneseEdit}
+            onChange={setAnamneseEdit}
+            onError={(msg) => setError(msg)}
+          />
         </div>
         <textarea
           value={anamneseEdit}
@@ -391,11 +399,18 @@ export default function ResultatsPage() {
 
       {/* Motif reformulé éditable */}
       <section className="card-modern p-5 space-y-3">
-        <div>
-          <h2 className="font-bold text-primary-700 dark:text-primary-400">Motif de consultation reformulé</h2>
-          <p className="text-xs text-gray-500 dark:text-gray-400 mt-0.5">
-            1-2 phrases pro à partir des notes brutes. Éditable.
-          </p>
+        <div className="flex items-start justify-between gap-3">
+          <div>
+            <h2 className="font-bold text-primary-700 dark:text-primary-400">Motif de consultation reformulé</h2>
+            <p className="text-xs text-gray-500 dark:text-gray-400 mt-0.5">
+              1-2 phrases pro à partir des notes brutes. Éditable.
+            </p>
+          </div>
+          <MicButton
+            value={motifEdit}
+            onChange={setMotifEdit}
+            onError={(msg) => setError(msg)}
+          />
         </div>
         <textarea
           value={motifEdit}
@@ -446,11 +461,18 @@ export default function ResultatsPage() {
             </h3>
             <DomainTable domain={d} />
             <div className="pt-2 space-y-2">
-              <label className="flex items-center gap-1.5 text-sm font-medium text-gray-700 dark:text-gray-300">
-                <MessageSquare size={14} className="text-primary-600" />
-                Commentaires qualitatifs de l&apos;orthophoniste
-                <span className="text-xs font-normal text-gray-400">— optionnel</span>
-              </label>
+              <div className="flex items-center justify-between">
+                <label className="flex items-center gap-1.5 text-sm font-medium text-gray-700 dark:text-gray-300">
+                  <MessageSquare size={14} className="text-primary-600" />
+                  Commentaires qualitatifs de l&apos;orthophoniste
+                  <span className="text-xs font-normal text-gray-400">— optionnel</span>
+                </label>
+                <MicButton
+                  value={orthoComments[d.nom] || ''}
+                  onChange={(v) => handleCommentChange(d.nom, v)}
+                  onError={(msg) => setError(msg)}
+                />
+              </div>
               <textarea
                 value={orthoComments[d.nom] || ''}
                 onChange={(e) => handleCommentChange(d.nom, e.target.value)}
