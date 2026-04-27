@@ -20,7 +20,7 @@ import {
   Loader2
 } from 'lucide-react'
 
-type CRBOStatus = 'a_rediger' | 'en_cours' | 'a_relire' | 'termine'
+type CRBOStatus = 'a_rediger' | 'a_relire' | 'termine'
 
 interface CRBO {
   id: string
@@ -54,31 +54,24 @@ interface KanbanColumn {
 }
 
 const columns: KanbanColumn[] = [
-  { 
-    id: 'a_rediger', 
-    title: 'À rédiger', 
-    icon: <FileText size={18} />, 
+  {
+    id: 'a_rediger',
+    title: 'À rédiger',
+    icon: <FileText size={18} />,
     color: 'text-blue-600',
     bgColor: 'bg-blue-50 border-blue-200'
   },
-  { 
-    id: 'en_cours', 
-    title: 'En cours', 
-    icon: <Clock size={18} />, 
-    color: 'text-orange-600',
-    bgColor: 'bg-orange-50 border-orange-200'
-  },
-  { 
-    id: 'a_relire', 
-    title: 'À relire', 
-    icon: <Eye size={18} />, 
+  {
+    id: 'a_relire',
+    title: 'À relire',
+    icon: <Eye size={18} />,
     color: 'text-purple-600',
     bgColor: 'bg-purple-50 border-purple-200'
   },
-  { 
-    id: 'termine', 
-    title: 'Terminés', 
-    icon: <CheckCircle size={18} />, 
+  {
+    id: 'termine',
+    title: 'Terminés',
+    icon: <CheckCircle size={18} />,
     color: 'text-green-600',
     bgColor: 'bg-green-50 border-green-200'
   },
@@ -149,10 +142,13 @@ export default function DashboardPage() {
         for (const p of precData ?? []) precDates.set(p.id, p.bilan_date)
       }
 
-      // Ajouter statut par défaut + résolution date précédente
+      // Ajouter statut par défaut + résolution date précédente.
+      // Les CRBO encore en statut 'en_cours' (legacy avant fusion des colonnes
+      // kanban) sont remappés vers 'a_rediger' côté client par sécurité, au cas
+      // où la migration SQL n'aurait pas encore été appliquée.
       const crbosWithStatus = crbosData.map(crbo => ({
         ...crbo,
-        statut: crbo.statut || 'termine',
+        statut: crbo.statut === 'en_cours' ? 'a_rediger' : (crbo.statut || 'termine'),
         bilan_precedent_date: crbo.bilan_precedent_id ? precDates.get(crbo.bilan_precedent_id) ?? null : null,
       }))
       setCrbos(crbosWithStatus)

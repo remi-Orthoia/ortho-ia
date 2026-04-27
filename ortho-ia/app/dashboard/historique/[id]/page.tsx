@@ -50,7 +50,9 @@ interface CRBO {
 
 const statusConfig = {
   a_rediger: { label: 'À rédiger', color: 'bg-blue-100 text-blue-700', icon: FileText },
-  en_cours: { label: 'En cours', color: 'bg-orange-100 text-orange-700', icon: Clock },
+  // 'en_cours' (legacy) remappé en a_rediger pour les CRBO antérieurs à la fusion
+  // des colonnes kanban — la clé reste pour compat lookup, mêmes styles que a_rediger.
+  en_cours: { label: 'À rédiger', color: 'bg-blue-100 text-blue-700', icon: FileText },
   a_relire: { label: 'À relire', color: 'bg-purple-100 text-purple-700', icon: Eye },
   termine: { label: 'Terminé', color: 'bg-green-100 text-green-700', icon: CheckCircle },
 }
@@ -278,7 +280,6 @@ export default function CRBODetailPage() {
             className={`px-2 py-1 rounded-full text-sm font-medium ${status.color} border-0 cursor-pointer`}
           >
             <option value="a_rediger">À rédiger</option>
-            <option value="en_cours">En cours</option>
             <option value="a_relire">À relire</option>
             <option value="termine">Terminé</option>
           </select>
