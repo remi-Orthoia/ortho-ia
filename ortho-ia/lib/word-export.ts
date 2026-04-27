@@ -167,15 +167,22 @@ export async function generateCRBOWord(payload: WordExportPayload): Promise<Blob
     height = 480,
   ) => happyNeuronChartToPng(groups, title, width, height)
 
-  const imageParagraph = (img: { data: ArrayBuffer; width: number; height: number }) =>
-    new Paragraph({
+  const imageParagraph = (img: { data: ArrayBuffer; width: number; height: number }) => {
+    // Word/docx exige des dimensions ENTIÈRES dans `transformation` (pixels →
+    // EMU en interne). Une division par 1.6 sur une hauteur dynamique donne
+    // des floats (ex: 530/1.6 = 331.25), ce qui produit du XML mal formé et
+    // le tristement célèbre dialogue "Word a trouvé du contenu illisible".
+    const w = Math.round(img.width / 1.6)
+    const h = Math.round(img.height / 1.6)
+    return new Paragraph({
       alignment: AlignmentType.CENTER,
       spacing: { before: 200, after: 200 },
       children: [new ImageRun({
         data: img.data,
-        transformation: { width: img.width / 1.6, height: img.height / 1.6 },
+        transformation: { width: w, height: h },
       } as any)],
     })
+  }
 
   const calculateAge = () => {
     if (!formData.patient_ddn) return ''
