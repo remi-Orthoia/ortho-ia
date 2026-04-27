@@ -206,11 +206,57 @@ export default function ResultatsPage() {
       }
 
       const fd = handoff.formData
+
+      // Bug fix : auto-création/réconciliation patient. Si l'ortho a saisi le
+      // patient à la main (sans le sélectionner depuis le carnet), on cherche
+      // un patient existant correspondant à user_id + prénom + nom + DDN, et
+      // on le crée s'il n'existe pas. Le CRBO est ensuite lié à ce patient_id.
+      let patientId = handoff.selectedPatientId || null
+      if (!patientId && fd.patient_prenom?.trim() && fd.patient_nom?.trim()) {
+        const prenom = fd.patient_prenom.trim()
+        const nom = fd.patient_nom.trim()
+        const ddn = fd.patient_ddn || null
+        try {
+          let findQuery = supabase
+            .from('patients')
+            .select('id')
+            .eq('user_id', user.id)
+            .eq('prenom', prenom)
+            .eq('nom', nom)
+          findQuery = ddn ? findQuery.eq('date_naissance', ddn) : findQuery.is('date_naissance', null)
+          const { data: existing } = await findQuery.maybeSingle()
+          if (existing?.id) {
+            patientId = existing.id
+          } else {
+            const { data: created, error: createErr } = await supabase
+              .from('patients')
+              .insert({
+                user_id: user.id,
+                prenom,
+                nom,
+                date_naissance: ddn,
+                classe: fd.patient_classe || null,
+                medecin_nom: fd.medecin_nom || null,
+                medecin_tel: fd.medecin_tel || null,
+              })
+              .select('id')
+              .single()
+            if (createErr) {
+              console.warn('Patient non créé (best-effort):', createErr)
+            } else if (created?.id) {
+              patientId = created.id
+            }
+          }
+        } catch (e) {
+          console.warn('Find/create patient failed:', e)
+        }
+      }
+
       const { error: insertError } = await supabase
         .from('crbos')
         .insert({
           user_id: user.id,
-          patient_id: handoff.selectedPatientId || null,
+          patient_id: patientId,
           patient_prenom: fd.patient_prenom,
           patient_nom: fd.patient_nom,
           patient_ddn: fd.patient_ddn,
@@ -229,6 +275,9 @@ export default function ResultatsPage() {
           duree_seance_minutes: fd.duree_seance_minutes || null,
           severite_globale: finalStructure.severite_globale ?? null,
           bilan_precedent_id: fd.bilan_precedent_id || null,
+          // Bug fix kanban : statut "à relire" après génération réussie pour que
+          // la carte aille directement dans la bonne colonne du kanban.
+          statut: 'a_relire',
         })
         .select('id')
         .single()
