@@ -166,6 +166,54 @@ async function main() {
   if (solidShd.length > 0) errors.push(`${solidShd.length} shading en SOLID au lieu de CLEAR`)
   console.log(`[test-docx] ${shdMatches.length} shadings (tous en clear : ${solidShd.length === 0})`)
 
+  // ===== Aucun <w:tbl> imbriqué dans un autre <w:tbl> =====
+  // (Word 2016 et antérieur gèrent mal les tables imbriquées.)
+  for (const m of tableBlocks) {
+    if (/<w:tbl>/.test(m[1])) errors.push('Table imbriquée détectée (un <w:tbl> est dans un autre <w:tbl>)')
+  }
+  // ===== Chaque <w:tc> contient au moins un <w:p> =====
+  const tcBlocks = [...docXml.matchAll(/<w:tc>([\s\S]*?)<\/w:tc>/g)]
+  const tcWithoutP = tcBlocks.filter((m) => !/<w:p[\s>]/.test(m[1]))
+  if (tcWithoutP.length > 0) errors.push(`${tcWithoutP.length} TableCell sans <w:p>`)
+  console.log(`[test-docx] ${tcBlocks.length} TableCells (toutes contiennent un <w:p> : ${tcWithoutP.length === 0})`)
+  // ===== Tous les <w:br w:type="page"/> sont dans un <w:p> =====
+  // Heuristique : un page-break solitaire crée un <w:br> top-level au lieu de
+  // <w:p><w:r><w:br/></w:r></w:p>. On compte les page-breaks et on assert que
+  // chacun a un <w:r> juste avant lui (= dans un run, donc dans un paragraphe).
+  const pageBreakRuns = [...docXml.matchAll(/<w:br\s+w:type="page"\s*\/>/g)]
+  const orphanBreaks = pageBreakRuns.filter((m) => {
+    const before = docXml.slice(0, m.index)
+    const lastRun = before.lastIndexOf('<w:r')
+    const lastP = before.lastIndexOf('<w:p>')
+    const lastPClose = before.lastIndexOf('</w:p>')
+    // Un page-break valide est dans un run, et le run est dans un paragraphe ouvert.
+    return lastRun === -1 || lastP < lastPClose
+  })
+  if (orphanBreaks.length > 0) errors.push(`${orphanBreaks.length} PageBreak hors d'un <w:p>`)
+
+  // ===== Section properties : sectPr présent et bien formé =====
+  const sectPr = docXml.match(/<w:sectPr[^>]*>([\s\S]*?)<\/w:sectPr>/)
+  if (!sectPr) errors.push('<w:sectPr> manquant — Word risque de refuser l\'ouverture')
+  else {
+    if (!/<w:pgSz/.test(sectPr[1])) errors.push('<w:pgSz> manquant dans sectPr')
+    if (!/<w:pgMar/.test(sectPr[1])) errors.push('<w:pgMar> manquant dans sectPr')
+    console.log('[test-docx] sectPr OK (pgSz + pgMar présents)')
+  }
+
+  // ===== Borders : chaque <w:tcBorders> child a sz, val ET color =====
+  const borderBlocks = [...docXml.matchAll(/<w:(top|bottom|left|right)\s+([^/]*?)\/>/g)]
+  // Le filtrage par contexte tcBorders est complexe ; on vérifie globalement
+  // que tout border-like a au minimum w:val + w:sz + w:color quand il est présent.
+  const incompleteBorders = borderBlocks.filter((m) => {
+    const attrs = m[2]
+    // Ne valide que les borders structurels (pas les marges p:top/right/etc. qui n'ont pas w:val).
+    if (!/w:val=/.test(attrs)) return false
+    return !/w:sz=/.test(attrs) || !/w:color=/.test(attrs)
+  })
+  if (incompleteBorders.length > 0) {
+    errors.push(`${incompleteBorders.length} border(s) incomplet(s) (manque sz ou color)`)
+  }
+
   // Tous les <w:br> de type page doivent être dans un <w:p>
   const pageBreakOutsideP = docXml.match(/(?<!<w:p[^>]*>[^<]*<w:r[^>]*>[^<]*)<w:br w:type="page"/)
   // Heuristique : on compte les <w:br w:type="page"> et on s'assure qu'ils sont tous précédés d'un <w:p

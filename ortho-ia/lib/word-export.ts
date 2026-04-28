@@ -113,6 +113,7 @@ export async function generateCRBOWord(payload: WordExportPayload): Promise<Blob
   const {
     Document, Packer, Paragraph, TextRun, Table, TableRow, TableCell,
     WidthType, BorderStyle, AlignmentType, PageBreak, ShadingType, ImageRun,
+    PageOrientation,
   } = await import('docx')
 
   const FONT = 'Calibri'
@@ -231,7 +232,7 @@ export async function generateCRBOWord(payload: WordExportPayload): Promise<Blob
     new Paragraph({ children: [new TextRun({ text: `${formData.ortho_cp || ''} ${formData.ortho_ville || ''}`.trim(), size: FONT_SIZE_NORMAL, font: FONT })] }),
     new Paragraph({ children: [new TextRun({ text: formData.ortho_tel || '', size: FONT_SIZE_NORMAL, font: FONT })] }),
     new Paragraph({ children: [new TextRun({ text: formData.ortho_email || '', size: FONT_SIZE_NORMAL, font: FONT })] }),
-    new Paragraph({ children: [] }),
+    new Paragraph({ children: [new TextRun({ text: '' })] }),
   )
 
   // ===== TITRE =====
@@ -269,7 +270,7 @@ export async function generateCRBOWord(payload: WordExportPayload): Promise<Blob
         ],
       })
     })(),
-    new Paragraph({ children: [] }),
+    new Paragraph({ children: [new TextRun({ text: '' })] }),
   )
 
   // ===== MÉDECIN =====
@@ -289,7 +290,7 @@ export async function generateCRBOWord(payload: WordExportPayload): Promise<Blob
           ]})],
         })
       })(),
-      new Paragraph({ children: [] }),
+      new Paragraph({ children: [new TextRun({ text: '' })] }),
     )
   }
 
@@ -493,7 +494,7 @@ export async function generateCRBOWord(payload: WordExportPayload): Promise<Blob
         columnWidths: compCols,
         rows: compRows,
       }),
-      new Paragraph({ children: [] }),
+      new Paragraph({ children: [new TextRun({ text: '' })] }),
     )
   }
 
@@ -504,15 +505,29 @@ export async function generateCRBOWord(payload: WordExportPayload): Promise<Blob
       bars: d.epreuves.map((e) => ({ label: e.nom, value: e.percentile_value })),
     })).filter((g) => g.bars.length > 0)
     if (groups.length > 0) {
-      const recapChart = await generateGroupedBarChart(
-        groups,
-        'Profil global — percentiles par épreuve',
-        1000, 480,
-      )
-      children.push(
-        new Paragraph({ children: [new TextRun({ text: 'Synthèse des résultats', size: FONT_SIZE_NORMAL, font: FONT, color: COLOR_GREEN, bold: true })], spacing: { before: 200 } }),
-        imageParagraph(recapChart),
-      )
+      // Si la conversion canvas→PNG échoue (env serveur, navigateur exotique),
+      // on retombe sur un paragraphe texte plutôt que de produire un ImageRun
+      // invalide qui ferait échouer l'ouverture Word entière.
+      try {
+        const recapChart = await generateGroupedBarChart(
+          groups,
+          'Profil global — percentiles par épreuve',
+          1000, 480,
+        )
+        children.push(
+          new Paragraph({ children: [new TextRun({ text: 'Synthèse des résultats', size: FONT_SIZE_NORMAL, font: FONT, color: COLOR_GREEN, bold: true })], spacing: { before: 200 } }),
+          imageParagraph(recapChart),
+        )
+      } catch (err) {
+        console.error('[word-export] Échec génération graphique synthèse:', err)
+        children.push(
+          new Paragraph({ children: [new TextRun({ text: 'Synthèse des résultats', size: FONT_SIZE_NORMAL, font: FONT, color: COLOR_GREEN, bold: true })], spacing: { before: 200 } }),
+          new Paragraph({
+            children: [new TextRun({ text: '[Graphique non disponible — voir les tableaux détaillés ci-dessous]', italics: true, size: FONT_SIZE_NORMAL - 2, font: FONT, color: '888888' })],
+            spacing: { after: 200 },
+          }),
+        )
+      }
     }
   }
 
@@ -545,7 +560,7 @@ export async function generateCRBOWord(payload: WordExportPayload): Promise<Blob
         })],
       })
     })(),
-    new Paragraph({ children: [] }),
+    new Paragraph({ children: [new TextRun({ text: '' })] }),
   )
 
   if (hasStructure) {
@@ -582,7 +597,7 @@ export async function generateCRBOWord(payload: WordExportPayload): Promise<Blob
           columnWidths: cols,
           rows: tableRows,
         }),
-        new Paragraph({ children: [] }),
+        new Paragraph({ children: [new TextRun({ text: '' })] }),
       )
 
       if (domain.commentaire && domain.commentaire.trim()) {
@@ -634,7 +649,7 @@ export async function generateCRBOWord(payload: WordExportPayload): Promise<Blob
           columnWidths: cols,
           rows: tableRows,
         }),
-        new Paragraph({ children: [] }),
+        new Paragraph({ children: [new TextRun({ text: '' })] }),
       )
     }
   }
@@ -671,7 +686,7 @@ export async function generateCRBOWord(payload: WordExportPayload): Promise<Blob
         const t = line.trim()
         if (!t) {
           if (!lastWasEmpty) {
-            children.push(new Paragraph({ children: [], spacing: { after: 60 } }))
+            children.push(new Paragraph({ children: [new TextRun({ text: '' })], spacing: { after: 60 } }))
             lastWasEmpty = true
           }
           return
@@ -798,7 +813,7 @@ export async function generateCRBOWord(payload: WordExportPayload): Promise<Blob
   } else {
     fallbackCRBO.split('\n').forEach((line) => {
       const t = line.trim()
-      if (!t) { children.push(new Paragraph({ children: [] })); return }
+      if (!t) { children.push(new Paragraph({ children: [new TextRun({ text: '' })] })); return }
       const isHeader = /^[A-ZÉÈÀÊÂÎÔÛÇ\s]+:?$/.test(t) && t.length < 50
       children.push(new Paragraph({
         children: [new TextRun({
@@ -815,7 +830,7 @@ export async function generateCRBOWord(payload: WordExportPayload): Promise<Blob
 
   // ===== SIGNATURE =====
   children.push(
-    new Paragraph({ children: [] }),
+    new Paragraph({ children: [new TextRun({ text: '' })] }),
     new Paragraph({
       alignment: AlignmentType.RIGHT,
       children: [new TextRun({ text: `Fait à ${formData.ortho_ville || ''}, le ${bilanDateFormatted}`, size: FONT_SIZE_NORMAL, font: FONT })],
@@ -834,7 +849,7 @@ export async function generateCRBOWord(payload: WordExportPayload): Promise<Blob
   // ===== CONCLUSION (mention légale, petite italique, en bas) =====
   if (hasStructure && structure!.conclusion?.trim()) {
     children.push(
-      new Paragraph({ children: [] }),
+      new Paragraph({ children: [new TextRun({ text: '' })] }),
       new Paragraph({
         alignment: AlignmentType.CENTER,
         spacing: { before: 600 },
@@ -851,7 +866,15 @@ export async function generateCRBOWord(payload: WordExportPayload): Promise<Blob
 
   const doc = new Document({
     sections: [{
-      properties: { page: { margin: { top: 720, right: 720, bottom: 720, left: 720 } } },
+      properties: {
+        page: {
+          // A4 explicite : 11906 × 16838 DXA. Sans size, certaines versions Word
+          // interprètent la page comme Letter et déclenchent un avertissement
+          // "le document a été enregistré dans un format différent".
+          size: { width: 11906, height: 16838, orientation: PageOrientation.PORTRAIT },
+          margin: { top: 720, right: 720, bottom: 720, left: 720 },
+        },
+      },
       children,
     }],
   })
