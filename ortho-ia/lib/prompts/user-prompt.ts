@@ -9,10 +9,22 @@ function formatDomainsForSynthesize(domains: CRBODomain[], orthoComments?: Recor
     for (const e of d.epreuves) {
       lines.push(`- ${e.nom} : score ${e.score} / É-T ${e.et ?? '—'} / ${e.percentile} (P${e.percentile_value}) → ${e.interpretation}`)
     }
-    const orthoNote = (orthoComments?.[d.nom] || d.commentaire || '').trim()
-    if (orthoNote) {
+    // Le contenu de la textarea ortho contient potentiellement :
+    //   (a) la suggestion IA initiale (phase 1) validée telle quelle, OU
+    //   (b) la suggestion IA + des ajouts manuscrits de l'ortho (mélange), OU
+    //   (c) une note ortho seule (si l'ortho a tout réécrit), OU
+    //   (d) rien (textarea vide).
+    // Tu DOIS retourner pour ce domaine un commentaire FINAL professionnel dans
+    // `domain_commentaires`, en reformulant proprement le contenu ortho (jamais
+    // de notes brutes) et en respectant les règles cliniques absolues.
+    const orthoTextarea = (orthoComments?.[d.nom] ?? d.commentaire ?? '').trim()
+    if (orthoTextarea) {
       lines.push('')
-      lines.push(`💬 Commentaire qualitatif ortho : ${orthoNote}`)
+      lines.push(`📝 Contenu textarea ortho (à reformuler en commentaire pro pour ce domaine) :`)
+      lines.push(orthoTextarea)
+    } else {
+      lines.push('')
+      lines.push('📝 Textarea ortho vide pour ce domaine — génère un commentaire clinique court à partir des seuls scores.')
     }
     lines.push('')
   }

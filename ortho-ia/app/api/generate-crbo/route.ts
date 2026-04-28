@@ -467,12 +467,19 @@ export async function POST(request: NextRequest) {
         synthese_evolution: rawSynth.synthese_evolution ?? null,
       }
       const rehydrated = rehydrate(tempStruct, reverseMap)
+      // domain_commentaires : array de {nom, commentaire}, rehydraté séparément
+      // (chaque commentaire peut contenir des tokens patient anonymisés)
+      const domain_commentaires = rehydrate(
+        Array.isArray(rawSynth.domain_commentaires) ? rawSynth.domain_commentaires : [],
+        reverseMap,
+      )
       const result: SynthesizedCRBO = {
         diagnostic: rehydrated.diagnostic,
         recommandations: rehydrated.recommandations,
         conclusion: rehydrated.conclusion,
         comorbidites_detectees: rehydrated.comorbidites_detectees ?? [],
         pap_suggestions: rehydrated.pap_suggestions ?? [],
+        domain_commentaires,
         severite_globale: rehydrated.severite_globale ?? null,
         synthese_evolution: rehydrated.synthese_evolution ?? null,
       }

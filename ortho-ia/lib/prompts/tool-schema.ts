@@ -39,7 +39,7 @@ const EPREUVE_SCHEMA = {
 
 const DOMAIN_SCHEMA_EXTRACT = {
   type: 'object' as const,
-  required: ['nom', 'epreuves'],
+  required: ['nom', 'epreuves', 'commentaire'],
   properties: {
     nom: {
       type: 'string' as const,
@@ -49,6 +49,14 @@ const DOMAIN_SCHEMA_EXTRACT = {
       type: 'array' as const,
       items: EPREUVE_SCHEMA,
     },
+    commentaire: {
+      type: 'string' as const,
+      description:
+        "Commentaire clinique INITIAL pour ce domaine (3-4 lignes max, ≈ 40-70 mots) — il sera affiché à l'orthophoniste comme une suggestion qu'elle pourra valider, modifier ou compléter avec ses propres observations. " +
+        "Cette suggestion repose UNIQUEMENT sur les scores et l'interprétation des épreuves de ce domaine — elle décrit cliniquement la performance et, si elle est en zone de difficulté, les répercussions scolaires concrètes possibles. " +
+        "Respecter strictement les RÈGLES CLINIQUES ABSOLUES : aucun chiffre de percentile (P5, P25, P90...), aucun tiret en début de phrase, aucune mention de la rééducation / des séances / du suivi (ces éléments sont réservés aux recommandations finales). " +
+        "Si toutes les épreuves du domaine sont préservées, écrire une phrase courte type 'Les performances sont préservées sur l'ensemble du domaine.' Vide ('') autorisé uniquement si le domaine ne contient qu'une seule épreuve dans la moyenne haute / excellent.",
+    },
   },
 }
 
@@ -57,15 +65,15 @@ const DOMAIN_SCHEMA_EXTRACT = {
 // ============================================================================
 //
 // L'IA reçoit : formulaire complet (anamnèse brute, motif brut, résultats bruts).
-// L'IA renvoie : anamnèse rédigée, motif reformulé, domaines structurés (épreuves
-// uniquement, sans commentaire — celui-ci sera saisi par l'orthophoniste sur la
-// page de visualisation).
+// L'IA renvoie : anamnèse rédigée, motif reformulé, domaines structurés avec
+// pour chaque domaine un commentaire clinique INITIAL (3-4 lignes, suggestion
+// que l'ortho validera/modifiera/complètera dans la textarea correspondante).
 // AUCUN diagnostic ni recommandation à ce stade.
 
 export const EXTRACT_CRBO_TOOL: Anthropic.Tool = {
   name: 'extract_crbo_data',
   description:
-    "Extrait et structure les données du bilan : reformule l'anamnèse et le motif en prose professionnelle, puis classe les résultats des tests par domaine et épreuve avec leur percentile et interprétation. NE PRODUIT PAS de diagnostic ni de recommandations à ce stade — ces éléments seront générés en phase 2 (synthèse) après validation par l'orthophoniste.",
+    "Extrait et structure les données du bilan : reformule l'anamnèse et le motif en prose professionnelle, classe les résultats par domaine, et propose pour chaque domaine un commentaire clinique INITIAL (3-4 lignes) qui pré-remplira la textarea d'observations qualitatives de l'orthophoniste. NE PRODUIT PAS de diagnostic ni de recommandations à ce stade — ces éléments seront générés en phase 2 (synthèse) après validation par l'orthophoniste.",
   input_schema: {
     type: 'object',
     required: ['anamnese_redigee', 'motif_reformule', 'domains'],
@@ -103,11 +111,26 @@ export const EXTRACT_CRBO_TOOL: Anthropic.Tool = {
 export const SYNTHESIZE_TOOL: Anthropic.Tool = {
   name: 'synthesize_crbo',
   description:
-    "Génère la synthèse narrative du CRBO : diagnostic orthophonique avec terminologie DSM-5/CIM-10, recommandations de prise en charge, comorbidités suspectées, suggestions d'aménagements scolaires (PAP), et le cas échéant la synthèse d'évolution pour un bilan de renouvellement. Les scores et l'anamnèse sont déjà structurés en entrée : ne PAS les régénérer.",
+    "Génère la synthèse narrative du CRBO : diagnostic orthophonique avec terminologie DSM-5/CIM-10, recommandations de prise en charge, comorbidités suspectées, suggestions d'aménagements scolaires (PAP), et le cas échéant la synthèse d'évolution pour un bilan de renouvellement. Reformule également les commentaires de domaine édités par l'orthophoniste en prose professionnelle finale. Les scores et l'anamnèse sont déjà structurés en entrée : ne PAS les régénérer.",
   input_schema: {
     type: 'object',
-    required: ['diagnostic', 'recommandations', 'conclusion', 'comorbidites_detectees', 'pap_suggestions'],
+    required: ['diagnostic', 'recommandations', 'conclusion', 'comorbidites_detectees', 'pap_suggestions', 'domain_commentaires'],
     properties: {
+      domain_commentaires: {
+        type: 'array',
+        description:
+          "Commentaire FINAL professionnel pour CHAQUE domaine du bilan, dans le MÊME ordre que les domaines fournis en entrée. Chaque entrée fusionne et reformule (1) la suggestion clinique IA initiale, (2) les notes qualitatives ajoutées par l'orthophoniste (fatigue, anxiété, distracteurs, observations sur la passation). " +
+          "Si l'ortho a ajouté des notes en vrac, les intégrer en prose fluide professionnelle (3ème personne, phrases complètes, pas de bullet, pas de tiret en début de phrase). Si elle a juste validé la suggestion IA sans rien ajouter, retourner le texte IA tel quel ou très peu modifié. Si la textarea est vide, générer un commentaire clinique court à partir des seuls scores du domaine. " +
+          "Respecte les RÈGLES CLINIQUES ABSOLUES : pas de chiffre de percentile, pas de mention de la rééducation, pas de tiret en début de phrase. 3-4 lignes max par domaine.",
+        items: {
+          type: 'object',
+          required: ['nom', 'commentaire'],
+          properties: {
+            nom: { type: 'string', description: 'Nom EXACT du domaine tel que reçu en entrée — sert de clé d\'appariement.' },
+            commentaire: { type: 'string', description: 'Commentaire clinique reformulé professionnellement pour ce domaine.' },
+          },
+        },
+      },
       diagnostic: {
         type: 'string',
         description:
@@ -254,6 +277,8 @@ export interface SynthesizedCRBO {
   conclusion: string
   comorbidites_detectees: string[]
   pap_suggestions: string[]
+  /** Commentaires de domaine reformulés professionnellement (suggestion IA + notes ortho fusionnées). */
+  domain_commentaires: { nom: string; commentaire: string }[]
   severite_globale?: SeveriteGlobale
   synthese_evolution?: SyntheseEvolution | null
 }

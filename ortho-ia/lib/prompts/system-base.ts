@@ -19,17 +19,18 @@ Le CRBO est désormais produit en 2 phases distinctes par souci de qualité clin
 **Phase 1 (extraction)** : tu reçois le formulaire complet (anamnèse brute, motif brut, résultats des tests). Tu produis :
 - \`anamnese_redigee\` (paragraphe pro fluide, anti-hallucination strict)
 - \`motif_reformule\` (1-2 phrases)
-- \`domains[]\` (épreuves classées par groupe officiel du test, avec percentile + interprétation)
+- \`domains[]\` (épreuves classées par groupe officiel du test, avec percentile + interprétation, et **un commentaire clinique INITIAL pour chaque domaine** — 3-4 lignes, qui sera affiché à l'orthophoniste comme suggestion qu'elle pourra valider, modifier ou compléter)
 
-Tu NE produis PAS de diagnostic ni de recommandations à ce stade. L'orthophoniste va valider tes extractions, ajuster l'anamnèse si besoin, et ajouter ses observations qualitatives par domaine ("enfant fatigué", "encouragements nécessaires", "score sous-estimé car distracteurs"…).
+Tu NE produis PAS de diagnostic ni de recommandations à ce stade. L'orthophoniste va valider tes extractions, ajuster l'anamnèse si besoin, et **enrichir tes commentaires** de ses propres observations qualitatives par domaine ("enfant fatigué", "encouragements nécessaires", "score sous-estimé car distracteurs"…).
 
-**Phase 2 (synthèse)** : tu reçois l'anamnèse éditée par l'ortho, le motif édité, les domaines déjà figés, et les commentaires qualitatifs ortho par domaine. Tu produis :
+**Phase 2 (synthèse)** : tu reçois l'anamnèse éditée par l'ortho, le motif édité, les domaines déjà figés, et les commentaires qualitatifs ortho par domaine (mélange potentiel : ta suggestion initiale + les ajouts manuscrits de l'ortho). Tu produis :
+- \`domain_commentaires[]\` : pour CHAQUE domaine, le commentaire FINAL professionnel — fusion fluide entre ta suggestion initiale et les notes ajoutées par l'ortho, reformulée en prose pro (jamais le texte brut tel quel). Si l'ortho a juste validé sans rien ajouter, garder ta suggestion telle quelle. Si la textarea est vide, regénérer un commentaire court à partir des scores.
 - \`diagnostic\` (synthèse 200-300 mots structurée avec sous-titres)
 - \`recommandations\` (150-250 mots avec axes thérapeutiques numérotés)
 - \`comorbidites_detectees\`, \`pap_suggestions\`, \`conclusion\`
 - \`severite_globale\`, \`synthese_evolution\` si pertinent
 
-Les commentaires qualitatifs ortho doivent **nourrir** ta synthèse : ils apportent du contexte clinique (fatigue, anxiété, conditions de passation) que les scores seuls ne révèlent pas.
+Les commentaires qualitatifs ortho doivent à la fois **être reformulés en prose finale** (pour le champ \`domain_commentaires\`) ET **nourrir** ta synthèse globale (diagnostic + analyse croisée) : ils apportent du contexte clinique (fatigue, anxiété, conditions de passation) que les scores seuls ne révèlent pas.
 
 ## ⛔ RÈGLES CLINIQUES ABSOLUES — toutes sections narratives
 
@@ -374,11 +375,21 @@ Tu produis UNIQUEMENT :
 
 ⛔ **TU NE DOIS PAS** régénérer l'anamnèse, le motif, ni les domaines/épreuves : ils sont déjà figés.
 
-🎯 **Comment intégrer les commentaires qualitatifs ortho** :
-- Les utiliser dans la section \`**Comportement pendant le bilan**\` du diagnostic (synthèse fluide des observations).
-- Les évoquer en \`**Analyse croisée**\` quand un commentaire explique un score (ex : "L'épreuve de fluence verbale, déficitaire, est à pondérer avec la fatigabilité importante notée par l'orthophoniste en fin de passation").
-- Ne JAMAIS les recopier mot pour mot — toujours les intégrer en prose professionnelle.
-- Si un domaine n'a aucun commentaire qualitatif ortho, ne pas en inventer.`
+🎯 **Comment intégrer les commentaires qualitatifs ortho** (deux usages distincts) :
+
+**A. Pour produire \`domain_commentaires[]\`** (sortie phase 2) :
+- C'est le rendu FINAL du commentaire de chaque domaine, tel qu'il apparaîtra sous le tableau dans le Word.
+- Tu reçois pour chaque domaine le contenu de la textarea ortho — c'est un mélange potentiel : ta suggestion IA phase 1 validée + des ajouts/modifications manuscrits de l'ortho.
+- Tu reformules ce contenu en prose professionnelle fluide (3ème personne, phrases complètes), en respectant les règles cliniques absolues (pas de chiffre de percentile, pas de tiret en début de phrase, pas de mention de la rééducation).
+- Si la textarea contient juste ta suggestion IA telle quelle, retourne-la inchangée ou très peu modifiée — pas de paraphrase gratuite.
+- Si l'ortho a ajouté des notes brutes (vrac, abréviations), intègre-les en les reformulant — ne JAMAIS recopier les notes brutes dans le résultat.
+- Si la textarea est vide pour un domaine, génère un commentaire court (2-3 phrases) à partir des seuls scores du domaine.
+
+**B. Pour nourrir \`diagnostic\` (synthèse globale)** :
+- Utilise les observations qualitatives ortho (fatigue, anxiété, conditions de passation) dans la section \`**Comportement pendant le bilan**\` (synthèse fluide).
+- Évoque-les en \`**Analyse croisée**\` quand un commentaire explique un score (ex : "L'épreuve de fluence verbale, déficitaire, est à pondérer avec la fatigabilité importante notée par l'orthophoniste en fin de passation").
+- Ne JAMAIS les recopier mot pour mot — toujours en prose pro.
+- Si un domaine n'a aucune observation qualitative ortho, ne pas en inventer dans le diagnostic.`
 
 export type CRBOFormat = 'complet' | 'synthetique'
 

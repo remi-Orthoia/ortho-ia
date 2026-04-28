@@ -134,6 +134,14 @@ export default function ResultatsPage() {
       setHandoff(data)
       setAnamneseEdit(data.extracted.anamnese_redigee || '')
       setMotifEdit(data.extracted.motif_reformule || '')
+      // Pré-remplit les textareas avec la suggestion IA initiale produite en
+      // phase 1. L'ortho peut la valider, modifier ou compléter — la phase 2
+      // reformulera le contenu final en prose pro.
+      const initialComments: Record<string, string> = {}
+      for (const d of data.extracted.domains) {
+        if (d.commentaire?.trim()) initialComments[d.nom] = d.commentaire.trim()
+      }
+      setOrthoComments(initialComments)
     } catch (e) {
       console.error('Handoff illisible:', e)
       router.push('/dashboard/nouveau-crbo')
@@ -182,12 +190,22 @@ export default function ResultatsPage() {
       const synthesized = data.synthesized as SynthesizedCRBO
 
       // ============ Construction de la CRBOStructure finale ============
-      // Les commentaires qualitatifs ortho remplacent le champ `commentaire`
-      // du domaine (legacy), pour que le Word affiche directement la note ortho
-      // sous chaque tableau.
+      // Le commentaire final de chaque domaine est la version reformulée par
+      // l'IA en phase 2 (synthesized.domain_commentaires) — fusion fluide entre
+      // la suggestion IA phase 1 et les ajouts/notes brutes de l'ortho. On
+      // retombe sur le contenu textarea brut (puis suggestion phase 1, puis vide)
+      // si l'IA n'a pas répondu pour un domaine.
+      const reformulatedByName = new Map<string, string>()
+      for (const dc of synthesized.domain_commentaires ?? []) {
+        if (dc?.nom && typeof dc.commentaire === 'string') {
+          reformulatedByName.set(dc.nom.trim(), dc.commentaire.trim())
+        }
+      }
       const domainsWithOrthoComments: CRBODomain[] = handoff.extracted.domains.map(d => ({
         ...d,
-        commentaire: (orthoComments[d.nom] || '').trim(),
+        commentaire:
+          reformulatedByName.get(d.nom.trim())
+          ?? (orthoComments[d.nom] || d.commentaire || '').trim(),
       }))
 
       const finalStructure: CRBOStructure = {
@@ -446,7 +464,7 @@ export default function ResultatsPage() {
         <div>
           <h2 className="text-lg font-bold text-gray-900 dark:text-gray-100">Détails par domaine</h2>
           <p className="text-sm text-gray-500 dark:text-gray-400 mt-1">
-            Saisissez vos observations qualitatives sous chaque tableau. Elles enrichiront la synthèse de notre IA (comportement, fatigue, anxiété, conditions de passation…).
+            Notre IA a déjà rédigé une suggestion clinique sous chaque tableau. Validez-la, modifiez-la ou complétez-la avec vos propres observations (fatigue, anxiété, conditions de passation…). Vos ajouts seront automatiquement reformulés en prose professionnelle.
           </p>
         </div>
 
@@ -469,8 +487,8 @@ export default function ResultatsPage() {
               <div className="flex items-center justify-between">
                 <label className="flex items-center gap-1.5 text-sm font-medium text-gray-700 dark:text-gray-300">
                   <MessageSquare size={14} className="text-primary-600" />
-                  Commentaires qualitatifs de l&apos;orthophoniste
-                  <span className="text-xs font-normal text-gray-400">— optionnel</span>
+                  Commentaire clinique du domaine
+                  <span className="text-xs font-normal text-gray-400">— pré-rempli par l&apos;IA, modifiable</span>
                 </label>
                 <MicButton
                   value={orthoComments[d.nom] || ''}
