@@ -133,6 +133,18 @@ export async function generateCRBOWord(payload: WordExportPayload): Promise<Blob
     return cols
   }
 
+  // Affichage centile uniformisé : on convertit Q1/Med/Q3 et toute autre forme
+  // en "Pxx" depuis la valeur numérique. Évite de se retrouver avec "Q1" dans
+  // un tableau et "P25" dans un autre — règle clinique Laurie.
+  const fmtCentile = (raw: string | undefined | null, value: number | undefined | null): string => {
+    if (typeof value === 'number' && !isNaN(value)) {
+      const v = Math.max(0, Math.min(100, Math.round(value)))
+      return `P${v}`
+    }
+    if (typeof raw === 'string' && /^P\d+$/i.test(raw.trim())) return raw.trim().toUpperCase()
+    return raw || '—'
+  }
+
   const { formData, structure, fallbackCRBO = '', previousStructure, previousBilanDate } = payload
   const hasStructure = !!structure && !!structure.domains && structure.domains.length > 0
   const hasPrevious = !!previousStructure && !!previousStructure.domains && previousStructure.domains.length > 0
@@ -450,8 +462,8 @@ export async function generateCRBOWord(payload: WordExportPayload): Promise<Blob
 
       for (const e of d.epreuves) {
         const prev = prevIndex.get(e.nom.toLowerCase().trim())
-        const prevLabel = prev ? prev.percentile : '—'
-        const curLabel = e.percentile
+        const prevLabel = prev ? fmtCentile(prev.percentile, prev.value) : '—'
+        const curLabel = fmtCentile(e.percentile, e.percentile_value)
         let arrow = '→'
         let arrowLabel = 'Stable'
         let arrowColor = '616161'
@@ -587,7 +599,7 @@ export async function generateCRBOWord(payload: WordExportPayload): Promise<Blob
           createCell(e.nom, { dxa: cols[0], shading: color }),
           createCell(e.score, { dxa: cols[1], alignment: AlignmentType.CENTER, shading: color }),
           createCell(e.et ?? '—', { dxa: cols[2], alignment: AlignmentType.CENTER, shading: color }),
-          createCell(e.percentile, { dxa: cols[3], alignment: AlignmentType.CENTER, shading: color }),
+          createCell(fmtCentile(e.percentile, e.percentile_value), { dxa: cols[3], alignment: AlignmentType.CENTER, shading: color }),
           createCell(seuilFor(e.percentile_value).label, { dxa: cols[4], alignment: AlignmentType.CENTER, shading: color }),
         ]}))
       })
@@ -632,9 +644,22 @@ export async function generateCRBOWord(payload: WordExportPayload): Promise<Blob
         const score = parts[1] || ''
         const etMatch = line.match(/É-T\s*:\s*([-\d.]+)/i) || line.match(/([-]\d+\.?\d*)/)
         const et = etMatch ? etMatch[1] : ''
-        const centileMatch = line.match(/P(\d+)/i) || line.match(/centile\s*:\s*(\d+)/i)
-        const centile = centileMatch ? `P${centileMatch[1]}` : ''
-        const pVal = centileMatch ? parseInt(centileMatch[1], 10) : 100
+        // Centile : on accepte "P25", "centile: 25", ou les quartiles Q1/Med/Q3
+        // qu'on reconvertit en P25/P50/P75 pour homogénéité d'affichage.
+        let centile = ''
+        let pVal = 100
+        const pMatch = line.match(/P(\d+)/i) || line.match(/centile\s*:\s*(\d+)/i)
+        if (pMatch) {
+          pVal = parseInt(pMatch[1], 10)
+          centile = `P${pVal}`
+        } else {
+          const qMatch = line.match(/\b(Q1|Med|Q2|Q3)\b/i)
+          if (qMatch) {
+            const q = qMatch[1].toUpperCase()
+            pVal = q === 'Q1' ? 25 : q === 'Q3' ? 75 : 50
+            centile = `P${pVal}`
+          }
+        }
         const color = getPercentileColor(pVal)
         tableRows.push(new TableRow({ children: [
           createCell(epreuve, { dxa: cols[0] }),
