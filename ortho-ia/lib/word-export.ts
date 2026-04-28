@@ -210,12 +210,15 @@ export async function generateCRBOWord(payload: WordExportPayload): Promise<Blob
   ) => happyNeuronChartToPng(groups, title, width, height)
 
   const imageParagraph = (img: { data: ArrayBuffer; width: number; height: number }) => {
-    // Word/docx exige des dimensions ENTIÈRES dans `transformation` (pixels →
-    // EMU en interne). Une division par 1.6 sur une hauteur dynamique donne
-    // des floats (ex: 530/1.6 = 331.25), ce qui produit du XML mal formé et
-    // le tristement célèbre dialogue "Word a trouvé du contenu illisible".
-    const w = Math.round(img.width / 1.6)
-    const h = Math.round(img.height / 1.6)
+    // Cible une largeur d'affichage Word constante (~620 px) pour rester dans
+    // les marges A4 quel que soit la taille du canvas source. Le ratio est
+    // préservé via la même division. Word/docx exige des entiers : on round.
+    // 620 px ≈ 16,4 cm — rentre confortablement dans la page A4 (16,4 cm utiles
+    // avec marges de 720 DXA = 1,27 cm de chaque côté).
+    const TARGET_WORD_PX = 620
+    const scale = img.width > 0 ? img.width / TARGET_WORD_PX : 1
+    const w = Math.round(img.width / scale)        // = TARGET_WORD_PX
+    const h = Math.round(img.height / scale)
     return new Paragraph({
       alignment: AlignmentType.CENTER,
       spacing: { before: 200, after: 200 },

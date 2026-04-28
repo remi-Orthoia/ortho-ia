@@ -32,7 +32,7 @@ import {
 import { createClient } from '@/lib/supabase'
 import type { CRBOStructure, CRBOEpreuve, CRBODomain, ExtractedCRBO, SynthesizedCRBO } from '@/lib/prompts'
 import type { CRBOFormData } from '@/lib/types'
-import { drawHappyNeuronChart, computeChartHeight, type ChartGroup } from '@/lib/chart'
+import { drawHappyNeuronChart, computeChartHeight, computeChartWidth, type ChartGroup } from '@/lib/chart'
 import { downloadCRBOWord, SEUILS, getPercentileColor, seuilFor } from '@/lib/word-export'
 import MicButton from '@/components/MicButton'
 
@@ -50,10 +50,10 @@ function HappyNeuronCanvas({ groups, title }: { groups: ChartGroup[]; title: str
   useEffect(() => {
     const canvas = ref.current
     if (!canvas) return
-    const w = 1000
-    // Hauteur auto-ajustée : si certains labels d'épreuves sont longs (ou les
-    // titres de groupes nécessitent un wrap), on agrandit le canvas pour ne
-    // jamais tronquer. Cohérent avec le rendu PNG embarqué dans le Word.
+    // Largeur auto-ajustée selon le nombre d'épreuves (≥ 1600 px), pour ne
+    // jamais couper les barres à droite. Cohérent avec le PNG embarqué dans
+    // le Word — le rendu CSS scale via `w-full` pour rester lisible.
+    const w = computeChartWidth(groups)
     const h = computeChartHeight(w, groups, 480)
     canvas.width = w
     canvas.height = h
@@ -516,7 +516,7 @@ export default function ResultatsPage() {
               Tout est bon ?
             </p>
             <p className="text-xs text-gray-500 dark:text-gray-400">
-              Notre IA va rédiger le diagnostic + recommandations en s&apos;appuyant sur vos commentaires.
+              Notre IA va rédiger le diagnostic et les recommandations en s&apos;appuyant sur vos commentaires.
             </p>
           </div>
           <button

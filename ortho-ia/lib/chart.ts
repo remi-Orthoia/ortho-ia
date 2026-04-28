@@ -1,19 +1,25 @@
 /**
  * Rendu du graphique HappyNeuron — partagé entre l'export Word et la page de
- * visualisation des résultats. Le module est sans dépendance React : il prend
- * un canvas (existant pour la page web, créé dynamiquement pour le Word).
+ * visualisation des résultats. Module client-only (canvas).
  *
- * Module client-only (utilise document.createElement et CanvasRenderingContext2D).
+ * Hiérarchie visuelle (gauche → droite) :
+ *   Famille (Langage oral / Langage écrit / Compétences sous-jacentes)
+ *     └── Sous-groupe (= "racine d'épreuve" ex: "Lecture de mots", "Empan auditif")
+ *           └── Barre (= modalité ex: "score", "temps", "ratio", "endroit", "envers")
  *
- * Refonte : 6 zones de performance + regroupement en 3 familles (Langage oral,
- * Langage écrit, Compétences sous-jacentes) avec hiérarchie sous-groupe → famille.
+ * Espacements :
+ *   - 2 px entre barres d'une même racine (Lecture de mots score/temps/ratio = collées)
+ *   - 12 px entre racines d'une même famille
+ *   - 24 px + ligne pointillée entre les 3 grandes familles
+ *
+ * La largeur du canvas est calculée dynamiquement à partir du nombre de barres
+ * pour éviter toute coupure à droite. La largeur affichée dans Word est ramenée
+ * à TARGET_WORD_WIDTH px par le scaling de imageParagraph.
  */
 
 // --------------------- Palette : zones de performance ---------------------
 //
 // 6 zones cliniques alignées sur le graphique HappyNeuron officiel.
-// Convention de classement : `min` est inclusif. Q1 (P25) reste en fragilité
-// — règle clinique Laurie déjà utilisée par l'extraction PDF et les tableaux.
 
 export type ZoneLabel =
   | 'Excellent résultat'
@@ -30,12 +36,12 @@ export type ZonePerformance = {
 }
 
 export const ZONES: ZonePerformance[] = [
-  { label: 'Excellent résultat',                min: 76, css: '#1B5E20' }, // vert foncé
-  { label: 'Résultat dans la moyenne haute',    min: 51, css: '#66BB6A' }, // vert clair
-  { label: 'Résultat dans la moyenne basse',    min: 26, css: '#C0CA33' }, // jaune-vert
-  { label: 'Zone de fragilité',                 min: 10, css: '#FFB74D' }, // orange clair
-  { label: 'Zone de difficulté',                min: 5,  css: '#EF6C00' }, // orange foncé
-  { label: 'Zone de difficulté sévère',         min: 0,  css: '#5D4037' }, // marron
+  { label: 'Excellent résultat',                min: 76, css: '#1B5E20' },
+  { label: 'Résultat dans la moyenne haute',    min: 51, css: '#66BB6A' },
+  { label: 'Résultat dans la moyenne basse',    min: 26, css: '#C0CA33' },
+  { label: 'Zone de fragilité',                 min: 10, css: '#FFB74D' },
+  { label: 'Zone de difficulté',                min: 5,  css: '#EF6C00' },
+  { label: 'Zone de difficulté sévère',         min: 0,  css: '#5D4037' },
 ]
 
 export function zoneFor(value: number): ZonePerformance {
@@ -55,15 +61,8 @@ export const FAMILY_LABEL: Record<FamilyKey, string> = {
 
 const FAMILY_ORDER: FamilyKey[] = ['oral', 'ecrit', 'sub']
 
-/**
- * Classifie un nom de domaine HappyNeuron dans l'une des 3 grandes familles.
- *  - Codes Exalang/Examath standard (A.x → oral, B.x → écrit, C.x → sub)
- *  - Fallback heuristique sur mots-clés (ordre important : on teste "écrit"
- *    avant "oral" pour que "lecture" soit bien classé en écrit).
- */
 export function classifyFamily(domainName: string): FamilyKey {
   const n = (domainName || '').toLowerCase().trim()
-  // Code HappyNeuron : "A.1 Langage oral", "B.2 Orthographe", "C.1 Mémoire"
   const codeMatch = n.match(/^([abc])\s*[.\d]/i)
   if (codeMatch) {
     const c = codeMatch[1].toLowerCase()
@@ -71,17 +70,12 @@ export function classifyFamily(domainName: string): FamilyKey {
     if (c === 'b') return 'ecrit'
     if (c === 'c') return 'sub'
   }
-  // Compétences sous-jacentes (testé en premier — empan/mémoire/etc. ne doivent
-  // jamais être confondus avec "langage oral" même si les empans sont auditifs).
   if (/m[ée]moire|empan|boucle\s*phon|d[ée]nomination|denomination|visuo|attention|ran\b|traitement\s*visu|inhibition|flexibilit[ée]|s[ée]quentiel/.test(n)) {
     return 'sub'
   }
-  // Langage écrit (lecture, leximétrie, dictée, etc.)
   if (/lecture|lex[ie]m[ée]trie|orthograph|dict[ée]e|closure|[ée]crit|non[\s\-]*mots?|graph[èe]m|d[ée]chiffrage/.test(n)) {
     return 'ecrit'
   }
-  // Par défaut : langage oral (englobe métaphono, fluences, compréhension
-  // orale, lexique, morphosyntaxe…)
   return 'oral'
 }
 
@@ -91,12 +85,6 @@ export type ChartBar = { label: string; value: number }
 export type ChartGroup = { name: string; bars: ChartBar[] }
 export type ChartFamily = { key: FamilyKey; name: string; subgroups: ChartGroup[] }
 
-/**
- * Re-groupe une liste de domaines (ChartGroup) en 3 familles cliniques.
- * Chaque famille présente reçoit les sous-groupes dans leur ordre d'arrivée.
- * Les familles vides sont omises — utile pour les bilans ciblés (uniquement
- * "Examath" → uniquement Compétences sous-jacentes par exemple).
- */
 export function regroupIntoFamilies(groups: ChartGroup[]): ChartFamily[] {
   const buckets: Record<FamilyKey, ChartGroup[]> = { oral: [], ecrit: [], sub: [] }
   for (const g of groups) {
@@ -112,23 +100,68 @@ export function regroupIntoFamilies(groups: ChartGroup[]): ChartFamily[] {
   return families
 }
 
+// --------------------- Détection de racine d'épreuve ---------------------
+
+/**
+ * Extrait la "racine" d'un label d'épreuve pour permettre de regrouper les
+ * modalités d'une même épreuve (score, temps, ratio, etc.).
+ *
+ * Heuristique :
+ *  - "(score)" / "(temps)" en fin → strippés
+ *  - " — score" / " - temps" / " – ratio" en fin → strippés (séparateurs typographiques)
+ *  - Tail tokens connus sans séparateur ("Empan auditif endroit") → strippés
+ *
+ * Exemples :
+ *   "Lecture de mots — score"  → "Lecture de mots"
+ *   "Lecture de mots (ratio)"  → "Lecture de mots"
+ *   "Empan auditif endroit"    → "Empan auditif"
+ *   "Morphologie dérivation score" → "Morphologie dérivation"
+ *   "Boucle phonologique"      → "Boucle phonologique"  (pas de modif)
+ *   "Fluence phonémique"       → "Fluence phonémique"   (pas de modif)
+ */
+export function rootOf(label: string): string {
+  if (!label) return ''
+  let s = label.trim()
+  s = s.replace(/\s*\(\s*[^()]+\s*\)\s*$/, '')                       // "(score)" en fin
+  s = s.replace(/\s*[—–\-]\s+[A-Za-zÀ-ÿ '\-]+\s*$/, '')              // " — score" en fin
+  const TAIL_TOKENS = /\s+(score|temps|ratio|brut|brute|pondéré|pondérée|note pondérée|endroit|envers|phonologie|lexique|grammatical|grammaticale|réponses|erreurs|mots lus|mots lus correctement|note)\s*$/i
+  s = s.replace(TAIL_TOKENS, '')
+  return s.trim() || label.trim()
+}
+
+/** Découpe une liste de barres en sous-groupes consécutifs partageant la même racine. */
+function splitByRoot(bars: ChartBar[]): { root: string; bars: ChartBar[] }[] {
+  const out: { root: string; bars: ChartBar[] }[] = []
+  for (const b of bars) {
+    const r = rootOf(b.label)
+    const last = out[out.length - 1]
+    if (last && last.root === r) last.bars.push(b)
+    else out.push({ root: r, bars: [b] })
+  }
+  return out
+}
+
 // --------------------- Constantes de mise en page ---------------------
 
-const PAD_LEFT = 200             // un peu plus large pour les labels de zone (textes plus longs)
-const PAD_RIGHT = 20
-const PAD_TOP_BASE = 80          // espace pour titre chart + 2 niveaux de titres (famille + sous-groupe)
-const PAD_BOTTOM_MIN = 40
-const LABEL_FONT_PX = 10         // épreuves verticales
+const PAD_LEFT = 200
+const PAD_RIGHT = 24
+const PAD_TOP_BASE = 84
+const PAD_BOTTOM_MIN = 44
+const LABEL_FONT_PX = 10
 const SUBGROUP_TITLE_FONT_PX = 11
 const SUBGROUP_TITLE_LINE_H = 14
 const SUBGROUP_TITLE_MAX_LINES = 2
 const FAMILY_TITLE_FONT_PX = 13
-const FAMILY_TITLE_LINE_H = 17
-const SUBGROUP_GAP = 8           // gap entre sous-groupes d'une même famille
-const FAMILY_GAP = 28            // gap plus large entre familles
 const MIN_CHART_AREA_H = 220
 
-// --------------------- Helpers de wrap & mesure ---------------------
+const BAR_W = 14                 // largeur fixe de chaque barre
+const INTRA_ROOT_GAP = 2         // entre barres d'une même racine
+const INTER_ROOT_GAP = 12        // entre sous-groupes (racines distinctes)
+const INTER_FAMILY_GAP = 24      // entre familles + ligne pointillée
+
+const BASE_CANVAS_WIDTH = 1600
+
+// --------------------- Helpers ---------------------
 
 function wrapTextByWords(ctx: CanvasRenderingContext2D, text: string, maxWidth: number, maxLines: number): string[] {
   const trimmed = text.trim()
@@ -158,45 +191,112 @@ function wrapTextByWords(ctx: CanvasRenderingContext2D, text: string, maxWidth: 
   return lines
 }
 
-// --------------------- Layout helpers ---------------------
+// --------------------- Layout absolu ---------------------
 
-type LayoutInfo = {
-  families: ChartFamily[]
-  totalBars: number
-  slotW: number
-  chartW: number
-  groupSpans: number[][]   // groupSpans[fi][gi] = largeur en px du sous-groupe (fi, gi)
-  familySpans: number[]    // largeur totale de chaque famille (somme sous-groupes + gaps internes)
+type RootLayout = {
+  name: string
+  bars: { label: string; value: number; x: number }[]
+  startX: number
+  endX: number
+  centerX: number
 }
-
-function computeLayout(
-  ctx: CanvasRenderingContext2D,
-  width: number,
-  groups: ChartGroup[],
-): LayoutInfo {
-  const families = regroupIntoFamilies(groups)
-  const chartW = width - PAD_LEFT - PAD_RIGHT
-  const totalBars = families.reduce((s, f) => s + f.subgroups.reduce((ss, g) => ss + g.bars.length, 0), 0)
-  // gaps : (n_subgroups - 1) au sein de chaque famille (SUBGROUP_GAP) +
-  // (n_families - 1) gros gaps entre familles (FAMILY_GAP)
-  const intraGaps = families.reduce((s, f) => s + Math.max(0, f.subgroups.length - 1), 0)
-  const interGaps = Math.max(0, families.length - 1)
-  const totalGapPx = intraGaps * SUBGROUP_GAP + interGaps * FAMILY_GAP
-  const slotW = totalBars > 0 ? Math.max(8, (chartW - totalGapPx) / totalBars) : chartW
-
-  const groupSpans: number[][] = families.map(f => f.subgroups.map(g => g.bars.length * slotW))
-  const familySpans = families.map((f, fi) => {
-    const subgroupsSpan = groupSpans[fi].reduce((a, b) => a + b, 0)
-    const gaps = Math.max(0, f.subgroups.length - 1) * SUBGROUP_GAP
-    return subgroupsSpan + gaps
-  })
-
-  return { families, totalBars, slotW, chartW, groupSpans, familySpans }
+type FamilyLayout = {
+  key: FamilyKey
+  name: string
+  rootGroups: RootLayout[]
+  startX: number
+  endX: number
+  centerX: number
+}
+type Layout = {
+  families: FamilyLayout[]
+  totalBars: number
+  contentEndX: number
+  /** x des séparateurs pointillés entre familles (au milieu du gap) */
+  familySeparators: number[]
 }
 
 /**
- * Hauteur idéale pour afficher tous les labels (verticaux) + 2 niveaux de
- * titres (sous-groupe + famille) sans amputation.
+ * Pré-calcule les positions x absolues de chaque barre, sous-groupe et famille.
+ * Le rendu (drawHappyNeuronChart) ne fait plus que parcourir cette structure.
+ */
+function computeLayout(groups: ChartGroup[]): Layout {
+  const families = regroupIntoFamilies(groups)
+  // Aplatit chaque famille en root-subgroups (on perd la frontière "domaine"
+  // au sein de la famille — l'utilisateur ne demande pas de séparation visuelle
+  // entre B.1 Lecture et B.2 Orthographe par exemple).
+  const flattened = families.map(f => ({
+    key: f.key,
+    name: f.name,
+    rootRaw: f.subgroups.flatMap(sg => splitByRoot(sg.bars)),
+  }))
+
+  let cursorX = PAD_LEFT
+  const familyLayouts: FamilyLayout[] = []
+  const familySeparators: number[] = []
+  let totalBars = 0
+
+  for (let fi = 0; fi < flattened.length; fi++) {
+    const f = flattened[fi]
+    const familyStartX = cursorX
+    const rootLayouts: RootLayout[] = []
+
+    for (let gi = 0; gi < f.rootRaw.length; gi++) {
+      const rg = f.rootRaw[gi]
+      const groupStartX = cursorX
+      const barLayouts: { label: string; value: number; x: number }[] = []
+      for (let bi = 0; bi < rg.bars.length; bi++) {
+        barLayouts.push({ ...rg.bars[bi], x: cursorX })
+        totalBars++
+        cursorX += BAR_W
+        if (bi < rg.bars.length - 1) cursorX += INTRA_ROOT_GAP
+      }
+      const groupEndX = cursorX
+      rootLayouts.push({
+        name: rg.root,
+        bars: barLayouts,
+        startX: groupStartX,
+        endX: groupEndX,
+        centerX: (groupStartX + groupEndX) / 2,
+      })
+      if (gi < f.rootRaw.length - 1) cursorX += INTER_ROOT_GAP
+    }
+
+    const familyEndX = cursorX
+    familyLayouts.push({
+      key: f.key,
+      name: f.name,
+      rootGroups: rootLayouts,
+      startX: familyStartX,
+      endX: familyEndX,
+      centerX: (familyStartX + familyEndX) / 2,
+    })
+
+    if (fi < flattened.length - 1) {
+      familySeparators.push(cursorX + INTER_FAMILY_GAP / 2)
+      cursorX += INTER_FAMILY_GAP
+    }
+  }
+
+  return { families: familyLayouts, totalBars, contentEndX: cursorX, familySeparators }
+}
+
+// --------------------- Dimensions canvas ---------------------
+
+/**
+ * Largeur idéale du canvas pour afficher tous les sous-groupes confortablement.
+ * = max(BASE_CANVAS_WIDTH, contenu calculé). Le canvas peut donc être plus
+ * large que 1600px sur des bilans très chargés (40+ épreuves).
+ */
+export function computeChartWidth(groups: ChartGroup[]): number {
+  const layout = computeLayout(groups)
+  const required = layout.contentEndX + PAD_RIGHT
+  return Math.max(BASE_CANVAS_WIDTH, required)
+}
+
+/**
+ * Hauteur idéale du canvas (titre famille + sous-groupes wrappés + zone barres
+ * + labels verticaux complets en bas).
  */
 export function computeChartHeight(
   width: number,
@@ -208,7 +308,6 @@ export function computeChartHeight(
   const ctx = canvas.getContext('2d')
   if (!ctx) return minHeight
 
-  // Pad bottom : largeur du plus long label vertical + marge
   ctx.font = `${LABEL_FONT_PX}px Calibri, Arial, sans-serif`
   const allLabels = groups.flatMap(g => g.bars.map(b => b.label))
   const maxLabelW = allLabels.reduce(
@@ -217,15 +316,13 @@ export function computeChartHeight(
   )
   const padBottom = Math.ceil(maxLabelW) + PAD_BOTTOM_MIN
 
-  const layout = computeLayout(ctx, width, groups)
-
-  // Pad top : titre chart + ligne famille + max(lignes wrap des sous-groupes)
+  const layout = computeLayout(groups)
   ctx.font = `bold ${SUBGROUP_TITLE_FONT_PX}px Calibri, Arial, sans-serif`
   let maxSubLines = 1
-  for (const f of layout.families) {
-    for (let gi = 0; gi < f.subgroups.length; gi++) {
-      const groupSpan = Math.max(40, layout.groupSpans[layout.families.indexOf(f)][gi])
-      const lines = wrapTextByWords(ctx, f.subgroups[gi].name, groupSpan - 4, SUBGROUP_TITLE_MAX_LINES)
+  for (const fam of layout.families) {
+    for (const rg of fam.rootGroups) {
+      const span = Math.max(40, rg.endX - rg.startX)
+      const lines = wrapTextByWords(ctx, rg.name, span - 4, SUBGROUP_TITLE_MAX_LINES)
       if (lines.length > maxSubLines) maxSubLines = lines.length
     }
   }
@@ -252,7 +349,6 @@ export function drawHappyNeuronChart(
   ctx.textAlign = 'left'
   ctx.fillText(title, 16, 26)
 
-  // Pad bottom dynamique (longueur du plus long label vertical)
   ctx.font = `${LABEL_FONT_PX}px Calibri, Arial, sans-serif`
   const allLabels = groups.flatMap(g => g.bars.map(b => b.label))
   const maxLabelW = allLabels.reduce(
@@ -261,16 +357,15 @@ export function drawHappyNeuronChart(
   )
   const padBottom = Math.ceil(maxLabelW) + PAD_BOTTOM_MIN
 
-  const layout = computeLayout(ctx, width, groups)
-  const { families, slotW, chartW, groupSpans } = layout
+  const layout = computeLayout(groups)
 
-  // Pré-wrap des titres de sous-groupe (familles indépendantes)
+  // Pré-wrap des titres de sous-groupe pour calculer maxSubLines
   ctx.font = `bold ${SUBGROUP_TITLE_FONT_PX}px Calibri, Arial, sans-serif`
-  const wrappedSubTitles: string[][][] = families.map((f, fi) =>
-    f.subgroups.map((g, gi) => {
-      const groupSpan = Math.max(40, groupSpans[fi][gi])
-      return wrapTextByWords(ctx, g.name, groupSpan - 4, SUBGROUP_TITLE_MAX_LINES)
-    })
+  const wrappedSubTitles = layout.families.map(fam =>
+    fam.rootGroups.map(rg => {
+      const span = Math.max(40, rg.endX - rg.startX)
+      return wrapTextByWords(ctx, rg.name, span - 4, SUBGROUP_TITLE_MAX_LINES)
+    }),
   )
   const maxSubLines = wrappedSubTitles.reduce(
     (m, fLines) => Math.max(m, fLines.reduce((mm, l) => Math.max(mm, l.length), 1)),
@@ -281,14 +376,19 @@ export function drawHappyNeuronChart(
   const chartH = Math.max(MIN_CHART_AREA_H, height - padTop - padBottom)
   const yFor = (p: number) => padTop + chartH - (p / 100) * chartH
 
+  // Largeur effective du chart pour les bandes de fond et lignes médianes
+  const chartLeftX = PAD_LEFT
+  const chartRightX = Math.max(layout.contentEndX, width - PAD_RIGHT)
+  const chartW = chartRightX - chartLeftX
+
   // ===== Bandes de fond colorées (zones de performance) =====
   for (let i = 0; i < ZONES.length; i++) {
     const z = ZONES[i]
     const upper = i === 0 ? 100 : ZONES[i - 1].min
     const y0 = yFor(upper)
     const y1 = yFor(z.min)
-    ctx.fillStyle = z.css + '33' // alpha ~20%
-    ctx.fillRect(PAD_LEFT, y0, chartW, y1 - y0)
+    ctx.fillStyle = z.css + '33'
+    ctx.fillRect(chartLeftX, y0, chartW, y1 - y0)
   }
 
   // Lignes horizontales fines entre zones
@@ -296,12 +396,11 @@ export function drawHappyNeuronChart(
   ctx.lineWidth = 0.5
   for (let i = 1; i < ZONES.length; i++) {
     const y = yFor(ZONES[i - 1].min)
-    ctx.beginPath(); ctx.moveTo(PAD_LEFT, y); ctx.lineTo(PAD_LEFT + chartW, y); ctx.stroke()
+    ctx.beginPath(); ctx.moveTo(chartLeftX, y); ctx.lineTo(chartRightX, y); ctx.stroke()
   }
-  // Bordure du chart
-  ctx.strokeRect(PAD_LEFT, padTop, chartW, chartH)
+  ctx.strokeRect(chartLeftX, padTop, chartW, chartH)
 
-  // Labels de zone à gauche (textes longs → on autorise jusqu'à PAD_LEFT - 8 px)
+  // Labels de zone à gauche
   ctx.font = '600 10.5px Calibri, Arial, sans-serif'
   ctx.textAlign = 'right'
   for (let i = 0; i < ZONES.length; i++) {
@@ -312,7 +411,6 @@ export function drawHappyNeuronChart(
     if (bandBot - bandTop < 12) continue
     const mid = (bandTop + bandBot) / 2
     ctx.fillStyle = z.css
-    // wrap si le label est trop long pour PAD_LEFT - 16
     const lines = wrapTextByWords(ctx, z.label, PAD_LEFT - 16, 2)
     if (lines.length === 1) {
       ctx.fillText(lines[0], PAD_LEFT - 8, mid + 4)
@@ -325,90 +423,86 @@ export function drawHappyNeuronChart(
     }
   }
 
-  // ===== Ligne médiane (P50) — trait plein noir =====
+  // ===== Médiane (P50) noire =====
   const yMed = yFor(50)
   ctx.strokeStyle = '#000000'
   ctx.lineWidth = 1.6
-  ctx.beginPath(); ctx.moveTo(PAD_LEFT, yMed); ctx.lineTo(PAD_LEFT + chartW, yMed); ctx.stroke()
+  ctx.beginPath(); ctx.moveTo(chartLeftX, yMed); ctx.lineTo(chartRightX, yMed); ctx.stroke()
   ctx.fillStyle = '#000000'
   ctx.font = 'italic bold 9.5px Calibri, Arial, sans-serif'
   ctx.textAlign = 'left'
-  ctx.fillText('Médiane (P50)', PAD_LEFT + 4, yMed - 3)
+  ctx.fillText('Médiane (P50)', chartLeftX + 4, yMed - 3)
 
-  // ===== Ligne d'alerte clinique — trait rouge à P7 =====
+  // ===== Seuil d'alerte P7 rouge =====
   const yAlert = yFor(7)
   ctx.strokeStyle = '#C62828'
   ctx.lineWidth = 1.6
-  ctx.beginPath(); ctx.moveTo(PAD_LEFT, yAlert); ctx.lineTo(PAD_LEFT + chartW, yAlert); ctx.stroke()
+  ctx.beginPath(); ctx.moveTo(chartLeftX, yAlert); ctx.lineTo(chartRightX, yAlert); ctx.stroke()
   ctx.fillStyle = '#C62828'
   ctx.font = 'italic bold 9.5px Calibri, Arial, sans-serif'
   ctx.textAlign = 'left'
-  ctx.fillText("Seuil d'alerte (P7)", PAD_LEFT + 4, yAlert - 3)
+  ctx.fillText("Seuil d'alerte (P7)", chartLeftX + 4, yAlert - 3)
 
-  // ===== Barres regroupées par famille → sous-groupe → barre =====
+  // ===== Séparateurs verticaux pointillés entre familles =====
+  for (const sepX of layout.familySeparators) {
+    ctx.strokeStyle = '#90A4AE'
+    ctx.setLineDash([4, 4])
+    ctx.lineWidth = 1
+    ctx.beginPath(); ctx.moveTo(sepX, padTop); ctx.lineTo(sepX, padTop + chartH); ctx.stroke()
+    ctx.setLineDash([])
+  }
+
+  // ===== Barres + titres =====
   if (layout.totalBars === 0) return
 
-  const barW = Math.min(slotW * 0.62, 30)
-  let cursorX = PAD_LEFT
+  for (let fi = 0; fi < layout.families.length; fi++) {
+    const fam = layout.families[fi]
 
-  for (let fi = 0; fi < families.length; fi++) {
-    const family = families[fi]
-    const familyStartX = cursorX
-    const familySubgroupsCount = family.subgroups.length
-
-    // Titre de famille (au-dessus, gras, plus gros)
-    const familyCenterX = familyStartX + layout.familySpans[fi] / 2
+    // Titre de famille (au-dessus, gras vert MAJUSCULES)
     ctx.fillStyle = '#1B5E20'
     ctx.font = `bold ${FAMILY_TITLE_FONT_PX}px Calibri, Arial, sans-serif`
     ctx.textAlign = 'center'
-    // y = bordure haute du chart - hauteur des titres sous-groupe - 4
-    const familyTitleY = padTop - (maxSubLines * SUBGROUP_TITLE_LINE_H) - 6
-    ctx.fillText(family.name.toUpperCase(), familyCenterX, familyTitleY)
+    const familyTitleY = padTop - (maxSubLines * SUBGROUP_TITLE_LINE_H) - 8
+    ctx.fillText(fam.name.toUpperCase(), fam.centerX, familyTitleY)
 
-    // Sous-groupes
-    for (let gi = 0; gi < familySubgroupsCount; gi++) {
-      const sub = family.subgroups[gi]
-      const groupSpan = groupSpans[fi][gi]
-      const groupStartX = cursorX
+    for (let gi = 0; gi < fam.rootGroups.length; gi++) {
+      const rg = fam.rootGroups[gi]
 
-      // Titre du sous-groupe (couleur grise)
+      // Titre de sous-groupe (gris, wrappable)
       const titleLines = wrappedSubTitles[fi][gi]
       if (titleLines && titleLines.length > 0) {
         ctx.fillStyle = '#37474F'
         ctx.font = `bold ${SUBGROUP_TITLE_FONT_PX}px Calibri, Arial, sans-serif`
         ctx.textAlign = 'center'
-        const cx = groupStartX + groupSpan / 2
         const baseY = padTop - 6
         for (let li = 0; li < titleLines.length; li++) {
           const yLine = baseY - (titleLines.length - 1 - li) * SUBGROUP_TITLE_LINE_H
-          ctx.fillText(titleLines[li], cx, yLine)
+          ctx.fillText(titleLines[li], rg.centerX, yLine)
         }
       }
 
       // Barres
-      for (let bi = 0; bi < sub.bars.length; bi++) {
-        const b = sub.bars[bi]
+      for (const b of rg.bars) {
         const v = Math.max(0, Math.min(100, b.value))
-        const x = groupStartX + bi * slotW + (slotW - barW) / 2
         const yTop = yFor(v)
         const h = padTop + chartH - yTop
         const z = zoneFor(v)
 
         ctx.fillStyle = z.css
-        ctx.fillRect(x, yTop, barW, h)
+        ctx.fillRect(b.x, yTop, BAR_W, h)
         ctx.strokeStyle = '#212121'
         ctx.lineWidth = 0.5
-        ctx.strokeRect(x, yTop, barW, h)
+        ctx.strokeRect(b.x, yTop, BAR_W, h)
 
-        // Valeur P au-dessus de la barre
+        // Valeur P au-dessus
         ctx.fillStyle = '#212121'
-        ctx.font = 'bold 9.5px Calibri, Arial, sans-serif'
+        ctx.font = 'bold 9px Calibri, Arial, sans-serif'
         ctx.textAlign = 'center'
-        ctx.fillText(`P${Math.round(v)}`, x + barW / 2, yTop - 3)
+        ctx.fillText(`P${Math.round(v)}`, b.x + BAR_W / 2, yTop - 3)
 
-        // Label vertical sous la barre — texte intégral, jamais tronqué.
+        // Label vertical sous la barre — texte intégral, jamais tronqué
         ctx.save()
-        ctx.translate(x + barW / 2, padTop + chartH + 8)
+        ctx.translate(b.x + BAR_W / 2, padTop + chartH + 8)
         ctx.rotate(-Math.PI / 2)
         ctx.textAlign = 'right'
         ctx.fillStyle = '#37474F'
@@ -416,47 +510,27 @@ export function drawHappyNeuronChart(
         ctx.fillText(b.label, 0, 4)
         ctx.restore()
       }
-
-      cursorX += groupSpan
-
-      // Séparateur léger entre sous-groupes d'une même famille
-      if (gi < familySubgroupsCount - 1) {
-        const sepX = cursorX + SUBGROUP_GAP / 2
-        ctx.strokeStyle = '#CFD8DC'
-        ctx.setLineDash([2, 3])
-        ctx.lineWidth = 0.7
-        ctx.beginPath(); ctx.moveTo(sepX, padTop + 4); ctx.lineTo(sepX, padTop + chartH - 4); ctx.stroke()
-        ctx.setLineDash([])
-        cursorX += SUBGROUP_GAP
-      }
-    }
-
-    // Trait plein vertical entre familles (séparateur fort)
-    if (fi < families.length - 1) {
-      const sepX = cursorX + FAMILY_GAP / 2
-      ctx.strokeStyle = '#607D8B'
-      ctx.lineWidth = 1.2
-      ctx.beginPath(); ctx.moveTo(sepX, padTop); ctx.lineTo(sepX, padTop + chartH); ctx.stroke()
-      cursorX += FAMILY_GAP
     }
   }
 }
 
 /**
  * Génère un PNG (ArrayBuffer) du graphique pour embarquer dans le Word.
+ * Si `width` est omis, calcule la largeur dynamiquement (≥ BASE_CANVAS_WIDTH).
  */
 export async function happyNeuronChartToPng(
   groups: ChartGroup[],
   title: string,
-  width = 1000,
+  width?: number,
   minHeight = 480,
 ): Promise<{ data: ArrayBuffer; width: number; height: number }> {
   const canvas = document.createElement('canvas')
-  const height = computeChartHeight(width, groups, minHeight)
-  canvas.width = width
+  const finalWidth = width ?? computeChartWidth(groups)
+  const height = computeChartHeight(finalWidth, groups, minHeight)
+  canvas.width = finalWidth
   canvas.height = height
   const ctx = canvas.getContext('2d')!
-  drawHappyNeuronChart(ctx, width, height, groups, title)
+  drawHappyNeuronChart(ctx, finalWidth, height, groups, title)
   const blob: Blob = await new Promise((r) => canvas.toBlob((b) => r(b!), 'image/png')!)
-  return { data: await blob.arrayBuffer(), width, height }
+  return { data: await blob.arrayBuffer(), width: finalWidth, height }
 }
