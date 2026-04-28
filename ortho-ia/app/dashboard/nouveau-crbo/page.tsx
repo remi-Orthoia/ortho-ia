@@ -99,7 +99,8 @@ function NouveauCRBOContent() {
   const [lastSavedAt, setLastSavedAt] = useState<number | null>(null)
   const [nowTick, setNowTick] = useState(0)
   const [importingAnamnese, setImportingAnamnese] = useState(false)
-  
+  const [prefillBanner, setPrefillBanner] = useState<string>('')
+
   // Patient selection
   const [patients, setPatients] = useState<Patient[]>([])
   const [selectedPatientId, setSelectedPatientId] = useState<string>('')
@@ -213,9 +214,12 @@ function NouveauCRBOContent() {
       }
 
       // Reprendre un brouillon s'il y en a un
+      // Skippé si on charge un prefill (les résultats arrivent du screenshot,
+      // pas le brouillon).
+      const prefillIdFromUrl = searchParams.get('prefill')
       try {
         const raw = localStorage.getItem(DRAFT_KEY)
-        if (raw && !patientIdFromUrl) {
+        if (raw && !patientIdFromUrl && !prefillIdFromUrl) {
           const draft = JSON.parse(raw) as { step: number; formData: Partial<CRBOFormData> }
           if (draft?.formData) {
             setFormData(prev => ({ ...prev, ...draft.formData }))
@@ -224,6 +228,48 @@ function NouveauCRBOContent() {
         }
       } catch {
         // brouillon corrompu → on l'ignore
+      }
+
+      // Prefill depuis une session screenshot HappyNeuron
+      // (?prefill=<uuid> posé par l'extension Chrome)
+      if (prefillIdFromUrl) {
+        const { data: session } = await supabase
+          .from('prefill_sessions')
+          .select('id, data, expires_at')
+          .eq('id', prefillIdFromUrl)
+          .single()
+
+        const expired = session?.expires_at && new Date(session.expires_at).getTime() < Date.now()
+        if (session && session.data && !expired) {
+          const prefill = session.data as {
+            structure?: { test_name?: string | null }
+            resultats?: string
+            detectedTest?: string | null
+          }
+          const detected = prefill.detectedTest || prefill.structure?.test_name || null
+          const matchedTest = detected && (TESTS_OPTIONS as readonly string[]).includes(detected)
+            ? detected
+            : null
+
+          setFormData(prev => ({
+            ...prev,
+            resultats_manuels: prefill.resultats || prev.resultats_manuels,
+            test_utilise: matchedTest && !prev.test_utilise.includes(matchedTest)
+              ? [...prev.test_utilise, matchedTest]
+              : prev.test_utilise,
+          }))
+          setCurrentStep(4) // étape résultats
+          setPrefillBanner(
+            matchedTest
+              ? `📸 Résultats importés depuis HappyNeuron — test "${matchedTest}" coché automatiquement.`
+              : detected
+                ? `📸 Résultats importés depuis HappyNeuron — test détecté "${detected}" (à cocher manuellement, non reconnu dans la liste).`
+                : '📸 Résultats importés depuis HappyNeuron — pensez à cocher le test correspondant.',
+          )
+
+          // On nettoie l'URL pour éviter de re-charger au refresh
+          router.replace('/dashboard/nouveau-crbo')
+        }
       }
     }
 
@@ -840,6 +886,13 @@ function NouveauCRBOContent() {
           <div className="mb-6 bg-red-50 border border-red-200 text-red-700 px-4 py-3 rounded-lg flex items-center gap-2">
             <AlertCircle size={20} />
             {error}
+          </div>
+        )}
+
+        {prefillBanner && !error && (
+          <div className="mb-6 bg-emerald-50 border border-emerald-300 text-emerald-800 px-4 py-3 rounded-lg flex items-start gap-2">
+            <CheckCircle size={20} className="flex-shrink-0 mt-0.5" />
+            <span>{prefillBanner}</span>
           </div>
         )}
 

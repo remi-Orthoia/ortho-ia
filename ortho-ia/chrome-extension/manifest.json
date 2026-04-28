@@ -1,0 +1,25 @@
+{
+  "manifest_version": 3,
+  "name": "Ortho.ia — Capture HappyNeuron",
+  "short_name": "Ortho.ia",
+  "version": "1.0.0",
+  "description": "Capture les résultats HappyNeuron et pré-remplit automatiquement Ortho.ia.",
+  "default_locale": "fr",
+  "permissions": [
+    "storage",
+    "activeTab",
+    "tabs"
+  ],
+  "host_permissions": [
+    "http://localhost:7842/*",
+    "http://localhost:3000/*",
+    "https://ortho-ia.vercel.app/*"
+  ],
+  "action": {
+    "default_popup": "popup.html",
+    "default_title": "Ortho.ia — Capturer HappyNeuron"
+  },
+  "background": {
+    "service_worker": "background.js"
+  }
+}
