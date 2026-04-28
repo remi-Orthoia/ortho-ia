@@ -116,7 +116,10 @@ export async function generateCRBOWord(payload: WordExportPayload): Promise<Blob
     PageOrientation,
   } = await import('docx')
 
-  const FONT = 'Calibri'
+  // Police choisie par Laurie : Bookman Old Style. Disponible nativement
+  // sur Windows et macOS. Sur les rares postes sans la police, Word retombe
+  // sur la métrique sérif par défaut (Times New Roman) — pas d'erreur.
+  const FONT = 'Bookman Old Style'
   const FONT_SIZE_NORMAL = 22
   const FONT_SIZE_TITLE = 32
   const FONT_SIZE_SECTION = 26
@@ -315,7 +318,7 @@ export async function generateCRBOWord(payload: WordExportPayload): Promise<Blob
   if (motifText) {
     children.push(
       new Paragraph({ children: [new TextRun({ text: 'Motif de consultation', size: FONT_SIZE_NORMAL, font: FONT, color: COLOR_GREEN, bold: true })], spacing: { before: 200 } }),
-      new Paragraph({ children: [new TextRun({ text: motifText, size: FONT_SIZE_NORMAL, font: FONT })], spacing: { after: 200 } }),
+      new Paragraph({ alignment: AlignmentType.BOTH, children: [new TextRun({ text: motifText, size: FONT_SIZE_NORMAL, font: FONT })], spacing: { after: 200 } }),
     )
   }
 
@@ -552,7 +555,7 @@ export async function generateCRBOWord(payload: WordExportPayload): Promise<Blob
     : "[À COMPLÉTER — anamnèse non reformulée par l'IA. Reprenez les notes brutes et rédigez un paragraphe fluide.]"
   anamneseText.split('\n').forEach((line) => {
     if (line.trim()) {
-      children.push(new Paragraph({ children: [new TextRun({ text: line.trim(), size: FONT_SIZE_NORMAL, font: FONT })], spacing: { after: 100 } }))
+      children.push(new Paragraph({ alignment: AlignmentType.BOTH, children: [new TextRun({ text: line.trim(), size: FONT_SIZE_NORMAL, font: FONT })], spacing: { after: 100 } }))
     }
   })
 
@@ -617,6 +620,7 @@ export async function generateCRBOWord(payload: WordExportPayload): Promise<Blob
         // visualisation (phase 1.5). Lead-in en gras pour bien différencier
         // de la prose IA.
         children.push(new Paragraph({
+          alignment: AlignmentType.BOTH,
           spacing: { after: 200 },
           children: [
             new TextRun({ text: 'Observations cliniques : ', bold: true, size: FONT_SIZE_NORMAL, font: FONT }),
@@ -721,6 +725,7 @@ export async function generateCRBOWord(payload: WordExportPayload): Promise<Blob
         const numMatch = t.match(/^(\d+)[.)]\s+(.+)$/)
         if (numMatch) {
           children.push(new Paragraph({
+            alignment: AlignmentType.BOTH,
             indent: { left: 360 },
             spacing: { after: 60 },
             children: [
@@ -741,12 +746,14 @@ export async function generateCRBOWord(payload: WordExportPayload): Promise<Blob
         if (h3Inline) {
           pushH3(h3Inline[1].trim())
           children.push(new Paragraph({
+            alignment: AlignmentType.BOTH,
             children: parseBoldRuns(h3Inline[2].trim()),
             spacing: { after: 80 },
           }))
           return
         }
         children.push(new Paragraph({
+          alignment: AlignmentType.BOTH,
           children: parseBoldRuns(t),
           spacing: { after: 80 },
         }))
@@ -849,6 +856,7 @@ export async function generateCRBOWord(payload: WordExportPayload): Promise<Blob
       if (!t) { children.push(new Paragraph({ children: [new TextRun({ text: '' })] })); return }
       const isHeader = /^[A-ZÉÈÀÊÂÎÔÛÇ\s]+:?$/.test(t) && t.length < 50
       children.push(new Paragraph({
+        alignment: isHeader ? AlignmentType.LEFT : AlignmentType.BOTH,
         children: [new TextRun({
           text: t,
           size: FONT_SIZE_NORMAL,
