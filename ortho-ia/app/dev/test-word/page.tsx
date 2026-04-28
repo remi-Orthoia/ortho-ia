@@ -241,10 +241,10 @@ export default function TestWordPage() {
         <p className="mt-2 text-gray-600">
           Cas clinique communiqué par Laurie. 23 épreuves Exalang 11-15 réelles, profil mixte (atteinte des
           deux voies de lecture) avec TDAH déjà diagnostiqué par le pédiatre. Permet de vérifier le rendu
-          Word complet sans passer par l&apos;API Anthropic / Supabase auth.
+          Word complet sans passer par l&apos;API IA / Supabase auth.
         </p>
 
-        <div className="mt-6 grid grid-cols-4 gap-2 text-xs">
+        <div className="mt-6 grid grid-cols-2 sm:grid-cols-3 gap-2 text-xs">
           {SEUILS.map(s => (
             <div key={s.label} className="rounded p-2 text-center border" style={{ backgroundColor: '#' + s.shading }}>
               <p className="font-bold text-gray-900">{s.label}</p>

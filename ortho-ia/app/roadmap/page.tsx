@@ -15,13 +15,13 @@ const ROADMAP: Array<{
   {
     quarter: 'Q2 2026 — Beta fermée (maintenant)',
     items: [
-      { title: 'Génération CRBO via Claude Sonnet 4.6', status: 'done', details: '15 modules de tests (Exalang, Examath, BALE, BELEC, BILO, ELO, EVALO, MoCA, BETL, OMF…)' },
+      { title: 'Génération CRBO par notre IA', status: 'done', details: '15 modules de tests (Exalang, Examath, BALE, BELEC, BILO, ELO, EVALO, MoCA, BETL, OMF…)' },
       { title: 'Export Word professionnel', status: 'done', details: 'Graphique page 1, tableaux colorés par seuil, badge sévérité' },
-      { title: 'Import PDF automatique (Claude Vision)', status: 'done', details: 'Détection test + extraction scores + percentiles' },
+      { title: 'Import PDF automatique (vision IA)', status: 'done', details: 'Détection test + extraction scores + percentiles' },
       { title: 'Kanban + statuts CRBO', status: 'done', details: 'Drag & drop, rollback DB, badges sévérité' },
       { title: 'Carnet patients + timeline d\'évolution', status: 'done', details: 'Multi-courbes par domaine clinique' },
       { title: 'Renouvellement avec comparatif', status: 'done', details: 'Synthèse d\'évolution, tableau comparatif Word avec flèches ↑↓' },
-      { title: 'Sécurité RGPD', status: 'done', details: 'Anonymisation avant Claude, RLS Supabase, logs filtrés' },
+      { title: 'Sécurité RGPD', status: 'done', details: 'Anonymisation avant envoi à l\'IA, RLS Supabase, logs filtrés' },
       { title: 'Compte démo + 5 CRBOs exemples', status: 'done', details: 'Pour beta testeurs, couvre les profils variés' },
     ],
   },

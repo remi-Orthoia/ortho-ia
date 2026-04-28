@@ -76,14 +76,14 @@ export default function TestProfilesPage() {
             Banc de test — qualité des CRBO générés
           </h1>
           <p className="mt-2 text-gray-600">
-            5 profils cliniques variés pour évaluer le prompt Claude. Vérifie la qualité de
+            5 profils cliniques variés pour évaluer le prompt IA. Vérifie la qualité de
             l&apos;anamnèse, des interprétations, du diagnostic différentiel et des recommandations.
           </p>
           <div className="mt-4 bg-amber-50 border border-amber-200 rounded-lg p-3 text-sm text-amber-800">
             ⚠️ Cette page appelle <code>/api/generate-crbo</code> qui exige un user authentifié.
             Connecte-toi d&apos;abord (
             <a href="/auth/login" className="underline text-amber-900">/auth/login</a>
-            ) puis reviens ici. Chaque génération consomme du crédit Claude API.
+            ) puis reviens ici. Chaque génération consomme du crédit IA.
           </div>
           <button
             onClick={runAll}
@@ -164,7 +164,7 @@ export default function TestProfilesPage() {
                     {r.status === 'success' && r.structure && (
                       <details className="bg-blue-50 border border-blue-200 rounded-lg p-3">
                         <summary className="cursor-pointer text-sm font-semibold text-blue-900">
-                          Structure JSON renvoyée par Claude
+                          Structure JSON renvoyée par l&apos;IA
                         </summary>
                         <pre className="mt-3 text-xs whitespace-pre-wrap text-gray-800 max-h-[400px] overflow-y-auto">
                           {JSON.stringify(r.structure, null, 2)}

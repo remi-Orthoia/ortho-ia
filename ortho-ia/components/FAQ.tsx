@@ -15,9 +15,9 @@ const FAQS: FAQItem[] = [
     answer: (
       <>
         <p>
-          <strong>Oui.</strong> Avant tout envoi à l&apos;IA (Claude d&apos;Anthropic),
-          les données nominatives de vos patients (prénom, nom, nom du médecin, vos
-          coordonnées) sont <strong>anonymisées par des identifiants techniques</strong>.
+          <strong>Oui.</strong> Avant tout envoi à notre IA, les données nominatives
+          de vos patients (prénom, nom, nom du médecin, vos coordonnées) sont
+          <strong> anonymisées par des identifiants techniques</strong>.
           Elles sont <strong>réhydratées uniquement sur nos serveurs</strong> après
           réception.
         </p>
@@ -147,7 +147,7 @@ const FAQS: FAQItem[] = [
     answer: (
       <p>
         Vous uploadez le PDF de résultats de votre logiciel (Exalang, Examath…) directement
-        dans Ortho.ia. <strong>Claude Vision extrait automatiquement</strong> chaque épreuve
+        dans Ortho.ia. <strong>Notre IA extrait automatiquement</strong> chaque épreuve
         avec son score, son écart-type et son percentile, dans la{' '}
         <strong>notation exacte du document</strong> (Q1, Med, Q3, P5…). Les percentiles ne
         sont <strong>jamais recalculés depuis l&apos;écart-type</strong>, les normes du test

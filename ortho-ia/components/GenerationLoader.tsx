@@ -62,7 +62,7 @@ export default function GenerationLoader({ visible }: { visible: boolean }) {
           Génération en cours…
         </h2>
         <p className="mt-1.5 text-sm text-gray-500 dark:text-gray-400">
-          Claude rédige votre CRBO. Comptez 30 à 150 secondes selon la richesse du bilan.
+          Notre IA rédige votre CRBO. Comptez 30 à 150 secondes selon la richesse du bilan.
         </p>
 
         {/* Étapes */}

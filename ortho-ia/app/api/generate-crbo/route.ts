@@ -244,7 +244,7 @@ export async function POST(request: NextRequest) {
 
     if (!process.env.ANTHROPIC_API_KEY || process.env.ANTHROPIC_API_KEY.includes('VOTRE_CLE')) {
       return NextResponse.json(
-        { error: 'Clé API Claude non configurée. Veuillez ajouter votre clé ANTHROPIC_API_KEY dans le fichier .env.local' },
+        { error: 'Service IA non configuré côté serveur. Veuillez contacter le support.' },
         { status: 500 },
       )
     }
@@ -423,7 +423,7 @@ export async function POST(request: NextRequest) {
 
     if (!toolUseBlock || toolUseBlock.name !== toolNameExpected) {
       return NextResponse.json(
-        { error: "Claude n'a pas renvoyé de structure CRBO exploitable." },
+        { error: "Notre IA n'a pas renvoyé de structure CRBO exploitable." },
         { status: 502 },
       )
     }

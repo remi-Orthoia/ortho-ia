@@ -171,7 +171,7 @@ function CardIA() {
       >
         <div className="flex items-center gap-2 mb-2">
           <Sparkles className="text-white animate-sparkle" size={20} />
-          <span className="text-sm font-bold tracking-wide">CLAUDE · SONNET 4</span>
+          <span className="text-sm font-bold tracking-wide">IA · ORTHO.IA</span>
         </div>
         <p className="text-lg font-semibold leading-tight">
           Analyse 47 subtests

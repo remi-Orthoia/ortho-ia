@@ -21,29 +21,40 @@ export type { ZonePerformance } from './chart'
 
 // --------------------- Palette cohérente seuils cliniques ---------------------
 //
-// Grille alignée sur la documentation officielle Exalang/HappyNeuron :
-//  - P > 25 (strictement)        → Dans la norme        (vert)
-//  - P10 à P25 (Q1 inclus)       → Zone de fragilité    (jaune/orange)
-//  - P5 à P9                     → Zone de difficulté   (orange foncé)
-//  - P < 5                       → Zone de difficulté sévère (rouge)
+// Grille 6 zones alignée sur le graphique HappyNeuron officiel :
+//  - P > 75            → Excellent résultat                (vert foncé)
+//  - P51 à P75         → Résultat dans la moyenne haute    (vert clair)
+//  - P26 à P50         → Résultat dans la moyenne basse    (jaune-vert)
+//  - P10 à P25 (Q1)    → Zone de fragilité                 (orange clair)
+//  - P5 à P9           → Zone de difficulté                (orange foncé)
+//  - P < 5             → Zone de difficulté sévère         (rouge / pink)
 //
-// Note : Q1 (P25) est en zone de fragilité, PAS dans la norme — c'est le point
-// le plus piégeux de la conversion HappyNeuron. seuilFor() utilise min=26 pour
-// que les valeurs entières usuelles (5, 10, 25, 50, 75) se classent correctement.
+// Note : Q1 (P25) reste en zone de fragilité (pas en moyenne basse) — règle
+// clinique Laurie déjà appliquée par l'extraction. min=26 pour la moyenne basse.
+
+export type SeuilLabel =
+  | 'Excellent résultat'
+  | 'Résultat dans la moyenne haute'
+  | 'Résultat dans la moyenne basse'
+  | 'Zone de fragilité'
+  | 'Zone de difficulté'
+  | 'Zone de difficulté sévère'
 
 export type SeuilClinique = {
-  label: 'Dans la norme' | 'Zone de fragilité' | 'Zone de difficulté' | 'Zone de difficulté sévère'
+  label: SeuilLabel
   min: number
-  shading: string // hex sans # (pour docx)
-  css: string     // avec # (pour canvas)
+  shading: string // hex sans # (pour docx + UI chip background)
+  css: string     // avec # (pour canvas + UI chip foreground)
   range: string
 }
 
 export const SEUILS: SeuilClinique[] = [
-  { label: 'Dans la norme',              min: 26, shading: 'C8E6C9', css: '#2E7D32', range: 'P > 25' },
-  { label: 'Zone de fragilité',          min: 10, shading: 'FFE082', css: '#FFA726', range: 'P10-25' },
-  { label: 'Zone de difficulté',         min: 5,  shading: 'FFAB91', css: '#EF6C00', range: 'P5-9' },
-  { label: 'Zone de difficulté sévère',  min: 0,  shading: 'EF9A9A', css: '#C62828', range: 'P < 5' },
+  { label: 'Excellent résultat',              min: 76, shading: 'A5D6A7', css: '#1B5E20', range: 'P > 75' },
+  { label: 'Résultat dans la moyenne haute',  min: 51, shading: 'C8E6C9', css: '#2E7D32', range: 'P51-75' },
+  { label: 'Résultat dans la moyenne basse',  min: 26, shading: 'DCEDC8', css: '#558B2F', range: 'P26-50' },
+  { label: 'Zone de fragilité',               min: 10, shading: 'FFE082', css: '#F57F17', range: 'P10-25' },
+  { label: 'Zone de difficulté',              min: 5,  shading: 'FFAB91', css: '#BF360C', range: 'P5-9' },
+  { label: 'Zone de difficulté sévère',       min: 0,  shading: 'EF9A9A', css: '#B71C1C', range: 'P < 5' },
 ]
 
 export function seuilFor(value: number): SeuilClinique {
@@ -53,18 +64,28 @@ export function seuilFor(value: number): SeuilClinique {
 
 /**
  * Mappe les anciens labels d'interprétation (CRBO legacy en DB) vers les
- * nouveaux labels de la grille Exalang. Utilisé au rendu pour assurer la
+ * nouveaux labels de la grille 6 zones. Utilisé au rendu pour assurer la
  * cohérence avec la couleur dérivée de percentile_value.
+ *
+ * Pour les valeurs ambiguës ("Normal", "Dans la norme") qui couvraient
+ * historiquement P>25, on retombe sur "Résultat dans la moyenne basse" par
+ * défaut — la couleur réelle est de toute façon recalculée depuis
+ * percentile_value en aval.
  */
-export function normalizeInterpretation(stored: string | undefined): SeuilClinique['label'] | undefined {
+export function normalizeInterpretation(stored: string | undefined): SeuilLabel | undefined {
   if (!stored) return undefined
   switch (stored) {
-    case 'Normal': return 'Dans la norme'
+    // Legacy 4 zones → 6 zones (default vers la moyenne basse pour "norme")
+    case 'Normal':
+    case 'Dans la norme': return 'Résultat dans la moyenne basse'
     case 'Limite basse':
     case 'Fragile': return 'Zone de fragilité'
     case 'Déficitaire': return 'Zone de difficulté'
     case 'Pathologique': return 'Zone de difficulté sévère'
-    case 'Dans la norme':
+    // 6 zones officielles (passthrough)
+    case 'Excellent résultat':
+    case 'Résultat dans la moyenne haute':
+    case 'Résultat dans la moyenne basse':
     case 'Zone de fragilité':
     case 'Zone de difficulté':
     case 'Zone de difficulté sévère':

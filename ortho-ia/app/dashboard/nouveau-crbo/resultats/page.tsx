@@ -446,7 +446,7 @@ export default function ResultatsPage() {
         <div>
           <h2 className="text-lg font-bold text-gray-900 dark:text-gray-100">Détails par domaine</h2>
           <p className="text-sm text-gray-500 dark:text-gray-400 mt-1">
-            Saisissez vos observations qualitatives sous chaque tableau. Elles enrichiront la synthèse Claude (comportement, fatigue, anxiété, conditions de passation…).
+            Saisissez vos observations qualitatives sous chaque tableau. Elles enrichiront la synthèse de notre IA (comportement, fatigue, anxiété, conditions de passation…).
           </p>
         </div>
 
@@ -498,7 +498,7 @@ export default function ResultatsPage() {
               Tout est bon ?
             </p>
             <p className="text-xs text-gray-500 dark:text-gray-400">
-              Claude va rédiger le diagnostic + recommandations en s&apos;appuyant sur vos commentaires.
+              Notre IA va rédiger le diagnostic + recommandations en s&apos;appuyant sur vos commentaires.
             </p>
           </div>
           <button
