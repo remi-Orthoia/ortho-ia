@@ -125,6 +125,24 @@ async function main() {
 
   const errors: string[] = []
 
+  // ===== Vérification CRITIQUE : aucun media avec extension non déclarée =====
+  // Si ImageRun est créé sans `type: 'png'`, docx@9 nomme le fichier
+  // `<hash>.undefined`, et [Content_Types].xml ne déclare pas .undefined →
+  // Word affiche "Le document contient des erreurs" à l'ouverture.
+  const mediaEntries = entries.filter(e => e.name.startsWith('word/media/') && !e.name.endsWith('/'))
+  const ctEntry = entries.find(e => e.name === '[Content_Types].xml')
+  const ctXml = ctEntry ? ctEntry.data.toString('utf8') : ''
+  const declaredExts = new Set(
+    [...ctXml.matchAll(/<Default[^>]*Extension="([^"]+)"/g)].map(m => m[1].toLowerCase()),
+  )
+  for (const m of mediaEntries) {
+    const ext = (m.name.split('.').pop() || '').toLowerCase()
+    if (!ext || ext === 'undefined' || !declaredExts.has(ext)) {
+      errors.push(`media file "${m.name}" : extension "${ext}" non déclarée dans [Content_Types].xml — Word affichera un dialogue de réparation`)
+    }
+  }
+  console.log(`[test-docx] ${mediaEntries.length} média(s), ${declaredExts.size} extension(s) déclarée(s)`)
+
   // Vérifications structurelles spécifiques
   const docEntry = entries.find((e) => e.name === 'word/document.xml')
   if (!docEntry) { console.error('document.xml introuvable'); process.exit(1) }

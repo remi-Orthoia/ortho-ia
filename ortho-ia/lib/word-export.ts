@@ -223,9 +223,14 @@ export async function generateCRBOWord(payload: WordExportPayload): Promise<Blob
       alignment: AlignmentType.CENTER,
       spacing: { before: 200, after: 200 },
       children: [new ImageRun({
+        // ⚠️ `type: 'png'` est OBLIGATOIRE — sinon docx@9 nomme le fichier
+        // `<hash>.undefined` dans word/media/, et [Content_Types].xml ne
+        // déclare pas l'extension .undefined → Word affiche "Le document
+        // contient des erreurs" à l'ouverture et propose de réparer.
+        type: 'png',
         data: img.data,
         transformation: { width: w, height: h },
-      } as any)],
+      })],
     })
   }
 
