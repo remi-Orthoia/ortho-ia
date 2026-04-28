@@ -61,7 +61,11 @@ const structure: CRBOStructure = {
   conclusion: 'Compte rendu remis en main propre.',
   severite_globale: 'Modéré',
   comorbidites_detectees: ['Anxiété de performance suspectée'],
-  pap_suggestions: ['Temps majoré 1/3', 'Tolérance orthographique'],
+  pap_suggestions: [
+    'Temps : temps majoré aux évaluations écrites',
+    'Outils numériques : recours à un outil numérique en classe si besoin',
+    'Pédagogie : consignes reformulées et segmentées',
+  ],
   synthese_evolution: null,
 }
 

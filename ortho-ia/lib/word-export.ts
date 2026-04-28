@@ -791,22 +791,30 @@ export async function generateCRBOWord(payload: WordExportPayload): Promise<Blob
 
     pushBlock('Recommandations', s.recommandations)
 
-    // Aménagements scolaires — bullets condensés à plat. On strip le préfixe
-    // "**Catégorie** —" éventuel pour rester général et compact.
+    // Aménagements scolaires — bullets condensés. Format attendu de Claude :
+    // "Catégorie : description". On normalise aussi le legacy "**Cat** — desc".
+    // Rendu : la catégorie + ":" est en gras, la suite en normal.
     const paps = (s.pap_suggestions ?? []).filter(p => p && p.trim().length > 0)
     if (paps.length > 0) {
-      const catRegex = /^\*\*([^*]+)\*\*\s*[—–-]\s*(.+)$/
+      const legacyRegex = /^\*\*([^*]+)\*\*\s*[—–-]\s*(.+)$/
       children.push(new Paragraph({
         children: [new TextRun({ text: 'Aménagements scolaires conseillés', bold: true, size: FONT_SIZE_NORMAL, font: FONT, color: COLOR_GREEN })],
         spacing: { before: 240, after: 100 },
       }))
       for (const p of paps) {
-        const m = p.trim().match(catRegex)
-        const detail = m ? `${m[1].trim()} : ${m[2].trim()}` : p.trim()
+        const legacy = p.trim().match(legacyRegex)
+        const detail = legacy ? `${legacy[1].trim()} : ${legacy[2].trim()}` : p.trim()
+        const colonIdx = detail.indexOf(':')
+        const runs = colonIdx >= 0
+          ? [
+              new TextRun({ text: `• ${detail.slice(0, colonIdx + 1)} `, bold: true, size: FONT_SIZE_NORMAL, font: FONT }),
+              new TextRun({ text: detail.slice(colonIdx + 1).trimStart(), size: FONT_SIZE_NORMAL, font: FONT }),
+            ]
+          : [new TextRun({ text: `• ${detail}`, size: FONT_SIZE_NORMAL, font: FONT })]
         children.push(new Paragraph({
           indent: { left: 360 },
           spacing: { after: 50 },
-          children: [new TextRun({ text: `• ${detail}`, size: FONT_SIZE_NORMAL, font: FONT })],
+          children: runs,
         }))
       }
     }
@@ -888,6 +896,24 @@ export async function downloadCRBOWord(payload: WordExportPayload): Promise<void
   const blob = await generateCRBOWord(payload)
   const fileSaver = await import('file-saver')
   const saveAs = fileSaver.default || fileSaver.saveAs
-  const filename = `CRBO_${payload.formData.patient_prenom}_${payload.formData.patient_nom}_${new Date().toISOString().split('T')[0]}.docx`
-  saveAs(blob, filename)
+  saveAs(blob, buildCRBOFilename(payload.formData))
+}
+
+/**
+ * Format : `CRBO - NOM Prénom - 25 avril 2026.docx`
+ *  - Nom en MAJUSCULES
+ *  - Prénom en title-case (gère les composés "Marie-Claire", "Jean Pierre")
+ *  - Date du bilan en français long (fallback sur aujourd'hui)
+ */
+export function buildCRBOFilename(formData: { patient_prenom?: string; patient_nom?: string; bilan_date?: string }): string {
+  const nom = (formData.patient_nom || '').trim().toUpperCase()
+  const prenom = (formData.patient_prenom || '')
+    .trim()
+    .toLowerCase()
+    .replace(/(^|[\s\-'])([a-zà-ÿ])/g, (_m, sep, c) => sep + c.toUpperCase())
+  const ref = formData.bilan_date ? new Date(formData.bilan_date) : new Date()
+  const dateFr = (isNaN(ref.getTime()) ? new Date() : ref).toLocaleDateString('fr-FR', {
+    day: 'numeric', month: 'long', year: 'numeric',
+  })
+  return `CRBO - ${nom} ${prenom} - ${dateFr}.docx`
 }

@@ -175,20 +175,20 @@ Le CRBO structuré que tu produis doit contenir, dans cet ordre :
    - **JAMAIS de percentile cité dans la justification** (cf. règle des commentaires de domaine).
 
 8. \`pap_suggestions\` — **liste d'aménagements scolaires conseillés**, adaptés au profil clinique détecté.
-   - **FORMAT** : \`"**Catégorie** — détail GÉNÉRAL de l'aménagement"\` (catégorie en gras Markdown, séparée du détail par un tiret cadratin \`—\`). Le rendu Word affiche cela en bullets condensés.
+   - **FORMAT OBLIGATOIRE** : \`"Catégorie : description GÉNÉRALE de l'aménagement"\` — la catégorie suivie d'un espace, deux-points et un espace, puis la description. PAS de markdown \`**...**\`, PAS de tiret cadratin \`—\`. Le rendu Word met automatiquement la catégorie + ":" en gras.
    - **Catégories autorisées** : Temps, Outils numériques, Présentation des supports, Évaluations, Pédagogie, Environnement, Oral.
    - ⚠️ **Restez GÉNÉRAL** : ne nomme JAMAIS de polices spécifiques (pas de "OpenDyslexic", "Arial 14"…), ni de logiciels nominatifs (pas de "Voice Dream", "NaturalReader"…), ni de marques d'outils numériques. L'orthophoniste choisit elle-même les outils précis avec la famille.
    - **Exemples** (formulations génériques attendues) :
-     - \`"**Temps** — Temps majoré aux évaluations écrites"\`
-     - \`"**Outils numériques** — Recours à un outil numérique en classe si besoin"\`
-     - \`"**Présentation des supports** — Supports adaptés (police lisible, interligne aéré)"\`
-     - \`"**Évaluations** — Tolérance orthographique hors cours de français"\`
-     - \`"**Pédagogie** — Consignes reformulées et segmentées"\`
-     - \`"**Environnement** — Place préférentielle au calme"\`
-     - \`"**Oral** — Restitution orale autorisée si l'écrit est trop coûteux"\`
+     - \`"Temps : temps majoré aux évaluations écrites"\`
+     - \`"Outils numériques : recours à un outil numérique en classe si besoin"\`
+     - \`"Présentation des supports : supports adaptés (police lisible, interligne aéré)"\`
+     - \`"Évaluations : tolérance orthographique hors cours de français"\`
+     - \`"Pédagogie : consignes reformulées et segmentées"\`
+     - \`"Environnement : place préférentielle au calme"\`
+     - \`"Oral : restitution orale autorisée si l'écrit est trop coûteux"\`
    - **Liste compacte et priorisée** : **MAXIMUM 10 entrées**, ordonnées par PRIORITÉ DÉCROISSANTE (les plus structurants en premier — typiquement Temps majoré et Outils numériques en haut, Pédagogie / Environnement ensuite). Pas de liste exhaustive, pas de paragraphe explicatif.
    - Si tu as plus de 10 idées d'aménagements, ne garde que les 10 les plus impactants pour ce profil clinique précis.
-   - Ne mets jamais un aménagement sans sa catégorie en gras devant.
+   - Ne mets jamais un aménagement sans sa catégorie suivie de " : " devant.
 
 9. \`synthese_evolution\` — **UNIQUEMENT pour les bilans de renouvellement**, sinon \`null\`.
    - Comparer ligne par ligne les scores actuels et ceux du bilan précédent fourni dans le contexte.
@@ -323,7 +323,7 @@ Tu produis UNIQUEMENT :
 - \`diagnostic\` (synthèse 200-300 mots avec sous-titres **Comportement pendant le bilan**, **Points forts**, **Difficultés identifiées**, **Analyse croisée**, **Diagnostic**)
 - \`recommandations\` (150-250 mots avec phrase d'introduction PEC + axes numérotés)
 - \`comorbidites_detectees\` (format "Libellé — code CIM-10 — justification")
-- \`pap_suggestions\` (max 10, priorisés, "**Catégorie** — détail général")
+- \`pap_suggestions\` (max 10, priorisés, format "Catégorie : détail général")
 - \`conclusion\` (phrase standard)
 - \`severite_globale\` (informatif, non rendu dans le Word)
 - \`synthese_evolution\` (UNIQUEMENT pour renouvellement)

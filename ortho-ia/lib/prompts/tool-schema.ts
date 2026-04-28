@@ -137,7 +137,7 @@ export const SYNTHESIZE_TOOL: Anthropic.Tool = {
       pap_suggestions: {
         type: 'array',
         description:
-          "Liste d'aménagements scolaires conseillés (max 10, priorisés). Format de chaque entrée : '**Catégorie** — détail concret'. Catégories autorisées : Temps, Outils numériques, Présentation des supports, Évaluations, Pédagogie, Environnement, Oral. Restez généraux : pas de polices/logiciels nominatifs.",
+          "Liste d'aménagements scolaires conseillés (max 10, priorisés). Format OBLIGATOIRE de chaque entrée : 'Catégorie : détail concret' (catégorie + ' : ' + description, sans markdown ni tiret cadratin). Catégories autorisées : Temps, Outils numériques, Présentation des supports, Évaluations, Pédagogie, Environnement, Oral. Restez généraux : pas de polices/logiciels nominatifs.",
         items: { type: 'string' },
       },
       synthese_evolution: {
