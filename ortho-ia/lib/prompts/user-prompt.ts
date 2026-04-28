@@ -311,7 +311,8 @@ ${formatDomainsForSynthesize(data.domains, data.ortho_comments)}
 ${data.notes_analyse || 'Aucune note supplémentaire'}${comportementBlock}${dureeBlock}${bilanPrecBlock}
 
 === INSTRUCTION (phase 2 — SYNTHÈSE) ===
-Appelle l'outil \`synthesize_crbo\`. Produis UNIQUEMENT :
+Appelle l'outil \`synthesize_crbo\`. Produis OBLIGATOIREMENT tous ces champs :
+- \`domain_commentaires\` : un objet { nom, commentaire } par domaine (MÊME ordre que ci-dessus). Pour chaque domaine, lis le contenu ci-dessous "📝 Contenu textarea ortho" et reformule-le en prose professionnelle finale (3 ème personne, phrases complètes, JAMAIS de notes brutes recopiées telles quelles). Si la textarea est vide pour un domaine, génère un commentaire clinique court depuis les seuls scores. Si elle contient déjà ta suggestion validée par l'ortho, garde-la quasiment inchangée. Respecte les RÈGLES ABSOLUES (pas de chiffre de centile, pas de tiret en début de phrase, pas de mention de la rééducation).
 - \`diagnostic\` (200-300 mots, structure imposée par le système prompt)
 - \`recommandations\` (150-250 mots)
 - \`comorbidites_detectees\` (format "Libellé — code CIM-10 — justification", tableau vide [] si aucune)
@@ -320,7 +321,9 @@ Appelle l'outil \`synthesize_crbo\`. Produis UNIQUEMENT :
 - \`severite_globale\` (Léger/Modéré/Sévère ou null)
 - \`synthese_evolution\` ${isRenouvellement ? '(NON NULL — bilan de renouvellement, comparaison rigoureuse exigée)' : '(null — bilan initial)'}
 
-🎯 **Intègre les commentaires qualitatifs ortho** dans le diagnostic — particulièrement dans la section **Comportement pendant le bilan** et **Analyse croisée**. Si un score paraît anormalement bas mais qu'un commentaire ortho mentionne fatigue/anxiété/distracteurs, mentionne-le explicitement pour pondérer l'interprétation.
+🎯 **Double usage des commentaires qualitatifs ortho** :
+1. Pour produire \`domain_commentaires\` (rendu final sous chaque tableau du Word).
+2. Pour nourrir le \`diagnostic\` global — particulièrement la section **Comportement pendant le bilan** et **Analyse croisée**. Si un score paraît anormalement bas mais qu'un commentaire ortho mentionne fatigue/anxiété/distracteurs, mentionne-le explicitement pour pondérer l'interprétation.
 
-⛔ Ne régénère PAS l'anamnèse, le motif, ni les domaines : ils sont définitifs.`
+⛔ Ne régénère PAS l'anamnèse, le motif, ni les domaines (épreuves/scores) : ils sont définitifs.`
 }

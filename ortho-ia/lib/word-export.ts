@@ -363,7 +363,7 @@ export async function generateCRBOWord(payload: WordExportPayload): Promise<Blob
       const curDate = bilanDateFormatted || '(actuel)'
       children.push(new Paragraph({
         alignment: AlignmentType.CENTER,
-        children: [new TextRun({ text: `Bilan initial du ${prevDate}  →  Bilan actuel du ${curDate}`, italics: true, size: FONT_SIZE_NORMAL - 2, font: FONT, color: '666666' })],
+        children: [new TextRun({ text: `Bilan initial du ${prevDate}  →  Bilan actuel du ${curDate}`, size: FONT_SIZE_NORMAL - 2, font: FONT, color: '666666' })],
         spacing: { after: 200 },
       }))
     }
@@ -562,7 +562,7 @@ export async function generateCRBOWord(payload: WordExportPayload): Promise<Blob
         children.push(
           new Paragraph({ children: [new TextRun({ text: 'Synthèse des résultats', size: FONT_SIZE_NORMAL, font: FONT, color: COLOR_GREEN, bold: true })], spacing: { before: 200 } }),
           new Paragraph({
-            children: [new TextRun({ text: '[Graphique non disponible — voir les tableaux détaillés ci-dessous]', italics: true, size: FONT_SIZE_NORMAL - 2, font: FONT, color: '888888' })],
+            children: [new TextRun({ text: '[Graphique non disponible — voir les tableaux détaillés ci-dessous]', size: FONT_SIZE_NORMAL - 2, font: FONT, color: '888888' })],
             spacing: { after: 200 },
           }),
         )
@@ -648,7 +648,7 @@ export async function generateCRBOWord(payload: WordExportPayload): Promise<Blob
           spacing: { after: 200 },
           children: [
             new TextRun({ text: 'Observations cliniques : ', bold: true, size: FONT_SIZE_NORMAL, font: FONT }),
-            new TextRun({ text: domain.commentaire.trim(), size: FONT_SIZE_NORMAL, font: FONT, italics: true }),
+            new TextRun({ text: domain.commentaire.trim(), size: FONT_SIZE_NORMAL, font: FONT }),
           ],
         }))
       }
@@ -907,11 +907,11 @@ export async function generateCRBOWord(payload: WordExportPayload): Promise<Blob
     }),
     new Paragraph({
       alignment: AlignmentType.RIGHT,
-      children: [new TextRun({ text: 'Orthophoniste', size: FONT_SIZE_NORMAL, font: FONT, italics: true })],
+      children: [new TextRun({ text: 'Orthophoniste', size: FONT_SIZE_NORMAL, font: FONT })],
     }),
   )
 
-  // ===== CONCLUSION (mention légale, petite italique, en bas) =====
+  // ===== CONCLUSION (mention légale, petite, en bas) =====
   if (hasStructure && structure!.conclusion?.trim()) {
     children.push(
       new Paragraph({ children: [new TextRun({ text: '' })] }),
@@ -922,7 +922,6 @@ export async function generateCRBOWord(payload: WordExportPayload): Promise<Blob
           text: structure!.conclusion.trim(),
           size: 16,
           font: FONT,
-          italics: true,
           color: '707070',
         })],
       }),

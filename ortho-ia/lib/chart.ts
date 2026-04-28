@@ -429,7 +429,7 @@ export function drawHappyNeuronChart(
   ctx.lineWidth = 1.6
   ctx.beginPath(); ctx.moveTo(chartLeftX, yMed); ctx.lineTo(chartRightX, yMed); ctx.stroke()
   ctx.fillStyle = '#000000'
-  ctx.font = 'italic bold 9.5px Calibri, Arial, sans-serif'
+  ctx.font = 'bold 9.5px Calibri, Arial, sans-serif'
   ctx.textAlign = 'left'
   ctx.fillText('Médiane (P50)', chartLeftX + 4, yMed - 3)
 
@@ -439,7 +439,7 @@ export function drawHappyNeuronChart(
   ctx.lineWidth = 1.6
   ctx.beginPath(); ctx.moveTo(chartLeftX, yAlert); ctx.lineTo(chartRightX, yAlert); ctx.stroke()
   ctx.fillStyle = '#C62828'
-  ctx.font = 'italic bold 9.5px Calibri, Arial, sans-serif'
+  ctx.font = 'bold 9.5px Calibri, Arial, sans-serif'
   ctx.textAlign = 'left'
   ctx.fillText("Seuil d'alerte (P7)", chartLeftX + 4, yAlert - 3)
 
