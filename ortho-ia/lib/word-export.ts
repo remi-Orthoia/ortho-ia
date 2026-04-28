@@ -121,11 +121,16 @@ export async function generateCRBOWord(payload: WordExportPayload): Promise<Blob
   const FONT_SIZE_SECTION = 26
   const COLOR_GREEN = '2E7D32'
 
-  // A4 portrait (11906 DXA) - 720 DXA margins chaque côté = 9072 DXA de largeur
-  // utilisable. Word refuse les largeurs relatives sur certaines combinaisons
-  // (-> "contenu illisible"), donc on spécifie TOUJOURS en DXA.
-  const TOTAL_DXA = 9072
-  const pctToDxa = (pct: number) => Math.round((TOTAL_DXA * pct) / 100)
+  // A4 portrait (11906 DXA) - 720 DXA margins chaque côté = 10466 DXA utilisables.
+  // Word vérifie que sum(columnWidths) == table.width au DXA près à l'ouverture ;
+  // le moindre écart déclenche "Propriétés des tableaux 1 à N" sur tous les tableaux.
+  // dxaCols garantit la somme exacte en faisant absorber l'arrondi par la dernière colonne.
+  const TOTAL_DXA = 10466
+  const dxaCols = (percents: number[], total: number = TOTAL_DXA): number[] => {
+    const cols = percents.slice(0, -1).map((p) => Math.round((total * p) / 100))
+    cols.push(total - cols.reduce((a, b) => a + b, 0))
+    return cols
+  }
 
   const { formData, structure, fallbackCRBO = '', previousStructure, previousBilanDate } = payload
   const hasStructure = !!structure && !!structure.domains && structure.domains.length > 0
@@ -133,10 +138,10 @@ export async function generateCRBOWord(payload: WordExportPayload): Promise<Blob
 
   // ============ Helpers ============
 
-  const createCell = (text: string, options: { bold?: boolean, width?: number, shading?: string, alignment?: any } = {}) => {
-    const { bold = false, width = 25, shading, alignment = AlignmentType.LEFT } = options
+  const createCell = (text: string, options: { bold?: boolean, dxa: number, shading?: string, alignment?: any }) => {
+    const { bold = false, dxa, shading, alignment = AlignmentType.LEFT } = options
     return new TableCell({
-      width: { size: pctToDxa(width), type: WidthType.DXA },
+      width: { size: dxa, type: WidthType.DXA },
       shading: shading ? { type: ShadingType.CLEAR, fill: shading, color: 'auto' } : undefined,
       children: [new Paragraph({
         alignment,
@@ -243,24 +248,27 @@ export async function generateCRBOWord(payload: WordExportPayload): Promise<Blob
   // ===== PATIENT =====
   children.push(
     new Paragraph({ children: [new TextRun({ text: 'Patient', size: FONT_SIZE_NORMAL, font: FONT, color: COLOR_GREEN, bold: true })], spacing: { before: 200 } }),
-    new Table({
-      width: { size: TOTAL_DXA, type: WidthType.DXA },
-      columnWidths: [pctToDxa(15), pctToDxa(35), pctToDxa(15), pctToDxa(35)],
-      rows: [
-        new TableRow({ children: [
-          createCell('Prénom :', { width: 15 }),
-          createCell(formData.patient_prenom, { bold: true, width: 35 }),
-          createCell('Nom :', { width: 15 }),
-          createCell(formData.patient_nom, { bold: true, width: 35 }),
-        ]}),
-        new TableRow({ children: [
-          createCell('Âge :', { width: 15 }),
-          createCell(`${calculateAge()}${ddnFormatted ? ` (${ddnFormatted})` : ''}`, { width: 35 }),
-          createCell('Classe :', { width: 15 }),
-          createCell(formData.patient_classe || '', { width: 35 }),
-        ]}),
-      ],
-    }),
+    (() => {
+      const cols = dxaCols([15, 35, 15, 35])
+      return new Table({
+        width: { size: TOTAL_DXA, type: WidthType.DXA },
+        columnWidths: cols,
+        rows: [
+          new TableRow({ children: [
+            createCell('Prénom :', { dxa: cols[0] }),
+            createCell(formData.patient_prenom, { bold: true, dxa: cols[1] }),
+            createCell('Nom :', { dxa: cols[2] }),
+            createCell(formData.patient_nom, { bold: true, dxa: cols[3] }),
+          ]}),
+          new TableRow({ children: [
+            createCell('Âge :', { dxa: cols[0] }),
+            createCell(`${calculateAge()}${ddnFormatted ? ` (${ddnFormatted})` : ''}`, { dxa: cols[1] }),
+            createCell('Classe :', { dxa: cols[2] }),
+            createCell(formData.patient_classe || '', { dxa: cols[3] }),
+          ]}),
+        ],
+      })
+    })(),
     new Paragraph({ children: [] }),
   )
 
@@ -268,16 +276,19 @@ export async function generateCRBOWord(payload: WordExportPayload): Promise<Blob
   if (formData.medecin_nom || formData.medecin_tel) {
     children.push(
       new Paragraph({ children: [new TextRun({ text: 'Médecin prescripteur', size: FONT_SIZE_NORMAL, font: FONT, color: COLOR_GREEN, bold: true })], spacing: { before: 200 } }),
-      new Table({
-        width: { size: TOTAL_DXA, type: WidthType.DXA },
-        columnWidths: [pctToDxa(15), pctToDxa(45), pctToDxa(10), pctToDxa(30)],
-        rows: [new TableRow({ children: [
-          createCell('Nom :', { width: 15 }),
-          createCell(formData.medecin_nom || '', { width: 45 }),
-          createCell('Tél :', { width: 10 }),
-          createCell(formData.medecin_tel || '', { width: 30 }),
-        ]})],
-      }),
+      (() => {
+        const cols = dxaCols([15, 45, 10, 30])
+        return new Table({
+          width: { size: TOTAL_DXA, type: WidthType.DXA },
+          columnWidths: cols,
+          rows: [new TableRow({ children: [
+            createCell('Nom :', { dxa: cols[0] }),
+            createCell(formData.medecin_nom || '', { dxa: cols[1] }),
+            createCell('Tél :', { dxa: cols[2] }),
+            createCell(formData.medecin_tel || '', { dxa: cols[3] }),
+          ]})],
+        })
+      })(),
       new Paragraph({ children: [] }),
     )
   }
@@ -407,12 +418,13 @@ export async function generateCRBOWord(payload: WordExportPayload): Promise<Blob
     }
 
     // Tableau comparatif détaillé (côte à côte, grouppé par domaine)
+    const compCols = dxaCols([40, 22, 22, 16])
     const compRows = [
       new TableRow({ children: [
-        createCell('Domaine / Épreuve', { bold: true, width: 40, shading: 'E8F5E9' }),
-        createCell(previousBilanDate ? new Date(previousBilanDate).toLocaleDateString('fr-FR') : 'Précédent', { bold: true, width: 22, shading: 'E8F5E9', alignment: AlignmentType.CENTER }),
-        createCell(bilanDateFormatted || 'Actuel', { bold: true, width: 22, shading: 'E8F5E9', alignment: AlignmentType.CENTER }),
-        createCell('Δ Évolution', { bold: true, width: 16, shading: 'E8F5E9', alignment: AlignmentType.CENTER }),
+        createCell('Domaine / Épreuve', { bold: true, dxa: compCols[0], shading: 'E8F5E9' }),
+        createCell(previousBilanDate ? new Date(previousBilanDate).toLocaleDateString('fr-FR') : 'Précédent', { bold: true, dxa: compCols[1], shading: 'E8F5E9', alignment: AlignmentType.CENTER }),
+        createCell(bilanDateFormatted || 'Actuel', { bold: true, dxa: compCols[2], shading: 'E8F5E9', alignment: AlignmentType.CENTER }),
+        createCell('Δ Évolution', { bold: true, dxa: compCols[3], shading: 'E8F5E9', alignment: AlignmentType.CENTER }),
       ]}),
     ]
 
@@ -453,11 +465,11 @@ export async function generateCRBOWord(payload: WordExportPayload): Promise<Blob
           arrowColor = '1565C0'
         }
         compRows.push(new TableRow({ children: [
-          createCell(`  ${e.nom}`, { width: 40 }), // indentation pour voir que c'est une sous-épreuve du domaine
-          createCell(prevLabel, { width: 22, alignment: AlignmentType.CENTER, shading: prev ? getPercentileColor(prev.value) : 'F5F5F5' }),
-          createCell(curLabel, { width: 22, alignment: AlignmentType.CENTER, shading: getPercentileColor(e.percentile_value) }),
+          createCell(`  ${e.nom}`, { dxa: compCols[0] }), // indentation pour voir que c'est une sous-épreuve du domaine
+          createCell(prevLabel, { dxa: compCols[1], alignment: AlignmentType.CENTER, shading: prev ? getPercentileColor(prev.value) : 'F5F5F5' }),
+          createCell(curLabel, { dxa: compCols[2], alignment: AlignmentType.CENTER, shading: getPercentileColor(e.percentile_value) }),
           new TableCell({
-            width: { size: pctToDxa(16), type: WidthType.DXA },
+            width: { size: compCols[3], type: WidthType.DXA },
             children: [new Paragraph({
               alignment: AlignmentType.CENTER,
               children: [
@@ -478,7 +490,7 @@ export async function generateCRBOWord(payload: WordExportPayload): Promise<Blob
     children.push(
       new Table({
         width: { size: TOTAL_DXA, type: WidthType.DXA },
-        columnWidths: [pctToDxa(40), pctToDxa(22), pctToDxa(22), pctToDxa(16)],
+        columnWidths: compCols,
         rows: compRows,
       }),
       new Paragraph({ children: [] }),
@@ -523,13 +535,16 @@ export async function generateCRBOWord(payload: WordExportPayload): Promise<Blob
   // Légende (dynamique depuis SEUILS)
   children.push(
     new Paragraph({ children: [new TextRun({ text: 'Légende des scores (percentiles) :', size: 18, font: FONT, bold: true })], spacing: { before: 200, after: 100 } }),
-    new Table({
-      width: { size: TOTAL_DXA, type: WidthType.DXA },
-      columnWidths: SEUILS.map(() => pctToDxa(100 / SEUILS.length)),
-      rows: [new TableRow({
-        children: SEUILS.map(s => createCell(`${s.label} (${s.range})`, { shading: s.shading, width: 100 / SEUILS.length, alignment: AlignmentType.CENTER, bold: true })),
-      })],
-    }),
+    (() => {
+      const cols = dxaCols(SEUILS.map(() => 100 / SEUILS.length))
+      return new Table({
+        width: { size: TOTAL_DXA, type: WidthType.DXA },
+        columnWidths: cols,
+        rows: [new TableRow({
+          children: SEUILS.map((s, i) => createCell(`${s.label} (${s.range})`, { shading: s.shading, dxa: cols[i], alignment: AlignmentType.CENTER, bold: true })),
+        })],
+      })
+    })(),
     new Paragraph({ children: [] }),
   )
 
@@ -541,29 +556,30 @@ export async function generateCRBOWord(payload: WordExportPayload): Promise<Blob
           spacing: { before: 300, after: 120 },
         }),
       )
+      const cols = dxaCols([40, 15, 12, 15, 18])
       const tableRows = [
         new TableRow({ children: [
-          createCell('Épreuve', { bold: true, width: 40, shading: 'E8F5E9' }),
-          createCell('Score', { bold: true, width: 15, shading: 'E8F5E9', alignment: AlignmentType.CENTER }),
-          createCell('É-T', { bold: true, width: 12, shading: 'E8F5E9', alignment: AlignmentType.CENTER }),
-          createCell('Centile', { bold: true, width: 15, shading: 'E8F5E9', alignment: AlignmentType.CENTER }),
-          createCell('Interprétation', { bold: true, width: 18, shading: 'E8F5E9', alignment: AlignmentType.CENTER }),
+          createCell('Épreuve', { bold: true, dxa: cols[0], shading: 'E8F5E9' }),
+          createCell('Score', { bold: true, dxa: cols[1], shading: 'E8F5E9', alignment: AlignmentType.CENTER }),
+          createCell('É-T', { bold: true, dxa: cols[2], shading: 'E8F5E9', alignment: AlignmentType.CENTER }),
+          createCell('Centile', { bold: true, dxa: cols[3], shading: 'E8F5E9', alignment: AlignmentType.CENTER }),
+          createCell('Interprétation', { bold: true, dxa: cols[4], shading: 'E8F5E9', alignment: AlignmentType.CENTER }),
         ]}),
       ]
       domain.epreuves.forEach((e) => {
         const color = getPercentileColor(e.percentile_value)
         tableRows.push(new TableRow({ children: [
-          createCell(e.nom, { width: 40, shading: color }),
-          createCell(e.score, { width: 15, alignment: AlignmentType.CENTER, shading: color }),
-          createCell(e.et ?? '—', { width: 12, alignment: AlignmentType.CENTER, shading: color }),
-          createCell(e.percentile, { width: 15, alignment: AlignmentType.CENTER, shading: color }),
-          createCell(seuilFor(e.percentile_value).label, { width: 18, alignment: AlignmentType.CENTER, shading: color }),
+          createCell(e.nom, { dxa: cols[0], shading: color }),
+          createCell(e.score, { dxa: cols[1], alignment: AlignmentType.CENTER, shading: color }),
+          createCell(e.et ?? '—', { dxa: cols[2], alignment: AlignmentType.CENTER, shading: color }),
+          createCell(e.percentile, { dxa: cols[3], alignment: AlignmentType.CENTER, shading: color }),
+          createCell(seuilFor(e.percentile_value).label, { dxa: cols[4], alignment: AlignmentType.CENTER, shading: color }),
         ]}))
       })
       children.push(
         new Table({
           width: { size: TOTAL_DXA, type: WidthType.DXA },
-          columnWidths: [pctToDxa(40), pctToDxa(15), pctToDxa(12), pctToDxa(15), pctToDxa(18)],
+          columnWidths: cols,
           rows: tableRows,
         }),
         new Paragraph({ children: [] }),
@@ -586,12 +602,13 @@ export async function generateCRBOWord(payload: WordExportPayload): Promise<Blob
     // Fallback parsing texte
     const lines = formData.resultats_manuels.split('\n').filter((l) => l.trim())
     if (lines.length > 0) {
+      const cols = dxaCols([50, 20, 15, 15])
       const tableRows = [
         new TableRow({ children: [
-          createCell('Épreuve', { bold: true, width: 50, shading: 'E8F5E9' }),
-          createCell('Score', { bold: true, width: 20, shading: 'E8F5E9', alignment: AlignmentType.CENTER }),
-          createCell('É-T', { bold: true, width: 15, shading: 'E8F5E9', alignment: AlignmentType.CENTER }),
-          createCell('Centile', { bold: true, width: 15, shading: 'E8F5E9', alignment: AlignmentType.CENTER }),
+          createCell('Épreuve', { bold: true, dxa: cols[0], shading: 'E8F5E9' }),
+          createCell('Score', { bold: true, dxa: cols[1], shading: 'E8F5E9', alignment: AlignmentType.CENTER }),
+          createCell('É-T', { bold: true, dxa: cols[2], shading: 'E8F5E9', alignment: AlignmentType.CENTER }),
+          createCell('Centile', { bold: true, dxa: cols[3], shading: 'E8F5E9', alignment: AlignmentType.CENTER }),
         ]}),
       ]
       lines.forEach((line) => {
@@ -605,16 +622,16 @@ export async function generateCRBOWord(payload: WordExportPayload): Promise<Blob
         const pVal = centileMatch ? parseInt(centileMatch[1], 10) : 100
         const color = getPercentileColor(pVal)
         tableRows.push(new TableRow({ children: [
-          createCell(epreuve, { width: 50 }),
-          createCell(score, { width: 20, alignment: AlignmentType.CENTER }),
-          createCell(et, { width: 15, alignment: AlignmentType.CENTER }),
-          createCell(centile, { width: 15, alignment: AlignmentType.CENTER, shading: color }),
+          createCell(epreuve, { dxa: cols[0] }),
+          createCell(score, { dxa: cols[1], alignment: AlignmentType.CENTER }),
+          createCell(et, { dxa: cols[2], alignment: AlignmentType.CENTER }),
+          createCell(centile, { dxa: cols[3], alignment: AlignmentType.CENTER, shading: color }),
         ]}))
       })
       children.push(
         new Table({
           width: { size: TOTAL_DXA, type: WidthType.DXA },
-          columnWidths: [pctToDxa(50), pctToDxa(20), pctToDxa(15), pctToDxa(15)],
+          columnWidths: cols,
           rows: tableRows,
         }),
         new Paragraph({ children: [] }),

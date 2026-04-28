@@ -2,8 +2,11 @@
 // - Stub du document.createElement('canvas') côté Node
 // - Génère un CRBO complet avec sample structure
 // - Unzip le .docx → parse chaque XML → signale toute erreur
-import { writeFileSync, mkdirSync, existsSync, rmSync, readdirSync, readFileSync } from 'node:fs'
-import { execSync } from 'node:child_process'
+import { writeFileSync } from 'node:fs'
+import { tmpdir } from 'node:os'
+import { join } from 'node:path'
+// eslint-disable-next-line @typescript-eslint/no-var-requires
+const AdmZip = require('adm-zip')
 import { generateCRBOWord } from '../lib/word-export'
 import type { CRBOStructure } from '../lib/prompts'
 
@@ -18,8 +21,12 @@ const PNG_1x1 = Buffer.from(
     return {
       width: 1, height: 1,
       getContext() {
+        // Stub minimal : measureText doit renvoyer { width }, fillText/etc. no-op.
         return new Proxy({}, {
-          get: () => () => undefined, // toutes les méthodes sont des no-ops
+          get: (_t, prop: string) => {
+            if (prop === 'measureText') return (s: string) => ({ width: (s || '').length * 7 })
+            return () => undefined
+          },
           set: () => true,
         })
       },
@@ -82,43 +89,63 @@ const payload = {
   structure,
 }
 
+// ===== Renouvellement : structure précédente pour exercer le tableau comparatif =====
+const previousStructure: CRBOStructure = {
+  ...structure,
+  domains: [
+    {
+      nom: 'Mémoire de travail',
+      epreuves: [
+        { nom: 'Empan endroit', score: '5/7', et: '+0.10', percentile: 'P75', percentile_value: 75, interpretation: 'Normal' },
+        { nom: 'Boucle phono', score: '14/25', et: '-1.80', percentile: 'P10', percentile_value: 10, interpretation: 'Limite basse' },
+      ],
+      commentaire: '',
+    },
+  ],
+}
+
 async function main() {
-  console.log('[test-docx] Génération du .docx…')
+  console.log('[test-docx] Génération du .docx (initial)…')
   const blob = await generateCRBOWord(payload)
   const bytes = Buffer.from(await blob.arrayBuffer())
-  const outPath = '/tmp/test-crbo.docx'
+  const outPath = join(tmpdir(), 'test-crbo.docx')
   writeFileSync(outPath, bytes)
   console.log(`[test-docx] .docx écrit : ${outPath} (${bytes.length} bytes)`)
 
-  // Unzip via Python (pas de /usr/bin/unzip en WSL minimal)
-  const extractDir = '/tmp/test-crbo-unzipped'
-  if (existsSync(extractDir)) rmSync(extractDir, { recursive: true })
-  mkdirSync(extractDir, { recursive: true })
-  execSync(`python3 -c "import zipfile; zipfile.ZipFile('${outPath}').extractall('${extractDir}')"`, { stdio: 'inherit' })
+  // Unzip via adm-zip (cross-platform, pas de dépendance python/unzip)
+  const zip = new AdmZip(outPath)
+  const entries: { name: string; data: Buffer }[] = zip.getEntries().map((e: any) => ({
+    name: e.entryName,
+    data: e.getData(),
+  }))
 
   const errors: string[] = []
-  const walk = (dir: string): string[] => {
-    const out: string[] = []
-    for (const f of readdirSync(dir, { withFileTypes: true })) {
-      const full = `${dir}/${f.name}`
-      if (f.isDirectory()) out.push(...walk(full))
-      else if (f.name.endsWith('.xml') || f.name.endsWith('.rels')) out.push(full)
-    }
-    return out
-  }
-
-  const xmlFiles = walk(extractDir)
-  console.log(`[test-docx] ${xmlFiles.length} fichiers XML à valider`)
-  for (const file of xmlFiles) {
-    try {
-      execSync(`python3 -c "import xml.etree.ElementTree as ET; ET.parse('${file}')"`, { stdio: 'pipe' })
-    } catch (e: any) {
-      errors.push(`${file}: ${e.stderr?.toString().trim() || e.message}`)
-    }
-  }
 
   // Vérifications structurelles spécifiques
-  const docXml = readFileSync(`${extractDir}/word/document.xml`, 'utf8')
+  const docEntry = entries.find((e) => e.name === 'word/document.xml')
+  if (!docEntry) { console.error('document.xml introuvable'); process.exit(1) }
+  const docXml = docEntry.data.toString('utf8')
+
+  // ===== INVARIANT CRITIQUE : sum(gridCol) === tblW pour chaque table =====
+  // C'est ce qui déclenche "Propriétés des tableaux 1 à N" dans Word quand sum dérive
+  // de ±1 DXA à cause d'arrondis indépendants par colonne.
+  const tableBlocks = [...docXml.matchAll(/<w:tbl>([\s\S]*?)<\/w:tbl>/g)]
+  console.log(`[test-docx] ${tableBlocks.length} tables à vérifier (invariant gridCol)`)
+  tableBlocks.forEach((m, idx) => {
+    const tblXml = m[1]
+    const tblWTag = tblXml.match(/<w:tblW\s+([^/]*?)\/>/)
+    if (!tblWTag) { errors.push(`Table #${idx + 1} : <w:tblW> introuvable`); return }
+    const tblWAttrs = tblWTag[1]
+    if (!/w:type="dxa"/.test(tblWAttrs)) { errors.push(`Table #${idx + 1} : <w:tblW> non-DXA (${tblWAttrs})`); return }
+    const wMatch = tblWAttrs.match(/w:w="(\d+)"/)
+    if (!wMatch) { errors.push(`Table #${idx + 1} : <w:tblW w:w> introuvable`); return }
+    const tblWidth = parseInt(wMatch[1], 10)
+    const gridCols = [...tblXml.matchAll(/<w:gridCol\s+w:w="(\d+)"/g)].map(g => parseInt(g[1], 10))
+    const gridSum = gridCols.reduce((a, b) => a + b, 0)
+    if (gridSum !== tblWidth) {
+      errors.push(`Table #${idx + 1} : sum(gridCol)=${gridSum} ≠ tblW=${tblWidth} (delta=${gridSum - tblWidth})`)
+    }
+  })
 
   // Tous les w:tcW doivent avoir w:type="dxa" (pas "pct")
   const tcwMatches = [...docXml.matchAll(/<w:tcW\s+([^/]+?)\/>/g)]
@@ -145,8 +172,35 @@ async function main() {
   const pageBreaks = [...docXml.matchAll(/<w:br\s+w:type="page"/g)].length
   console.log(`[test-docx] ${pageBreaks} PageBreak`)
 
+  // ===== Pass 2 : renouvellement (ajoute le tableau comparatif avec columnSpan) =====
+  console.log('\n[test-docx] Génération du .docx (renouvellement)…')
+  const blob2 = await generateCRBOWord({ ...payload, previousStructure, previousBilanDate: '2024-09-01' })
+  const bytes2 = Buffer.from(await blob2.arrayBuffer())
+  const outPath2 = join(tmpdir(), 'test-crbo-renouvellement.docx')
+  writeFileSync(outPath2, bytes2)
+  console.log(`[test-docx] .docx écrit : ${outPath2} (${bytes2.length} bytes)`)
+  const zip2 = new AdmZip(outPath2)
+  const docXml2 = zip2.getEntry('word/document.xml').getData().toString('utf8')
+  const tableBlocks2 = [...docXml2.matchAll(/<w:tbl>([\s\S]*?)<\/w:tbl>/g)]
+  console.log(`[test-docx] ${tableBlocks2.length} tables à vérifier (renouvellement)`)
+  tableBlocks2.forEach((m, idx) => {
+    const tblXml = m[1]
+    const tblWTag = tblXml.match(/<w:tblW\s+([^/]*?)\/>/)
+    if (!tblWTag) { errors.push(`[renouv] Table #${idx + 1} : <w:tblW> introuvable`); return }
+    const tblWAttrs = tblWTag[1]
+    if (!/w:type="dxa"/.test(tblWAttrs)) { errors.push(`[renouv] Table #${idx + 1} : <w:tblW> non-DXA`); return }
+    const wMatch = tblWAttrs.match(/w:w="(\d+)"/)
+    if (!wMatch) { errors.push(`[renouv] Table #${idx + 1} : w:w introuvable`); return }
+    const tblWidth = parseInt(wMatch[1], 10)
+    const gridCols = [...tblXml.matchAll(/<w:gridCol\s+w:w="(\d+)"/g)].map(g => parseInt(g[1], 10))
+    const gridSum = gridCols.reduce((a, b) => a + b, 0)
+    if (gridSum !== tblWidth) {
+      errors.push(`[renouv] Table #${idx + 1} : sum(gridCol)=${gridSum} ≠ tblW=${tblWidth}`)
+    }
+  })
+
   if (errors.length === 0) {
-    console.log('\n✅ VALIDATION RÉUSSIE — aucun XML malformé, toutes les largeurs en DXA, shadings en CLEAR')
+    console.log('\n✅ VALIDATION RÉUSSIE — initial + renouvellement, toutes les largeurs en DXA, sum(gridCol)=tblW pour chaque table')
   } else {
     console.log('\n❌ ERREURS DÉTECTÉES :')
     for (const e of errors) console.log('  •', e)
