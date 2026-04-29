@@ -235,17 +235,51 @@ type Layout = {
 /**
  * Pré-calcule les positions x absolues de chaque barre, sous-groupe et famille.
  * Le rendu (drawHappyNeuronChart) ne fait plus que parcourir cette structure.
+ *
+ * IMPORTANT — élargissement des familles pour titres longs :
+ *   "COMPÉTENCES SOUS-JACENTES" est plus large qu'un sous-groupe de 2-3 barres.
+ *   Sans pad, le titre déborde / est tronqué. On mesure chaque titre, et on
+ *   pad la famille (left+right symétrique) pour que son span ≥ titre + 14px.
+ *   Les barres restent centrées dans leur famille, le canvas s'élargit juste
+ *   ce qu'il faut.
  */
+const FAMILY_TITLE_HORIZONTAL_PAD = 14
+
+function measureFamilyTitle(name: string): number {
+  if (typeof document === 'undefined') {
+    // Estimation conservatrice : ~7 px par caractère majuscule pour 11px bold.
+    return Math.ceil(name.toUpperCase().length * 7)
+  }
+  const c = document.createElement('canvas')
+  const ctx = c.getContext('2d')
+  if (!ctx) return Math.ceil(name.toUpperCase().length * 7)
+  ctx.font = `bold ${FAMILY_TITLE_FONT_PX}px Calibri, Arial, sans-serif`
+  return Math.ceil(ctx.measureText(name.toUpperCase()).width)
+}
+
 function computeLayout(groups: ChartGroup[]): Layout {
   const families = regroupIntoFamilies(groups)
-  // Aplatit chaque famille en root-subgroups (on perd la frontière "domaine"
-  // au sein de la famille — l'utilisateur ne demande pas de séparation visuelle
-  // entre B.1 Lecture et B.2 Orthographe par exemple).
+  // Aplatit chaque famille en root-subgroups.
   const flattened = families.map(f => ({
     key: f.key,
     name: f.name,
     rootRaw: f.subgroups.flatMap(sg => splitByRoot(sg.bars)),
   }))
+
+  // Pré-calcul des largeurs : contenu de chaque famille (barres + intra-gaps)
+  // et largeur du titre famille (mesurée).
+  const familyContentWidths = flattened.map(f => {
+    const rootSpans = f.rootRaw.map(rg =>
+      rg.bars.length * BAR_W + Math.max(0, rg.bars.length - 1) * INTRA_ROOT_GAP,
+    )
+    const innerGaps = Math.max(0, f.rootRaw.length - 1) * INTER_ROOT_GAP
+    return rootSpans.reduce((a, b) => a + b, 0) + innerGaps
+  })
+  const familyTitleWidths = flattened.map(f => measureFamilyTitle(f.name))
+  // Span effectif = max(contenu, titre + pad horizontal).
+  const familyTargetSpans = flattened.map((_, fi) =>
+    Math.max(familyContentWidths[fi], familyTitleWidths[fi] + FAMILY_TITLE_HORIZONTAL_PAD),
+  )
 
   let cursorX = PAD_LEFT
   const familyLayouts: FamilyLayout[] = []
@@ -255,6 +289,12 @@ function computeLayout(groups: ChartGroup[]): Layout {
   for (let fi = 0; fi < flattened.length; fi++) {
     const f = flattened[fi]
     const familyStartX = cursorX
+    // Padding gauche pour centrer les barres si la famille est élargie pour le titre.
+    const extra = familyTargetSpans[fi] - familyContentWidths[fi]
+    const leftPad = Math.floor(extra / 2)
+    const rightPad = extra - leftPad
+    cursorX += leftPad
+
     const rootLayouts: RootLayout[] = []
 
     for (let gi = 0; gi < f.rootRaw.length; gi++) {
@@ -278,6 +318,7 @@ function computeLayout(groups: ChartGroup[]): Layout {
       if (gi < f.rootRaw.length - 1) cursorX += INTER_ROOT_GAP
     }
 
+    cursorX += rightPad
     const familyEndX = cursorX
     familyLayouts.push({
       key: f.key,
