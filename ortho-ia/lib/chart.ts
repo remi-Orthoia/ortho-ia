@@ -173,7 +173,9 @@ const INTRA_ROOT_GAP = 2         // entre barres d'une même racine
 const INTER_ROOT_GAP = 10        // entre sous-groupes (racines distinctes)
 const INTER_FAMILY_GAP = 24      // entre familles + ligne pointillée
 
-const BASE_CANVAS_WIDTH = 1600
+// Plus de largeur minimale fixée : computeChartWidth retourne uniquement
+// ce qui est nécessaire pour les barres + paddings. Évite l'espace vide
+// à droite quand le bilan a peu d'épreuves.
 
 // --------------------- Helpers ---------------------
 
@@ -298,14 +300,20 @@ function computeLayout(groups: ChartGroup[]): Layout {
 // --------------------- Dimensions canvas ---------------------
 
 /**
- * Largeur idéale du canvas pour afficher tous les sous-groupes confortablement.
- * = max(BASE_CANVAS_WIDTH, contenu calculé). Le canvas peut donc être plus
- * large que 1600px sur des bilans très chargés (40+ épreuves).
+ * Largeur exacte du canvas — juste ce qu'il faut pour les barres + paddings,
+ * pas de minimum forcé qui créerait de l'espace vide à droite.
+ *
+ * Sur les bilans peu chargés (5-10 épreuves), le canvas fait ~600-900px.
+ * Sur les bilans très chargés (40+ épreuves), il s'étend largement (1500-2000+).
+ * Word redimensionne ensuite l'image à TARGET_WORD_PX (620px) pour rester
+ * dans les marges A4 — le ratio est préservé.
  */
 export function computeChartWidth(groups: ChartGroup[]): number {
   const layout = computeLayout(groups)
   const required = layout.contentEndX + PAD_RIGHT
-  return Math.max(BASE_CANVAS_WIDTH, required)
+  // Plancher minuscule pour éviter un canvas dégénéré sur 1-2 épreuves
+  // (mais sans imposer 1600 partout — c'est là qu'était le bug d'espace vide).
+  return Math.max(640, required)
 }
 
 /**
@@ -533,7 +541,7 @@ export function drawHappyNeuronChart(
 
 /**
  * Génère un PNG (ArrayBuffer) du graphique pour embarquer dans le Word.
- * Si `width` est omis, calcule la largeur dynamiquement (≥ BASE_CANVAS_WIDTH).
+ * Si `width` est omis, calcule la largeur exacte via computeChartWidth.
  */
 export async function happyNeuronChartToPng(
   groups: ChartGroup[],
