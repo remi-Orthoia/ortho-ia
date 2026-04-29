@@ -164,6 +164,7 @@ const LABEL_FONT_PX = 9          // épreuves (vertical) — spec Laurie 9px
 const SUBGROUP_TITLE_FONT_PX = 9 // sous-groupes "A.1 …" en italique #546E7A
 const SUBGROUP_TITLE_LINE_H = 12
 const SUBGROUP_TITLE_MAX_LINES = 2
+const SUBGROUP_LEVEL_SPACING = SUBGROUP_TITLE_MAX_LINES * SUBGROUP_TITLE_LINE_H + 4
 const FAMILY_TITLE_FONT_PX = 11  // familles "LANGAGE ORAL" en gras vert
 const BAR_VALUE_FONT_PX = 8      // valeur "P5" au sommet de chaque barre
 const MIN_CHART_AREA_H = 220
@@ -358,9 +359,66 @@ export function computeChartWidth(groups: ChartGroup[]): number {
 }
 
 /**
- * Hauteur idéale du canvas (titre famille + sous-groupes wrappés + zone barres
- * + labels verticaux complets en bas).
+ * Place les titres de sous-groupe en répartissant sur plusieurs niveaux Y
+ * pour éviter les chevauchements horizontaux. Retourne pour chaque (fi, gi) :
+ *   - lines  : titre wrappé selon la largeur disponible
+ *   - level  : 0 = niveau le plus bas (proche des barres), N+ = au-dessus
+ *   - widthMax : largeur du plus long line (utilisée pour la détection collision)
+ *
+ * Algo : balayage gauche→droite, on attribue à chaque titre le plus petit
+ * niveau libre (où aucun titre déjà placé ne chevauche horizontalement).
  */
+type SubgroupTitlePlacement = { lines: string[]; level: number; widthMax: number }
+
+function placeSubgroupTitles(
+  ctx: CanvasRenderingContext2D,
+  layout: Layout,
+): { placements: SubgroupTitlePlacement[][]; maxLines: number; numLevels: number } {
+  ctx.font = `italic ${SUBGROUP_TITLE_FONT_PX}px Calibri, Arial, sans-serif`
+
+  // Wrap initial : autorise le titre à déborder un peu sur les inter-root gaps
+  // (span + 0.8 * INTER_ROOT_GAP). Ça réduit le nombre de lignes nécessaires
+  // pour les sous-groupes à 1 barre dont le titre mesure 100 px contre 18 px
+  // de bar span.
+  const placements: SubgroupTitlePlacement[][] = layout.families.map(fam =>
+    fam.rootGroups.map(rg => {
+      const barSpan = rg.endX - rg.startX
+      const allowance = barSpan + INTER_ROOT_GAP * 0.8
+      const lines = wrapTextByWords(ctx, rg.name, Math.max(40, allowance) - 2, SUBGROUP_TITLE_MAX_LINES)
+      const widths = lines.map(l => ctx.measureText(l).width)
+      const widthMax = lines.length > 0 ? Math.max(...widths) : 0
+      return { lines, level: 0, widthMax }
+    }),
+  )
+
+  // Niveaux dynamiques : on garde la position right-edge du dernier titre
+  // placé sur chaque niveau. Pour un titre, on prend le plus petit niveau
+  // dont right < newLeft (avec une marge de 4 px).
+  const levelLastRight: number[] = []
+  for (let fi = 0; fi < layout.families.length; fi++) {
+    for (let gi = 0; gi < layout.families[fi].rootGroups.length; gi++) {
+      const rg = layout.families[fi].rootGroups[gi]
+      const p = placements[fi][gi]
+      if (p.lines.length === 0) continue
+      const left = rg.centerX - p.widthMax / 2
+      const right = rg.centerX + p.widthMax / 2
+      let level = 0
+      while (level < levelLastRight.length && left < levelLastRight[level] + 4) level++
+      if (level === levelLastRight.length) levelLastRight.push(right)
+      else levelLastRight[level] = right
+      p.level = level
+    }
+  }
+
+  const maxLines = placements.reduce(
+    (m, fLines) => Math.max(m, fLines.reduce((mm, p) => Math.max(mm, p.lines.length), 1)),
+    1,
+  )
+  const numLevels = Math.max(1, levelLastRight.length)
+  return { placements, maxLines, numLevels }
+}
+
+/** Hauteur idéale du canvas (titre famille + sous-groupes staggés + barres + labels verticaux). */
 export function computeChartHeight(
   width: number,
   groups: ChartGroup[],
@@ -380,16 +438,11 @@ export function computeChartHeight(
   const padBottom = Math.ceil(maxLabelW) + PAD_BOTTOM_MIN
 
   const layout = computeLayout(groups)
-  ctx.font = `bold ${SUBGROUP_TITLE_FONT_PX}px Calibri, Arial, sans-serif`
-  let maxSubLines = 1
-  for (const fam of layout.families) {
-    for (const rg of fam.rootGroups) {
-      const span = Math.max(40, rg.endX - rg.startX)
-      const lines = wrapTextByWords(ctx, rg.name, span - 4, SUBGROUP_TITLE_MAX_LINES)
-      if (lines.length > maxSubLines) maxSubLines = lines.length
-    }
-  }
-  const padTop = PAD_TOP_BASE + (maxSubLines - 1) * SUBGROUP_TITLE_LINE_H
+  const { maxLines, numLevels } = placeSubgroupTitles(ctx, layout)
+  const padTop =
+    PAD_TOP_BASE +
+    (maxLines - 1) * SUBGROUP_TITLE_LINE_H +
+    (numLevels - 1) * SUBGROUP_LEVEL_SPACING
 
   return Math.max(minHeight, padTop + MIN_CHART_AREA_H + padBottom)
 }
@@ -422,19 +475,13 @@ export function drawHappyNeuronChart(
 
   const layout = computeLayout(groups)
 
-  // Pré-wrap des titres de sous-groupe pour calculer maxSubLines
-  ctx.font = `bold ${SUBGROUP_TITLE_FONT_PX}px Calibri, Arial, sans-serif`
-  const wrappedSubTitles = layout.families.map(fam =>
-    fam.rootGroups.map(rg => {
-      const span = Math.max(40, rg.endX - rg.startX)
-      return wrapTextByWords(ctx, rg.name, span - 4, SUBGROUP_TITLE_MAX_LINES)
-    }),
-  )
-  const maxSubLines = wrappedSubTitles.reduce(
-    (m, fLines) => Math.max(m, fLines.reduce((mm, l) => Math.max(mm, l.length), 1)),
-    1,
-  )
-  const padTop = PAD_TOP_BASE + (maxSubLines - 1) * SUBGROUP_TITLE_LINE_H
+  // Placement multi-niveaux des titres de sous-groupe (anti-overlap)
+  const { placements: subTitlePlacements, maxLines: maxSubLines, numLevels: subLevels } =
+    placeSubgroupTitles(ctx, layout)
+  const padTop =
+    PAD_TOP_BASE +
+    (maxSubLines - 1) * SUBGROUP_TITLE_LINE_H +
+    (subLevels - 1) * SUBGROUP_LEVEL_SPACING
 
   const chartH = Math.max(MIN_CHART_AREA_H, height - padTop - padBottom)
   const yFor = (p: number) => padTop + chartH - (p / 100) * chartH
@@ -520,29 +567,35 @@ export function drawHappyNeuronChart(
   // ===== Barres + titres =====
   if (layout.totalBars === 0) return
 
+  // Hauteur du bloc complet de titres de sous-groupes (tous niveaux confondus).
+  // Utilisée pour positionner le titre famille au-dessus avec un gap propre.
+  const subgroupBlockHeight =
+    (subLevels - 1) * SUBGROUP_LEVEL_SPACING + maxSubLines * SUBGROUP_TITLE_LINE_H
+
   for (let fi = 0; fi < layout.families.length; fi++) {
     const fam = layout.families[fi]
 
-    // Titre de famille (au-dessus, gras vert MAJUSCULES)
+    // Titre de famille (au-dessus de TOUS les niveaux de sous-groupe)
     ctx.fillStyle = '#1B5E20'
     ctx.font = `bold ${FAMILY_TITLE_FONT_PX}px Calibri, Arial, sans-serif`
     ctx.textAlign = 'center'
-    const familyTitleY = padTop - (maxSubLines * SUBGROUP_TITLE_LINE_H) - 8
+    const familyTitleY = padTop - subgroupBlockHeight - 8
     ctx.fillText(fam.name.toUpperCase(), fam.centerX, familyTitleY)
 
     for (let gi = 0; gi < fam.rootGroups.length; gi++) {
       const rg = fam.rootGroups[gi]
 
-      // Titre de sous-groupe (italique #546E7A, 9px — spec Laurie)
-      const titleLines = wrappedSubTitles[fi][gi]
-      if (titleLines && titleLines.length > 0) {
+      // Titre de sous-groupe (italique #546E7A, 9px — staggé sur niveau dédié)
+      const placement = subTitlePlacements[fi][gi]
+      if (placement && placement.lines.length > 0) {
         ctx.fillStyle = '#546E7A'
         ctx.font = `italic ${SUBGROUP_TITLE_FONT_PX}px Calibri, Arial, sans-serif`
         ctx.textAlign = 'center'
-        const baseY = padTop - 6
-        for (let li = 0; li < titleLines.length; li++) {
-          const yLine = baseY - (titleLines.length - 1 - li) * SUBGROUP_TITLE_LINE_H
-          ctx.fillText(titleLines[li], rg.centerX, yLine)
+        // baseY = baseline du bas du titre, décalée vers le haut selon level
+        const baseY = padTop - 6 - placement.level * SUBGROUP_LEVEL_SPACING
+        for (let li = 0; li < placement.lines.length; li++) {
+          const yLine = baseY - (placement.lines.length - 1 - li) * SUBGROUP_TITLE_LINE_H
+          ctx.fillText(placement.lines[li], rg.centerX, yLine)
         }
       }
 
