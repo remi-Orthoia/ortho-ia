@@ -19,12 +19,22 @@ export async function POST(request: NextRequest) {
 
     // ============ Récupération du fichier audio ============
     const formData = await request.formData()
-    const audio = formData.get('audio') as Blob | null
+    // Le hook envoie sous la clé `audio`. On accepte aussi `file` (au cas où
+    // un autre client utilise la convention OpenAI directe) pour robustesse.
+    const audio = (formData.get('audio') ?? formData.get('file')) as Blob | null
     if (!audio || typeof (audio as any).arrayBuffer !== 'function') {
+      const keys: string[] = []
+      formData.forEach((_v, k) => keys.push(k))
+      console.warn('[transcribe] Fichier audio manquant — clés FormData :', keys)
       return NextResponse.json({ error: 'Fichier audio manquant.' }, { status: 400 })
     }
+    console.log('[transcribe] reçu', {
+      size: audio.size,
+      type: audio.type,
+      name: (audio as any).name || '(blob sans nom)',
+    })
     if (audio.size === 0) {
-      return NextResponse.json({ error: 'Audio vide.' }, { status: 400 })
+      return NextResponse.json({ error: 'Audio vide (durée trop courte).' }, { status: 400 })
     }
     if (audio.size > MAX_AUDIO_BYTES) {
       return NextResponse.json(
@@ -57,6 +67,7 @@ export async function POST(request: NextRequest) {
 
     // SDK retourne déjà un string quand response_format = 'text'.
     const text = typeof transcription === 'string' ? transcription : ((transcription as any)?.text ?? '')
+    console.log('[transcribe] OK', { chars: text.length, preview: text.slice(0, 80) })
 
     return NextResponse.json({ success: true, text: text.trim() })
   } catch (error: any) {
