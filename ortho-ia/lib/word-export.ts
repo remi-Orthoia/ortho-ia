@@ -229,12 +229,14 @@ export async function generateCRBOWord(payload: WordExportPayload): Promise<Blob
 
   // Graphique HappyNeuron : la logique de rendu est dans lib/chart.ts (partagée
   // avec la page de visualisation pré-Word). Wrapper local pour la signature.
+  // ⚠️ NE PAS imposer de width par défaut — sinon computeChartWidth dynamique
+  // est court-circuité et le canvas a de l'espace vide à droite sur les bilans
+  // peu chargés. On laisse happyNeuronChartToPng calculer la largeur exacte.
   const generateGroupedBarChart = (
     groups: ChartGroup[],
     title: string,
-    width = 1000,
-    height = 480,
-  ) => happyNeuronChartToPng(groups, title, width, height)
+    minHeight = 480,
+  ) => happyNeuronChartToPng(groups, title, undefined, minHeight)
 
   const imageParagraph = (img: { data: ArrayBuffer; width: number; height: number }) => {
     // Cible une largeur d'affichage Word constante (~620 px) pour rester dans
@@ -583,7 +585,7 @@ export async function generateCRBOWord(payload: WordExportPayload): Promise<Blob
         const recapChart = await generateGroupedBarChart(
           groups,
           'Profil global — percentiles par épreuve',
-          1000, 480,
+          480,
         )
         children.push(
           new Paragraph({ children: [new TextRun({ text: 'Synthèse des résultats', size: FONT_SIZE_NORMAL, font: FONT, color: COLOR_GREEN, bold: true })], spacing: { before: 200 } }),
