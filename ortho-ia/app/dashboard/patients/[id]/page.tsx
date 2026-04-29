@@ -281,7 +281,7 @@ export default function PatientDetailPage() {
         )}
         <div className="mt-4 flex flex-wrap gap-2 text-xs">
           {SEUILS.map(s => (
-            <span key={s.label} className="inline-flex items-center gap-1 px-2 py-1 rounded border" style={{ backgroundColor: '#' + s.shading, borderColor: '#' + s.shading }}>
+            <span key={s.label} className="inline-flex items-center gap-1 px-2 py-1 rounded border" style={{ backgroundColor: '#' + s.shading, borderColor: '#' + s.shading, color: s.textColor ? '#' + s.textColor : undefined }}>
               <strong>{s.label}</strong> {s.range}
             </span>
           ))}

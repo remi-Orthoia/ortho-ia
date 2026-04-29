@@ -35,14 +35,27 @@ export type ZonePerformance = {
   css: string
 }
 
+/** Couleurs des bandes de fond du graphique (palette pastel imposée Laurie).
+ *  La couleur des barres elles-mêmes est plus saturée — voir BAR_FILL_OF_VALUE. */
 export const ZONES: ZonePerformance[] = [
-  { label: 'Excellent résultat',                min: 76, css: '#1B5E20' },
-  { label: 'Résultat dans la moyenne haute',    min: 51, css: '#66BB6A' },
-  { label: 'Résultat dans la moyenne basse',    min: 26, css: '#C0CA33' },
-  { label: 'Zone de fragilité',                 min: 10, css: '#FFB74D' },
-  { label: 'Zone de difficulté',                min: 5,  css: '#EF6C00' },
-  { label: 'Zone de difficulté sévère',         min: 0,  css: '#5D4037' },
+  { label: 'Excellent résultat',                min: 76, css: '#C8E6C9' }, // vert clair
+  { label: 'Résultat dans la moyenne haute',    min: 51, css: '#DCEDC8' }, // vert très clair
+  { label: 'Résultat dans la moyenne basse',    min: 26, css: '#F9FBE7' }, // jaune très clair
+  { label: 'Zone de fragilité',                 min: 10, css: '#FFE0B2' }, // orange très clair
+  { label: 'Zone de difficulté',                min: 5,  css: '#FFCCBC' }, // orange clair
+  { label: 'Zone de difficulté sévère',         min: 0,  css: '#D7CCC8' }, // marron clair
 ]
+
+/** Couleur de remplissage des barres (palette saturée — même que les fonds
+ *  cellules tableaux Word). Plus visible que la palette pastel des bandes. */
+const BAR_FILL_OF_VALUE = (value: number): string => {
+  if (value >= 76) return '#2E7D32' // vert foncé
+  if (value >= 51) return '#66BB6A' // vert clair
+  if (value >= 26) return '#D4E157' // jaune-vert
+  if (value >= 10) return '#FFA726' // orange
+  if (value >= 5)  return '#EF6C00' // orange foncé
+  return '#4E342E'                  // marron
+}
 
 export function zoneFor(value: number): ZonePerformance {
   for (const z of ZONES) if (value >= z.min) return z
@@ -143,20 +156,21 @@ function splitByRoot(bars: ChartBar[]): { root: string; bars: ChartBar[] }[] {
 
 // --------------------- Constantes de mise en page ---------------------
 
-const PAD_LEFT = 200
+const PAD_LEFT = 200             // place pour les labels longs des zones gauche
 const PAD_RIGHT = 24
 const PAD_TOP_BASE = 84
 const PAD_BOTTOM_MIN = 44
-const LABEL_FONT_PX = 10
-const SUBGROUP_TITLE_FONT_PX = 11
-const SUBGROUP_TITLE_LINE_H = 14
+const LABEL_FONT_PX = 9          // épreuves (vertical) — spec Laurie 9px
+const SUBGROUP_TITLE_FONT_PX = 9 // sous-groupes "A.1 …" en italique #546E7A
+const SUBGROUP_TITLE_LINE_H = 12
 const SUBGROUP_TITLE_MAX_LINES = 2
-const FAMILY_TITLE_FONT_PX = 13
+const FAMILY_TITLE_FONT_PX = 11  // familles "LANGAGE ORAL" en gras vert
+const BAR_VALUE_FONT_PX = 8      // valeur "P5" au sommet de chaque barre
 const MIN_CHART_AREA_H = 220
 
-const BAR_W = 14                 // largeur fixe de chaque barre
+const BAR_W = 18                 // largeur fixe de chaque barre (spec Laurie)
 const INTRA_ROOT_GAP = 2         // entre barres d'une même racine
-const INTER_ROOT_GAP = 12        // entre sous-groupes (racines distinctes)
+const INTER_ROOT_GAP = 10        // entre sous-groupes (racines distinctes)
 const INTER_FAMILY_GAP = 24      // entre familles + ligne pointillée
 
 const BASE_CANVAS_WIDTH = 1600
@@ -401,6 +415,8 @@ export function drawHappyNeuronChart(
   ctx.strokeRect(chartLeftX, padTop, chartW, chartH)
 
   // Labels de zone à gauche
+  // Labels de zone à gauche — couleur saturée (pas le pastel des bandes)
+  // sinon le texte est illisible sur le fond clair de la zone gauche.
   ctx.font = '600 10.5px Calibri, Arial, sans-serif'
   ctx.textAlign = 'right'
   for (let i = 0; i < ZONES.length; i++) {
@@ -410,7 +426,7 @@ export function drawHappyNeuronChart(
     const bandBot = yFor(z.min)
     if (bandBot - bandTop < 12) continue
     const mid = (bandTop + bandBot) / 2
-    ctx.fillStyle = z.css
+    ctx.fillStyle = BAR_FILL_OF_VALUE(z.min === 0 ? 0 : z.min)
     const lines = wrapTextByWords(ctx, z.label, PAD_LEFT - 16, 2)
     if (lines.length === 1) {
       ctx.fillText(lines[0], PAD_LEFT - 8, mid + 4)
@@ -468,11 +484,11 @@ export function drawHappyNeuronChart(
     for (let gi = 0; gi < fam.rootGroups.length; gi++) {
       const rg = fam.rootGroups[gi]
 
-      // Titre de sous-groupe (gris, wrappable)
+      // Titre de sous-groupe (italique #546E7A, 9px — spec Laurie)
       const titleLines = wrappedSubTitles[fi][gi]
       if (titleLines && titleLines.length > 0) {
-        ctx.fillStyle = '#37474F'
-        ctx.font = `bold ${SUBGROUP_TITLE_FONT_PX}px Calibri, Arial, sans-serif`
+        ctx.fillStyle = '#546E7A'
+        ctx.font = `italic ${SUBGROUP_TITLE_FONT_PX}px Calibri, Arial, sans-serif`
         ctx.textAlign = 'center'
         const baseY = padTop - 6
         for (let li = 0; li < titleLines.length; li++) {
@@ -486,17 +502,18 @@ export function drawHappyNeuronChart(
         const v = Math.max(0, Math.min(100, b.value))
         const yTop = yFor(v)
         const h = padTop + chartH - yTop
-        const z = zoneFor(v)
 
-        ctx.fillStyle = z.css
+        // Couleur saturée pour la barre (palette tableau Word, plus visible
+        // que les bandes pastel de fond).
+        ctx.fillStyle = BAR_FILL_OF_VALUE(v)
         ctx.fillRect(b.x, yTop, BAR_W, h)
         ctx.strokeStyle = '#212121'
-        ctx.lineWidth = 0.5
+        ctx.lineWidth = 1
         ctx.strokeRect(b.x, yTop, BAR_W, h)
 
-        // Valeur P au-dessus
-        ctx.fillStyle = '#212121'
-        ctx.font = 'bold 9px Calibri, Arial, sans-serif'
+        // Valeur P au-dessus (8px noir — spec Laurie)
+        ctx.fillStyle = '#000000'
+        ctx.font = `${BAR_VALUE_FONT_PX}px Calibri, Arial, sans-serif`
         ctx.textAlign = 'center'
         ctx.fillText(`P${Math.round(v)}`, b.x + BAR_W / 2, yTop - 3)
 

@@ -144,7 +144,7 @@ export default function CRBOStructuredPreview({ structure, onDownload, onEdit, o
           {/* Légende des seuils */}
           <div className="flex flex-wrap gap-2 text-xs">
             {SEUILS.map(s => (
-              <span key={s.label} className="inline-flex items-center gap-1.5 px-2 py-1 rounded border" style={{ backgroundColor: '#' + s.shading, borderColor: '#' + s.shading }}>
+              <span key={s.label} className="inline-flex items-center gap-1.5 px-2 py-1 rounded border" style={{ backgroundColor: '#' + s.shading, borderColor: '#' + s.shading, color: s.textColor ? '#' + s.textColor : undefined }}>
                 <strong>{s.label}</strong> {s.range}
               </span>
             ))}
@@ -180,9 +180,14 @@ export default function CRBOStructuredPreview({ structure, onDownload, onEdit, o
                             {e.percentile}
                           </td>
                           <td className="py-2 pl-2 text-center">
-                            <span className="inline-block px-2 py-0.5 rounded text-xs font-semibold" style={{ backgroundColor: '#' + color, color: '#000' }}>
-                              {seuilFor(e.percentile_value).label}
-                            </span>
+                            {(() => {
+                              const seuil = seuilFor(e.percentile_value)
+                              return (
+                                <span className="inline-block px-2 py-0.5 rounded text-xs font-semibold" style={{ backgroundColor: '#' + seuil.shading, color: seuil.textColor ? '#' + seuil.textColor : '#000' }}>
+                                  {seuil.label}
+                                </span>
+                              )
+                            })()}
                           </td>
                         </tr>
                       )

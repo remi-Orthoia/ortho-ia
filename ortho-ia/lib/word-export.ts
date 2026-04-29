@@ -32,29 +32,49 @@ export type { ZonePerformance } from './chart'
 // Note : Q1 (P25) reste en zone de fragilité (pas en moyenne basse) — règle
 // clinique Laurie déjà appliquée par l'extraction. min=26 pour la moyenne basse.
 
+// Labels COURTS imposés par Laurie pour la colonne Interprétation des
+// tableaux. La légende affiche la version longue ("Excellent résultat",
+// "Résultat dans la moyenne haute") via SEUIL_LONG_LABELS ci-dessous.
 export type SeuilLabel =
-  | 'Excellent résultat'
-  | 'Résultat dans la moyenne haute'
-  | 'Résultat dans la moyenne basse'
-  | 'Zone de fragilité'
-  | 'Zone de difficulté'
-  | 'Zone de difficulté sévère'
+  | 'Excellent'
+  | 'Moyenne haute'
+  | 'Moyenne basse'
+  | 'Fragilité'
+  | 'Difficulté'
+  | 'Difficulté sévère'
 
 export type SeuilClinique = {
   label: SeuilLabel
+  /** Label long affiché dans la légende du Word. */
+  longLabel: string
   min: number
-  shading: string // hex sans # (pour docx + UI chip background)
-  css: string     // avec # (pour canvas + UI chip foreground)
+  /** Hex sans # — fond cellule docx + UI chip background. */
+  shading: string
+  /** Hex avec # — texte canvas/UI. */
+  css: string
+  /** Couleur du texte dans la cellule (white pour fonds foncés, undefined sinon). */
+  textColor?: string
   range: string
 }
 
+// Palette imposée Laurie (fonds cellules + couleurs texte si fond foncé) :
+//   Excellent          → #2E7D32 fond vert foncé,    texte blanc
+//   Moyenne haute      → #66BB6A fond vert clair
+//   Moyenne basse      → #D4E157 fond jaune-vert
+//   Fragilité          → #FFA726 fond orange
+//   Difficulté         → #EF6C00 fond orange foncé,  texte blanc
+//   Difficulté sévère  → #4E342E fond marron,        texte blanc
+//
+// Pour les tableaux Word, on utilise les `shading` (cellule) + `textColor`
+// (texte). Pour le graphique chart, voir chart.ts qui a sa propre palette
+// pastel pour les bandes de fond.
 export const SEUILS: SeuilClinique[] = [
-  { label: 'Excellent résultat',              min: 76, shading: 'A5D6A7', css: '#1B5E20', range: 'P > 75' },
-  { label: 'Résultat dans la moyenne haute',  min: 51, shading: 'C8E6C9', css: '#2E7D32', range: 'P51-75' },
-  { label: 'Résultat dans la moyenne basse',  min: 26, shading: 'DCEDC8', css: '#558B2F', range: 'P26-50' },
-  { label: 'Zone de fragilité',               min: 10, shading: 'FFE082', css: '#F57F17', range: 'P10-25' },
-  { label: 'Zone de difficulté',              min: 5,  shading: 'FFAB91', css: '#BF360C', range: 'P5-9' },
-  { label: 'Zone de difficulté sévère',       min: 0,  shading: 'EF9A9A', css: '#B71C1C', range: 'P < 5' },
+  { label: 'Excellent',          longLabel: 'Excellent résultat',              min: 76, shading: '2E7D32', css: '#1B5E20', textColor: 'FFFFFF', range: 'P > 75' },
+  { label: 'Moyenne haute',      longLabel: 'Résultat dans la moyenne haute',  min: 51, shading: '66BB6A', css: '#2E7D32', range: 'P51-75' },
+  { label: 'Moyenne basse',      longLabel: 'Résultat dans la moyenne basse',  min: 26, shading: 'D4E157', css: '#558B2F', range: 'P26-50' },
+  { label: 'Fragilité',          longLabel: 'Zone de fragilité',               min: 10, shading: 'FFA726', css: '#E65100', range: 'P10-25' },
+  { label: 'Difficulté',         longLabel: 'Zone de difficulté',              min: 5,  shading: 'EF6C00', css: '#BF360C', textColor: 'FFFFFF', range: 'P5-9' },
+  { label: 'Difficulté sévère',  longLabel: 'Zone de difficulté sévère',       min: 0,  shading: '4E342E', css: '#3E2723', textColor: 'FFFFFF', range: 'P < 5' },
 ]
 
 export function seuilFor(value: number): SeuilClinique {
@@ -75,20 +95,27 @@ export function seuilFor(value: number): SeuilClinique {
 export function normalizeInterpretation(stored: string | undefined): SeuilLabel | undefined {
   if (!stored) return undefined
   switch (stored) {
-    // Legacy 4 zones → 6 zones (default vers la moyenne basse pour "norme")
+    // Legacy 4 zones → 6 zones courtes (Norm = moyenne basse par défaut)
     case 'Normal':
-    case 'Dans la norme': return 'Résultat dans la moyenne basse'
+    case 'Dans la norme': return 'Moyenne basse'
     case 'Limite basse':
-    case 'Fragile': return 'Zone de fragilité'
-    case 'Déficitaire': return 'Zone de difficulté'
-    case 'Pathologique': return 'Zone de difficulté sévère'
-    // 6 zones officielles (passthrough)
-    case 'Excellent résultat':
-    case 'Résultat dans la moyenne haute':
-    case 'Résultat dans la moyenne basse':
-    case 'Zone de fragilité':
-    case 'Zone de difficulté':
-    case 'Zone de difficulté sévère':
+    case 'Fragile': return 'Fragilité'
+    case 'Déficitaire': return 'Difficulté'
+    case 'Pathologique': return 'Difficulté sévère'
+    // Anciens labels longs (CRBO récents avant labels courts)
+    case 'Excellent résultat': return 'Excellent'
+    case 'Résultat dans la moyenne haute': return 'Moyenne haute'
+    case 'Résultat dans la moyenne basse': return 'Moyenne basse'
+    case 'Zone de fragilité': return 'Fragilité'
+    case 'Zone de difficulté': return 'Difficulté'
+    case 'Zone de difficulté sévère': return 'Difficulté sévère'
+    // Labels courts officiels (passthrough)
+    case 'Excellent':
+    case 'Moyenne haute':
+    case 'Moyenne basse':
+    case 'Fragilité':
+    case 'Difficulté':
+    case 'Difficulté sévère':
       return stored
     default:
       return undefined
@@ -175,14 +202,14 @@ export async function generateCRBOWord(payload: WordExportPayload): Promise<Blob
 
   // ============ Helpers ============
 
-  const createCell = (text: string, options: { bold?: boolean, dxa: number, shading?: string, alignment?: any }) => {
-    const { bold = false, dxa, shading, alignment = AlignmentType.LEFT } = options
+  const createCell = (text: string, options: { bold?: boolean, dxa: number, shading?: string, alignment?: any, textColor?: string }) => {
+    const { bold = false, dxa, shading, alignment = AlignmentType.LEFT, textColor } = options
     return new TableCell({
       width: { size: dxa, type: WidthType.DXA },
       shading: shading ? { type: ShadingType.CLEAR, fill: shading, color: 'auto' } : undefined,
       children: [new Paragraph({
         alignment,
-        children: [new TextRun({ text: text || '', bold, size: FONT_SIZE_NORMAL, font: FONT })],
+        children: [new TextRun({ text: text || '', bold, size: FONT_SIZE_NORMAL, font: FONT, color: textColor })],
       })],
       borders: {
         top:    { style: BorderStyle.SINGLE, size: 1, color: 'BFBFBF' },
@@ -600,7 +627,15 @@ export async function generateCRBOWord(payload: WordExportPayload): Promise<Blob
         width: { size: TOTAL_DXA, type: WidthType.DXA },
         columnWidths: cols,
         rows: [new TableRow({
-          children: SEUILS.map((s, i) => createCell(`${s.label} (${s.range})`, { shading: s.shading, dxa: cols[i], alignment: AlignmentType.CENTER, bold: true })),
+          children: SEUILS.map((s, i) =>
+            createCell(`${s.longLabel} (${s.range})`, {
+              shading: s.shading,
+              dxa: cols[i],
+              alignment: AlignmentType.CENTER,
+              bold: true,
+              textColor: s.textColor,
+            }),
+          ),
         })],
       })
     })(),
@@ -615,7 +650,8 @@ export async function generateCRBOWord(payload: WordExportPayload): Promise<Blob
           spacing: { before: 300, after: 120 },
         }),
       )
-      const cols = dxaCols([40, 15, 12, 15, 18])
+      // Proportions imposées Laurie : épreuve 45 / score 15 / É-T 12 / centile 13 / interprétation 15
+      const cols = dxaCols([45, 15, 12, 13, 15])
       const tableRows = [
         new TableRow({ children: [
           createCell('Épreuve', { bold: true, dxa: cols[0], shading: 'E8F5E9' }),
@@ -626,13 +662,15 @@ export async function generateCRBOWord(payload: WordExportPayload): Promise<Blob
         ]}),
       ]
       domain.epreuves.forEach((e) => {
-        const color = getPercentileColor(e.percentile_value)
+        const seuil = seuilFor(e.percentile_value)
+        // Cellules épreuve / score / É-T : pas de fond coloré (sobre).
+        // Centile et Interprétation : fond couleur de la zone + texte adapté.
         tableRows.push(new TableRow({ children: [
-          createCell(e.nom, { dxa: cols[0], shading: color }),
-          createCell(e.score, { dxa: cols[1], alignment: AlignmentType.CENTER, shading: color }),
-          createCell(e.et ?? '—', { dxa: cols[2], alignment: AlignmentType.CENTER, shading: color }),
-          createCell(fmtCentile(e.percentile, e.percentile_value), { dxa: cols[3], alignment: AlignmentType.CENTER, shading: color }),
-          createCell(seuilFor(e.percentile_value).label, { dxa: cols[4], alignment: AlignmentType.CENTER, shading: color }),
+          createCell(e.nom, { dxa: cols[0] }),
+          createCell(e.score, { dxa: cols[1], alignment: AlignmentType.CENTER }),
+          createCell(e.et ?? '—', { dxa: cols[2], alignment: AlignmentType.CENTER }),
+          createCell(fmtCentile(e.percentile, e.percentile_value), { dxa: cols[3], alignment: AlignmentType.CENTER, shading: seuil.shading, textColor: seuil.textColor, bold: true }),
+          createCell(seuil.label, { dxa: cols[4], alignment: AlignmentType.CENTER, shading: seuil.shading, textColor: seuil.textColor, bold: true }),
         ]}))
       })
       children.push(
@@ -795,23 +833,27 @@ export async function generateCRBOWord(payload: WordExportPayload): Promise<Blob
       }))
       renderRichContent(content)
     }
-    // Diagnostic rendu SANS label "Diagnostic orthophonique" — les H3 Markdown
-    // dans le texte (Comportement, Points forts, …, Diagnostic) jouent ce rôle.
-    renderRichContent(s.diagnostic)
+    // ===== POINTS FORTS =====
+    // Champ structuré dédié (nouveau schéma Laurie). Backward-compat : si
+    // l'IA renvoie l'ancien format (H3 Markdown dans diagnostic), on tombe
+    // sur renderRichContent(diagnostic) plus bas.
+    if (s.points_forts?.trim()) {
+      pushBlock('Points forts', s.points_forts.trim())
+    }
 
-    // Comorbidités détectées (filtre strings vides)
-    const comorbidites = (s.comorbidites_detectees ?? []).filter(c => c && c.trim().length > 0)
-    if (comorbidites.length > 0) {
-      children.push(new Paragraph({
-        children: [new TextRun({ text: 'Comorbidités / profils associés suspectés', bold: true, size: FONT_SIZE_NORMAL, font: FONT, color: 'E65100' })],
-        spacing: { before: 240, after: 80 },
-      }))
-      for (const c of comorbidites) {
-        children.push(new Paragraph({
-          children: [new TextRun({ text: `• ${c.trim()}`, size: FONT_SIZE_NORMAL, font: FONT })],
-          spacing: { after: 60 },
-        }))
-      }
+    // ===== DIFFICULTÉS IDENTIFIÉES =====
+    if (s.difficultes_identifiees?.trim()) {
+      pushBlock('Difficultés identifiées', s.difficultes_identifiees.trim())
+    }
+
+    // ===== DIAGNOSTIC =====
+    // Si les champs structurés points_forts/difficultes ne sont pas présents,
+    // s.diagnostic peut contenir l'ancien format avec H3 Markdown — pour
+    // backward-compat on rend tel quel via renderRichContent. Sinon le
+    // diagnostic est juste le verdict ("trouble spécifique des apprentissages
+    // en langage écrit (communément appelé dyslexie-dysorthographie), forme...").
+    if (s.diagnostic?.trim()) {
+      pushBlock('Diagnostic', s.diagnostic.trim())
     }
 
     // Synthèse d'évolution (renouvellement)
@@ -850,12 +892,44 @@ export async function generateCRBOWord(payload: WordExportPayload): Promise<Blob
       }
     }
 
-    pushBlock('Recommandations', s.recommandations)
+    // ===== RECOMMANDATIONS =====
+    // Phrase unique imposée Laurie : "Une prise en charge orthophonique est
+    // recommandée, et en parallèle la mise en place ou le renforcement des
+    // aménagements en classe." Le champ s.recommandations est attendu sous
+    // cette forme. Pour backward-compat avec d'anciens CRBOs (texte long),
+    // on rend tel quel.
+    if (s.recommandations?.trim()) {
+      pushBlock('Recommandations', s.recommandations.trim())
+    }
 
-    // Aménagements scolaires — bullets condensés. Format attendu de Claude :
-    // "Catégorie : description". On normalise aussi le legacy "**Cat** — desc".
-    // Rendu : la catégorie + ":" est en gras, la suite en normal.
-    const paps = (s.pap_suggestions ?? []).filter(p => p && p.trim().length > 0)
+    // ===== AXES THÉRAPEUTIQUES =====
+    // Nouveau champ structuré (max 4 axes, 1 ligne chacun). Backward-compat :
+    // si absent, l'ancien format embarqué dans s.recommandations est déjà
+    // rendu ci-dessus.
+    const axes = (s.axes_therapeutiques ?? []).filter(a => a && a.trim().length > 0).slice(0, 4)
+    if (axes.length > 0) {
+      children.push(new Paragraph({
+        children: [new TextRun({ text: 'Axes thérapeutiques', bold: true, size: FONT_SIZE_NORMAL, font: FONT, color: COLOR_GREEN })],
+        spacing: { before: 240, after: 100 },
+      }))
+      axes.forEach((a, i) => {
+        children.push(new Paragraph({
+          alignment: AlignmentType.BOTH,
+          indent: { left: 360 },
+          spacing: { after: 60 },
+          children: [
+            new TextRun({ text: `${i + 1}. `, bold: true, size: FONT_SIZE_NORMAL, font: FONT, color: COLOR_GREEN }),
+            new TextRun({ text: a.trim(), size: FONT_SIZE_NORMAL, font: FONT }),
+          ],
+        }))
+      })
+    }
+
+    // ===== AMÉNAGEMENTS SCOLAIRES (max 6 imposé Laurie) =====
+    // Format attendu : "Catégorie : description". Legacy "**Cat** — desc"
+    // toléré pour les CRBOs antérieurs. Rendu : "• Catégorie :" en gras,
+    // suite en normal.
+    const paps = (s.pap_suggestions ?? []).filter(p => p && p.trim().length > 0).slice(0, 6)
     if (paps.length > 0) {
       const legacyRegex = /^\*\*([^*]+)\*\*\s*[—–-]\s*(.+)$/
       children.push(new Paragraph({
@@ -873,6 +947,7 @@ export async function generateCRBOWord(payload: WordExportPayload): Promise<Blob
             ]
           : [new TextRun({ text: `• ${detail}`, size: FONT_SIZE_NORMAL, font: FONT })]
         children.push(new Paragraph({
+          alignment: AlignmentType.BOTH,
           indent: { left: 360 },
           spacing: { after: 50 },
           children: runs,
@@ -916,7 +991,8 @@ export async function generateCRBOWord(payload: WordExportPayload): Promise<Blob
     }),
   )
 
-  // ===== CONCLUSION (mention légale, petite, en bas) =====
+  // ===== CONCLUSION (mention médico-légale, petit italique, en bas) =====
+  // Règle Laurie : c'est le SEUL endroit du Word avec de l'italique.
   if (hasStructure && structure!.conclusion?.trim()) {
     children.push(
       new Paragraph({ children: [new TextRun({ text: '' })] }),
@@ -927,6 +1003,7 @@ export async function generateCRBOWord(payload: WordExportPayload): Promise<Blob
           text: structure!.conclusion.trim(),
           size: 16,
           font: FONT,
+          italics: true,
           color: '707070',
         })],
       }),

@@ -310,20 +310,32 @@ ${formatDomainsForSynthesize(data.domains, data.ortho_comments)}
 === NOTES D'ANALYSE (brutes, contexte global) ===
 ${data.notes_analyse || 'Aucune note supplémentaire'}${comportementBlock}${dureeBlock}${bilanPrecBlock}
 
-=== INSTRUCTION (phase 2 — SYNTHÈSE) ===
-Appelle l'outil \`synthesize_crbo\`. Produis OBLIGATOIREMENT tous ces champs :
-- \`domain_commentaires\` : un objet { nom, commentaire } par domaine (MÊME ordre que ci-dessus). Pour chaque domaine, lis le contenu ci-dessous "📝 Contenu textarea ortho" et reformule-le en prose professionnelle finale (3 ème personne, phrases complètes, JAMAIS de notes brutes recopiées telles quelles). Si la textarea est vide pour un domaine, génère un commentaire clinique court depuis les seuls scores. Si elle contient déjà ta suggestion validée par l'ortho, garde-la quasiment inchangée. Respecte les RÈGLES ABSOLUES (pas de chiffre de centile, pas de tiret en début de phrase, pas de mention de la rééducation).
-- \`diagnostic\` (200-300 mots, structure imposée par le système prompt)
-- \`recommandations\` (150-250 mots)
-- \`comorbidites_detectees\` (format "Libellé — code CIM-10 — justification", tableau vide [] si aucune)
-- \`pap_suggestions\` (max 10, priorisés)
-- \`conclusion\` (phrase standard)
-- \`severite_globale\` (Léger/Modéré/Sévère ou null)
-- \`synthese_evolution\` ${isRenouvellement ? '(NON NULL — bilan de renouvellement, comparaison rigoureuse exigée)' : '(null — bilan initial)'}
+=== INSTRUCTION (phase 2 — SYNTHÈSE selon les RÈGLES LAURIE) ===
+Appelle l'outil \`synthesize_crbo\`. Produis OBLIGATOIREMENT TOUS ces champs, dans cet ordre :
 
-🎯 **Double usage des commentaires qualitatifs ortho** :
-1. Pour produire \`domain_commentaires\` (rendu final sous chaque tableau du Word).
-2. Pour nourrir le \`diagnostic\` global — particulièrement la section **Comportement pendant le bilan** et **Analyse croisée**. Si un score paraît anormalement bas mais qu'un commentaire ortho mentionne fatigue/anxiété/distracteurs, mentionne-le explicitement pour pondérer l'interprétation.
+1. \`domain_commentaires\` : un objet { nom, commentaire } par domaine (MÊME ordre que ci-dessus). Reformule la textarea ortho de chaque domaine en prose pro fluide. Textarea vide → commentaire court depuis les scores. Section Lecture : condenser de 30% mais GARDER les détails qualitatifs (régularisations, autocorrections, lecture hachée…). Toujours terminer par une phrase sur les répercussions concrètes scolaires/quotidiennes en cas de difficulté.
+
+2. \`points_forts\` : 3-5 lignes, prose fluide. Compétences préservées ET conséquences positives. JAMAIS de mention rééducation.
+
+3. \`difficultes_identifiees\` : 3-5 lignes, prose fluide. Difficultés observées + se terminer par les CONSÉQUENCES CONCRÈTES SCOLAIRES ET QUOTIDIENNES. JAMAIS de chiffre de centile. JAMAIS le mot "dyslexie/dysorthographie" (réservé au diagnostic).
+
+4. \`diagnostic\` : FORMAT STRICT IMPOSÉ — "trouble spécifique des apprentissages en langage écrit (communément appelé dyslexie-dysorthographie), forme [légère / modérée / sévère / compensée]". TOUJOURS préciser la forme. JAMAIS de codes Fxxx. Si TDAH déjà posé : ajouter en fin "Ce tableau s'inscrit dans un contexte de TDAH préalablement diagnostiqué."
+
+5. \`recommandations\` : PHRASE UNIQUE imposée — "Une prise en charge orthophonique est recommandée, et en parallèle la mise en place ou le renforcement des aménagements en classe." JAMAIS de réévaluation, fréquence de séances, autres pros.
+
+6. \`axes_therapeutiques\` : tableau de MAX 4 axes, 1 ligne chacun, sans détail des exercices. N'écris PAS "1." devant — la numérotation est ajoutée au rendu.
+
+7. \`pap_suggestions\` : MAX 6, 1 par catégorie (Temps, Évaluations, Outils numériques, Pédagogie, Environnement, Oral). Format "Catégorie : description". Adapter au profil — pas systématiquement les 6.
+
+8. \`conclusion\` : mention médico-légale "Compte rendu remis en main propre à l'assuré(e) pour servir et faire valoir ce que de droit. (Copie au médecin prescripteur)."
+
+9. \`synthese_evolution\` : ${isRenouvellement ? 'NON NULL — bilan de renouvellement, comparaison rigoureuse exigée.' : 'null — bilan initial.'}
+
+🎯 **Comment utiliser les commentaires qualitatifs ortho** :
+   - Pour produire \`domain_commentaires\` (rendu final sous chaque tableau du Word).
+   - Pour enrichir \`difficultes_identifiees\` (intégrer les observations de fatigue/anxiété/distracteurs en pondération clinique).
+
+⛔ **SECTIONS SUPPRIMÉES — ne jamais générer** : Comportement pendant le bilan, Analyse croisée, Comorbidités, Sévérité globale, mention de réévaluation/nouveau bilan, coordination avec autres professionnels au-delà de l'anamnèse.
 
 ⛔ Ne régénère PAS l'anamnèse, le motif, ni les domaines (épreuves/scores) : ils sont définitifs.`
 }

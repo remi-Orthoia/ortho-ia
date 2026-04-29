@@ -246,9 +246,9 @@ export default function TestWordPage() {
 
         <div className="mt-6 grid grid-cols-2 sm:grid-cols-3 gap-2 text-xs">
           {SEUILS.map(s => (
-            <div key={s.label} className="rounded p-2 text-center border" style={{ backgroundColor: '#' + s.shading }}>
-              <p className="font-bold text-gray-900">{s.label}</p>
-              <p className="text-gray-700">{s.range}</p>
+            <div key={s.label} className="rounded p-2 text-center border" style={{ backgroundColor: '#' + s.shading, color: s.textColor ? '#' + s.textColor : undefined }}>
+              <p className="font-bold">{s.label}</p>
+              <p className="opacity-80">{s.range}</p>
             </div>
           ))}
         </div>

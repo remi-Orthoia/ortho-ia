@@ -28,11 +28,12 @@ const EPREUVE_SCHEMA = {
     },
     interpretation: {
       type: 'string' as const,
-      enum: ['Dans la norme', 'Zone de fragilité', 'Zone de difficulté', 'Zone de difficulté sévère'],
+      enum: ['Excellent', 'Moyenne haute', 'Moyenne basse', 'Fragilité', 'Difficulté', 'Difficulté sévère'],
       description:
-        "Interprétation clinique selon la grille officielle Exalang/HappyNeuron : " +
-        "'Dans la norme' pour P > 25 (strictement) ; 'Zone de fragilité' pour P10-P25 (Q1 inclus, **PAS** dans la norme) ; " +
-        "'Zone de difficulté' pour P5-P9 ; 'Zone de difficulté sévère' pour P < 5.",
+        "Interprétation clinique COURTE imposée par Laurie : " +
+        "'Excellent' pour P > 75 ; 'Moyenne haute' pour P51-P75 ; 'Moyenne basse' pour P26-P50 ; " +
+        "'Fragilité' pour P10-P25 (Q1 inclus, **PAS** moyenne basse) ; 'Difficulté' pour P5-P9 ; " +
+        "'Difficulté sévère' pour P < 5.",
     },
   },
 }
@@ -111,68 +112,74 @@ export const EXTRACT_CRBO_TOOL: Anthropic.Tool = {
 export const SYNTHESIZE_TOOL: Anthropic.Tool = {
   name: 'synthesize_crbo',
   description:
-    "Génère la synthèse narrative du CRBO : diagnostic orthophonique avec terminologie DSM-5/CIM-10, recommandations de prise en charge, comorbidités suspectées, suggestions d'aménagements scolaires (PAP), et le cas échéant la synthèse d'évolution pour un bilan de renouvellement. Reformule également les commentaires de domaine édités par l'orthophoniste en prose professionnelle finale. Les scores et l'anamnèse sont déjà structurés en entrée : ne PAS les régénérer.",
+    "Génère la synthèse finale du CRBO selon les règles cliniques imposées par Laurie : points forts, difficultés identifiées, diagnostic au format strict (sans codes Fxxx), recommandations en phrase unique, axes thérapeutiques (max 4), aménagements scolaires (max 6), conclusion médico-légale, et reformulation pro des commentaires de domaine édités par l'ortho. AUCUNE section Comportement / Analyse croisée / Comorbidités / Réévaluation ne doit être produite — elles sont supprimées du CRBO.",
   input_schema: {
     type: 'object',
-    required: ['diagnostic', 'recommandations', 'conclusion', 'comorbidites_detectees', 'pap_suggestions', 'domain_commentaires'],
+    required: [
+      'points_forts', 'difficultes_identifiees',
+      'diagnostic', 'recommandations', 'axes_therapeutiques',
+      'pap_suggestions', 'conclusion', 'domain_commentaires',
+    ],
     properties: {
       domain_commentaires: {
         type: 'array',
         description:
-          "Commentaire FINAL professionnel pour CHAQUE domaine du bilan, dans le MÊME ordre que les domaines fournis en entrée. Chaque entrée fusionne et reformule (1) la suggestion clinique IA initiale, (2) les notes qualitatives ajoutées par l'orthophoniste (fatigue, anxiété, distracteurs, observations sur la passation). " +
-          "Si l'ortho a ajouté des notes en vrac, les intégrer en prose fluide professionnelle (3ème personne, phrases complètes, pas de bullet, pas de tiret en début de phrase). Si elle a juste validé la suggestion IA sans rien ajouter, retourner le texte IA tel quel ou très peu modifié. Si la textarea est vide, générer un commentaire clinique court à partir des seuls scores du domaine. " +
-          "Respecte les RÈGLES CLINIQUES ABSOLUES : pas de chiffre de percentile, pas de mention de la rééducation, pas de tiret en début de phrase. 3-4 lignes max par domaine.",
+          "Commentaire FINAL professionnel pour CHAQUE domaine du bilan, dans le MÊME ordre que les domaines fournis en entrée. Reformule la textarea ortho (suggestion IA initiale + ajouts manuscrits) en prose pro fluide. Si textarea vide → commentaire court depuis les scores. RÈGLES ABSOLUES : aucun chiffre de percentile, aucune mention de rééducation/séances, aucun tiret en début de phrase, aucune mention de 'dyslexie/dysorthographie' (réservée au diagnostic). Toujours terminer par une phrase sur les répercussions concrètes scolaires/quotidiennes en cas de difficulté. Section Lecture spécifiquement : condenser de 30% mais GARDER les détails qualitatifs (régularisations sur mots irréguliers, autocorrections, lecture hachée, omissions). 3-4 lignes max.",
         items: {
           type: 'object',
           required: ['nom', 'commentaire'],
           properties: {
-            nom: { type: 'string', description: 'Nom EXACT du domaine tel que reçu en entrée — sert de clé d\'appariement.' },
-            commentaire: { type: 'string', description: 'Commentaire clinique reformulé professionnellement pour ce domaine.' },
+            nom: { type: 'string', description: 'Nom EXACT du domaine tel que reçu en entrée.' },
+            commentaire: { type: 'string', description: 'Commentaire clinique reformulé pour ce domaine.' },
           },
         },
+      },
+      points_forts: {
+        type: 'string',
+        description:
+          "Synthèse des compétences préservées (3-5 lignes max). Décrire en prose fluide professionnelle. JAMAIS mentionner la rééducation. Conséquences concrètes positives uniquement.",
+      },
+      difficultes_identifiees: {
+        type: 'string',
+        description:
+          "Synthèse des difficultés observées (3-5 lignes max). Décrire en prose fluide. JAMAIS de chiffres de percentiles. JAMAIS le mot 'dyslexie/dysorthographie' (réservé au diagnostic). Toujours se terminer sur les conséquences concrètes scolaires et de la vie quotidienne pour l'élève.",
       },
       diagnostic: {
         type: 'string',
         description:
-          'Synthèse globale 200-300 mots : comportement en bilan, points forts, difficultés, analyse croisée, diagnostic orthophonique avec terminologie DSM-5 + code CIM-10. Structuré avec sous-titres Markdown **Titre**.',
+          "Diagnostic orthophonique au FORMAT STRICT imposé par Laurie : 'trouble spécifique des apprentissages en langage écrit (communément appelé dyslexie-dysorthographie), forme [légère / modérée / sévère / compensée]'. " +
+          "TOUJOURS préciser la forme/sévérité. JAMAIS de codes CIM/DSM (F81.x, F90.x, etc.) — ni dans le diagnostic ni ailleurs. " +
+          "Si un diagnostic associé est DÉJÀ POSÉ par un autre professionnel (TDAH par exemple), ajouter UNIQUEMENT en fin de diagnostic la phrase : 'Ce tableau s'inscrit dans un contexte de [diagnostic] préalablement diagnostiqué.' " +
+          "JAMAIS de diagnostic hypothétique non confirmé. JAMAIS de section comorbidités séparée — si non posé, ne pas mentionner.",
       },
       recommandations: {
         type: 'string',
         description:
-          "Recommandations 150-250 mots structurées : phrase d'introduction de la PEC, axes thérapeutiques en liste numérotée, réévaluation, orientations vers autres professionnels (en suggestion). PAS de fréquence/durée chiffrée des séances. PAS de paragraphe MDPH/PPS automatique.",
+          "Phrase UNIQUE imposée Laurie : 'Une prise en charge orthophonique est recommandée, et en parallèle la mise en place ou le renforcement des aménagements en classe.' " +
+          "JAMAIS de mention de réévaluation, de nouveau bilan, de délai, de fréquence de séances. JAMAIS d'orientation vers d'autres professionnels.",
       },
-      conclusion: {
-        type: 'string',
-        description: 'Phrase de clôture standard du CRBO ("Compte rendu remis en main propre…").',
-      },
-      severite_globale: {
-        type: ['string', 'null'],
-        enum: ['Léger', 'Modéré', 'Sévère', null],
-        description:
-          "Score de sévérité global du profil clinique (informatif, non affiché dans le Word). null si profil dans la norme ou non évaluable.",
-      },
-      comorbidites_detectees: {
+      axes_therapeutiques: {
         type: 'array',
         description:
-          "Liste des comorbidités suspectées. Format : 'Libellé du trouble — code CIM-10 — justification clinique courte (sans percentile cité)'. Tableau vide [] si aucune.",
+          "Maximum 4 axes thérapeutiques numérotés (le numéro est ajouté automatiquement au rendu — n'écris PAS '1.' devant). 1 ligne par axe, sans détail des exercices. JAMAIS de mention d'autres professionnels. Exemple : 'Renforcement de la conscience phonologique et du décodage'.",
         items: { type: 'string' },
       },
       pap_suggestions: {
         type: 'array',
         description:
-          "Liste d'aménagements scolaires conseillés (max 10, priorisés). Format OBLIGATOIRE de chaque entrée : 'Catégorie : détail concret' (catégorie + ' : ' + description, sans markdown ni tiret cadratin). Catégories autorisées : Temps, Outils numériques, Présentation des supports, Évaluations, Pédagogie, Environnement, Oral. Restez généraux : pas de polices/logiciels nominatifs.",
+          "Maximum 6 aménagements scolaires, 1 par grande catégorie. Format OBLIGATOIRE : 'Catégorie : description concrète' (la catégorie + ' : ' + description, sans markdown ni tiret cadratin). Catégories autorisées : Temps, Évaluations, Outils numériques, Pédagogie, Environnement, Oral. " +
+          "Adapter au profil — ne pas systématiquement remplir les 6. Restez généraux : pas de polices ni logiciels nominatifs.",
         items: { type: 'string' },
+      },
+      conclusion: {
+        type: 'string',
+        description: "Mention médico-légale standard (affichée en italique petit en bas) : 'Compte rendu remis en main propre à l'assuré(e) pour servir et faire valoir ce que de droit. (Copie au médecin prescripteur).'",
       },
       synthese_evolution: {
         type: ['object', 'null'],
-        description:
-          "Section comparative présente UNIQUEMENT pour les bilans de renouvellement, null pour les bilans initiaux.",
+        description: "Section comparative UNIQUEMENT pour les bilans de renouvellement, null pour les bilans initiaux.",
         properties: {
-          resume: {
-            type: 'string',
-            description:
-              "Synthèse narrative de l'évolution depuis le dernier bilan (100-300 mots).",
-          },
+          resume: { type: 'string', description: "Synthèse narrative de l'évolution depuis le dernier bilan (100-300 mots)." },
           domaines_progres: { type: 'array', items: { type: 'string' } },
           domaines_stagnation: { type: 'array', items: { type: 'string' } },
           domaines_regression: { type: 'array', items: { type: 'string' } },
@@ -272,14 +279,29 @@ export interface ExtractedCRBO {
 
 /** Résultat de la phase 2 (synthesize) : ce que l'IA produit à partir des données validées. */
 export interface SynthesizedCRBO {
+  /** Synthèse courte des points forts du patient (3-5 lignes). */
+  points_forts: string
+  /** Synthèse courte des difficultés identifiées (3-5 lignes). */
+  difficultes_identifiees: string
+  /** Diagnostic orthophonique au format imposé : "trouble spécifique des
+   *  apprentissages en langage écrit (communément appelé dyslexie-dysorthographie),
+   *  forme [légère/modérée/sévère/compensée]". JAMAIS de codes Fxxx. */
   diagnostic: string
+  /** Phrase unique imposée Laurie. */
   recommandations: string
+  /** Max 4 axes numérotés, 1 ligne chacun. */
+  axes_therapeutiques: string[]
+  /** Mention médico-légale (italique, en bas du Word). */
   conclusion: string
-  comorbidites_detectees: string[]
+  /** Max 6 aménagements scolaires, format "Catégorie : description". */
   pap_suggestions: string[]
   /** Commentaires de domaine reformulés professionnellement (suggestion IA + notes ortho fusionnées). */
   domain_commentaires: { nom: string; commentaire: string }[]
+  /** @deprecated — backend uniquement, plus rendu dans le Word. */
   severite_globale?: SeveriteGlobale
+  /** @deprecated — section supprimée du Word, ne pas générer. */
+  comorbidites_detectees?: string[]
+  /** Renouvellements uniquement. */
   synthese_evolution?: SyntheseEvolution | null
 }
 
@@ -292,7 +314,12 @@ export interface CRBOStructure {
   conclusion: string
   // Champs étendus (CRBOs antérieurs à l'extension de schéma peuvent ne pas les avoir)
   motif_reformule?: string
+  points_forts?: string
+  difficultes_identifiees?: string
+  axes_therapeutiques?: string[]
+  /** @deprecated — backend uniquement. */
   severite_globale?: SeveriteGlobale
+  /** @deprecated — section supprimée. */
   comorbidites_detectees?: string[]
   pap_suggestions?: string[]
   synthese_evolution?: SyntheseEvolution | null

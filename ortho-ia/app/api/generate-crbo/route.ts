@@ -461,9 +461,10 @@ export async function POST(request: NextRequest) {
         diagnostic: rawSynth.diagnostic || '',
         recommandations: rawSynth.recommandations || '',
         conclusion: rawSynth.conclusion || '',
-        comorbidites_detectees: rawSynth.comorbidites_detectees,
+        points_forts: rawSynth.points_forts || '',
+        difficultes_identifiees: rawSynth.difficultes_identifiees || '',
+        axes_therapeutiques: rawSynth.axes_therapeutiques || [],
         pap_suggestions: rawSynth.pap_suggestions,
-        severite_globale: rawSynth.severite_globale ?? null,
         synthese_evolution: rawSynth.synthese_evolution ?? null,
       }
       const rehydrated = rehydrate(tempStruct, reverseMap)
@@ -474,13 +475,14 @@ export async function POST(request: NextRequest) {
         reverseMap,
       )
       const result: SynthesizedCRBO = {
+        points_forts: rehydrated.points_forts ?? '',
+        difficultes_identifiees: rehydrated.difficultes_identifiees ?? '',
         diagnostic: rehydrated.diagnostic,
         recommandations: rehydrated.recommandations,
+        axes_therapeutiques: rehydrated.axes_therapeutiques ?? [],
         conclusion: rehydrated.conclusion,
-        comorbidites_detectees: rehydrated.comorbidites_detectees ?? [],
         pap_suggestions: rehydrated.pap_suggestions ?? [],
         domain_commentaires,
-        severite_globale: rehydrated.severite_globale ?? null,
         synthese_evolution: rehydrated.synthese_evolution ?? null,
       }
       return NextResponse.json({ success: true, phase: 'synthesize', synthesized: result })
