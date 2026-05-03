@@ -3,7 +3,7 @@
 import { useState, useEffect, Suspense } from 'react'
 import { useRouter, useSearchParams } from 'next/navigation'
 import { createClient } from '@/lib/supabase'
-import { Loader2, Save, CheckCircle, AlertCircle, Trash2 } from 'lucide-react'
+import { Loader2, Save, CheckCircle, AlertCircle, Trash2, Copy, Camera, Download } from 'lucide-react'
 
 function ProfilContent() {
   const router = useRouter()
@@ -25,6 +25,13 @@ function ProfilContent() {
     ville: '',
     telephone: '',
   })
+  // ===== Section extension Chrome =====
+  // userLoaded sert uniquement à afficher la section "Connexion extension Chrome".
+  // Le token JWT n'est jamais stocké en state (récupéré à la volée au click pour
+  // toujours servir le plus frais).
+  const [userLoaded, setUserLoaded] = useState(false)
+  const [tokenCopied, setTokenCopied] = useState(false)
+  const [tokenError, setTokenError] = useState('')
 
   useEffect(() => {
     const loadProfile = async () => {
@@ -50,11 +57,38 @@ function ProfilContent() {
           telephone: data.telephone || '',
         })
       }
+      setUserLoaded(true)
       setLoading(false)
     }
 
     loadProfile()
   }, [])
+
+  /**
+   * Récupère l'access_token Supabase à la volée et le copie dans le presse-papier.
+   * Pas de cache : on appelle getSession() à chaque fois pour servir un token
+   * non-expiré (Supabase rafraîchit silencieusement avant retour si possible).
+   */
+  const handleCopyToken = async () => {
+    setTokenError('')
+    try {
+      const supabase = createClient()
+      const { data, error } = await supabase.auth.getSession()
+      if (error || !data?.session?.access_token) {
+        throw new Error('Session introuvable. Reconnectez-vous puis réessayez.')
+      }
+      const token = data.session.access_token
+      // navigator.clipboard nécessite HTTPS ou localhost (sinon undefined).
+      if (!navigator.clipboard?.writeText) {
+        throw new Error("Le presse-papier n'est pas disponible dans ce navigateur.")
+      }
+      await navigator.clipboard.writeText(token)
+      setTokenCopied(true)
+      setTimeout(() => setTokenCopied(false), 3000)
+    } catch (e: any) {
+      setTokenError(e?.message || 'Impossible de copier le token.')
+    }
+  }
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     setProfile({ ...profile, [e.target.name]: e.target.value })
@@ -241,6 +275,95 @@ function ProfilContent() {
           )}
         </div>
       </div>
+
+      {/* ============================================================
+          Section Connexion extension Chrome HappyNeuron
+          L'ancre #extension est ciblée par le popup Chrome (popup.js).
+          Visible uniquement si l'utilisatrice est connectée (userLoaded).
+          ============================================================ */}
+      {userLoaded && (
+        <section
+          id="extension"
+          className="rounded-2xl border border-primary-200 bg-gradient-to-br from-primary-50 to-emerald-50 p-5 sm:p-6"
+        >
+          <h2 className="text-lg font-semibold text-primary-900 flex items-center gap-2">
+            <Camera size={20} className="text-primary-700" />
+            Connexion extension Chrome
+          </h2>
+          <p className="mt-2 text-sm text-gray-700 leading-relaxed">
+            Copiez ce token dans l&apos;extension Ortho.ia pour Chrome pour importer
+            vos résultats HappyNeuron en 1 clic.
+          </p>
+
+          <div className="mt-4 flex flex-wrap items-center gap-3">
+            <button
+              type="button"
+              onClick={handleCopyToken}
+              className="inline-flex items-center gap-2 px-4 py-2.5 bg-primary-600 hover:bg-primary-700 text-white font-medium rounded-lg transition shadow-sm"
+            >
+              {tokenCopied ? (
+                <>
+                  <CheckCircle size={18} />
+                  Token copié !
+                </>
+              ) : (
+                <>
+                  <Copy size={18} />
+                  Copier mon token
+                </>
+              )}
+            </button>
+
+            {/* Lien de téléchargement — désactivé tant que l'extension n'est pas
+                publiée. Affichage clair "Bientôt disponible" pour ne pas
+                frustrer l'utilisatrice. */}
+            <span
+              className="inline-flex items-center gap-2 px-4 py-2.5 bg-white text-gray-500 border border-gray-200 rounded-lg font-medium cursor-not-allowed"
+              title="Disponible prochainement sur le Chrome Web Store"
+            >
+              <Download size={18} />
+              Télécharger l&apos;extension
+              <span className="text-[10px] uppercase tracking-wider bg-amber-100 text-amber-800 px-1.5 py-0.5 rounded">
+                Bientôt
+              </span>
+            </span>
+          </div>
+
+          {tokenError && (
+            <p className="mt-3 text-sm text-red-700 bg-red-50 border border-red-200 rounded px-3 py-2 flex items-start gap-2">
+              <AlertCircle size={16} className="shrink-0 mt-0.5" />
+              <span>{tokenError}</span>
+            </p>
+          )}
+
+          {tokenCopied && (
+            <p className="mt-3 text-sm text-primary-800 bg-white/60 border border-primary-200 rounded px-3 py-2">
+              Ouvrez l&apos;extension Ortho.ia dans Chrome, collez le token dans le
+              champ de configuration, puis cliquez sur <strong>Enregistrer</strong>.
+            </p>
+          )}
+
+          <details className="mt-4 text-xs text-gray-600">
+            <summary className="cursor-pointer font-medium text-gray-700 hover:text-gray-900">
+              À savoir sur ce token
+            </summary>
+            <ul className="mt-2 space-y-1.5 pl-4 list-disc marker:text-gray-400">
+              <li>
+                Ce token donne à l&apos;extension le droit d&apos;importer des résultats
+                pour <strong>votre compte uniquement</strong>. Ne le partagez avec personne.
+              </li>
+              <li>
+                Il est <strong>valide 1 heure</strong>. Si l&apos;import échoue avec une erreur
+                d&apos;authentification, revenez ici et copiez-le à nouveau.
+              </li>
+              <li>
+                Vous pouvez révoquer tous les tokens en vous déconnectant puis vous
+                reconnectant.
+              </li>
+            </ul>
+          </details>
+        </section>
+      )}
 
       {/* Zone dangereuse RGPD : suppression complète du compte */}
       <div className="mt-10 rounded-2xl border-2 border-red-200 bg-red-50/50 p-5 sm:p-6">
