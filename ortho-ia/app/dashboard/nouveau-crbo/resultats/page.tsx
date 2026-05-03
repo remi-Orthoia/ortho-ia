@@ -282,7 +282,7 @@ export default function ResultatsPage() {
         }
       }
 
-      const { error: insertError } = await supabase
+      const { data: insertedCrbo, error: insertError } = await supabase
         .from('crbos')
         .insert({
           user_id: user.id,
@@ -305,10 +305,8 @@ export default function ResultatsPage() {
           duree_seance_minutes: fd.duree_seance_minutes || null,
           severite_globale: finalStructure.severite_globale ?? null,
           bilan_precedent_id: fd.bilan_precedent_id || null,
-          // Statut kanban après génération : "à rédiger". Le CRBO vient d'être
-          // produit par l'IA mais reste à valider/rédiger par l'orthophoniste.
-          // Une fois validé, l'ortho pourra le passer manuellement en "à relire"
-          // ou "terminé" via le drag-and-drop du kanban.
+          // Statut kanban initial après génération : "à rédiger". Sera promu
+          // automatiquement à "à relire" juste après le download Word ci-dessous.
           statut: 'a_rediger',
         })
         .select('id')
@@ -318,6 +316,7 @@ export default function ResultatsPage() {
         console.error('Erreur sauvegarde CRBO:', insertError)
         setError('Le CRBO a été généré mais n\'a pas pu être sauvegardé. Téléchargez-le maintenant.')
       }
+      const insertedCrboId: string | null = insertedCrbo?.id ?? null
 
       // Compteurs (best-effort) — log si échec, ne bloque pas le téléchargement
       try {
@@ -339,7 +338,21 @@ export default function ResultatsPage() {
         previousBilanDate: fd.bilan_precedent_date,
       })
 
-      // Nettoyage handoff + redirect
+      // ============ Promotion kanban : a_rediger → a_relire ============
+      // Une fois le Word téléchargé, le CRBO entre dans la phase "à relire"
+      // par l'ortho. La promotion vers "termine" reste manuelle (drag kanban).
+      if (insertedCrboId) {
+        const { error: statusErr } = await supabase
+          .from('crbos')
+          .update({ statut: 'a_relire' })
+          .eq('id', insertedCrboId)
+          .eq('user_id', user.id)
+        if (statusErr) {
+          console.warn('Promotion statut a_relire échouée (best-effort):', statusErr)
+        }
+      }
+
+      // Nettoyage handoff + redirect (le dashboard re-fetch au mount → kanban à jour)
       sessionStorage.removeItem(HANDOFF_KEY)
       router.push('/dashboard')
     } catch (err: any) {

@@ -147,6 +147,21 @@ export default function CRBODetailPage() {
         previousStructure,
         previousBilanDate,
       })
+
+      // Promotion kanban : a_rediger → a_relire après download Word.
+      // On ne régresse jamais un statut déjà avancé (a_relire ou termine).
+      if (crbo.statut === 'a_rediger' || crbo.statut === 'en_cours') {
+        const supabase = createClient()
+        const { error: statusErr } = await supabase
+          .from('crbos')
+          .update({ statut: 'a_relire' })
+          .eq('id', crbo.id)
+        if (statusErr) {
+          console.warn('Promotion statut a_relire échouée (best-effort):', statusErr)
+        } else {
+          setCrbo({ ...crbo, statut: 'a_relire' })
+        }
+      }
     } catch (err) {
       console.error('Erreur export Word:', err)
       alert('Erreur lors de la génération du document Word.')

@@ -96,6 +96,22 @@ export default function HistoriquePage() {
         previousStructure,
         previousBilanDate,
       })
+
+      // Promotion kanban : si le CRBO est resté en "à rédiger", un download
+      // Word le fait passer en "à relire". On ne régresse jamais un statut
+      // déjà avancé (a_relire ou termine).
+      if (crbo.statut === 'a_rediger' || crbo.statut === 'en_cours') {
+        const supabase = createClient()
+        const { error: statusErr } = await supabase
+          .from('crbos')
+          .update({ statut: 'a_relire' })
+          .eq('id', crbo.id)
+        if (statusErr) {
+          console.warn('Promotion statut a_relire échouée (best-effort):', statusErr)
+        } else {
+          setCrbos(prev => prev.map(c => c.id === crbo.id ? { ...c, statut: 'a_relire' } : c))
+        }
+      }
     } catch (err) {
       console.error('Erreur export Word historique:', err)
       alert("Erreur lors de la génération du document Word. Réessayez ou contactez le support.")
