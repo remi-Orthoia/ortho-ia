@@ -10,8 +10,49 @@ const config: Config = {
   theme: {
     extend: {
       colors: {
+        // ============================================================
+        // DESIGN SYSTEM (Stéphanie) — CSS variables, suit data-direction
+        // ============================================================
+        // Brand
+        ds: {
+          primary:       'var(--ds-primary)',
+          'primary-hover': 'var(--ds-primary-hover)',
+          'primary-soft':  'var(--ds-primary-soft)',
+          accent:        'var(--ds-accent)',
+          'accent-hover':  'var(--ds-accent-hover)',
+          'accent-soft':   'var(--ds-accent-soft)',
+          success:       'var(--ds-success)',
+          'success-soft': 'var(--ds-success-soft)',
+          warning:       'var(--ds-warning)',
+          'warning-soft': 'var(--ds-warning-soft)',
+          danger:        'var(--ds-danger)',
+          'danger-soft':  'var(--ds-danger-soft)',
+          info:          'var(--ds-info)',
+          'info-soft':    'var(--ds-info-soft)',
+        },
+        // Surfaces — utilisation : bg-canvas, bg-paper, bg-surface-2, bg-inverse
+        canvas:      'var(--bg-canvas)',
+        paper:       'var(--bg-surface)',
+        'surface-2': 'var(--bg-surface-2)',
+        inverse:     'var(--bg-inverse)',
+        // Foreground — utilisation : text-fg-1, text-fg-2, text-fg-3
+        'fg-1':      'var(--fg-1)',
+        'fg-2':      'var(--fg-2)',
+        'fg-3':      'var(--fg-3)',
+        'fg-on-brand': 'var(--fg-on-brand)',
+        'fg-link':   'var(--fg-link)',
+        // Bordures DS
+        'border-ds':        'var(--border-ds)',
+        'border-ds-strong': 'var(--border-ds-strong)',
+
+        // ============================================================
+        // LEGACY — palette existante (à conserver pour ne rien casser)
+        // ============================================================
         // Palette principale — vert médical professionnel
+        // Le DEFAULT pointe sur la CSS var DS pour que `bg-primary` fonctionne
+        // côté DS. Les shades 50–950 restent inchangées pour le legacy.
         primary: {
+          DEFAULT: 'var(--ds-primary)',
           50: '#f0fdf4',
           100: '#dcfce7',
           200: '#bbf7d0',
