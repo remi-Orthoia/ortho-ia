@@ -180,6 +180,66 @@ const INTER_FAMILY_GAP = 24      // entre familles + ligne pointillée
 
 // --------------------- Helpers ---------------------
 
+/**
+ * Dessine un texte avec un rectangle blanc semi-transparent derrière.
+ * Garantit la lisibilité même si une barre passe juste sous le label.
+ *
+ *   align     : 'left' (défaut), 'center', 'right' — ancrage horizontal du texte
+ *   solid     : si true, fond blanc opaque (255,255,255,1) — utilisé pour
+ *               la médiane qui doit rester nette même si une barre est devant.
+ *   border    : trace une bordure 0.5px gris clair autour du fond.
+ *   padding   : padding intérieur autour du texte (défaut 3px H, 1.5px V).
+ *
+ * Précondition : ctx.font et ctx.fillStyle (couleur du texte) sont déjà set.
+ * Cette fonction ne change PAS ctx.fillStyle pour le texte — elle ne fait
+ * que peindre le bg puis appeler fillText avec la couleur déjà active.
+ */
+function drawTextWithBg(
+  ctx: CanvasRenderingContext2D,
+  text: string,
+  x: number,
+  y: number,
+  opts: {
+    align?: 'left' | 'center' | 'right'
+    solid?: boolean
+    border?: boolean
+    padX?: number
+    padY?: number
+  } = {},
+): void {
+  const align = opts.align ?? 'left'
+  const padX = opts.padX ?? 3
+  const padY = opts.padY ?? 1.5
+  const w = ctx.measureText(text).width
+  // Approxime hauteur du texte à 1.0 × fontSize (suffisant pour Calibri 9-10px).
+  // On lit la taille depuis ctx.font ("bold 9.5px ..." → 9.5).
+  const fontSizeMatch = ctx.font.match(/(\d+(?:\.\d+)?)px/)
+  const h = fontSizeMatch ? parseFloat(fontSizeMatch[1]) : 10
+  const left = align === 'center' ? x - w / 2 - padX
+            : align === 'right'  ? x - w - padX
+            : x - padX
+  const top = y - h + padY * 0
+  const bgX = left
+  const bgY = top - padY
+  const bgW = w + padX * 2
+  const bgH = h + padY * 2
+
+  const prevFill = ctx.fillStyle
+  ctx.fillStyle = opts.solid ? 'rgba(255,255,255,1)' : 'rgba(255,255,255,0.86)'
+  ctx.fillRect(bgX, bgY, bgW, bgH)
+  if (opts.border) {
+    ctx.strokeStyle = 'rgba(120,120,120,0.45)'
+    ctx.lineWidth = 0.5
+    ctx.strokeRect(bgX + 0.25, bgY + 0.25, bgW - 0.5, bgH - 0.5)
+  }
+  ctx.fillStyle = prevFill
+  // Réinit textAlign pour fillText respecter `align` voulu
+  const prevAlign = ctx.textAlign
+  ctx.textAlign = align
+  ctx.fillText(text, x, y)
+  ctx.textAlign = prevAlign
+}
+
 function wrapTextByWords(ctx: CanvasRenderingContext2D, text: string, maxWidth: number, maxLines: number): string[] {
   const trimmed = text.trim()
   if (!trimmed) return []
@@ -510,50 +570,20 @@ export function drawHappyNeuronChart(
   }
   ctx.strokeRect(chartLeftX, padTop, chartW, chartH)
 
-  // Labels de zone à gauche
-  // Labels de zone à gauche — couleur saturée (pas le pastel des bandes)
-  // sinon le texte est illisible sur le fond clair de la zone gauche.
-  ctx.font = '600 10.5px Calibri, Arial, sans-serif'
-  ctx.textAlign = 'right'
-  for (let i = 0; i < ZONES.length; i++) {
-    const z = ZONES[i]
-    const upper = i === 0 ? 100 : ZONES[i - 1].min
-    const bandTop = yFor(upper)
-    const bandBot = yFor(z.min)
-    if (bandBot - bandTop < 12) continue
-    const mid = (bandTop + bandBot) / 2
-    ctx.fillStyle = BAR_FILL_OF_VALUE(z.min === 0 ? 0 : z.min)
-    const lines = wrapTextByWords(ctx, z.label, PAD_LEFT - 16, 2)
-    if (lines.length === 1) {
-      ctx.fillText(lines[0], PAD_LEFT - 8, mid + 4)
-    } else {
-      const lineH = 12
-      const startY = mid - ((lines.length - 1) * lineH) / 2 + 4
-      for (let li = 0; li < lines.length; li++) {
-        ctx.fillText(lines[li], PAD_LEFT - 8, startY + li * lineH)
-      }
-    }
-  }
+  // (Labels de zones gauche dessinés en passe finale — voir bas du draw)
 
-  // ===== Médiane (P50) noire =====
+  // ===== Lignes Médiane (P50) + Seuil P7 — TRACÉS UNIQUEMENT ICI =====
+  // Les LABELS associés sont dessinés EN DERNIER (après les barres) avec
+  // un fond blanc pour rester lisibles si une barre les recouvre.
   const yMed = yFor(50)
   ctx.strokeStyle = '#000000'
   ctx.lineWidth = 1.6
   ctx.beginPath(); ctx.moveTo(chartLeftX, yMed); ctx.lineTo(chartRightX, yMed); ctx.stroke()
-  ctx.fillStyle = '#000000'
-  ctx.font = 'bold 9.5px Calibri, Arial, sans-serif'
-  ctx.textAlign = 'left'
-  ctx.fillText('Médiane (P50)', chartLeftX + 4, yMed - 3)
 
-  // ===== Seuil d'alerte P7 rouge =====
   const yAlert = yFor(7)
   ctx.strokeStyle = '#C62828'
   ctx.lineWidth = 1.6
   ctx.beginPath(); ctx.moveTo(chartLeftX, yAlert); ctx.lineTo(chartRightX, yAlert); ctx.stroke()
-  ctx.fillStyle = '#C62828'
-  ctx.font = 'bold 9.5px Calibri, Arial, sans-serif'
-  ctx.textAlign = 'left'
-  ctx.fillText("Seuil d'alerte (P7)", chartLeftX + 4, yAlert - 3)
 
   // ===== Séparateurs verticaux pointillés entre familles =====
   for (const sepX of layout.familySeparators) {
@@ -599,25 +629,17 @@ export function drawHappyNeuronChart(
         }
       }
 
-      // Barres
+      // Barres + label vertical sous la barre (P-label traité plus bas)
       for (const b of rg.bars) {
         const v = Math.max(0, Math.min(100, b.value))
         const yTop = yFor(v)
         const h = padTop + chartH - yTop
 
-        // Couleur saturée pour la barre (palette tableau Word, plus visible
-        // que les bandes pastel de fond).
         ctx.fillStyle = BAR_FILL_OF_VALUE(v)
         ctx.fillRect(b.x, yTop, BAR_W, h)
         ctx.strokeStyle = '#212121'
         ctx.lineWidth = 1
         ctx.strokeRect(b.x, yTop, BAR_W, h)
-
-        // Valeur P au-dessus (8px noir — spec Laurie)
-        ctx.fillStyle = '#000000'
-        ctx.font = `${BAR_VALUE_FONT_PX}px Calibri, Arial, sans-serif`
-        ctx.textAlign = 'center'
-        ctx.fillText(`P${Math.round(v)}`, b.x + BAR_W / 2, yTop - 3)
 
         // Label vertical sous la barre — texte intégral, jamais tronqué
         ctx.save()
@@ -629,8 +651,91 @@ export function drawHappyNeuronChart(
         ctx.fillText(b.label, 0, 4)
         ctx.restore()
       }
+
+      // ===== Labels P (P5, P25, P75…) AVEC DÉDOUBLONNAGE =====
+      // Si plusieurs barres adjacentes (= dans le même root group, donc
+      // séparées de seulement INTRA_ROOT_GAP=2px) ont la même valeur P
+      // arrondie, on n'affiche qu'UN label centré sur l'ensemble.
+      // Si une barre seule a un label trop large pour BAR_W (cas rare,
+      // typiquement "P100"), on retombe à 7px.
+      ctx.fillStyle = '#000000'
+      ctx.textAlign = 'center'
+      let i = 0
+      while (i < rg.bars.length) {
+        let j = i
+        const v0 = Math.round(Math.max(0, Math.min(100, rg.bars[i].value)))
+        while (
+          j + 1 < rg.bars.length &&
+          Math.round(Math.max(0, Math.min(100, rg.bars[j + 1].value))) === v0
+        ) j++
+
+        const xLeft  = rg.bars[i].x
+        const xRight = rg.bars[j].x + BAR_W
+        const cx = (xLeft + xRight) / 2
+        const yTop = yFor(v0)
+        const text = `P${v0}`
+
+        // Choix de la police : 8px par défaut, fallback 7px si label trop
+        // large pour le span disponible (cas barre unique avec valeur > 9).
+        const span = xRight - xLeft
+        ctx.font = `${BAR_VALUE_FONT_PX}px Calibri, Arial, sans-serif`
+        const w8 = ctx.measureText(text).width
+        if (w8 > span - 1) {
+          ctx.font = `7px Calibri, Arial, sans-serif`
+        }
+        ctx.fillText(text, cx, yTop - 3)
+
+        i = j + 1
+      }
     }
   }
+
+  // ===== PASSE FINALE — labels TOUJOURS visibles au-dessus des barres =====
+  // Dessine en dernier (après toutes les barres) avec fond blanc pour
+  // garantir la lisibilité — sinon les barres qui croisent la médiane ou
+  // le P7 rendent les labels illisibles.
+
+  // 1) Labels de zones à gauche (Excellent / Moyenne haute / Médiane /
+  //    Fragilité / Difficulté…) — couleur saturée + fond blanc semi-transp.
+  ctx.font = '600 10.5px Calibri, Arial, sans-serif'
+  for (let i = 0; i < ZONES.length; i++) {
+    const z = ZONES[i]
+    const upper = i === 0 ? 100 : ZONES[i - 1].min
+    const bandTop = yFor(upper)
+    const bandBot = yFor(z.min)
+    if (bandBot - bandTop < 12) continue
+    const mid = (bandTop + bandBot) / 2
+    ctx.fillStyle = BAR_FILL_OF_VALUE(z.min === 0 ? 0 : z.min)
+    const lines = wrapTextByWords(ctx, z.label, PAD_LEFT - 16, 2)
+    if (lines.length === 1) {
+      drawTextWithBg(ctx, lines[0], PAD_LEFT - 8, mid + 4, {
+        align: 'right', padX: 3, padY: 1.5,
+      })
+    } else {
+      const lineH = 12
+      const startY = mid - ((lines.length - 1) * lineH) / 2 + 4
+      for (let li = 0; li < lines.length; li++) {
+        drawTextWithBg(ctx, lines[li], PAD_LEFT - 8, startY + li * lineH, {
+          align: 'right', padX: 3, padY: 1.5,
+        })
+      }
+    }
+  }
+
+  // 2) Médiane (P50) — fond blanc OPAQUE + bordure fine (toujours nette
+  //    même si une barre est juste devant)
+  ctx.font = 'bold 9.5px Calibri, Arial, sans-serif'
+  ctx.fillStyle = '#000000'
+  drawTextWithBg(ctx, 'Médiane (P50)', chartLeftX + 4, yMed - 3, {
+    align: 'left', solid: true, border: true, padX: 4, padY: 2,
+  })
+
+  // 3) Seuil d'alerte P7 — même traitement, couleur rouge
+  ctx.font = 'bold 9.5px Calibri, Arial, sans-serif'
+  ctx.fillStyle = '#C62828'
+  drawTextWithBg(ctx, "Seuil d'alerte (P7)", chartLeftX + 4, yAlert - 3, {
+    align: 'left', solid: true, border: true, padX: 4, padY: 2,
+  })
 }
 
 /**
