@@ -645,3 +645,27 @@ input:focus, textarea:focus, select:focus {
 .ds-badge-danger  { background: var(--ds-danger-soft);  color: var(--ds-danger); }
 
 .ds-rule { height: 1px; background: var(--border-ds); border: 0; margin: var(--space-6) 0; }
+
+/* ---------- Responsive overrides pour la landing ---------- */
+/* (média queries centralisées ici car styled-jsx force "use client") */
+@media (max-width: 880px) {
+  .hero-grid,
+  .amb-grid,
+  .ben-grid {
+    grid-template-columns: 1fr !important;
+  }
+}
+@media (max-width: 768px) {
+  .steps-grid {
+    grid-template-columns: 1fr !important;
+  }
+}
+@media (max-width: 720px) {
+  .pricing-grid {
+    grid-template-columns: 1fr !important;
+  }
+  .footer-grid {
+    grid-template-columns: 1fr 1fr !important;
+    gap: 32px !important;
+  }
+}
