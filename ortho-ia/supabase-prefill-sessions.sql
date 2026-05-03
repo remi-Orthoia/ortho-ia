@@ -1,13 +1,16 @@
 -- ============================================================================
--- Table prefill_sessions
+-- Table prefill_sessions   (APPLIQUÉE EN PROD le 2026-05-03 via MCP)
 -- ----------------------------------------------------------------------------
 -- Sessions courtes (1h) qui stockent les résultats d'extraction d'un screenshot
 -- HappyNeuron envoyé par l'extension Chrome. L'utilisateur reçoit un session_id
 -- et est redirigé vers /dashboard/nouveau-crbo?prefill=<id>, où le formulaire
 -- charge les données et auto-remplit.
 --
--- Insertion : uniquement par l'API serveur (service role) → pas de policy INSERT.
--- Lecture / suppression : par le propriétaire (RLS via auth.uid()).
+-- Insertion : par l'API serveur (service role bypass RLS) OU policy
+--   "Users insert own prefill sessions" si la service_role n'est pas dispo.
+-- Lecture : policy auth.uid()=user_id AND expires_at > now() (sessions
+--   expirées invisibles côté client).
+-- Suppression : par le propriétaire (utile après consommation).
 -- ============================================================================
 
 create table if not exists prefill_sessions (
