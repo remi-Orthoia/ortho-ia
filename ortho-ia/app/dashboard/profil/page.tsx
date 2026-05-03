@@ -294,6 +294,11 @@ function ProfilContent() {
             Copiez ce token dans l&apos;extension Ortho.ia pour Chrome pour importer
             vos résultats HappyNeuron en 1 clic.
           </p>
+          <p className="mt-1 text-xs text-gray-500">
+            Pas encore installé l&apos;extension ? Téléchargez le ZIP, décompressez-le
+            et ouvrez <code className="px-1 py-0.5 rounded bg-white/70 text-gray-700">INSTALLATION.md</code>{' '}
+            — comptez 2 minutes.
+          </p>
 
           <div className="mt-4 flex flex-wrap items-center gap-3">
             <button
@@ -314,19 +319,22 @@ function ProfilContent() {
               )}
             </button>
 
-            {/* Lien de téléchargement — désactivé tant que l'extension n'est pas
-                publiée. Affichage clair "Bientôt disponible" pour ne pas
-                frustrer l'utilisatrice. */}
-            <span
-              className="inline-flex items-center gap-2 px-4 py-2.5 bg-white text-gray-500 border border-gray-200 rounded-lg font-medium cursor-not-allowed"
-              title="Disponible prochainement sur le Chrome Web Store"
+            {/* Téléchargement du ZIP de l'extension — bundlé dans /public.
+                Installation manuelle "mode développeur" en attendant la
+                publication sur le Chrome Web Store. Le ZIP contient un
+                INSTALLATION.md avec les étapes step-by-step. */}
+            <a
+              href="/ortho-ia-extension.zip"
+              download="ortho-ia-extension.zip"
+              className="inline-flex items-center gap-2 px-4 py-2.5 bg-white text-gray-800 border border-gray-300 rounded-lg font-medium hover:bg-gray-50 transition shadow-sm"
+              title="Télécharger l'extension Chrome (ZIP)"
             >
               <Download size={18} />
               Télécharger l&apos;extension
-              <span className="text-[10px] uppercase tracking-wider bg-amber-100 text-amber-800 px-1.5 py-0.5 rounded">
-                Bientôt
+              <span className="text-[10px] uppercase tracking-wider bg-gray-100 text-gray-600 px-1.5 py-0.5 rounded">
+                ZIP
               </span>
-            </span>
+            </a>
           </div>
 
           {tokenError && (
