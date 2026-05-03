@@ -5,7 +5,7 @@ import Link from 'next/link'
 import { useSearchParams } from 'next/navigation'
 import { Eye, EyeOff, Loader2, CheckCircle } from 'lucide-react'
 import { createClient } from '@/lib/supabase'
-import { AppButton, AppInput, Badge } from '@/components/ui'
+import { AppButton, AppInput, Badge, Logo } from '@/components/ui'
 
 function RegisterForm() {
   const searchParams = useSearchParams()
@@ -138,11 +138,8 @@ function RegisterForm() {
           display: 'flex', flexDirection: 'column', justifyContent: 'space-between',
         }}
       >
-        <Link href="/" style={{ display: 'flex', alignItems: 'center', gap: 12, textDecoration: 'none', color: 'inherit' }}>
-          <SymbolLogo />
-          <span style={{ fontFamily: 'var(--font-display)', fontSize: 22, fontWeight: 500 }}>
-            Ortho<span style={{ color: 'var(--ds-accent)' }}>.</span>ia
-          </span>
+        <Link href="/" style={{ display: 'inline-block', textDecoration: 'none' }} aria-label="Ortho.ia — accueil">
+          <Logo variant="dark" height={42} />
         </Link>
         <div>
           <p style={{
@@ -285,16 +282,6 @@ function RegisterForm() {
         </form>
       </div>
     </div>
-  )
-}
-
-function SymbolLogo() {
-  return (
-    <svg width="36" height="36" viewBox="0 0 32 32" aria-hidden="true">
-      <circle cx="16" cy="16" r="14" fill="var(--ds-primary)" />
-      <path d="M10 16c0-3.3 2.7-6 6-6s6 2.7 6 6-2.7 6-6 6" stroke="var(--fg-on-brand)" strokeWidth="2.4" fill="none" strokeLinecap="round" />
-      <circle cx="22" cy="22" r="3" fill="var(--ds-accent)" />
-    </svg>
   )
 }
 

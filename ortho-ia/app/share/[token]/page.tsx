@@ -7,6 +7,7 @@ import { createClient } from '@/lib/supabase'
 import { Loader2, Clock, ShieldCheck, AlertTriangle } from 'lucide-react'
 import type { CRBOStructure } from '@/lib/prompts'
 import CRBOStructuredPreview from '@/components/CRBOStructuredPreview'
+import { Logo } from '@/components/ui'
 
 /**
  * Vue publique d'un CRBO partagé via lien temporaire.
@@ -84,13 +85,8 @@ export default function SharedCRBOPage() {
       {/* Header public */}
       <header className="bg-white dark:bg-surface-dark-subtle border-b border-gray-200 dark:border-surface-dark-muted py-4 px-4 sm:px-6">
         <div className="max-w-4xl mx-auto flex items-center justify-between flex-wrap gap-3">
-          <Link href="/" className="flex items-center gap-2">
-            <div className="w-8 h-8 bg-gradient-to-br from-primary-500 to-primary-700 rounded-lg flex items-center justify-center">
-              <span className="text-white font-bold text-sm">O</span>
-            </div>
-            <span className="font-bold text-gray-900 dark:text-gray-100">
-              Ortho<span className="text-primary-600 dark:text-primary-400">.ia</span>
-            </span>
+          <Link href="/" aria-label="Ortho.ia — accueil" className="inline-block">
+            <Logo variant="light" height={32} withoutTagline />
           </Link>
           <div className="flex items-center gap-2 text-xs text-amber-700 dark:text-amber-400">
             <Clock size={14} />

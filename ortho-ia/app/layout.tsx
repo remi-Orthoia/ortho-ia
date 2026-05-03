@@ -43,13 +43,12 @@ export const metadata: Metadata = {
   description: 'Réduisez votre temps de rédaction de comptes rendus de bilan orthophonique grâce à l\'intelligence artificielle.',
   keywords: 'orthophonie, CRBO, compte rendu, bilan orthophonique, IA, intelligence artificielle',
   authors: [{ name: 'Ortho.ia' }],
-  // Favicon identique au logo navbar (gradient #22c55e → #15803d + "O" blanc)
+  // Favicon = logo Ortho.ia (cercle sauge #3F5E52 + plume cream + pointe terracotta)
   icons: {
     icon: [
       { url: '/favicon.svg', type: 'image/svg+xml' },
-      { url: '/favicon.ico', sizes: '32x32', type: 'image/x-icon' },
     ],
-    shortcut: '/favicon.ico',
+    shortcut: '/favicon.svg',
     apple: '/favicon.svg',
   },
   openGraph: {

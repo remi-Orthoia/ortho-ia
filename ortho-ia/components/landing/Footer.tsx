@@ -1,5 +1,6 @@
 import Link from 'next/link'
 import { Container } from './Primitives'
+import { Logo } from '@/components/ui'
 
 const COLUMNS: Array<{ title: string; links: Array<{ label: string; href: string }> }> = [
   {
@@ -34,11 +35,8 @@ export default function Footer() {
       <Container>
         <div className="footer-grid" style={{ display: 'grid', gridTemplateColumns: '2fr 1fr 1fr 1fr', gap: 48, marginBottom: 48 }}>
           <div>
-            <div style={{ display: 'flex', alignItems: 'center', gap: 10, marginBottom: 14 }}>
-              <FooterLogo />
-              <span style={{ fontFamily: 'var(--font-display)', fontSize: 20, fontWeight: 500, letterSpacing: '-0.02em', color: 'var(--fg-1)' }}>
-                Ortho<span style={{ color: 'var(--ds-primary)' }}>.</span><span style={{ color: 'var(--ds-accent)' }}>ia</span>
-              </span>
+            <div style={{ marginBottom: 14 }}>
+              <Logo variant="light" height={36} withoutTagline />
             </div>
             <p style={{ fontSize: 14, lineHeight: 1.6, color: 'var(--fg-2)', maxWidth: 320, margin: 0 }}>
               La plume rapide des orthophonistes — pour vous laisser plus de temps avec vos patients.
@@ -78,12 +76,3 @@ export default function Footer() {
   )
 }
 
-function FooterLogo() {
-  return (
-    <svg width="28" height="28" viewBox="0 0 32 32" aria-hidden="true">
-      <circle cx="16" cy="16" r="14" fill="var(--ds-primary)" />
-      <path d="M10 16c0-3.3 2.7-6 6-6s6 2.7 6 6-2.7 6-6 6" stroke="var(--fg-on-brand)" strokeWidth="2.4" fill="none" strokeLinecap="round" />
-      <circle cx="22" cy="22" r="3" fill="var(--ds-accent)" />
-    </svg>
-  )
-}

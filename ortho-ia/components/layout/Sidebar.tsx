@@ -2,6 +2,7 @@
 
 import Link from 'next/link'
 import type { CSSProperties, ReactNode } from 'react'
+import Logo from '@/components/ui/Logo'
 
 export interface SidebarItem {
   id: string
@@ -116,22 +117,10 @@ function DefaultLogoBlock() {
   return (
     <Link
       href="/dashboard"
-      style={{
-        display: 'flex', alignItems: 'center', gap: 10,
-        padding: '4px 10px 18px', textDecoration: 'none',
-      }}
+      style={{ display: 'inline-block', padding: '4px 6px 18px', textDecoration: 'none' }}
+      aria-label="Ortho.ia"
     >
-      <svg width="30" height="30" viewBox="0 0 32 32" aria-hidden="true">
-        <circle cx="16" cy="16" r="14" fill="var(--ds-primary)" />
-        <path d="M10 16c0-3.3 2.7-6 6-6s6 2.7 6 6-2.7 6-6 6" stroke="var(--fg-on-brand)" strokeWidth="2.4" fill="none" strokeLinecap="round" />
-        <circle cx="22" cy="22" r="3" fill="var(--ds-accent)" />
-      </svg>
-      <span style={{
-        fontFamily: 'var(--font-display)', fontSize: 19, fontWeight: 500,
-        letterSpacing: '-0.02em', color: 'var(--fg-1)',
-      }}>
-        Ortho<span style={{ color: 'var(--ds-primary)' }}>.</span><span style={{ color: 'var(--ds-accent)' }}>ia</span>
-      </span>
+      <Logo variant="light" height={32} withoutTagline />
     </Link>
   )
 }

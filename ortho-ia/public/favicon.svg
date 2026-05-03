@@ -1,10 +1,13 @@
-<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64">
-  <defs>
-    <linearGradient id="bg" x1="0" y1="0" x2="64" y2="64" gradientUnits="userSpaceOnUse">
-      <stop offset="0%" stop-color="#22c55e"/>
-      <stop offset="100%" stop-color="#15803d"/>
-    </linearGradient>
-  </defs>
-  <rect width="64" height="64" rx="14" ry="14" fill="url(#bg)"/>
-  <text x="32" y="32" text-anchor="middle" dominant-baseline="central" font-family="-apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif" font-weight="800" font-size="40" fill="#ffffff">O</text>
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64" role="img" aria-label="Ortho.ia">
+  <!-- Cercle sauge -->
+  <circle cx="32" cy="32" r="30" fill="#3F5E52" />
+  <!-- Plume avec rotation -35° centrée sur le cercle -->
+  <g transform="translate(32 32) rotate(-35)">
+    <!-- Corps de la plume (cream) -->
+    <path d="M0,-22 C5,-16 8,-6 6,6 C4,14 1,19 0,22 C-1,19 -4,14 -6,6 C-8,-6 -5,-16 0,-22Z" fill="#FAF6EF" />
+    <!-- Nervure -->
+    <line x1="0" y1="-19" x2="0" y2="19" stroke="#3F5E52" stroke-width="1.4" stroke-linecap="round" />
+    <!-- Pointe terracotta -->
+    <path d="M0,19 C3,25 2,31 0,36 C-2,31 -3,25 0,19Z" fill="#C97B5E" />
+  </g>
 </svg>

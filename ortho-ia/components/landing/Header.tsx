@@ -2,6 +2,7 @@
 
 import Link from 'next/link'
 import { Button, Container } from './Primitives'
+import { Logo } from '@/components/ui'
 
 const NAV_LINKS = [
   { label: 'Comment ça marche', href: '#comment-ca-marche' },
@@ -20,14 +21,8 @@ export default function Header() {
       borderBottom: '1px solid var(--border-ds)',
     }}>
       <Container style={{ display: 'flex', alignItems: 'center', height: 72, gap: 24 }}>
-        <Link href="/" style={{ display: 'flex', alignItems: 'center', gap: 10, textDecoration: 'none' }}>
-          <Logo />
-          <span style={{
-            fontFamily: 'var(--font-display)', fontSize: 22, fontWeight: 500,
-            letterSpacing: '-0.02em', color: 'var(--fg-1)',
-          }}>
-            Ortho<span style={{ color: 'var(--ds-primary)' }}>.</span><span style={{ color: 'var(--ds-accent)' }}>ia</span>
-          </span>
+        <Link href="/" style={{ display: 'inline-block', textDecoration: 'none' }} aria-label="Ortho.ia — accueil">
+          <Logo variant="light" height={42} withoutTagline />
         </Link>
         <nav style={{ display: 'flex', gap: 28, marginLeft: 32 }} className="hidden md:flex">
           {NAV_LINKS.map(l => (
@@ -46,13 +41,3 @@ export default function Header() {
   )
 }
 
-// Logo SVG inline — sage 600 + terracotta 600 selon direction A
-function Logo() {
-  return (
-    <svg width="32" height="32" viewBox="0 0 32 32" aria-hidden="true">
-      <circle cx="16" cy="16" r="14" fill="var(--ds-primary)" />
-      <path d="M10 16c0-3.3 2.7-6 6-6s6 2.7 6 6-2.7 6-6 6" stroke="var(--fg-on-brand)" strokeWidth="2.4" fill="none" strokeLinecap="round" />
-      <circle cx="22" cy="22" r="3" fill="var(--ds-accent)" />
-    </svg>
-  )
-}

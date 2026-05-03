@@ -19,6 +19,7 @@ import { createClient } from '@/lib/supabase'
 import ThemeToggle from '@/components/ThemeToggle'
 import FeedbackButton from '@/components/FeedbackButton'
 import { Sidebar, AppHeader, type SidebarItem } from '@/components/layout'
+import { Logo } from '@/components/ui'
 
 interface DashboardLayoutProps {
   children: ReactNode
@@ -176,16 +177,12 @@ export default function DashboardLayout({ children }: DashboardLayoutProps) {
   )
 
   // ============ Bloc header de la sidebar (logo + bouton mobile close) ============
+  // Sidebar 240px : on retire le tagline et on contraint la hauteur pour que
+  // le bloc header reste compact (cercle + "Ortho.ia").
   const sidebarHeader = (
-    <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '4px 10px 18px' }}>
-      <Link href="/dashboard" style={{ display: 'flex', alignItems: 'center', gap: 10, textDecoration: 'none' }}>
-        <SymbolLogo />
-        <span style={{
-          fontFamily: 'var(--font-display)', fontSize: 19, fontWeight: 500,
-          letterSpacing: '-0.02em', color: 'var(--fg-1)',
-        }}>
-          Ortho<span style={{ color: 'var(--ds-primary)' }}>.</span><span style={{ color: 'var(--ds-accent)' }}>ia</span>
-        </span>
+    <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '4px 6px 18px' }}>
+      <Link href="/dashboard" style={{ display: 'inline-block', textDecoration: 'none' }} aria-label="Ortho.ia — tableau de bord">
+        <Logo variant="light" height={36} withoutTagline />
       </Link>
       <button
         className="lg:hidden"
@@ -278,12 +275,3 @@ export default function DashboardLayout({ children }: DashboardLayoutProps) {
   )
 }
 
-function SymbolLogo() {
-  return (
-    <svg width="30" height="30" viewBox="0 0 32 32" aria-hidden="true">
-      <circle cx="16" cy="16" r="14" fill="var(--ds-primary)" />
-      <path d="M10 16c0-3.3 2.7-6 6-6s6 2.7 6 6-2.7 6-6 6" stroke="var(--fg-on-brand)" strokeWidth="2.4" fill="none" strokeLinecap="round" />
-      <circle cx="22" cy="22" r="3" fill="var(--ds-accent)" />
-    </svg>
-  )
-}
