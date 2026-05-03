@@ -3,8 +3,9 @@
 import { useState, Suspense } from 'react'
 import Link from 'next/link'
 import { useRouter, useSearchParams } from 'next/navigation'
-import { createClient } from '@/lib/supabase'
 import { Eye, EyeOff, Loader2 } from 'lucide-react'
+import { createClient } from '@/lib/supabase'
+import { AppButton, AppInput } from '@/components/ui'
 
 function LoginForm() {
   const router = useRouter()
@@ -23,23 +24,18 @@ function LoginForm() {
 
     try {
       const supabase = createClient()
-      const { error } = await supabase.auth.signInWithPassword({
-        email,
-        password,
-      })
-
+      const { error } = await supabase.auth.signInWithPassword({ email, password })
       if (error) {
-        if (error.message.includes('Invalid login credentials')) {
-          setError('Email ou mot de passe incorrect')
-        } else {
-          setError(error.message)
-        }
+        setError(
+          error.message.includes('Invalid login credentials')
+            ? 'Email ou mot de passe incorrect'
+            : error.message
+        )
         return
       }
-
       router.push(redirectTo)
       router.refresh()
-    } catch (err) {
+    } catch {
       setError('Une erreur est survenue. Veuillez réessayer.')
     } finally {
       setLoading(false)
@@ -47,124 +43,137 @@ function LoginForm() {
   }
 
   return (
-    <div className="min-h-screen bg-gray-50 dark:bg-surface-dark flex flex-col justify-center py-12 sm:px-6 lg:px-8">
-      {/* Logo */}
-      <div className="sm:mx-auto sm:w-full sm:max-w-md">
-        <Link href="/" className="flex items-center justify-center space-x-2">
-          <div className="w-10 h-10 bg-gradient-to-br from-primary-500 to-primary-700 rounded-lg flex items-center justify-center shadow-sm">
-            <span className="text-white font-bold">O</span>
-          </div>
-          <span className="font-bold text-2xl text-gray-900 dark:text-gray-100">Ortho<span className="text-primary-600 dark:text-primary-400">.ia</span></span>
+    <div
+      className="auth-split"
+      style={{
+        display: 'grid', gridTemplateColumns: '1fr 1fr',
+        minHeight: '100vh',
+        background: 'var(--bg-canvas)',
+        color: 'var(--fg-1)',
+        fontFamily: 'var(--font-body)',
+      }}
+    >
+      {/* Colonne gauche — fond sombre + quote */}
+      <div
+        className="auth-pane-dark"
+        style={{
+          background: 'var(--bg-inverse)', color: 'var(--fg-on-brand)',
+          padding: '64px 56px',
+          display: 'flex', flexDirection: 'column', justifyContent: 'space-between',
+        }}
+      >
+        <Link href="/" style={{ display: 'flex', alignItems: 'center', gap: 12, textDecoration: 'none', color: 'inherit' }}>
+          <SymbolLogo />
+          <span style={{ fontFamily: 'var(--font-display)', fontSize: 22, fontWeight: 500 }}>
+            Ortho<span style={{ color: 'var(--ds-accent)' }}>.</span>ia
+          </span>
         </Link>
-        <h2 className="mt-6 text-center text-3xl font-bold text-gray-900 dark:text-gray-100">
-          Connexion à votre compte
-        </h2>
-        <p className="mt-2 text-center text-sm text-gray-600">
-          Pas encore de compte ?{' '}
-          <Link href="/auth/register" className="font-medium text-green-600 hover:text-green-500">
-            Créer un compte gratuitement
-          </Link>
+        <div>
+          <p style={{
+            fontFamily: 'var(--font-display)', fontSize: 'clamp(28px, 3.4vw, 40px)', fontWeight: 500,
+            lineHeight: 1.15, letterSpacing: '-0.015em', margin: 0, textWrap: 'balance',
+          }}>
+            « Le rapport ressemble à ce que j&apos;aurais écrit moi-même —
+            en plus rapide. »
+          </p>
+          <p style={{ marginTop: 18, fontSize: 14, color: 'rgba(250,246,239,0.7)' }}>
+            Julie M., orthophoniste libérale, Lyon
+          </p>
+        </div>
+        <p style={{ fontSize: 13, color: 'rgba(250,246,239,0.5)', margin: 0 }}>
+          Données chiffrées · RGPD · Secret médical
         </p>
       </div>
 
-      <div className="mt-8 sm:mx-auto sm:w-full sm:max-w-md">
-        <div className="bg-white dark:bg-surface-dark-subtle py-8 px-4 shadow-card rounded-xl sm:px-10 border border-gray-100 dark:border-surface-dark-muted">
-          <form className="space-y-6" onSubmit={handleLogin}>
-            {error && (
-              <div className="bg-red-50 border border-red-200 text-red-700 px-4 py-3 rounded-lg text-sm">
-                {error}
-              </div>
-            )}
+      {/* Colonne droite — formulaire */}
+      <div style={{ display: 'grid', placeItems: 'center', padding: 32 }}>
+        <form onSubmit={handleLogin} style={{ width: '100%', maxWidth: 360 }}>
+          <h1 style={{
+            fontFamily: 'var(--font-display)', fontSize: 32, fontWeight: 500,
+            letterSpacing: '-0.015em', margin: '0 0 8px', color: 'var(--fg-1)',
+          }}>
+            Bonjour.
+          </h1>
+          <p style={{ fontSize: 15, color: 'var(--fg-2)', margin: '0 0 28px' }}>
+            Reconnectez-vous pour reprendre vos bilans.
+          </p>
 
-            <div>
-              <label htmlFor="email" className="block text-sm font-medium text-gray-700">
-                Adresse email
-              </label>
-              <div className="mt-1">
-                <input
-                  id="email"
-                  name="email"
-                  type="email"
-                  autoComplete="email"
-                  required
-                  value={email}
-                  onChange={(e) => setEmail(e.target.value)}
-                  className="appearance-none block w-full px-4 py-3 border border-gray-300 rounded-lg placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-green-500 focus:border-transparent"
-                  placeholder="vous@exemple.com"
-                />
-              </div>
+          {error && (
+            <div style={{
+              background: 'var(--ds-danger-soft)', color: 'var(--ds-danger)',
+              padding: '10px 14px', borderRadius: 10,
+              fontSize: 13, marginBottom: 14,
+            }}>
+              {error}
             </div>
+          )}
 
-            <div>
-              <label htmlFor="password" className="block text-sm font-medium text-gray-700">
-                Mot de passe
-              </label>
-              <div className="mt-1 relative">
-                <input
-                  id="password"
-                  name="password"
-                  type={showPassword ? 'text' : 'password'}
-                  autoComplete="current-password"
-                  required
-                  value={password}
-                  onChange={(e) => setPassword(e.target.value)}
-                  className="appearance-none block w-full px-4 py-3 border border-gray-300 rounded-lg placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-green-500 focus:border-transparent pr-12"
-                  placeholder="••••••••"
-                />
-                <button
-                  type="button"
-                  className="absolute inset-y-0 right-0 pr-3 flex items-center"
-                  onClick={() => setShowPassword(!showPassword)}
-                >
-                  {showPassword ? (
-                    <EyeOff className="h-5 w-5 text-gray-400" />
-                  ) : (
-                    <Eye className="h-5 w-5 text-gray-400" />
-                  )}
-                </button>
-              </div>
-            </div>
-
-            <div className="flex items-center justify-between">
-              <div className="flex items-center">
-                <input
-                  id="remember-me"
-                  name="remember-me"
-                  type="checkbox"
-                  className="h-4 w-4 text-green-600 focus:ring-green-500 border-gray-300 rounded"
-                />
-                <label htmlFor="remember-me" className="ml-2 block text-sm text-gray-700">
-                  Se souvenir de moi
-                </label>
-              </div>
-
-              <div className="text-sm">
-                <Link href="/auth/forgot-password" className="font-medium text-green-600 hover:text-green-500">
-                  Mot de passe oublié ?
-                </Link>
-              </div>
-            </div>
-
-            <div>
+          <div style={{ display: 'flex', flexDirection: 'column', gap: 14 }}>
+            <AppInput
+              label="Email"
+              type="email"
+              autoComplete="email"
+              required
+              value={email}
+              onChange={(e) => setEmail(e.target.value)}
+              placeholder="vous@exemple.com"
+            />
+            <div style={{ position: 'relative' }}>
+              <AppInput
+                label="Mot de passe"
+                type={showPassword ? 'text' : 'password'}
+                autoComplete="current-password"
+                required
+                value={password}
+                onChange={(e) => setPassword(e.target.value)}
+                placeholder="••••••••"
+                style={{ paddingRight: 40 }}
+              />
               <button
-                type="submit"
-                disabled={loading}
-                className="w-full flex justify-center py-3 px-4 border border-transparent rounded-lg shadow-sm text-sm font-medium text-white bg-green-600 hover:bg-green-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-green-500 disabled:opacity-50 disabled:cursor-not-allowed transition"
+                type="button"
+                onClick={() => setShowPassword(s => !s)}
+                aria-label={showPassword ? 'Masquer le mot de passe' : 'Afficher le mot de passe'}
+                style={{
+                  position: 'absolute', right: 10, bottom: 9,
+                  background: 'transparent', border: 0, padding: 4,
+                  color: 'var(--fg-3)', cursor: 'pointer',
+                  display: 'grid', placeItems: 'center',
+                }}
               >
-                {loading ? (
-                  <>
-                    <Loader2 className="animate-spin -ml-1 mr-2 h-5 w-5" />
-                    Connexion...
-                  </>
-                ) : (
-                  'Se connecter'
-                )}
+                {showPassword ? <EyeOff size={18} /> : <Eye size={18} />}
               </button>
             </div>
-          </form>
-        </div>
+
+            <AppButton
+              type="submit"
+              variant="primary"
+              size="lg"
+              loading={loading}
+              style={{ width: '100%', justifyContent: 'center', marginTop: 6 }}
+            >
+              {loading ? 'Connexion…' : 'Se connecter'}
+            </AppButton>
+          </div>
+
+          <p style={{ fontSize: 13, color: 'var(--fg-3)', textAlign: 'center', marginTop: 18 }}>
+            <Link href="/auth/forgot-password" style={{ color: 'var(--fg-link)' }}>Mot de passe oublié ?</Link>
+            {' · '}
+            <Link href="/auth/register" style={{ color: 'var(--fg-link)' }}>Créer un compte</Link>
+          </p>
+        </form>
       </div>
     </div>
+  )
+}
+
+function SymbolLogo() {
+  return (
+    <svg width="36" height="36" viewBox="0 0 32 32" aria-hidden="true">
+      <circle cx="16" cy="16" r="14" fill="var(--bg-canvas)" opacity="0.12" />
+      <circle cx="16" cy="16" r="14" fill="var(--ds-primary)" />
+      <path d="M10 16c0-3.3 2.7-6 6-6s6 2.7 6 6-2.7 6-6 6" stroke="var(--fg-on-brand)" strokeWidth="2.4" fill="none" strokeLinecap="round" />
+      <circle cx="22" cy="22" r="3" fill="var(--ds-accent)" />
+    </svg>
   )
 }
 
@@ -172,8 +181,8 @@ export default function LoginPage() {
   return (
     <Suspense
       fallback={
-        <div className="min-h-screen flex items-center justify-center">
-          <Loader2 className="animate-spin h-8 w-8 text-green-600" />
+        <div style={{ minHeight: '100vh', display: 'grid', placeItems: 'center', background: 'var(--bg-canvas)' }}>
+          <Loader2 className="animate-spin" size={28} style={{ color: 'var(--ds-primary)' }} />
         </div>
       }
     >

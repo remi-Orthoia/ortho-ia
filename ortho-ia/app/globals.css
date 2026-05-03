@@ -669,3 +669,21 @@ input:focus, textarea:focus, select:focus {
     gap: 32px !important;
   }
 }
+
+/* Auth pages — split-screen → form fullscreen sur mobile */
+@media (max-width: 880px) {
+  .auth-split {
+    grid-template-columns: 1fr !important;
+  }
+  .auth-pane-dark {
+    display: none !important;
+  }
+}
+
+/* ReportPreview — side panel sous le doc sur mobile */
+@media (max-width: 960px) {
+  .report-preview {
+    grid-template-columns: 1fr !important;
+    padding: 16px !important;
+  }
+}
