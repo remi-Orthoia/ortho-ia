@@ -8,6 +8,34 @@ export const maxDuration = 60
 
 const MAX_AUDIO_BYTES = 25 * 1024 * 1024
 
+// Hallucinations connues de Whisper sur des audios silencieux ou trop courts.
+// Whisper a été entraîné sur des sous-titres YouTube → quand il "ne comprend
+// rien" il recrache ces génériques. On les supprime systématiquement.
+const WHISPER_HALLUCINATIONS = [
+  /sous-?titres?\s+réalisés?\s+par\s+la\s+communauté\s+d['’]\s*amara\.org/gi,
+  /sous-?titrage\s+(de\s+)?(la\s+)?soci[eé]t[eé]\s+radio-?canada/gi,
+  /sous-?titres?\s+(faits?|réalisés?)\s+par\s+\S+/gi,
+  /sous-?titrage\s+st['’]?\s*501/gi,
+  /❤?\s*par\s+soustitreur\.com/gi,
+  /merci\s+d['’]\s*avoir\s+regardé\s+(cette\s+)?(la\s+)?vidéo\.?/gi,
+  /merci\s+d['’]\s*avoir\s+regardé\.?/gi,
+  /n['’]oubliez\s+pas\s+de\s+vous\s+abonner/gi,
+  /abonnez-?vous\s+(à\s+)?(ma\s+|notre\s+)?cha[iî]ne/gi,
+  /like\s+et\s+abonne-?toi/gi,
+  /générique/gi,
+]
+
+function sanitizeWhisperText(input: string): string {
+  let s = (input || '').trim()
+  if (!s) return ''
+  for (const re of WHISPER_HALLUCINATIONS) s = s.replace(re, ' ')
+  // Collapse les espaces multiples laissés par le filtrage
+  s = s.replace(/\s+/g, ' ').trim()
+  // Si après filtrage il ne reste qu'une ponctuation isolée, considère vide.
+  if (/^[\s\.\,\;\:\-–—…]+$/.test(s)) return ''
+  return s
+}
+
 export async function POST(request: NextRequest) {
   try {
     // ============ AUTH ============
@@ -61,15 +89,41 @@ export async function POST(request: NextRequest) {
       file,
       model: 'whisper-1',
       language: 'fr',
-      // Format response_format: text → string brut. Plus simple que json.
+      // temperature: 0 → réponse déterministe, beaucoup moins d'hallucinations
+      // sur les passages silencieux/peu sonores.
+      temperature: 0,
+      // Le `prompt` oriente le décodeur vers le bon vocabulaire ET réduit
+      // drastiquement les hallucinations de générique YouTube ("sous-titres
+      // réalisés par la communauté d'Amara.org", "merci d'avoir regardé"...).
+      // On lui donne un mini-contexte orthophonie + les termes courants.
+      prompt:
+        "Transcription d'une dictée d'orthophoniste pour un compte rendu de bilan orthophonique (CRBO). " +
+        "Vocabulaire : anamnèse, bilan, motif de consultation, langage oral, langage écrit, phonologie, " +
+        "lexique, syntaxe, conscience phonologique, mémoire de travail, dyslexie, dysorthographie, dysphasie, " +
+        "Exalang, EVALO, écart-type, percentile, déficitaire, pathologique, normé. " +
+        "Patient, médecin prescripteur, école, classe, CP, CE1, CE2, CM1, CM2, maternelle.",
       response_format: 'text',
     })
 
-    // SDK retourne déjà un string quand response_format = 'text'.
-    const text = typeof transcription === 'string' ? transcription : ((transcription as any)?.text ?? '')
-    console.log('[transcribe] OK', { chars: text.length, preview: text.slice(0, 80) })
+    const rawText = typeof transcription === 'string' ? transcription : ((transcription as any)?.text ?? '')
+    const text = sanitizeWhisperText(rawText)
+    console.log('[transcribe] OK', {
+      chars: text.length,
+      rawChars: rawText.length,
+      filtered: rawText.length !== text.length,
+      preview: text.slice(0, 80),
+    })
 
-    return NextResponse.json({ success: true, text: text.trim() })
+    if (!text) {
+      // Soit silence total, soit 100% du texte renvoyé était une hallucination
+      // connue. On le signale clairement plutôt que de retourner un texte vide.
+      return NextResponse.json(
+        { error: "Aucune parole détectée — parlez plus près du micro et réessayez." },
+        { status: 422 },
+      )
+    }
+
+    return NextResponse.json({ success: true, text })
   } catch (error: any) {
     console.error('Erreur transcription Whisper:', {
       name: error?.name,

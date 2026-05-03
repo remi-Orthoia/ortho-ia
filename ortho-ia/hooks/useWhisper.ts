@@ -98,7 +98,17 @@ export function useWhisper(options: UseWhisperOptions = {}) {
       return
     }
     try {
-      const stream = await navigator.mediaDevices.getUserMedia({ audio: true })
+      // Important : on garde echoCancellation/noiseSuppression mais on désactive
+      // l'autoGainControl agressif de Chrome qui peut "étouffer" une voix calme
+      // au point de produire un signal quasi-silencieux → Whisper hallucine
+      // alors des sous-titres YouTube ("Amara.org", "merci d'avoir regardé"...).
+      const stream = await navigator.mediaDevices.getUserMedia({
+        audio: {
+          echoCancellation: true,
+          noiseSuppression: true,
+          autoGainControl: false,
+        },
+      })
       streamRef.current = stream
       const { mimeType: pickedMime } = pickMimeAndExt()
       const recorder = new MediaRecorder(stream, pickedMime ? { mimeType: pickedMime } : undefined)
