@@ -27,7 +27,7 @@ const PLANS: Plan[] = [
       'Toutes les trames de bilan',
       'Export Word personnalisable',
       'Sauvegardes chiffrées',
-      'Support par email',
+      'Support par email, téléphone ou visio !',
     ],
     cta: 'Essayer gratuitement',
     ctaHref: '/auth/register',
