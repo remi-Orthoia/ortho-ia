@@ -22,7 +22,7 @@ export default function Header() {
     }}>
       <Container style={{ display: 'flex', alignItems: 'center', height: 72, gap: 24 }}>
         <Link href="/" style={{ display: 'inline-flex', alignItems: 'center', textDecoration: 'none' }} aria-label="Ortho.ia — accueil">
-          <Logo variant="light" height={38} withoutTagline />
+          <Logo variant="light" height={46} withoutTagline />
         </Link>
         <nav style={{ display: 'flex', gap: 28, marginLeft: 32 }} className="hidden md:flex">
           {NAV_LINKS.map(l => (
