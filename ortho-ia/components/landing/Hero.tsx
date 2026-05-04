@@ -18,7 +18,7 @@ export default function Hero() {
               fontSize: 19, lineHeight: 1.55, color: 'var(--fg-2)',
               maxWidth: 580, margin: 0,
             }}>
-              Vous saisissez vos observations.<br />
+              Vous saisissez ou dictez vos observations.<br />
               Ortho.ia rédige un compte-rendu structuré, fidèle à votre style.<br />
               Vous gardez la main, à chaque ligne.
             </p>
