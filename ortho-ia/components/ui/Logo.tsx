@@ -120,11 +120,17 @@ export default function Logo({
   }
 
   // ============ Mode horizontal complet ============
-  // viewBox cale : cercle r=32 cx=40 cy=55, texte commence à x=90, panneau total
-  // ~250×110 si avec tagline, ~250×90 sans tagline.
+  // viewBox calé pour que le cercle (r=32) soit géométriquement centré
+  // verticalement dans le SVG :
+  //   - withoutTagline : 250×80, cercle cy=40, texte y=44 (compensation Georgia)
+  //   - avec tagline   : 260×110, cercle cy=55, texte y=56, tagline y=79
+  // Côté withoutTagline, l'ancienne hauteur 90 avec cy=55 laissait 23px de pad
+  // au-dessus du cercle et 3px en dessous → quand le SVG est centré dans une
+  // navbar via alignItems:center, le cercle apparaissait visuellement trop bas.
   const h = height ?? 40
   const viewW = withoutTagline ? 250 : 260
-  const viewH = withoutTagline ? 90 : 110
+  const viewH = withoutTagline ? 80 : 110
+  const cy = withoutTagline ? 40 : 55
 
   return (
     <svg
@@ -136,23 +142,19 @@ export default function Logo({
       {...a11y}
     >
       {/* Cercle + plume */}
-      <circle cx="40" cy="55" r="32" fill={circleFill} />
-      <g transform="translate(40 55)">
+      <circle cx="40" cy={cy} r="32" fill={circleFill} />
+      <g transform={`translate(40 ${cy})`}>
         <Feather nervColor={nervColor} />
       </g>
 
       {/*
-        Texte "Ortho.ia" centré verticalement sur le cercle (cy=55).
-        dominantBaseline="middle" centre l'em-box, mais Georgia a des
-        ascenders nettement plus hauts que les descenders → visuellement
-        le glyph paraît trop haut. On compense :
-          - mode sans tagline : y = cy + 4 (centré visuellement pile sur le cercle)
-          - mode avec tagline : y = cy + 1 pour le texte, tagline à cy + 24
-            (l'ensemble [texte + tagline] est centré visuellement sur cy)
+        Texte "Ortho.ia". dominantBaseline="middle" centre l'em-box, mais
+        Georgia a des ascenders plus hauts que les descenders → on compense
+        de +4px en y pour un centrage visuel pile sur le cercle (cy).
       */}
       <text
         x="90"
-        y={withoutTagline ? 59 : 56}
+        y={cy + 4}
         fontFamily="Georgia, 'Times New Roman', serif"
         fontSize="34"
         fontWeight="400"
@@ -167,7 +169,7 @@ export default function Logo({
       {!withoutTagline && (
         <text
           x="91"
-          y="79"
+          y={cy + 24}
           fontFamily="system-ui, -apple-system, BlinkMacSystemFont, sans-serif"
           fontSize="10"
           fontWeight="500"

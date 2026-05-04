@@ -21,8 +21,8 @@ export default function Header() {
       borderBottom: '1px solid var(--border-ds)',
     }}>
       <Container style={{ display: 'flex', alignItems: 'center', height: 72, gap: 24 }}>
-        <Link href="/" style={{ display: 'inline-block', textDecoration: 'none' }} aria-label="Ortho.ia — accueil">
-          <Logo variant="light" height={42} withoutTagline />
+        <Link href="/" style={{ display: 'inline-flex', alignItems: 'center', textDecoration: 'none' }} aria-label="Ortho.ia — accueil">
+          <Logo variant="light" height={38} withoutTagline />
         </Link>
         <nav style={{ display: 'flex', gap: 28, marginLeft: 32 }} className="hidden md:flex">
           {NAV_LINKS.map(l => (
