@@ -78,7 +78,7 @@ export default function Pricing() {
             lineHeight: 1.1, letterSpacing: '-0.015em', margin: '12px 0 12px',
             textWrap: 'balance', color: 'var(--fg-1)',
           }}>
-            Un prix qui se rembourse en deux soirées !
+            Un prix qui se rembourse en deux soirées, littéralement :
           </h2>
           <p style={{ fontSize: 16, color: 'var(--fg-2)', margin: 0 }}>
             Sans engagement. Résiliable à tout moment.
