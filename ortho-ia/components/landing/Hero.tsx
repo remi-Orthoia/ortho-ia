@@ -16,10 +16,11 @@ export default function Hero() {
             </h1>
             <p style={{
               fontSize: 19, lineHeight: 1.55, color: 'var(--fg-2)',
-              maxWidth: 480, margin: 0, textWrap: 'pretty',
+              maxWidth: 520, margin: 0,
             }}>
-              Vous saisissez vos observations. Ortho.ia rédige un compte-rendu Word
-              structuré, fidèle à votre style. Vous gardez la main, à chaque ligne.
+              Vous saisissez vos observations.<br />
+              Ortho.ia rédige un compte-rendu Word structuré, fidèle à votre style.<br />
+              Vous gardez la main, à chaque ligne.
             </p>
             <div style={{ display: 'flex', gap: 12, marginTop: 32, alignItems: 'center', flexWrap: 'wrap' }}>
               <Button variant="primary" size="lg" href="/auth/register">Essayer gratuitement</Button>

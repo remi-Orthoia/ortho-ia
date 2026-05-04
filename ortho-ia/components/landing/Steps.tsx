@@ -14,7 +14,7 @@ export default function Steps() {
         <h2 style={{
           fontFamily: 'var(--font-display)', fontSize: 'clamp(32px, 4.5vw, 44px)', fontWeight: 500,
           lineHeight: 1.1, letterSpacing: '-0.015em', margin: '12px 0 56px',
-          maxWidth: 640, textWrap: 'balance', color: 'var(--fg-1)',
+          maxWidth: 880, textWrap: 'balance', color: 'var(--fg-1)',
         }}>
           Trois étapes. Le rapport est prêt avant la fin du créneau suivant.
         </h2>

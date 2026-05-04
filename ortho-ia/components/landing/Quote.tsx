@@ -108,7 +108,7 @@ export default function Quote() {
           <h2 style={{
             fontFamily: 'var(--font-display)', fontSize: 'clamp(28px, 4vw, 40px)', fontWeight: 500,
             lineHeight: 1.1, letterSpacing: '-0.015em',
-            margin: '12px auto 0', textWrap: 'balance', maxWidth: 640,
+            margin: '12px auto 0', textWrap: 'balance', maxWidth: 880,
           }}>
             Quatre histoires d&apos;orthophonistes qui ont récupéré du temps.
           </h2>
