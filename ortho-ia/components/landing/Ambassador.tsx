@@ -93,7 +93,7 @@ export default function Ambassador() {
               Camille rédigeait ses CRBO entre 19 h et 22 h. Plus maintenant —
               et elle aide ses collègues à en faire autant.
             </h2>
-            <p style={{ fontSize: 17, lineHeight: 1.6, color: 'var(--fg-2)', margin: '0 0 16px', maxWidth: 520 }}>
+            <p style={{ fontSize: 17, lineHeight: 1.6, color: 'var(--fg-2)', margin: '0 0 16px' }}>
               Orthophoniste libérale à Bordeaux, Camille reçoit 11 patients par
               jour. Elle nous raconte en 90 secondes ce qu&apos;Ortho.ia a changé
               dans ses semaines — et pourquoi elle a invité une dizaine de
@@ -105,7 +105,7 @@ export default function Ambassador() {
               background: 'var(--ds-accent-soft)',
               border: '1px solid var(--ds-accent)',
               borderRadius: 16, padding: '16px 18px',
-              margin: '0 0 24px', maxWidth: 520,
+              margin: '0 0 24px',
             }}>
               <p style={{
                 fontSize: 13, fontWeight: 600, letterSpacing: '0.04em',
