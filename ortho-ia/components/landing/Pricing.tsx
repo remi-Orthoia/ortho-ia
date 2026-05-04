@@ -156,12 +156,26 @@ export default function Pricing() {
               <p style={{
                 fontSize: 13,
                 color: p.featured ? 'rgba(250,246,239,0.65)' : 'var(--fg-3)',
-                margin: '0 0 24px', minHeight: 18,
+                margin: '0 0 6px', minHeight: 18,
               }}>
                 {billing === 'yearly'
                   ? `Soit ${yearlyTotal(p)} facturés une fois par an.`
                   : 'Facturé chaque mois.'}
               </p>
+              {/* Footnote parrainage — uniquement sur le plan Essentiel
+                  (le plus probable pour une nouvelle inscrite) et en mensuel
+                  (la remise -5€ s'applique sur le mensuel) */}
+              {!p.featured && billing === 'monthly' && (
+                <p style={{
+                  fontSize: 13, color: 'var(--ds-accent-hover)',
+                  margin: '0 0 24px', fontWeight: 500,
+                }}>
+                  💚 Parrainée par une collègue ? <strong>14,90€/mois</strong>
+                </p>
+              )}
+              {(p.featured || billing !== 'monthly') && (
+                <div style={{ marginBottom: 24 }} />
+              )}
               <ul style={{ listStyle: 'none', padding: 0, margin: '0 0 28px', display: 'flex', flexDirection: 'column', gap: 10 }}>
                 {p.features.map(f => (
                   <li key={f} style={{ fontSize: 14, display: 'flex', gap: 10, alignItems: 'flex-start', lineHeight: 1.45 }}>

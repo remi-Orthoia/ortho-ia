@@ -84,22 +84,49 @@ export default function Ambassador() {
 
           {/* Right column copy */}
           <div>
-            <Eyebrow>Témoignage</Eyebrow>
+            <Eyebrow>Programme ambassadrice</Eyebrow>
             <h2 style={{
               fontFamily: 'var(--font-display)', fontSize: 'clamp(30px, 4.2vw, 44px)', fontWeight: 500,
               lineHeight: 1.1, letterSpacing: '-0.015em', margin: '12px 0 18px',
               textWrap: 'balance', color: 'var(--fg-1)',
             }}>
-              Camille rédigeait ses CRBO entre 19 h et 22 h. Plus maintenant.
+              Camille rédigeait ses CRBO entre 19 h et 22 h. Plus maintenant —
+              et elle aide ses collègues à en faire autant.
             </h2>
-            <p style={{ fontSize: 17, lineHeight: 1.6, color: 'var(--fg-2)', margin: '0 0 20px', maxWidth: 520 }}>
+            <p style={{ fontSize: 17, lineHeight: 1.6, color: 'var(--fg-2)', margin: '0 0 16px', maxWidth: 520 }}>
               Orthophoniste libérale à Bordeaux, Camille reçoit 11 patients par
               jour. Elle nous raconte en 90 secondes ce qu&apos;Ortho.ia a changé
-              dans ses semaines — et pourquoi elle a accepté d&apos;en parler.
+              dans ses semaines — et pourquoi elle a invité une dizaine de
+              consœurs à essayer.
             </p>
+
+            {/* Promesse parrainage — encart */}
+            <div style={{
+              background: 'var(--ds-accent-soft)',
+              border: '1px solid var(--ds-accent)',
+              borderRadius: 16, padding: '16px 18px',
+              margin: '0 0 24px', maxWidth: 520,
+            }}>
+              <p style={{
+                fontSize: 13, fontWeight: 600, letterSpacing: '0.04em',
+                textTransform: 'uppercase', color: 'var(--ds-accent-hover)',
+                margin: '0 0 6px',
+              }}>
+                Parrainez vos collègues
+              </p>
+              <p style={{ fontSize: 15.5, lineHeight: 1.5, color: 'var(--fg-1)', margin: 0 }}>
+                <strong>5€/mois</strong> par filleule active, jusqu&apos;à <strong>100€/mois</strong>.
+                Votre filleule paie <strong>14,90€/mois</strong> au lieu de 19,90€.
+                Au-dessus de 4 filleules, votre abonnement est intégralement
+                couvert.
+              </p>
+            </div>
+
             <div style={{ display: 'flex', gap: 12, alignItems: 'center', flexWrap: 'wrap' }}>
-              <Button variant="primary" size="md">Voir la vidéo</Button>
-              <Button variant="ghost" size="md">Lire l&apos;interview écrite →</Button>
+              <Button variant="primary" size="md" href="/auth/register">
+                Devenir ambassadrice
+              </Button>
+              <Button variant="ghost" size="md">Voir la vidéo →</Button>
             </div>
           </div>
         </div>

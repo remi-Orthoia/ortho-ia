@@ -1,6 +1,6 @@
 'use client'
 
-import { useState, Suspense } from 'react'
+import { useState, useEffect, Suspense } from 'react'
 import Link from 'next/link'
 import { useSearchParams } from 'next/navigation'
 import { Eye, EyeOff, Loader2, CheckCircle } from 'lucide-react'
@@ -10,6 +10,10 @@ import { AppButton, AppInput, Badge, Logo } from '@/components/ui'
 function RegisterForm() {
   const searchParams = useSearchParams()
   const plan = searchParams.get('plan') || 'free'
+  // Code de parrainage venant de /ref/[code] ou /auth/register?ref=[code].
+  // On le normalise en majuscules + on retire les espaces/quotes pour
+  // tolérer les copies-collées approximatives.
+  const referralCode = (searchParams.get('ref') || '').trim().toUpperCase().slice(0, 32) || null
 
   const [formData, setFormData] = useState({
     email: '', password: '', confirmPassword: '',
@@ -20,6 +24,23 @@ function RegisterForm() {
   const [loading, setLoading] = useState(false)
   const [error, setError] = useState('')
   const [success, setSuccess] = useState(false)
+  const [referrerPrenom, setReferrerPrenom] = useState<string | null>(null)
+
+  // Au mount : si on a un code de parrainage, on récupère le prénom du
+  // parrain pour personnaliser l'écran ("Vous avez été parrainée par X 🌿").
+  // RPC publique lookup_referrer_by_code — renvoie {prenom} ou rien si invalide.
+  useEffect(() => {
+    if (!referralCode) return
+    const supabase = createClient()
+    let cancelled = false
+    supabase.rpc('lookup_referrer_by_code', { p_code: referralCode })
+      .then(({ data }: { data: Array<{ prenom: string | null }> | null }) => {
+        if (cancelled) return
+        const prenom = data?.[0]?.prenom
+        if (prenom) setReferrerPrenom(prenom)
+      })
+    return () => { cancelled = true }
+  }, [referralCode])
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     setFormData({ ...formData, [e.target.name]: e.target.value })
@@ -57,11 +78,27 @@ function RegisterForm() {
         return
       }
       if (data.user) {
+        // Génère le code de parrainage de la nouvelle ortho via RPC SQL
+        // (LAURIE → "LAUR3942"). Si ça échoue (rare), on laisse à null —
+        // un cron ultérieur pourra backfill.
+        let myReferralCode: string | null = null
+        try {
+          const { data: codeData } = await supabase.rpc('generate_referral_code', {
+            prenom: formData.prenom,
+          })
+          if (typeof codeData === 'string' && codeData.length > 0) {
+            myReferralCode = codeData
+          }
+        } catch (e) {
+          console.warn('referral_code generation failed:', e)
+        }
+
         await supabase.from('profiles').insert({
           id: data.user.id,
           email: formData.email,
           nom: formData.nom,
           prenom: formData.prenom,
+          referral_code: myReferralCode,
         })
         await supabase.from('subscriptions').insert({
           user_id: data.user.id,
@@ -70,6 +107,32 @@ function RegisterForm() {
           crbo_count: 0,
           crbo_limit: 3,
         })
+
+        // Si la nouvelle ortho s'inscrit via un code de parrainage, on
+        // crée la relation referrals (status pending — passera en active
+        // automatiquement via le trigger DB quand elle souscrira un plan
+        // payant).
+        if (referralCode) {
+          try {
+            const { data: refOwners } = await supabase
+              .from('profiles')
+              .select('id')
+              .eq('referral_code', referralCode)
+              .limit(1)
+            const referrerId = refOwners?.[0]?.id
+            if (referrerId && referrerId !== data.user.id) {
+              await supabase.from('referrals').insert({
+                referrer_id: referrerId,
+                referred_id: data.user.id,
+                referral_code: referralCode,
+                status: 'pending',
+              })
+            }
+          } catch (e) {
+            // Best-effort — l'inscription réussit même si le referral échoue.
+            console.warn('referral relation insert failed:', e)
+          }
+        }
       }
       setSuccess(true)
     } catch {
@@ -169,10 +232,17 @@ function RegisterForm() {
             Vos 3 premiers CRBO sont offerts.
           </p>
 
-          <div style={{ marginBottom: 18 }}>
+          <div style={{ marginBottom: 18, display: 'flex', flexWrap: 'wrap', gap: 8 }}>
             <Badge tone={plan === 'pro' ? 'accent' : 'success'}>
               {plan === 'pro' ? '🚀 Essai Pro · 14 jours gratuits' : '✨ 3 CRBO gratuits inclus'}
             </Badge>
+            {referralCode && (
+              <Badge tone="primary">
+                🌿 Parrainée
+                {referrerPrenom ? <> par <strong style={{ marginLeft: 4 }}>{referrerPrenom}</strong></> : null}
+                {' '}· 14,90€/mois au lieu de 19,90€
+              </Badge>
+            )}
           </div>
 
           {error && (

@@ -3,7 +3,7 @@
 import { useState, useEffect, Suspense } from 'react'
 import { useRouter, useSearchParams } from 'next/navigation'
 import { createClient } from '@/lib/supabase'
-import { Loader2, Save, CheckCircle, AlertCircle, Trash2, Copy, Camera, Download } from 'lucide-react'
+import { Loader2, Save, CheckCircle, AlertCircle, Trash2, Copy, Camera, Download, Users, Heart, Sparkles } from 'lucide-react'
 
 function ProfilContent() {
   const router = useRouter()
@@ -33,6 +33,23 @@ function ProfilContent() {
   const [tokenCopied, setTokenCopied] = useState(false)
   const [tokenError, setTokenError] = useState('')
 
+  // ===== Section parrainage =====
+  // referralCode : code unique de l'utilisatrice (sert d'URL de partage).
+  // referrals : liste de ses filleules avec prénom et statut.
+  // earnedThisMonth : somme des "earned" pending+applied du mois courant.
+  type ReferralRow = {
+    id: string
+    status: 'pending' | 'active' | 'cancelled'
+    activated_at: string | null
+    created_at: string
+    referredPrenom: string | null
+  }
+  const [referralCode, setReferralCode] = useState<string | null>(null)
+  const [referrals, setReferrals] = useState<ReferralRow[]>([])
+  const [earnedThisMonth, setEarnedThisMonth] = useState<number>(0)
+  const [refLinkCopied, setRefLinkCopied] = useState(false)
+  const [refLinkError, setRefLinkError] = useState('')
+
   useEffect(() => {
     const loadProfile = async () => {
       const supabase = createClient()
@@ -56,13 +73,80 @@ function ProfilContent() {
           ville: data.ville || '',
           telephone: data.telephone || '',
         })
+        if (data.referral_code) setReferralCode(data.referral_code)
       }
+
+      // ===== Charge les données de parrainage en parallèle =====
+      // Filleules : SELECT referrals + lookup des prénoms via une 2e query
+      // (Supabase ne supporte pas les jointures cross-RLS via FK alias bien).
+      const [{ data: refRows }, { data: rewardRows }] = await Promise.all([
+        supabase
+          .from('referrals')
+          .select('id, referred_id, status, activated_at, created_at')
+          .eq('referrer_id', user.id)
+          .order('created_at', { ascending: false }),
+        supabase
+          .from('referral_rewards')
+          .select('amount, type, status')
+          .eq('user_id', user.id)
+          .eq('type', 'earned')
+          .gte('month', new Date(new Date().getFullYear(), new Date().getMonth(), 1).toISOString().slice(0, 10)),
+      ])
+
+      if (refRows && refRows.length > 0) {
+        // Récupère les prénoms des filleules en une seule query
+        const referredIds = refRows.map((r: any) => r.referred_id)
+        const { data: referredProfiles } = await supabase
+          .from('profiles')
+          .select('id, prenom')
+          .in('id', referredIds)
+        const prenomById = new Map<string, string>()
+        for (const p of referredProfiles ?? []) prenomById.set(p.id, p.prenom || '')
+        setReferrals(refRows.map((r: any) => ({
+          id: r.id,
+          status: r.status,
+          activated_at: r.activated_at,
+          created_at: r.created_at,
+          referredPrenom: prenomById.get(r.referred_id) ?? null,
+        })))
+      }
+      if (rewardRows) {
+        const sum = rewardRows.reduce((acc: number, r: any) => acc + Number(r.amount || 0), 0)
+        setEarnedThisMonth(sum)
+      }
+
       setUserLoaded(true)
       setLoading(false)
     }
 
     loadProfile()
   }, [])
+
+  /** Calcule l'URL absolue du lien de parrainage en utilisant l'origin courant. */
+  const buildReferralUrl = (code: string): string => {
+    if (typeof window === 'undefined') return `https://ortho-ia.vercel.app/ref/${code}`
+    return `${window.location.origin}/ref/${code}`
+  }
+
+  /** Copie le lien de parrainage (URL absolue) dans le presse-papier. */
+  const handleCopyReferralLink = async () => {
+    setRefLinkError('')
+    if (!referralCode) {
+      setRefLinkError('Code de parrainage non disponible.')
+      return
+    }
+    const url = buildReferralUrl(referralCode)
+    try {
+      if (!navigator.clipboard?.writeText) {
+        throw new Error("Le presse-papier n'est pas disponible dans ce navigateur.")
+      }
+      await navigator.clipboard.writeText(url)
+      setRefLinkCopied(true)
+      setTimeout(() => setRefLinkCopied(false), 3000)
+    } catch (e: any) {
+      setRefLinkError(e?.message || 'Impossible de copier le lien.')
+    }
+  }
 
   /**
    * Récupère l'access_token Supabase à la volée et le copie dans le presse-papier.
@@ -275,6 +359,206 @@ function ProfilContent() {
           )}
         </div>
       </div>
+
+      {/* ============================================================
+          Section Programme de parrainage
+          Visible uniquement si on connaît son referral_code (donc une
+          ortho réellement connectée avec un profil hydraté).
+          ============================================================ */}
+      {userLoaded && referralCode && (() => {
+        const activeReferrals = referrals.filter(r => r.status === 'active')
+        const pendingReferrals = referrals.filter(r => r.status === 'pending')
+        const cancelledReferrals = referrals.filter(r => r.status === 'cancelled')
+        const activeCount = activeReferrals.length
+        const monthlyDiscount = Math.min(activeCount * 5, 100)
+        const remainingForFree = Math.max(0, 4 - activeCount) // 4 filleules → 20€ ≈ couvre 19,90€
+        const remainingForFifty = Math.max(0, 10 - activeCount)
+        const referralUrl = buildReferralUrl(referralCode)
+
+        return (
+          <section
+            id="parrainage"
+            className="rounded-2xl border border-amber-200 bg-gradient-to-br from-amber-50 via-orange-50 to-rose-50 p-5 sm:p-6"
+          >
+            <div className="flex items-center gap-2 mb-1">
+              <Heart size={20} className="text-rose-600 fill-rose-100" />
+              <h2 className="text-lg font-semibold text-gray-900">
+                Mon programme de parrainage
+              </h2>
+            </div>
+            <p className="text-sm text-gray-700 leading-relaxed">
+              Parrainez vos collègues orthophonistes — chaque filleule active
+              vous rapporte <strong>5€/mois</strong>, et elle paie 14,90€/mois
+              au lieu de 19,90€.
+            </p>
+
+            {/* Compteur principal — lecture immédiate */}
+            <div className="mt-4 grid grid-cols-1 sm:grid-cols-3 gap-3">
+              <div className="bg-white/80 backdrop-blur-sm rounded-xl border border-amber-200 p-4">
+                <div className="flex items-center gap-2 text-xs font-semibold text-gray-500 uppercase tracking-wide">
+                  <Users size={14} />
+                  Filleules actives
+                </div>
+                <p className="mt-1 text-3xl font-bold text-gray-900">
+                  {activeCount}
+                  <span className="text-base font-medium text-gray-500"> / 20 max</span>
+                </p>
+                {pendingReferrals.length > 0 && (
+                  <p className="text-xs text-gray-500 mt-1">
+                    + {pendingReferrals.length} en attente d&apos;abonnement
+                  </p>
+                )}
+              </div>
+              <div className="bg-white/80 backdrop-blur-sm rounded-xl border border-amber-200 p-4">
+                <div className="flex items-center gap-2 text-xs font-semibold text-gray-500 uppercase tracking-wide">
+                  <Sparkles size={14} />
+                  Gain ce mois
+                </div>
+                <p className="mt-1 text-3xl font-bold text-rose-700">
+                  {earnedThisMonth.toFixed(2).replace('.', ',')}€
+                </p>
+                <p className="text-xs text-gray-500 mt-1">
+                  {activeCount === 0
+                    ? 'Partagez votre lien pour démarrer'
+                    : `${activeCount} × 5€/mois`}
+                </p>
+              </div>
+              <div className="bg-white/80 backdrop-blur-sm rounded-xl border border-amber-200 p-4">
+                <div className="text-xs font-semibold text-gray-500 uppercase tracking-wide">
+                  Potentiel mensuel
+                </div>
+                <p className="mt-1 text-3xl font-bold text-gray-900">
+                  {monthlyDiscount}€
+                </p>
+                <p className="text-xs text-gray-500 mt-1">
+                  Plafond 100€ (20 filleules)
+                </p>
+              </div>
+            </div>
+
+            {/* Lien de parrainage copiable */}
+            <div className="mt-4 bg-white/80 backdrop-blur-sm rounded-xl border border-amber-200 p-4">
+              <p className="text-xs font-semibold text-gray-500 uppercase tracking-wide mb-2">
+                Votre lien unique
+              </p>
+              <div className="flex items-center gap-2 flex-wrap">
+                <code className="flex-1 min-w-0 px-3 py-2 bg-gray-50 border border-gray-200 rounded-lg text-sm font-mono text-gray-800 truncate">
+                  {referralUrl}
+                </code>
+                <button
+                  type="button"
+                  onClick={handleCopyReferralLink}
+                  className="inline-flex items-center gap-2 px-4 py-2 bg-rose-600 hover:bg-rose-700 text-white font-medium rounded-lg transition shadow-sm whitespace-nowrap"
+                >
+                  {refLinkCopied ? (
+                    <>
+                      <CheckCircle size={16} />
+                      Copié !
+                    </>
+                  ) : (
+                    <>
+                      <Copy size={16} />
+                      Copier
+                    </>
+                  )}
+                </button>
+              </div>
+              {refLinkError && (
+                <p className="mt-2 text-sm text-red-700 flex items-start gap-2">
+                  <AlertCircle size={14} className="shrink-0 mt-0.5" />
+                  <span>{refLinkError}</span>
+                </p>
+              )}
+            </div>
+
+            {/* Message motivant — adapté au stade actuel */}
+            <div className="mt-4 rounded-xl bg-gradient-to-r from-rose-100/80 to-amber-100/80 border border-rose-200 p-4">
+              <p className="text-sm text-gray-800 leading-relaxed">
+                {activeCount === 0 && (
+                  <>
+                    🌿 <strong>Parrainez 4 collègues</strong> — votre abonnement
+                    devient gratuit (20€/mois). <strong>10 collègues</strong> →{' '}
+                    50€/mois passifs.
+                  </>
+                )}
+                {activeCount > 0 && remainingForFree > 0 && (
+                  <>
+                    🌿 Plus que <strong>{remainingForFree} filleule{remainingForFree > 1 ? 's' : ''}</strong>{' '}
+                    pour rendre votre abonnement gratuit !
+                  </>
+                )}
+                {activeCount >= 4 && remainingForFifty > 0 && (
+                  <>
+                    🌟 <strong>Bravo !</strong> Votre abonnement est déjà couvert.
+                    Encore <strong>{remainingForFifty}</strong> filleule{remainingForFifty > 1 ? 's' : ''} pour{' '}
+                    50€/mois passifs.
+                  </>
+                )}
+                {activeCount >= 10 && activeCount < 20 && (
+                  <>
+                    🌟 <strong>Incroyable !</strong> Vous générez {monthlyDiscount}€
+                    de revenus passifs par mois grâce à votre réseau.
+                    Plafond à 20 filleules ({100}€/mois).
+                  </>
+                )}
+                {activeCount >= 20 && (
+                  <>
+                    🏆 <strong>Plafond atteint</strong> — vous générez le maximum
+                    de 100€/mois. Les nouvelles inscriptions via votre lien
+                    sont enregistrées mais ne génèrent plus de récompense.
+                  </>
+                )}
+              </p>
+            </div>
+
+            {/* Liste des filleules */}
+            {referrals.length > 0 && (
+              <details className="mt-4 group">
+                <summary className="cursor-pointer text-sm font-medium text-gray-700 hover:text-gray-900 flex items-center gap-2">
+                  <Users size={14} />
+                  Mes filleules ({referrals.length})
+                  <span className="text-xs text-gray-500">— cliquez pour développer</span>
+                </summary>
+                <ul className="mt-3 divide-y divide-gray-200 bg-white/80 rounded-xl border border-amber-200 overflow-hidden">
+                  {referrals.map(r => (
+                    <li key={r.id} className="px-4 py-2.5 flex items-center gap-3 text-sm">
+                      <span className="w-8 h-8 rounded-full bg-rose-100 text-rose-700 grid place-items-center font-semibold text-xs">
+                        {(r.referredPrenom?.[0] || '?').toUpperCase()}
+                      </span>
+                      <span className="flex-1 min-w-0 truncate font-medium text-gray-900">
+                        {r.referredPrenom || 'Filleule (prénom non disponible)'}
+                      </span>
+                      <span
+                        className={
+                          'text-xs font-semibold px-2 py-0.5 rounded-full ' +
+                          (r.status === 'active'
+                            ? 'bg-green-100 text-green-700'
+                            : r.status === 'pending'
+                              ? 'bg-amber-100 text-amber-800'
+                              : 'bg-gray-100 text-gray-500')
+                        }
+                      >
+                        {r.status === 'active' ? '✓ Active' : r.status === 'pending' ? 'En attente' : 'Annulée'}
+                      </span>
+                      <span className="text-xs text-gray-500 hidden sm:inline">
+                        {r.status === 'active' && r.activated_at
+                          ? `depuis ${new Date(r.activated_at).toLocaleDateString('fr-FR', { day: 'numeric', month: 'short' })}`
+                          : `inscrite ${new Date(r.created_at).toLocaleDateString('fr-FR', { day: 'numeric', month: 'short' })}`}
+                      </span>
+                    </li>
+                  ))}
+                </ul>
+                {cancelledReferrals.length > 0 && (
+                  <p className="mt-2 text-xs text-gray-500">
+                    {cancelledReferrals.length} filleule{cancelledReferrals.length > 1 ? 's' : ''}{' '}
+                    en statut annulé (abonnement résilié).
+                  </p>
+                )}
+              </details>
+            )}
+          </section>
+        )
+      })()}
 
       {/* ============================================================
           Section Connexion extension Chrome HappyNeuron
