@@ -1,7 +1,7 @@
 import { Container, Eyebrow } from './Primitives'
 
 const STEPS = [
-  { n: '01', title: 'Vous saisissez votre bilan', body: 'Anamnèse, observations, scores aux batteries — dans une trame conçue avec des orthophonistes en exercice.' },
+  { n: '01', title: 'Vous saisissez votre bilan', body: 'Anamnèse, observations, scores aux batteries — dans une trame conçue par des orthophonistes en exercice.' },
   { n: '02', title: 'Ortho.ia rédige le compte-rendu', body: 'Un rapport Word structuré, dans un style sobre et professionnel, généré en quelques minutes.' },
   { n: '03', title: 'Vous relisez, ajustez, signez', body: "Tout reste modifiable. Le rapport sortant est le vôtre — Ortho.ia n'est qu'une plume rapide." },
 ]
