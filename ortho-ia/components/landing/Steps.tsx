@@ -14,9 +14,10 @@ export default function Steps() {
         <h2 style={{
           fontFamily: 'var(--font-display)', fontSize: 'clamp(32px, 4.5vw, 44px)', fontWeight: 500,
           lineHeight: 1.1, letterSpacing: '-0.015em', margin: '12px 0 56px',
-          maxWidth: 880, textWrap: 'balance', color: 'var(--fg-1)',
+          color: 'var(--fg-1)',
         }}>
-          Trois étapes. Le rapport est prêt avant la fin du créneau suivant.
+          Trois étapes.<br />
+          Le rapport est prêt avant la fin du créneau suivant.
         </h2>
         <div className="steps-grid" style={{ display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: 24 }}>
           {STEPS.map(it => (
