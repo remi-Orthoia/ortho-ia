@@ -18,7 +18,7 @@ interface Plan {
 // Tarification ortho.ia : 19,90€/mois ou 215€/an (-10% vs 19,90×12=238,80).
 const PLANS: Plan[] = [
   {
-    name: 'Essentiel',
+    name: 'Ortho pro',
     monthly: 19.90,
     yearly: 215,
     tagline: 'Pour démarrer, ou pour une activité à temps partiel.',
@@ -162,12 +162,13 @@ export default function Pricing() {
                   ? `Soit ${yearlyTotal(p)} facturés une fois par an.`
                   : 'Facturé chaque mois.'}
               </p>
-              {/* Footnote parrainage — uniquement sur le plan Essentiel
+              {/* Footnote parrainage — uniquement sur le plan Ortho pro
                   (le plus probable pour une nouvelle inscrite) et en mensuel
-                  (la remise -5€ s'applique sur le mensuel) */}
+                  (la remise -5€ s'applique sur le mensuel). Couleur primary
+                  (sage 600) pour matcher le bouton "Essayer gratuitement". */}
               {!p.featured && billing === 'monthly' && (
                 <p style={{
-                  fontSize: 13, color: 'var(--ds-accent-hover)',
+                  fontSize: 13, color: 'var(--ds-primary)',
                   margin: '0 0 24px', fontWeight: 500,
                 }}>
                   💚 Parrainée par une collègue ? <strong>14,90€/mois</strong>
