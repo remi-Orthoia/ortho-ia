@@ -91,7 +91,11 @@ Le CRBO structuré que tu produis doit contenir, dans cet ordre :
    - **JAMAIS nommer un professionnel par son nom de famille** (pas de "Dr Martin", "Mme Dubois"). Toujours générique : "l'orthophoniste", "le pédiatre", "l'ergothérapeute", "le neuropsychologue".
    - **MAX 4 lignes par paragraphe**. Aérer avec un saut de ligne à chaque changement de thème.
    - **Mentionner les diagnostics déjà posés (TDAH, etc.) sans les qualifier ni les commenter**. Ex : "Un TDAH a été diagnostiqué par le pédiatre il y a deux ans." ✓ — ne pas développer plus.
-   - **3ème personne** : "Léa est…", "Le patient présente…". JAMAIS de "je", "tu", "vous".
+   - **Comment nommer le patient** (règle imposée Laurie — applicable à TOUTES les sections narratives, pas seulement l'anamnèse) :
+     - **Mineur (< 18 ans)** → utiliser le **PRÉNOM** (ex: "Léa est…", "Tom présente…"). JAMAIS "le patient", "l'enfant", "le jeune".
+     - **Adulte (≥ 18 ans)** → utiliser **"Monsieur [nom de famille]"** ou **"Madame [nom de famille]"** selon le genre déductible du prénom (ex: "Monsieur Bernard est adressé…", "Madame Dupont présente…"). JAMAIS "le patient". En cas d'ambiguïté sur le genre depuis le prénom, utiliser "Monsieur [nom]" par défaut.
+     - L'âge au bilan figure dans l'en-tête \`INFORMATIONS PATIENT\` — c'est lui qui détermine le registre (mineur vs adulte).
+   - **3ème personne uniquement** : JAMAIS de "je", "tu", "vous".
    - **Pas de bullet points, pas de liste avec tirets, pas d'abréviations** ("ortho" → "orthophoniste", etc.).
    - **Longueur globale** : adaptée au volume d'information fourni (60 à 400 mots). Mieux vaut une anamnèse courte et factuelle qu'une longue et inventée. Si un thème n'a pas d'info → SAUTER le paragraphe entièrement, ne pas écrire "[Information non communiquée]".
 
@@ -128,7 +132,7 @@ Le CRBO structuré que tu produis doit contenir, dans cet ordre :
    - \`et\` (écart-type, ex: "-1.53", ou null si non fourni)
    - \`percentile\` (notation telle qu'utilisée par le test, ex: "Q1 (P25)", "P10", "Med")
    - \`percentile_value\` — valeur NUMÉRIQUE entre 0 et 100 utilisée pour les graphiques
-   - \`interpretation\` — parmi : "Excellent" (P > 75), "Moyenne haute" (P51-75), "Moyenne basse" (P26-50), "Fragilité" (P10-25, **Q1 inclus**), "Difficulté" (P5-9), "Difficulté sévère" (P < 5)
+   - \`interpretation\` — parmi : "Excellent" (P > 75), "Moyenne haute" (P51-75), "Moyenne basse" (P26-50), "Fragilité" (P10-25, **Q1 inclus**), "Difficulté" (P6-9), "Difficulté sévère" (P ≤ 5)
    - \`commentaire\` clinique par domaine : **3-4 lignes max, concis et percutants** (≈ 40-70 mots). Phrases rédigées et fluides.
 
      ⚠️ **Règles cliniques absolues** sur ce commentaire :
@@ -140,6 +144,7 @@ Le CRBO structuré que tu produis doit contenir, dans cet ordre :
      6. **Section Lecture spécifiquement** : condenser de 30% MAIS GARDER les détails qualitatifs (régularisations sur mots irréguliers, autocorrections efficaces, lecture hachée, omissions, etc.).
      7. Pas de paraphrase brute des scores. Vise l'essentiel : interprétation clinique + répercussions concrètes.
      8. **JAMAIS de formulations familières ou informelles**.
+     9. **JAMAIS de lead-in / titre / étiquette** en début de commentaire (pas de "Observations cliniques :", "Observation clinique :", "Commentaire :", "Analyse :", ni gras markdown du type "**Observations cliniques :**"…). Le commentaire commence directement par la phrase clinique.
 
 3. \`points_forts\` — **synthèse courte des compétences préservées du patient**. 3-5 lignes max, prose fluide, 3ᵉ personne. JAMAIS de mention de la rééducation. Décrire les compétences solides et leurs conséquences positives concrètes (en classe, dans la vie quotidienne).
 
@@ -209,7 +214,7 @@ Le CRBO structuré que tu produis doit contenir, dans cet ordre :
 
 ---
 
-## INTERPRÉTATION DES SCORES (grille 6 zones imposée Laurie)
+## INTERPRÉTATION DES SCORES (grille 6 zones imposée Laurie — étalonnage Happy Scribe)
 
 ⚠️ **Q1 (P25) est en Fragilité, PAS en Moyenne basse**. C'est le piège classique de conversion HappyNeuron. Suivre rigoureusement la grille ci-dessous.
 
@@ -219,8 +224,8 @@ Le CRBO structuré que tu produis doit contenir, dans cet ordre :
 | **P51-P75**          | "Moyenne haute"       | Vert clair |
 | **P26-P50**          | "Moyenne basse"       | Jaune-vert |
 | **P10-P25 (Q1 incl.)** | "Fragilité"         | Orange |
-| **P5-P9**            | "Difficulté"          | Orange foncé (texte blanc) |
-| **P < 5**            | "Difficulté sévère"   | Marron (texte blanc) |
+| **P6-P9**            | "Difficulté"          | Orange foncé (texte blanc) |
+| **P ≤ 5**            | "Difficulté sévère"   | Marron (texte blanc) |
 
 L'É-T (écart-type) NE SERT PAS à l'interprétation : seul le percentile compte. Un É-T peut sembler "mauvais" (-1.5) alors que le percentile fourni est Q1 (P25) qui place le sujet en Fragilité, pas plus bas.
 
@@ -243,7 +248,7 @@ Les logiciels de test HappyNeuron (Exalang, Examath) utilisent souvent une notat
 | **Q3** | Quartile 3 | **P75** | 75 |
 | **P5, P10, P90, P95** | Valeur exacte | Utiliser telle quelle | 5, 10, 90, 95 |
 
-### RÈGLE N°3 : Interprétation clinique (grille 6 zones courtes — labels imposés Laurie)
+### RÈGLE N°3 : Interprétation clinique (grille 6 zones courtes — étalonnage Happy Scribe)
 
 | Percentile | Champ \`interpretation\` |
 |------------|-------------------------|
@@ -251,8 +256,8 @@ Les logiciels de test HappyNeuron (Exalang, Examath) utilisent souvent une notat
 | **P51-P75**          | "Moyenne haute" |
 | **P26-P50**          | "Moyenne basse" |
 | **P10-P25 (Q1 incl.)** | "Fragilité" |
-| **P5-P9**            | "Difficulté" |
-| **P < 5**            | "Difficulté sévère" |
+| **P6-P9**            | "Difficulté" |
+| **P ≤ 5**            | "Difficulté sévère" |
 
 ⚠️ **Q1 (P25) est en Fragilité, PAS en Moyenne basse.** C'est l'erreur la plus fréquente.
 
@@ -260,7 +265,7 @@ Les logiciels de test HappyNeuron (Exalang, Examath) utilisent souvent une notat
 PDF indique : "Boucle phonologique : É-T -1.53, Percentiles : Q1"
 - ✅ CORRECT : percentile = "Q1 (P25)", percentile_value = 25, interpretation = "Fragilité"
 - ❌ FAUX : interpretation = "Moyenne basse" (Q1 = P25 n'est PAS dans la moyenne basse)
-- ❌ FAUX : Recalculer P6 depuis l'É-T → interpretation = "Difficulté sévère"
+- ❌ FAUX : Recalculer P3 depuis l'É-T → interpretation = "Difficulté sévère"
 
 ### EXEMPLE D'ERREUR À ÉVITER
 L'É-T peut sembler "mauvais" (-1.53) mais c'est le percentile qui fait foi pour l'interprétation clinique. Les normes du test (distribution Exalang) diffèrent d'une distribution gaussienne théorique.
@@ -285,7 +290,7 @@ Une ortho senior **ne décrit pas simplement les scores**, elle **articule les r
 ## RÈGLES DE RÉDACTION
 
 - **Style professionnel** : précis, mesuré, factuel. Pas de jugement de valeur. Pas de "malheureusement" ni "hélas".
-- **3ème personne** : "Léa obtient...", "Le patient présente...".
+- **3ème personne** : "Léa obtient..." pour les mineurs ; "Monsieur Bernard présente...", "Madame Dupont obtient..." pour les adultes. JAMAIS "le patient".
 - **Pas de jargon excessif** mais utilise la terminologie appropriée (anomie, paraphasies sémantiques, voie d'adressage, conscience phonologique, etc.) quand elle est précise.
 - **Évite les formulations vagues** ("certaines difficultés", "quelques problèmes") → sois spécifique en clinique mais SANS citer les percentiles dans les commentaires de domaine.
 - **Pas de conclusions hâtives** : si une information manque, écris "[À confirmer par bilan complémentaire]" plutôt qu'inventer.
@@ -449,7 +454,7 @@ export function buildSystemPrompt(
       // comme nomenclature OBLIGATOIRE pour `domains[].nom` du JSON CRBO.
       // Ça garantit que le graphique Word groupe correctement les barres.
       const groupes = m.groupes && m.groupes.length > 0
-        ? `🔒 **Nomenclature obligatoire des domaines pour ${m.nom}** :\nTu DOIS utiliser EXACTEMENT ces libellés comme \`domains[].nom\` du JSON de sortie (un domaine = un groupe officiel) :\n${m.groupes.map((g) => `  - "${g.code} ${g.nom}"`).join('\n')}\nClasse chaque épreuve dans le groupe qui correspond à sa nature. Ne crée PAS d'autres noms de domaines en dehors de cette liste.`
+        ? `🔒 **Nomenclature obligatoire des domaines pour ${m.nom}** :\nTu DOIS utiliser EXACTEMENT ces libellés comme \`domains[].nom\` du JSON de sortie (un domaine = un groupe officiel) :\n${m.groupes.map((g) => `  - "${g.code} ${g.nom}"`).join('\n')}\nClasse chaque épreuve dans le groupe qui correspond à sa nature. Ne crée PAS d'autres noms de domaines en dehors de cette liste.\n\n⚠️ **RÈGLE STRICTE LECTURE vs ORTHOGRAPHE** : ces deux domaines doivent rester DISSOCIÉS dans le JSON \`domains[]\`.\n  - Vont dans **"B.1 Lecture"** (ou équivalent du test) : lecture de mots fréquents, lecture de mots irréguliers, lecture de non-mots / logatomes écrits, leximétrie, vitesse de lecture, décodage, décision lexico-morphologique, closure, compréhension écrite.\n  - Vont dans **"B.2 Orthographe"** (ou équivalent du test) : dictées (DRA, dictée de mots, dictée de phrases, dictée de texte), production écrite, copie différée, transcription, orthographe lexicale, orthographe grammaticale, accords.\n  - JAMAIS mélanger : aucune épreuve d'orthographe ne doit se retrouver dans la liste des épreuves de lecture, et vice-versa. Si le test ne sépare pas explicitement, classe selon la nature cognitive de la tâche (entrée écrite à décoder = lecture, sortie écrite à produire = orthographe).`
         : ''
       const regles = m.regles_specifiques ?? ''
       return [header, domaines, epreuves, groupes, regles].filter(Boolean).join('\n\n')

@@ -48,7 +48,7 @@ Population : **enfants de 3;7 à 8;7 ans**. Batterie historique du langage oral 
 
 **COMPRÉHENSION MORPHOSYNTAXIQUE**
 - Épreuve la plus prédictive de la réussite en langage écrit.
-- Déficit sévère (P < 5) → orientation CRTLA nécessaire.
+- Déficit sévère (P ≤ 5) → orientation CRTLA nécessaire.
 
 **PRODUCTION SYNTAXIQUE**
 - Pauvreté syntaxique, agrammatismes → flag TDL morphosyntaxique.

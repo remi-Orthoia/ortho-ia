@@ -62,19 +62,20 @@ Q3 = P75
 P5/P10/P90/P95 = valeur exacte
 ```
 
-### Seuils cliniques
+### Seuils cliniques (étalonnage Happy Scribe — grille 6 zones)
 ```
-P ≥ 25      → Normal
-P16-P24     → Limite basse
-P7-P15      → Fragile
-P2-P6       → Déficitaire
-P < 2       → Pathologique
+P > 75             → Excellent
+P51-P75            → Moyenne haute
+P26-P50            → Moyenne basse
+P10-P25 (Q1 incl.) → Fragilité
+P6-P9              → Difficulté
+P ≤ 5              → Difficulté sévère
 ```
 
 ### Erreur classique à éviter
 PDF: "Boucle phonologique: É-T -1.53, Percentiles: Q1"
-- ✅ Q1 = P25 → Normal
-- ❌ Calculer P6 depuis É-T → Déficitaire (FAUX)
+- ✅ Q1 = P25 → Fragilité
+- ❌ Calculer P3 depuis É-T → Difficulté sévère (FAUX)
 
 ## Fonctionnalités implémentées
 - [x] Auth (login/register/forgot)

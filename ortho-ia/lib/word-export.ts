@@ -21,13 +21,13 @@ export type { ZonePerformance } from './chart'
 
 // --------------------- Palette cohérente seuils cliniques ---------------------
 //
-// Grille 6 zones alignée sur le graphique HappyNeuron officiel :
+// Grille 6 zones alignée sur l'étalonnage Happy Scribe :
 //  - P > 75            → Excellent résultat                (vert foncé)
 //  - P51 à P75         → Résultat dans la moyenne haute    (vert clair)
-//  - P26 à P50         → Résultat dans la moyenne basse    (jaune-vert)
+//  - P26 à P50         → Résultat dans la moyenne basse    (jaune)
 //  - P10 à P25 (Q1)    → Zone de fragilité                 (orange clair)
-//  - P5 à P9           → Zone de difficulté                (orange foncé)
-//  - P < 5             → Zone de difficulté sévère         (rouge / pink)
+//  - P6 à P9           → Zone de difficulté                (orange foncé)
+//  - P ≤ 5             → Zone de difficulté sévère         (marron)
 //
 // Note : Q1 (P25) reste en zone de fragilité (pas en moyenne basse) — règle
 // clinique Laurie déjà appliquée par l'extraction. min=26 pour la moyenne basse.
@@ -60,7 +60,7 @@ export type SeuilClinique = {
 // Palette imposée Laurie (fonds cellules + couleurs texte si fond foncé) :
 //   Excellent          → #2E7D32 fond vert foncé,    texte blanc
 //   Moyenne haute      → #66BB6A fond vert clair
-//   Moyenne basse      → #D4E157 fond jaune-vert
+//   Moyenne basse      → #FBC02D fond jaune
 //   Fragilité          → #FFA726 fond orange
 //   Difficulté         → #EF6C00 fond orange foncé,  texte blanc
 //   Difficulté sévère  → #4E342E fond marron,        texte blanc
@@ -71,10 +71,10 @@ export type SeuilClinique = {
 export const SEUILS: SeuilClinique[] = [
   { label: 'Excellent',          longLabel: 'Excellent résultat',              min: 76, shading: '2E7D32', css: '#1B5E20', textColor: 'FFFFFF', range: 'P > 75' },
   { label: 'Moyenne haute',      longLabel: 'Résultat dans la moyenne haute',  min: 51, shading: '66BB6A', css: '#2E7D32', range: 'P51-75' },
-  { label: 'Moyenne basse',      longLabel: 'Résultat dans la moyenne basse',  min: 26, shading: 'D4E157', css: '#558B2F', range: 'P26-50' },
+  { label: 'Moyenne basse',      longLabel: 'Résultat dans la moyenne basse',  min: 26, shading: 'FBC02D', css: '#F57F17', range: 'P26-50' },
   { label: 'Fragilité',          longLabel: 'Zone de fragilité',               min: 10, shading: 'FFA726', css: '#E65100', range: 'P10-25' },
-  { label: 'Difficulté',         longLabel: 'Zone de difficulté',              min: 5,  shading: 'EF6C00', css: '#BF360C', textColor: 'FFFFFF', range: 'P5-9' },
-  { label: 'Difficulté sévère',  longLabel: 'Zone de difficulté sévère',       min: 0,  shading: '4E342E', css: '#3E2723', textColor: 'FFFFFF', range: 'P < 5' },
+  { label: 'Difficulté',         longLabel: 'Zone de difficulté',              min: 6,  shading: 'EF6C00', css: '#BF360C', textColor: 'FFFFFF', range: 'P6-9' },
+  { label: 'Difficulté sévère',  longLabel: 'Zone de difficulté sévère',       min: 0,  shading: '4E342E', css: '#3E2723', textColor: 'FFFFFF', range: 'P ≤ 5' },
 ]
 
 export function seuilFor(value: number): SeuilClinique {
@@ -685,15 +685,18 @@ export async function generateCRBOWord(payload: WordExportPayload): Promise<Blob
       )
 
       if (domain.commentaire && domain.commentaire.trim()) {
-        // Commentaires qualitatifs saisis par l'orthophoniste sur la page de
-        // visualisation (phase 1.5). Lead-in en gras pour bien différencier
-        // de la prose IA.
+        // Strip d'éventuels lead-ins parasites générés par l'IA :
+        // "**Observations cliniques :**", "Observations cliniques :",
+        // "Observation clinique :"… (avec ou sans markdown bold).
+        const cleaned = domain.commentaire
+          .trim()
+          .replace(/^\**\s*observations?\s+cliniques?\s*:\s*\**\s*/i, '')
+          .trim()
         children.push(new Paragraph({
           alignment: AlignmentType.BOTH,
           spacing: { after: 200 },
           children: [
-            new TextRun({ text: 'Observations cliniques : ', bold: true, size: FONT_SIZE_NORMAL, font: FONT }),
-            new TextRun({ text: domain.commentaire.trim(), size: FONT_SIZE_NORMAL, font: FONT }),
+            new TextRun({ text: cleaned, size: FONT_SIZE_NORMAL, font: FONT }),
           ],
         }))
       }

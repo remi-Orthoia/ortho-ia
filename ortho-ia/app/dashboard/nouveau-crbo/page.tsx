@@ -18,8 +18,7 @@ import {
   ChevronRight, 
   ChevronLeft, 
   Loader2, 
-  Upload, 
-  Mic, 
+  Upload,
   FileText,
   CheckCircle,
   AlertCircle,
@@ -1433,23 +1432,6 @@ function NouveauCRBOContent() {
                 </div>
               </>
             )}
-
-            {/* Option mémo vocal - désactivé pour le MVP */}
-            <div className="opacity-50 pointer-events-none">
-              <label className="block text-sm font-medium text-gray-700 mb-1">
-                Ou enregistrez un mémo vocal (bientôt disponible)
-              </label>
-              <div className="flex items-center gap-4">
-                <button
-                  type="button"
-                  className="flex items-center gap-2 px-4 py-3 border border-gray-300 rounded-lg"
-                  disabled
-                >
-                  <Mic size={20} />
-                  Enregistrer
-                </button>
-              </div>
-            </div>
 
             {/* Sauvegarde brouillon en fin d'étape 4 — fin de la phase "En séance" */}
             <div className="bg-blue-50 border border-blue-200 rounded-lg p-4 flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">

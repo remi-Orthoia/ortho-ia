@@ -35,17 +35,13 @@ interface Props {
 }
 
 export default function StepProgress({ currentStep, onStepClick }: Props) {
-  const remainingMinutes = STEPS
-    .filter(s => s.index >= currentStep)
-    .reduce((acc, s) => acc + s.estimatedMinutes, 0)
-
   const currentStepData = STEPS.find(s => s.index === currentStep)
   const phaseLabel = currentStepData ? PHASE_LABEL[currentStepData.phase] : null
 
   return (
     <div className="mb-6">
-      {/* Info phase + temps estimé */}
-      <div className="flex items-center justify-between mb-3 text-xs">
+      {/* Info phase courante */}
+      <div className="flex items-center mb-3 text-xs">
         <div className="flex items-center gap-2">
           <span className="text-gray-500 dark:text-gray-400">Étape {currentStep}/{STEPS.length}</span>
           {phaseLabel && (
@@ -57,9 +53,6 @@ export default function StepProgress({ currentStep, onStepClick }: Props) {
             </>
           )}
         </div>
-        <span className="text-gray-500 dark:text-gray-400">
-          ≈ {remainingMinutes} min restantes
-        </span>
       </div>
 
       {/* Stepper visuel */}

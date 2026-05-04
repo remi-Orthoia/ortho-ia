@@ -36,14 +36,15 @@ export type ZonePerformance = {
 }
 
 /** Couleurs des bandes de fond du graphique (palette pastel imposée Laurie).
- *  La couleur des barres elles-mêmes est plus saturée — voir BAR_FILL_OF_VALUE. */
+ *  La couleur des barres elles-mêmes est plus saturée — voir BAR_FILL_OF_VALUE.
+ *  Étalonnage Happy Scribe : Fragilité P10-P25, Difficulté P6-P9, Difficulté sévère P ≤ 5. */
 export const ZONES: ZonePerformance[] = [
   { label: 'Excellent résultat',                min: 76, css: '#C8E6C9' }, // vert clair
   { label: 'Résultat dans la moyenne haute',    min: 51, css: '#DCEDC8' }, // vert très clair
-  { label: 'Résultat dans la moyenne basse',    min: 26, css: '#F9FBE7' }, // jaune très clair
-  { label: 'Zone de fragilité',                 min: 10, css: '#FFE0B2' }, // orange très clair
-  { label: 'Zone de difficulté',                min: 5,  css: '#FFCCBC' }, // orange clair
-  { label: 'Zone de difficulté sévère',         min: 0,  css: '#D7CCC8' }, // marron clair
+  { label: 'Résultat dans la moyenne basse',    min: 26, css: '#FFF59D' }, // jaune clair
+  { label: 'Zone de fragilité',                 min: 10, css: '#FFE0B2' }, // orange très clair (P10-P25, Q1 incl.)
+  { label: 'Zone de difficulté',                min: 6,  css: '#FFCCBC' }, // orange clair (P6-P9)
+  { label: 'Zone de difficulté sévère',         min: 0,  css: '#D7CCC8' }, // marron clair (P ≤ 5)
 ]
 
 /** Couleur de remplissage des barres (palette saturée — même que les fonds
@@ -51,10 +52,10 @@ export const ZONES: ZonePerformance[] = [
 const BAR_FILL_OF_VALUE = (value: number): string => {
   if (value >= 76) return '#2E7D32' // vert foncé
   if (value >= 51) return '#66BB6A' // vert clair
-  if (value >= 26) return '#D4E157' // jaune-vert
-  if (value >= 10) return '#FFA726' // orange
-  if (value >= 5)  return '#EF6C00' // orange foncé
-  return '#4E342E'                  // marron
+  if (value >= 26) return '#FBC02D' // jaune (moyenne basse)
+  if (value >= 10) return '#FFA726' // orange (fragilité P10-P25)
+  if (value >= 6)  return '#EF6C00' // orange foncé (difficulté P6-P9)
+  return '#4E342E'                  // marron (difficulté sévère P ≤ 5)
 }
 
 export function zoneFor(value: number): ZonePerformance {
@@ -137,7 +138,10 @@ export function rootOf(label: string): string {
   let s = label.trim()
   s = s.replace(/\s*\(\s*[^()]+\s*\)\s*$/, '')                       // "(score)" en fin
   s = s.replace(/\s*[—–\-]\s+[A-Za-zÀ-ÿ '\-]+\s*$/, '')              // " — score" en fin
-  const TAIL_TOKENS = /\s+(score|temps|ratio|brut|brute|pondéré|pondérée|note pondérée|endroit|envers|phonologie|lexique|grammatical|grammaticale|réponses|erreurs|mots lus|mots lus correctement|note)\s*$/i
+  // Note : "endroit" / "envers" volontairement EXCLUS des tail tokens —
+  // les empans endroit et envers sont 2 épreuves distinctes et leurs barres
+  // ne doivent PAS être collées (règle Laurie).
+  const TAIL_TOKENS = /\s+(score|temps|ratio|brut|brute|pondéré|pondérée|note pondérée|phonologie|lexique|grammatical|grammaticale|réponses|erreurs|mots lus|mots lus correctement|note)\s*$/i
   s = s.replace(TAIL_TOKENS, '')
   return s.trim() || label.trim()
 }
@@ -156,15 +160,11 @@ function splitByRoot(bars: ChartBar[]): { root: string; bars: ChartBar[] }[] {
 
 // --------------------- Constantes de mise en page ---------------------
 
-const PAD_LEFT = 200             // place pour les labels longs des zones gauche
+const PAD_LEFT = 180             // place pour les labels longs des zones gauche
 const PAD_RIGHT = 24
 const PAD_TOP_BASE = 84
 const PAD_BOTTOM_MIN = 44
 const LABEL_FONT_PX = 9          // épreuves (vertical) — spec Laurie 9px
-const SUBGROUP_TITLE_FONT_PX = 9 // sous-groupes "A.1 …" en italique #546E7A
-const SUBGROUP_TITLE_LINE_H = 12
-const SUBGROUP_TITLE_MAX_LINES = 2
-const SUBGROUP_LEVEL_SPACING = SUBGROUP_TITLE_MAX_LINES * SUBGROUP_TITLE_LINE_H + 4
 const FAMILY_TITLE_FONT_PX = 11  // familles "LANGAGE ORAL" en gras vert
 const BAR_VALUE_FONT_PX = 8      // valeur "P5" au sommet de chaque barre
 const MIN_CHART_AREA_H = 220
@@ -418,65 +418,9 @@ export function computeChartWidth(groups: ChartGroup[]): number {
   return Math.max(640, required)
 }
 
-/**
- * Place les titres de sous-groupe en répartissant sur plusieurs niveaux Y
- * pour éviter les chevauchements horizontaux. Retourne pour chaque (fi, gi) :
- *   - lines  : titre wrappé selon la largeur disponible
- *   - level  : 0 = niveau le plus bas (proche des barres), N+ = au-dessus
- *   - widthMax : largeur du plus long line (utilisée pour la détection collision)
- *
- * Algo : balayage gauche→droite, on attribue à chaque titre le plus petit
- * niveau libre (où aucun titre déjà placé ne chevauche horizontalement).
- */
-type SubgroupTitlePlacement = { lines: string[]; level: number; widthMax: number }
-
-function placeSubgroupTitles(
-  ctx: CanvasRenderingContext2D,
-  layout: Layout,
-): { placements: SubgroupTitlePlacement[][]; maxLines: number; numLevels: number } {
-  ctx.font = `italic ${SUBGROUP_TITLE_FONT_PX}px Calibri, Arial, sans-serif`
-
-  // Wrap initial : autorise le titre à déborder un peu sur les inter-root gaps
-  // (span + 0.8 * INTER_ROOT_GAP). Ça réduit le nombre de lignes nécessaires
-  // pour les sous-groupes à 1 barre dont le titre mesure 100 px contre 18 px
-  // de bar span.
-  const placements: SubgroupTitlePlacement[][] = layout.families.map(fam =>
-    fam.rootGroups.map(rg => {
-      const barSpan = rg.endX - rg.startX
-      const allowance = barSpan + INTER_ROOT_GAP * 0.8
-      const lines = wrapTextByWords(ctx, rg.name, Math.max(40, allowance) - 2, SUBGROUP_TITLE_MAX_LINES)
-      const widths = lines.map(l => ctx.measureText(l).width)
-      const widthMax = lines.length > 0 ? Math.max(...widths) : 0
-      return { lines, level: 0, widthMax }
-    }),
-  )
-
-  // Niveaux dynamiques : on garde la position right-edge du dernier titre
-  // placé sur chaque niveau. Pour un titre, on prend le plus petit niveau
-  // dont right < newLeft (avec une marge de 4 px).
-  const levelLastRight: number[] = []
-  for (let fi = 0; fi < layout.families.length; fi++) {
-    for (let gi = 0; gi < layout.families[fi].rootGroups.length; gi++) {
-      const rg = layout.families[fi].rootGroups[gi]
-      const p = placements[fi][gi]
-      if (p.lines.length === 0) continue
-      const left = rg.centerX - p.widthMax / 2
-      const right = rg.centerX + p.widthMax / 2
-      let level = 0
-      while (level < levelLastRight.length && left < levelLastRight[level] + 4) level++
-      if (level === levelLastRight.length) levelLastRight.push(right)
-      else levelLastRight[level] = right
-      p.level = level
-    }
-  }
-
-  const maxLines = placements.reduce(
-    (m, fLines) => Math.max(m, fLines.reduce((mm, p) => Math.max(mm, p.lines.length), 1)),
-    1,
-  )
-  const numLevels = Math.max(1, levelLastRight.length)
-  return { placements, maxLines, numLevels }
-}
+// Les titres de sous-groupes (italiques au-dessus des barres) ont été
+// retirés (Laurie). La fonction placeSubgroupTitles précédente n'est plus
+// utilisée — seuls les titres de famille en gras vert demeurent.
 
 /** Hauteur idéale du canvas (titre famille + sous-groupes staggés + barres + labels verticaux). */
 export function computeChartHeight(
@@ -497,12 +441,9 @@ export function computeChartHeight(
   )
   const padBottom = Math.ceil(maxLabelW) + PAD_BOTTOM_MIN
 
-  const layout = computeLayout(groups)
-  const { maxLines, numLevels } = placeSubgroupTitles(ctx, layout)
-  const padTop =
-    PAD_TOP_BASE +
-    (maxLines - 1) * SUBGROUP_TITLE_LINE_H +
-    (numLevels - 1) * SUBGROUP_LEVEL_SPACING
+  // Les titres de sous-groupes au-dessus des barres ont été retirés (Laurie) —
+  // padTop reste minimal (juste la place pour le titre famille en gras).
+  const padTop = PAD_TOP_BASE
 
   return Math.max(minHeight, padTop + MIN_CHART_AREA_H + padBottom)
 }
@@ -535,13 +476,9 @@ export function drawHappyNeuronChart(
 
   const layout = computeLayout(groups)
 
-  // Placement multi-niveaux des titres de sous-groupe (anti-overlap)
-  const { placements: subTitlePlacements, maxLines: maxSubLines, numLevels: subLevels } =
-    placeSubgroupTitles(ctx, layout)
-  const padTop =
-    PAD_TOP_BASE +
-    (maxSubLines - 1) * SUBGROUP_TITLE_LINE_H +
-    (subLevels - 1) * SUBGROUP_LEVEL_SPACING
+  // Les titres de sous-groupes (italiques au-dessus des barres) ont été
+  // retirés (Laurie) — on ne garde que les titres de famille en gras vert.
+  const padTop = PAD_TOP_BASE
 
   const chartH = Math.max(MIN_CHART_AREA_H, height - padTop - padBottom)
   const yFor = (p: number) => padTop + chartH - (p / 100) * chartH
@@ -551,26 +488,19 @@ export function drawHappyNeuronChart(
   const chartRightX = Math.max(layout.contentEndX, width - PAD_RIGHT)
   const chartW = chartRightX - chartLeftX
 
-  // ===== Bandes de fond colorées (zones de performance) =====
-  for (let i = 0; i < ZONES.length; i++) {
-    const z = ZONES[i]
-    const upper = i === 0 ? 100 : ZONES[i - 1].min
-    const y0 = yFor(upper)
-    const y1 = yFor(z.min)
-    ctx.fillStyle = z.css + '33'
-    ctx.fillRect(chartLeftX, y0, chartW, y1 - y0)
-  }
-
-  // Lignes horizontales fines entre zones
-  ctx.strokeStyle = '#BDBDBD'
+  // ===== Fond du graphique =====
+  // Bandes colorées retirées (Laurie). Mais on garde de fines lignes
+  // horizontales aux frontières de zones pour aider la lecture des labels
+  // de zones (dessinés à gauche, en passe finale).
+  ctx.strokeStyle = '#E0E0E0'
   ctx.lineWidth = 0.5
   for (let i = 1; i < ZONES.length; i++) {
     const y = yFor(ZONES[i - 1].min)
     ctx.beginPath(); ctx.moveTo(chartLeftX, y); ctx.lineTo(chartRightX, y); ctx.stroke()
   }
+  ctx.strokeStyle = '#BDBDBD'
+  ctx.lineWidth = 0.5
   ctx.strokeRect(chartLeftX, padTop, chartW, chartH)
-
-  // (Labels de zones gauche dessinés en passe finale — voir bas du draw)
 
   // ===== Lignes Médiane (P50) + Seuil P7 — TRACÉS UNIQUEMENT ICI =====
   // Les LABELS associés sont dessinés EN DERNIER (après les barres) avec
@@ -594,40 +524,22 @@ export function drawHappyNeuronChart(
     ctx.setLineDash([])
   }
 
-  // ===== Barres + titres =====
+  // ===== Barres + titres famille =====
   if (layout.totalBars === 0) return
-
-  // Hauteur du bloc complet de titres de sous-groupes (tous niveaux confondus).
-  // Utilisée pour positionner le titre famille au-dessus avec un gap propre.
-  const subgroupBlockHeight =
-    (subLevels - 1) * SUBGROUP_LEVEL_SPACING + maxSubLines * SUBGROUP_TITLE_LINE_H
 
   for (let fi = 0; fi < layout.families.length; fi++) {
     const fam = layout.families[fi]
 
-    // Titre de famille (au-dessus de TOUS les niveaux de sous-groupe)
+    // Titre de famille en gras vert (Langage oral / Langage écrit /
+    // Compétences sous-jacentes). Les titres de sous-groupes ont été retirés.
     ctx.fillStyle = '#1B5E20'
     ctx.font = `bold ${FAMILY_TITLE_FONT_PX}px Calibri, Arial, sans-serif`
     ctx.textAlign = 'center'
-    const familyTitleY = padTop - subgroupBlockHeight - 8
+    const familyTitleY = padTop - 12
     ctx.fillText(fam.name.toUpperCase(), fam.centerX, familyTitleY)
 
     for (let gi = 0; gi < fam.rootGroups.length; gi++) {
       const rg = fam.rootGroups[gi]
-
-      // Titre de sous-groupe (italique #546E7A, 9px — staggé sur niveau dédié)
-      const placement = subTitlePlacements[fi][gi]
-      if (placement && placement.lines.length > 0) {
-        ctx.fillStyle = '#546E7A'
-        ctx.font = `italic ${SUBGROUP_TITLE_FONT_PX}px Calibri, Arial, sans-serif`
-        ctx.textAlign = 'center'
-        // baseY = baseline du bas du titre, décalée vers le haut selon level
-        const baseY = padTop - 6 - placement.level * SUBGROUP_LEVEL_SPACING
-        for (let li = 0; li < placement.lines.length; li++) {
-          const yLine = baseY - (placement.lines.length - 1 - li) * SUBGROUP_TITLE_LINE_H
-          ctx.fillText(placement.lines[li], rg.centerX, yLine)
-        }
-      }
 
       // Barres + label vertical sous la barre (P-label traité plus bas)
       for (const b of rg.bars) {
@@ -691,39 +603,50 @@ export function drawHappyNeuronChart(
   }
 
   // ===== PASSE FINALE — labels TOUJOURS visibles au-dessus des barres =====
-  // Dessine en dernier (après toutes les barres) avec fond blanc pour
-  // garantir la lisibilité — sinon les barres qui croisent la médiane ou
-  // le P7 rendent les labels illisibles.
+  // Dessinés en dernier (après les barres) avec fond blanc pour rester
+  // lisibles si une barre les recouvre.
 
-  // 1) Labels de zones à gauche (Excellent / Moyenne haute / Médiane /
-  //    Fragilité / Difficulté…) — couleur saturée + fond blanc semi-transp.
-  ctx.font = '600 10.5px Calibri, Arial, sans-serif'
+  // 1) Labels de zones à gauche (Excellent / Moyenne haute / Moyenne basse /
+  //    Fragilité / Difficulté / Difficulté sévère). Pas de fond coloré, mais
+  //    couleur du texte saturée pour évoquer le code couleur des barres.
+  //    Pour les bandes étroites (Difficulté P6-9, Difficulté sévère P0-5), on
+  //    utilise un libellé compact + police plus petite pour garantir l'affichage.
   for (let i = 0; i < ZONES.length; i++) {
     const z = ZONES[i]
     const upper = i === 0 ? 100 : ZONES[i - 1].min
     const bandTop = yFor(upper)
     const bandBot = yFor(z.min)
-    if (bandBot - bandTop < 12) continue
+    const bandH = bandBot - bandTop
+    if (bandH < 7) continue
     const mid = (bandTop + bandBot) / 2
     ctx.fillStyle = BAR_FILL_OF_VALUE(z.min === 0 ? 0 : z.min)
-    const lines = wrapTextByWords(ctx, z.label, PAD_LEFT - 16, 2)
-    if (lines.length === 1) {
-      drawTextWithBg(ctx, lines[0], PAD_LEFT - 8, mid + 4, {
-        align: 'right', padX: 3, padY: 1.5,
+
+    if (bandH < 22) {
+      const compact = z.label.replace(/^(Zone de |Résultat dans la |Résultat )/, '')
+      ctx.font = '600 8.5px Calibri, Arial, sans-serif'
+      drawTextWithBg(ctx, compact, PAD_LEFT - 8, mid + 3, {
+        align: 'right', padX: 2, padY: 1,
       })
     } else {
-      const lineH = 12
-      const startY = mid - ((lines.length - 1) * lineH) / 2 + 4
-      for (let li = 0; li < lines.length; li++) {
-        drawTextWithBg(ctx, lines[li], PAD_LEFT - 8, startY + li * lineH, {
+      ctx.font = '600 10.5px Calibri, Arial, sans-serif'
+      const lines = wrapTextByWords(ctx, z.label, PAD_LEFT - 16, 2)
+      if (lines.length === 1) {
+        drawTextWithBg(ctx, lines[0], PAD_LEFT - 8, mid + 4, {
           align: 'right', padX: 3, padY: 1.5,
         })
+      } else {
+        const lineH = 12
+        const startY = mid - ((lines.length - 1) * lineH) / 2 + 4
+        for (let li = 0; li < lines.length; li++) {
+          drawTextWithBg(ctx, lines[li], PAD_LEFT - 8, startY + li * lineH, {
+            align: 'right', padX: 3, padY: 1.5,
+          })
+        }
       }
     }
   }
 
-  // 2) Médiane (P50) — fond blanc OPAQUE + bordure fine (toujours nette
-  //    même si une barre est juste devant)
+  // 2) Médiane (P50) — fond blanc OPAQUE + bordure fine
   ctx.font = 'bold 9.5px Calibri, Arial, sans-serif'
   ctx.fillStyle = '#000000'
   drawTextWithBg(ctx, 'Médiane (P50)', chartLeftX + 4, yMed - 3, {

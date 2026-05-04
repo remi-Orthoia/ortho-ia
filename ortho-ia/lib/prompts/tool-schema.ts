@@ -30,10 +30,10 @@ const EPREUVE_SCHEMA = {
       type: 'string' as const,
       enum: ['Excellent', 'Moyenne haute', 'Moyenne basse', 'Fragilité', 'Difficulté', 'Difficulté sévère'],
       description:
-        "Interprétation clinique COURTE imposée par Laurie : " +
+        "Interprétation clinique COURTE imposée par Laurie (étalonnage Happy Scribe) : " +
         "'Excellent' pour P > 75 ; 'Moyenne haute' pour P51-P75 ; 'Moyenne basse' pour P26-P50 ; " +
-        "'Fragilité' pour P10-P25 (Q1 inclus, **PAS** moyenne basse) ; 'Difficulté' pour P5-P9 ; " +
-        "'Difficulté sévère' pour P < 5.",
+        "'Fragilité' pour P10-P25 (Q1 inclus, **PAS** moyenne basse) ; 'Difficulté' pour P6-P9 ; " +
+        "'Difficulté sévère' pour P ≤ 5.",
     },
   },
 }
