@@ -202,7 +202,7 @@ function RegisterForm() {
         }}
       >
         <Link href="/" style={{ display: 'inline-block', textDecoration: 'none' }} aria-label="Ortho.ia — accueil">
-          <Logo variant="dark" height={42} />
+          <Logo variant="dark" height={126} />
         </Link>
         <div>
           <p style={{
