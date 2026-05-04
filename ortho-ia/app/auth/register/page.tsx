@@ -229,7 +229,7 @@ function RegisterForm() {
             Créer votre compte.
           </h1>
           <p style={{ fontSize: 15, color: 'var(--fg-2)', margin: '0 0 16px' }}>
-            Vos 3 premiers CRBO sont offerts.
+            Vos 3 premiers CRBO sont offerts !
           </p>
 
           <div style={{ marginBottom: 18, display: 'flex', flexWrap: 'wrap', gap: 8 }}>

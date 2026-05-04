@@ -18,7 +18,7 @@ export default function Benefits() {
               lineHeight: 1.1, letterSpacing: '-0.015em', margin: '12px 0 20px',
               textWrap: 'balance', color: 'var(--fg-1)',
             }}>
-              Reprenez la main sur votre file d&apos;attente — et sur vos soirées.
+              Reprenez la main sur votre file d&apos;attente — et sur vos soirées !
             </h2>
             <p style={{ fontSize: 17, lineHeight: 1.6, color: 'var(--fg-2)', margin: '0 0 16px', maxWidth: 480 }}>
               On sait à quoi ressemble une journée à 4 bilans, et combien

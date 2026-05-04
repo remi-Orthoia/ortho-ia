@@ -17,7 +17,7 @@ export default function Steps() {
           color: 'var(--fg-1)',
         }}>
           Trois étapes.<br />
-          Le rapport est prêt avant la fin du créneau suivant.
+          Le rapport est prêt avant la fin du créneau suivant !
         </h2>
         <div className="steps-grid" style={{ display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: 24 }}>
           {STEPS.map(it => (

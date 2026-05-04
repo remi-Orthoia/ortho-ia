@@ -89,7 +89,7 @@ function LoginForm() {
             fontFamily: 'var(--font-display)', fontSize: 32, fontWeight: 500,
             letterSpacing: '-0.015em', margin: '0 0 8px', color: 'var(--fg-1)',
           }}>
-            Bonjour.
+            Bonjour !
           </h1>
           <p style={{ fontSize: 15, color: 'var(--fg-2)', margin: '0 0 28px' }}>
             Reconnectez-vous pour reprendre vos bilans.
