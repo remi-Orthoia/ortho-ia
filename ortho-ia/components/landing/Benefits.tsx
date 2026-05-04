@@ -21,7 +21,7 @@ export default function Benefits() {
               Reprenez la main sur votre file d&apos;attente — et sur vos soirées.
             </h2>
             <p style={{ fontSize: 17, lineHeight: 1.6, color: 'var(--fg-2)', margin: '0 0 16px', maxWidth: 480 }}>
-              On sait à quoi ressemble une journée à 12 bilans, et combien
+              On sait à quoi ressemble une journée à 4 bilans, et combien
               de soirées sont sacrifiées au compte-rendu. Ortho.ia vous
               en rend une bonne partie — sans rien retirer à la qualité
               de ce que vous transmettez à vos confrères et aux familles.
