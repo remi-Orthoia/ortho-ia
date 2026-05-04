@@ -141,10 +141,18 @@ export default function Logo({
         <Feather nervColor={nervColor} />
       </g>
 
-      {/* Texte "Ortho.ia" centré verticalement sur le cercle (cy=55) */}
+      {/*
+        Texte "Ortho.ia" centré verticalement sur le cercle (cy=55).
+        dominantBaseline="middle" centre l'em-box, mais Georgia a des
+        ascenders nettement plus hauts que les descenders → visuellement
+        le glyph paraît trop haut. On compense :
+          - mode sans tagline : y = cy + 4 (centré visuellement pile sur le cercle)
+          - mode avec tagline : y = cy + 1 pour le texte, tagline à cy + 24
+            (l'ensemble [texte + tagline] est centré visuellement sur cy)
+      */}
       <text
         x="90"
-        y="49"
+        y={withoutTagline ? 59 : 56}
         fontFamily="Georgia, 'Times New Roman', serif"
         fontSize="34"
         fontWeight="400"
@@ -159,7 +167,7 @@ export default function Logo({
       {!withoutTagline && (
         <text
           x="91"
-          y="75"
+          y="79"
           fontFamily="system-ui, -apple-system, BlinkMacSystemFont, sans-serif"
           fontSize="10"
           fontWeight="500"
