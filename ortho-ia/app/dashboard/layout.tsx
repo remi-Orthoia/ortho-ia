@@ -182,7 +182,7 @@ export default function DashboardLayout({ children }: DashboardLayoutProps) {
   const sidebarHeader = (
     <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '4px 6px 18px' }}>
       <Link href="/dashboard" style={{ display: 'inline-block', textDecoration: 'none' }} aria-label="Ortho.ia — tableau de bord">
-        <Logo variant="light" height={36} withoutTagline />
+        <Logo variant="light" height={44} withoutTagline />
       </Link>
       <button
         className="lg:hidden"
