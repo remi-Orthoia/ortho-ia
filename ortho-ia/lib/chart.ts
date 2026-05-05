@@ -622,7 +622,9 @@ export function drawHappyNeuronChart(
     ctx.fillStyle = BAR_FILL_OF_VALUE(z.min === 0 ? 0 : z.min)
 
     if (bandH < 22) {
-      const compact = z.label.replace(/^(Zone de |Résultat dans la |Résultat )/, '')
+      // On garde "Zone de …" en entier (règle Laurie) — on retire seulement
+      // le préfixe "Résultat …" qui est implicite dans le contexte du graphique.
+      const compact = z.label.replace(/^(Résultat dans la |Résultat )/, '')
       ctx.font = '600 8.5px Calibri, Arial, sans-serif'
       drawTextWithBg(ctx, compact, PAD_LEFT - 8, mid + 3, {
         align: 'right', padX: 2, padY: 1,

@@ -29,13 +29,15 @@ export const exalang1115: TestModule = {
     'Fluences phonémique et sémantique',
     'Compréhension orale de textes abstraits',
     'Dénomination rapide de mots complexes',
+    // Lecture (B.1)
     'Lecture de mots fréquents',
     'Lecture de mots irréguliers',
     'Lecture de non-mots / logatomes écrits',
     'Leximétrie en contexte (texte long)',
     'Compréhension écrite inférentielle',
-    'Closure de texte complexe',
+    // Orthographe / production écrite (B.2 — closure incluse)
     'Dictée de mots, de phrases, de texte',
+    'Closure de texte complexe',
     'Production écrite narrative',
     'Raisonnement verbal (analogies, métaphores)',
   ],

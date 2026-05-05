@@ -42,16 +42,16 @@ export const exalang811: TestModule = {
     // Fonctions exécutives verbales
     'Fluence phonémique (lettre, 1 min)',
     'Fluence sémantique (animaux, 1 min)',
-    // Langage écrit — lecture
+    // Langage écrit — lecture (B.1)
     'Lecture de mots fréquents',
     'Lecture de mots irréguliers',
     'Lecture de non-mots (logatomes écrits)',
     'Leximétrie (vitesse de lecture en contexte)',
     'Décision lexico-morphologique',
-    // Langage écrit — compréhension & production
-    'Closure de texte',
     'Compréhension écrite de texte',
+    // Langage écrit — orthographe / production (B.2 — closure incluse)
     'DRA — Dictée de Rédaction Abrégée (mots, phrases)',
+    'Closure de texte',
     'Copie différée',
   ],
   regles_specifiques: `### EXALANG 8-11 — Référentiel clinique complet (niveau senior)
@@ -108,8 +108,12 @@ Exemple piège classique : "Boucle phonologique : É-T -1.53, Q1" → Percentile
 - Leximétrie : vitesse normale CE2 = 90-120 mots/min ; CM1 = 110-140 ; CM2 = 130-160.
 - Vitesse déficitaire + exactitude préservée → trouble **d'automatisation**, rééduquer par lectures répétées.
 
-**CLOSURE / COMPRÉHENSION ÉCRITE**
-- Déficit isolé en closure avec bonne lecture mécanique → trouble de la **compréhension écrite** (vs décodage).
+**CLOSURE DE TEXTE** (épreuve à classer en B.2 Orthographe — règle Laurie)
+- Bien que la closure mobilise la compréhension écrite, elle est traitée dans le groupe **B.2 Orthographe** dans la nomenclature CRBO (HappyNeuron la regroupe avec les épreuves de production écrite). Ne JAMAIS la placer dans "B.1 Lecture".
+- Cliniquement, déficit isolé en closure avec bonne lecture mécanique → trouble de la compréhension écrite à signaler dans le commentaire du domaine Orthographe.
+
+**COMPRÉHENSION ÉCRITE DE TEXTE** (épreuve B.1 Lecture)
+- À placer dans B.1 Lecture (entrée écrite à décoder + comprendre).
 - Toujours croiser avec la compréhension orale : si orale préservée et écrite déficitaire → trouble spécifique du langage écrit ; si les deux déficitaires → trouble global du langage.
 
 **DRA (Dictée)**
