@@ -146,6 +146,14 @@ export interface WordExportPayload {
     test_utilise: string[] | string
     anamnese?: string
     resultats_manuels?: string
+    /**
+     * Format du CRBO :
+     *  - 'complet' (défaut) : Synthèse et conclusions classique (Points forts /
+     *    Difficultés / Diagnostic / Recommandations / Axes / Aménagements).
+     *  - 'synthetique' : style Laurie Berrio — DIAGNOSTIC ORTHOPHONIQUE +
+     *    PROJET THÉRAPEUTIQUE + Aménagements pédagogiques proposés.
+     */
+    format_crbo?: 'complet' | 'synthetique'
   }
   structure?: CRBOStructure | null
   fallbackCRBO?: string
@@ -199,6 +207,10 @@ export async function generateCRBOWord(payload: WordExportPayload): Promise<Blob
   const { formData, structure, fallbackCRBO = '', previousStructure, previousBilanDate } = payload
   const hasStructure = !!structure && !!structure.domains && structure.domains.length > 0
   const hasPrevious = !!previousStructure && !!previousStructure.domains && previousStructure.domains.length > 0
+  // Style "Laurie Berrio" — restructuration de la synthèse en 3 sections plates
+  // (DIAGNOSTIC ORTHOPHONIQUE / PROJET THÉRAPEUTIQUE / Aménagements pédagogiques
+  // proposés), sans Points forts / Difficultés / Axes / signature.
+  const isSynthetique = formData.format_crbo === 'synthetique'
 
   // ============ Helpers ============
 
@@ -375,7 +387,13 @@ export async function generateCRBOWord(payload: WordExportPayload): Promise<Blob
     : (formData.motif || '')
   if (motifText) {
     children.push(
-      new Paragraph({ children: [new TextRun({ text: 'Motif de consultation', size: FONT_SIZE_NORMAL, font: FONT, color: COLOR_GREEN, bold: true })], spacing: { before: 200 } }),
+      new Paragraph({
+        children: [new TextRun({
+          text: isSynthetique ? 'Objet du bilan' : 'Motif de consultation',
+          size: FONT_SIZE_NORMAL, font: FONT, color: COLOR_GREEN, bold: true,
+        })],
+        spacing: { before: 200 },
+      }),
       new Paragraph({ alignment: AlignmentType.BOTH, children: [new TextRun({ text: motifText, size: FONT_SIZE_NORMAL, font: FONT })], spacing: { after: 200 } }),
     )
   }
@@ -758,7 +776,14 @@ export async function generateCRBOWord(payload: WordExportPayload): Promise<Blob
   children.push(new Paragraph({ children: [new PageBreak()] }))
 
   // ===== SYNTHÈSE / CONCLUSIONS =====
-  children.push(createSectionTitle('SYNTHÈSE ET CONCLUSIONS'))
+  // En format Complet : titre "SYNTHÈSE ET CONCLUSIONS" + Points forts /
+  // Difficultés / Diagnostic / Recommandations / Axes / Aménagements scolaires.
+  // En format Synthétique (Laurie) : pas de titre wrapper — chaque sous-bloc
+  // (DIAGNOSTIC ORTHOPHONIQUE / PROJET THÉRAPEUTIQUE / Aménagements pédagogiques
+  // proposés) est une section à part entière au même niveau que ANAMNÈSE/BILAN.
+  if (!isSynthetique) {
+    children.push(createSectionTitle('SYNTHÈSE ET CONCLUSIONS'))
+  }
   if (hasStructure) {
     const s = structure!
     // Parse un texte avec marqueurs Markdown **gras** en TextRun[] (alternance bold/normal)
@@ -842,12 +867,13 @@ export async function generateCRBOWord(payload: WordExportPayload): Promise<Blob
     // Champ structuré dédié (nouveau schéma Laurie). Backward-compat : si
     // l'IA renvoie l'ancien format (H3 Markdown dans diagnostic), on tombe
     // sur renderRichContent(diagnostic) plus bas.
-    if (s.points_forts?.trim()) {
+    // Synthétique : skip — la synthèse passe directement au diagnostic.
+    if (!isSynthetique && s.points_forts?.trim()) {
       pushBlock('Points forts', s.points_forts.trim())
     }
 
     // ===== DIFFICULTÉS IDENTIFIÉES =====
-    if (s.difficultes_identifiees?.trim()) {
+    if (!isSynthetique && s.difficultes_identifiees?.trim()) {
       pushBlock('Difficultés identifiées', s.difficultes_identifiees.trim())
     }
 
@@ -857,8 +883,14 @@ export async function generateCRBOWord(payload: WordExportPayload): Promise<Blob
     // backward-compat on rend tel quel via renderRichContent. Sinon le
     // diagnostic est juste le verdict ("trouble spécifique des apprentissages
     // en langage écrit (communément appelé dyslexie-dysorthographie), forme...").
+    // Synthétique : section à part entière "DIAGNOSTIC ORTHOPHONIQUE".
     if (s.diagnostic?.trim()) {
-      pushBlock('Diagnostic', s.diagnostic.trim())
+      if (isSynthetique) {
+        children.push(createSectionTitle('DIAGNOSTIC ORTHOPHONIQUE'))
+        renderRichContent(s.diagnostic.trim())
+      } else {
+        pushBlock('Diagnostic', s.diagnostic.trim())
+      }
     }
 
     // Synthèse d'évolution (renouvellement)
@@ -897,66 +929,96 @@ export async function generateCRBOWord(payload: WordExportPayload): Promise<Blob
       }
     }
 
-    // ===== RECOMMANDATIONS =====
-    // Phrase unique imposée Laurie : "Une prise en charge orthophonique est
-    // recommandée, et en parallèle la mise en place ou le renforcement des
-    // aménagements en classe." Le champ s.recommandations est attendu sous
-    // cette forme. Pour backward-compat avec d'anciens CRBOs (texte long),
-    // on rend tel quel.
+    // ===== RECOMMANDATIONS / PROJET THÉRAPEUTIQUE =====
+    // Complet : phrase unique imposée Laurie ("Une prise en charge orthophonique
+    //   est recommandée, et en parallèle la mise en place ou le renforcement
+    //   des aménagements en classe.") sous header H3 "Recommandations".
+    // Synthétique : section "PROJET THÉRAPEUTIQUE" — 2 phrases adaptées au
+    //   profil (soin orthophonique + aménagements pédagogiques), pas de bullets.
     if (s.recommandations?.trim()) {
-      pushBlock('Recommandations', s.recommandations.trim())
+      if (isSynthetique) {
+        children.push(createSectionTitle('PROJET THÉRAPEUTIQUE'))
+        renderRichContent(s.recommandations.trim())
+      } else {
+        pushBlock('Recommandations', s.recommandations.trim())
+      }
     }
 
     // ===== AXES THÉRAPEUTIQUES =====
     // Nouveau champ structuré (max 4 axes, 1 ligne chacun). Backward-compat :
     // si absent, l'ancien format embarqué dans s.recommandations est déjà
     // rendu ci-dessus.
-    const axes = (s.axes_therapeutiques ?? []).filter(a => a && a.trim().length > 0).slice(0, 4)
-    if (axes.length > 0) {
-      children.push(new Paragraph({
-        children: [new TextRun({ text: 'Axes thérapeutiques', bold: true, size: FONT_SIZE_NORMAL, font: FONT, color: COLOR_GREEN })],
-        spacing: { before: 240, after: 100 },
-      }))
-      axes.forEach((a, i) => {
+    // Synthétique : skip — fusionné dans PROJET THÉRAPEUTIQUE.
+    if (!isSynthetique) {
+      const axes = (s.axes_therapeutiques ?? []).filter(a => a && a.trim().length > 0).slice(0, 4)
+      if (axes.length > 0) {
         children.push(new Paragraph({
-          alignment: AlignmentType.BOTH,
-          indent: { left: 360 },
-          spacing: { after: 60 },
-          children: [
-            new TextRun({ text: `${i + 1}. `, bold: true, size: FONT_SIZE_NORMAL, font: FONT, color: COLOR_GREEN }),
-            new TextRun({ text: a.trim(), size: FONT_SIZE_NORMAL, font: FONT }),
-          ],
+          children: [new TextRun({ text: 'Axes thérapeutiques', bold: true, size: FONT_SIZE_NORMAL, font: FONT, color: COLOR_GREEN })],
+          spacing: { before: 240, after: 100 },
         }))
-      })
+        axes.forEach((a, i) => {
+          children.push(new Paragraph({
+            alignment: AlignmentType.BOTH,
+            indent: { left: 360 },
+            spacing: { after: 60 },
+            children: [
+              new TextRun({ text: `${i + 1}. `, bold: true, size: FONT_SIZE_NORMAL, font: FONT, color: COLOR_GREEN }),
+              new TextRun({ text: a.trim(), size: FONT_SIZE_NORMAL, font: FONT }),
+            ],
+          }))
+        })
+      }
     }
 
-    // ===== AMÉNAGEMENTS SCOLAIRES (max 6 imposé Laurie) =====
-    // Format attendu : "Catégorie : description". Legacy "**Cat** — desc"
-    // toléré pour les CRBOs antérieurs. Rendu : "• Catégorie :" en gras,
-    // suite en normal.
-    const paps = (s.pap_suggestions ?? []).filter(p => p && p.trim().length > 0).slice(0, 6)
+    // ===== AMÉNAGEMENTS =====
+    // Complet : "Aménagements scolaires conseillés", max 6, format
+    //   "Catégorie : description" (catégorie en gras).
+    // Synthétique : "Aménagements pédagogiques proposés", max 10, bullets simples
+    //   (1 phrase à l'infinitif), sans gras, sans préfixe catégorie.
+    const papLimit = isSynthetique ? 10 : 6
+    const paps = (s.pap_suggestions ?? []).filter(p => p && p.trim().length > 0).slice(0, papLimit)
     if (paps.length > 0) {
       const legacyRegex = /^\*\*([^*]+)\*\*\s*[—–-]\s*(.+)$/
       children.push(new Paragraph({
-        children: [new TextRun({ text: 'Aménagements scolaires conseillés', bold: true, size: FONT_SIZE_NORMAL, font: FONT, color: COLOR_GREEN })],
+        children: [new TextRun({
+          text: isSynthetique ? 'Aménagements pédagogiques proposés' : 'Aménagements scolaires conseillés',
+          bold: true, size: FONT_SIZE_NORMAL, font: FONT, color: COLOR_GREEN,
+        })],
         spacing: { before: 240, after: 100 },
       }))
       for (const p of paps) {
         const legacy = p.trim().match(legacyRegex)
         const detail = legacy ? `${legacy[1].trim()} : ${legacy[2].trim()}` : p.trim()
-        const colonIdx = detail.indexOf(':')
-        const runs = colonIdx >= 0
-          ? [
-              new TextRun({ text: `• ${detail.slice(0, colonIdx + 1)} `, bold: true, size: FONT_SIZE_NORMAL, font: FONT }),
-              new TextRun({ text: detail.slice(colonIdx + 1).trimStart(), size: FONT_SIZE_NORMAL, font: FONT }),
-            ]
-          : [new TextRun({ text: `• ${detail}`, size: FONT_SIZE_NORMAL, font: FONT })]
-        children.push(new Paragraph({
-          alignment: AlignmentType.BOTH,
-          indent: { left: 360 },
-          spacing: { after: 50 },
-          children: runs,
-        }))
+        if (isSynthetique) {
+          // Robustesse : si l'IA laisse fuiter "Catégorie : ..." malgré le prompt
+          // (cas legacy ou complet réutilisé), on retire le préfixe avant le " : ".
+          // Heuristique : un préfixe de 2-30 chars sans verbe → on le strip.
+          const colonIdx = detail.indexOf(':')
+          const head = colonIdx >= 0 ? detail.slice(0, colonIdx).trim() : ''
+          const tail = colonIdx >= 0 ? detail.slice(colonIdx + 1).trim() : detail
+          const looksLikeCategory = head.length > 0 && head.length <= 30 && !/\s/.test(head.split(' ').slice(-1)[0])
+          const cleanItem = looksLikeCategory ? tail : detail
+          children.push(new Paragraph({
+            alignment: AlignmentType.BOTH,
+            indent: { left: 360 },
+            spacing: { after: 50 },
+            children: [new TextRun({ text: `• ${cleanItem}`, size: FONT_SIZE_NORMAL, font: FONT })],
+          }))
+        } else {
+          const colonIdx = detail.indexOf(':')
+          const runs = colonIdx >= 0
+            ? [
+                new TextRun({ text: `• ${detail.slice(0, colonIdx + 1)} `, bold: true, size: FONT_SIZE_NORMAL, font: FONT }),
+                new TextRun({ text: detail.slice(colonIdx + 1).trimStart(), size: FONT_SIZE_NORMAL, font: FONT }),
+              ]
+            : [new TextRun({ text: `• ${detail}`, size: FONT_SIZE_NORMAL, font: FONT })]
+          children.push(new Paragraph({
+            alignment: AlignmentType.BOTH,
+            indent: { left: 360 },
+            spacing: { after: 50 },
+            children: runs,
+          }))
+        }
       }
     }
   } else {
@@ -979,22 +1041,26 @@ export async function generateCRBOWord(payload: WordExportPayload): Promise<Blob
   }
 
   // ===== SIGNATURE =====
-  children.push(
-    new Paragraph({ children: [new TextRun({ text: '' })] }),
-    new Paragraph({
-      alignment: AlignmentType.RIGHT,
-      children: [new TextRun({ text: `Fait à ${formData.ortho_ville || ''}, le ${bilanDateFormatted}`, size: FONT_SIZE_NORMAL, font: FONT })],
-      spacing: { before: 400 },
-    }),
-    new Paragraph({
-      alignment: AlignmentType.RIGHT,
-      children: [new TextRun({ text: formData.ortho_nom || '', size: FONT_SIZE_NORMAL, font: FONT, bold: true })],
-    }),
-    new Paragraph({
-      alignment: AlignmentType.RIGHT,
-      children: [new TextRun({ text: 'Orthophoniste', size: FONT_SIZE_NORMAL, font: FONT })],
-    }),
-  )
+  // En synthétique (style Laurie) la structure s'arrête à la conclusion
+  // médico-légale — pas de signature "Fait à X, le DATE".
+  if (!isSynthetique) {
+    children.push(
+      new Paragraph({ children: [new TextRun({ text: '' })] }),
+      new Paragraph({
+        alignment: AlignmentType.RIGHT,
+        children: [new TextRun({ text: `Fait à ${formData.ortho_ville || ''}, le ${bilanDateFormatted}`, size: FONT_SIZE_NORMAL, font: FONT })],
+        spacing: { before: 400 },
+      }),
+      new Paragraph({
+        alignment: AlignmentType.RIGHT,
+        children: [new TextRun({ text: formData.ortho_nom || '', size: FONT_SIZE_NORMAL, font: FONT, bold: true })],
+      }),
+      new Paragraph({
+        alignment: AlignmentType.RIGHT,
+        children: [new TextRun({ text: 'Orthophoniste', size: FONT_SIZE_NORMAL, font: FONT })],
+      }),
+    )
+  }
 
   // ===== CONCLUSION (mention médico-légale, petit italique, en bas) =====
   // Règle Laurie : c'est le SEUL endroit du Word avec de l'italique.

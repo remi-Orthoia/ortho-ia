@@ -395,20 +395,92 @@ const FORMAT_SYNTHETIQUE_INSTRUCTIONS = `
 
 ---
 
-# 📐 FORMAT DEMANDÉ : SYNTHÉTIQUE (2-3 pages)
+# 📐 FORMAT DEMANDÉ : SYNTHÉTIQUE (style Laurie Berrio — 2-3 pages)
 
-L'orthophoniste a choisi le format **Synthétique**. Adapte les longueurs au minimum tout en respectant les règles Laurie (structure et formats imposés).
+L'orthophoniste a choisi le format **Synthétique**. Ce format suit le STYLE EXACT de Laurie Berrio (référence : CRBO d'Amaury Donnadieu, CE2, Exalang 8-11). Les règles ci-dessous **OVERRIDENT** les règles globales pour les champs concernés.
 
-- **\`anamnese_redigee\`** : 5 thèmes, max 4 lignes par paragraphe (cf. règles globales).
-- **\`domain_commentaires\`** : **2-3 lignes max par domaine** (≈ 30-50 mots). Section Lecture : garder les détails qualitatifs même condensés.
-- **\`points_forts\`** : 2-3 lignes (vs 3-5 en complet).
-- **\`difficultes_identifiees\`** : 2-3 lignes terminées par les conséquences concrètes.
-- **\`diagnostic\`** : format imposé inchangé (1 phrase).
-- **\`recommandations\`** : phrase unique imposée inchangée.
-- **\`axes_therapeutiques\`** : 2-3 axes (vs 4 en complet).
-- **\`pap_suggestions\`** : 4-5 entrées (vs 6 en complet).
+## \`anamnese_redigee\`
 
-🎯 Objectif : CRBO lisible en 5 minutes par le médecin / la famille.`
+5 thèmes, max 4 lignes par paragraphe (cf. règles globales — inchangé).
+
+## \`domain_commentaires\` — observations par domaine
+
+Adaptation à la performance du domaine :
+- **Résultats excellents OU dans la moyenne (haute ou basse)** → **1 SEULE phrase courte**.
+  Ex : "Les performances sont préservées sur l'ensemble du domaine."
+- **Résultats déficitaires** (Fragilité / Difficulté / Difficulté sévère) → **3-4 phrases max** : description qualitative + répercussions scolaires concrètes.
+
+**Règles absolues** :
+- JAMAIS de chiffres de percentile dans le texte.
+- JAMAIS de tirets (—, –, -) en début de phrase ou de liste.
+- Section Lecture : garder les détails qualitatifs même condensés (régularisations, autocorrections, lecture hachée…).
+
+## \`points_forts\` et \`difficultes_identifiees\` — NON UTILISÉS en synthétique
+
+⛔ Ces deux champs **NE SONT PAS RENDUS** dans le Word synthétique. Renvoie-les en chaîne **vide** :
+- \`points_forts\` → \`""\`
+- \`difficultes_identifiees\` → \`""\`
+
+Le diagnostic seul tient lieu de synthèse en synthétique.
+
+## \`diagnostic\`
+
+Format imposé inchangé (cf. règles globales — 1 phrase au format strict, JAMAIS de codes Fxxx).
+
+## \`recommandations\` → "PROJET THÉRAPEUTIQUE" — exactement 2 phrases
+
+⛔ **OUBLIE la phrase unique imposée du format Complet.** En synthétique, \`recommandations\` contient EXACTEMENT 2 phrases adaptées au profil clinique de l'enfant, séparées par un saut de ligne :
+
+1. **Phrase 1 — soin orthophonique** :
+   > "Une prise en soin orthophonique est indiquée afin de [objectifs thérapeutiques principaux selon le profil]."
+   Les objectifs sont DÉRIVÉS des difficultés observées (renforcer le décodage, automatiser la voie d'adressage, consolider l'orthographe lexicale, soutenir la compréhension écrite, travailler la conscience phonologique, etc.). Adapte aux résultats du bilan, pas de copier-coller générique.
+
+2. **Phrase 2 — aménagements scolaires** :
+   > "Des aménagements pédagogiques doivent être mis en place afin de limiter l'impact de [difficultés principales] en situation scolaire."
+   Cite les 1-2 difficultés les plus invalidantes en classe (lenteur de lecture, difficultés en orthographe, fatigabilité, etc.).
+
+**Règles absolues sur \`recommandations\` en synthétique** :
+- ⛔ JAMAIS de bullet points / liste / tirets dans cette section.
+- ⛔ JAMAIS de fréquence de séances, de délai, de mention de réévaluation ou de nouveau bilan.
+- ⛔ JAMAIS d'orientation vers d'autres professionnels.
+- 2 phrases EXACTEMENT, pas plus, pas moins.
+
+Exemple de \`recommandations\` synthétique attendu :
+> "Une prise en soin orthophonique est indiquée afin de renforcer le décodage, d'automatiser la voie d'adressage, et de consolider l'orthographe lexicale.
+>
+> Des aménagements pédagogiques doivent être mis en place afin de limiter l'impact de la lenteur de lecture et des difficultés en orthographe en situation scolaire."
+
+## \`axes_therapeutiques\` — NON UTILISÉ en synthétique
+
+⛔ Fusionné dans le PROJET THÉRAPEUTIQUE (phrase 1 ci-dessus). Renvoie un **tableau vide** :
+- \`axes_therapeutiques\` → \`[]\`
+
+## \`pap_suggestions\` — Aménagements pédagogiques proposés (style Laurie)
+
+⛔ **OUBLIE le format "Catégorie : description"** du format Complet. En synthétique, \`pap_suggestions\` est une liste de **bullets simples** (max 10) au format **phrase courte commençant par un verbe à l'infinitif**, ponctuée d'un point.
+
+**Règles de format absolues** :
+- ⛔ JAMAIS de préfixe "Catégorie : " (Temps, Évaluations, Outils numériques…).
+- ⛔ JAMAIS de gras / markdown.
+- ⛔ JAMAIS de regroupement par familles.
+- ✅ 1 phrase par item, qui DÉMARRE par un verbe à l'infinitif (Accorder, Réduire, Ne pas pénaliser, Favoriser, Privilégier, Proposer, Autoriser…).
+
+**Exemples exacts attendus** (style Laurie) :
+- "Accorder du temps supplémentaire pour les tâches de lecture et de production écrite."
+- "Réduire la quantité d'écrit lorsque l'objectif évalué ne porte pas sur la copie ou l'orthographe."
+- "Ne pas pénaliser les erreurs d'orthographe lorsque l'évaluation porte sur une autre compétence."
+- "Favoriser les évaluations aménagées : temps majoré, dictée à trous, choix multiples, réponses orales."
+- "Privilégier des consignes courtes, segmentées et reformulées si besoin."
+- "Proposer une place préférentielle au calme."
+
+Adapter à 4-10 items selon le profil clinique. Pas de remplissage forcé.
+
+## \`conclusion\`
+
+Mention médico-légale standard inchangée :
+> "Compte rendu remis en main propre à l'assuré(e) pour servir et faire valoir ce que de droit. (Copie au médecin prescripteur)."
+
+🎯 Objectif : CRBO lisible en 5 minutes par le médecin / la famille, dans le style EXACT de Laurie Berrio.`
 
 const FORMAT_COMPLET_INSTRUCTIONS = `
 
