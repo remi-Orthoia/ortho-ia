@@ -190,6 +190,20 @@ export async function POST(request: NextRequest) {
         console.error('Erreur lecture quota mensuel:', countError.message)
         // Fail-open : on ne bloque pas l'utilisatrice sur erreur Supabase
       } else if ((monthlyCount ?? 0) >= effectiveLimit) {
+        // Log le dépassement pour suivi des abus / produit. IP non lisible
+        // côté Supabase (pas de NextRequest dans le contexte SQL) — on la
+        // récupère via les en-têtes du proxy Vercel.
+        const fwd = request.headers.get('x-forwarded-for')
+        const ip = (fwd?.split(',')[0]?.trim()) || request.headers.get('x-real-ip') || ''
+        await supabase.rpc('log_abuse_signal', {
+          p_ip: ip || null,
+          p_user_agent: request.headers.get('user-agent') || null,
+          p_email: user.email ?? null,
+          p_user_id: user.id,
+          p_event: 'quota_reached',
+          p_reason: `limit=${effectiveLimit}`,
+        }).then(() => null, () => null)
+
         return NextResponse.json(
           {
             error: `Vous avez atteint votre limite de ${effectiveLimit} CRBOs gratuits ce mois. Passez en Pro pour continuer.`,

@@ -65,6 +65,26 @@ function RegisterForm() {
     }
 
     try {
+      // Precheck anti-abus côté serveur : email jetable + limite 2 comptes/IP/30j.
+      // Fail-open si la route plante (renvoie ok:true avec degraded), pour ne
+      // jamais bloquer une vraie inscription en cas d'incident.
+      try {
+        const pre = await fetch('/api/auth/precheck-signup', {
+          method: 'POST',
+          headers: { 'content-type': 'application/json' },
+          body: JSON.stringify({ email: formData.email }),
+        })
+        if (!pre.ok) {
+          const j = await pre.json().catch(() => ({}))
+          setError(j?.error || 'Inscription temporairement indisponible.')
+          setLoading(false); return
+        }
+      } catch {
+        // Pas de réseau / route down : on laisse passer plutôt que de bloquer
+        // une utilisatrice légitime. Les protections suivantes (Supabase email
+        // confirmation, RLS, quota mensuel) restent actives.
+      }
+
       const supabase = createClient()
       const { data, error: signUpError } = await supabase.auth.signUp({
         email: formData.email,
@@ -132,6 +152,15 @@ function RegisterForm() {
             // Best-effort — l'inscription réussit même si le referral échoue.
             console.warn('referral relation insert failed:', e)
           }
+        }
+
+        // Fingerprint d'inscription (IP + UA + timestamp) — uniquement
+        // captable côté serveur via les en-têtes proxy. Best-effort, on
+        // n'échoue jamais l'inscription si la route plante.
+        try {
+          await fetch('/api/auth/finalize-signup', { method: 'POST' })
+        } catch (e) {
+          console.warn('finalize-signup failed:', e)
         }
       }
       setSuccess(true)
