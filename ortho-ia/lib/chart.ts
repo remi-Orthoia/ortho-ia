@@ -55,7 +55,7 @@ const BAR_FILL_OF_VALUE = (value: number): string => {
   if (value >= 26) return '#FBC02D' // jaune (moyenne basse)
   if (value >= 10) return '#FFA726' // orange (fragilité P10-P25)
   if (value >= 6)  return '#EF6C00' // orange foncé (difficulté P6-P9)
-  return '#4E342E'                  // marron (difficulté sévère P ≤ 5)
+  return '#D32F2F'                  // rouge vif (difficulté sévère P ≤ 5)
 }
 
 export function zoneFor(value: number): ZonePerformance {

@@ -63,7 +63,7 @@ export type SeuilClinique = {
 //   Moyenne basse      → #FBC02D fond jaune
 //   Fragilité          → #FFA726 fond orange
 //   Difficulté         → #EF6C00 fond orange foncé,  texte blanc
-//   Difficulté sévère  → #4E342E fond marron,        texte blanc
+//   Difficulté sévère  → #D32F2F fond rouge vif,     texte blanc
 //
 // Pour les tableaux Word, on utilise les `shading` (cellule) + `textColor`
 // (texte). Pour le graphique chart, voir chart.ts qui a sa propre palette
@@ -74,7 +74,7 @@ export const SEUILS: SeuilClinique[] = [
   { label: 'Moyenne basse',      longLabel: 'Résultat dans la moyenne basse',  min: 26, shading: 'FBC02D', css: '#F57F17', range: 'P26-50' },
   { label: 'Fragilité',          longLabel: 'Zone de fragilité',               min: 10, shading: 'FFA726', css: '#E65100', range: 'P10-25' },
   { label: 'Difficulté',         longLabel: 'Zone de difficulté',              min: 6,  shading: 'EF6C00', css: '#BF360C', textColor: 'FFFFFF', range: 'P6-9' },
-  { label: 'Difficulté sévère',  longLabel: 'Zone de difficulté sévère',       min: 0,  shading: '4E342E', css: '#3E2723', textColor: 'FFFFFF', range: 'P ≤ 5' },
+  { label: 'Difficulté sévère',  longLabel: 'Zone de difficulté sévère',       min: 0,  shading: 'D32F2F', css: '#B71C1C', textColor: 'FFFFFF', range: 'P ≤ 5' },
 ]
 
 export function seuilFor(value: number): SeuilClinique {
