@@ -62,6 +62,26 @@ const TOTAL_STEPS = STEPS.length
 
 const DRAFT_KEY = 'ortho-ia:crbo-draft'
 
+/** Motifs de consultation proposés en multi-sélection à l'étape 2.
+ *  Le LLM reformule la sélection en 1-2 phrases fluides via la règle
+ *  motif_reformule du system-base. */
+const MOTIF_OPTIONS = ['Langage oral', 'Langage écrit', 'Mémoire', 'OMF'] as const
+
+/** Parse la chaîne `formData.motif` en tableau d'options sélectionnées.
+ *  La chaîne est de la forme "Langage oral, Mémoire". Tolère les espaces
+ *  superflus et filtre les valeurs hors MOTIF_OPTIONS (compat ancienne saisie
+ *  libre — un CRBO sauvegardé avec un motif libre rendra simplement aucun chip
+ *  sélectionné, sans planter). */
+function parseMotif(motif: string): string[] {
+  if (!motif) return []
+  return motif
+    .split(',')
+    .map((s) => s.trim())
+    .filter((s): s is (typeof MOTIF_OPTIONS)[number] =>
+      (MOTIF_OPTIONS as readonly string[]).includes(s),
+    )
+}
+
 function StepPhaseBadge({ step }: { step: number }) {
   // Steps 1-3 = en séance (Patient, Médecin, Anamnèse)
   // Step 4 = post-séance (Résultats)
@@ -637,6 +657,21 @@ function NouveauCRBOContent() {
     if (currentStep < TOTAL_STEPS) {
       setCurrentStep(prev => prev + 1)
     }
+  }
+
+  /** Toggle d'une option motif (multi-sélection). Met à jour formData.motif
+   *  comme chaîne CSV "Langage oral, Mémoire" — compat persistance DB et
+   *  injection prompt. Ordre conservé selon MOTIF_OPTIONS pour stabilité. */
+  const toggleMotif = (option: string) => {
+    setFormData(prev => {
+      const current = parseMotif(prev.motif)
+      const next = current.includes(option)
+        ? current.filter(o => o !== option)
+        : [...current, option]
+      // Trier selon l'ordre canonique de MOTIF_OPTIONS pour des sorties stables
+      const ordered = MOTIF_OPTIONS.filter(o => next.includes(o))
+      return { ...prev, motif: ordered.join(', ') }
+    })
   }
 
   const prevStep = () => {
@@ -1327,23 +1362,48 @@ function NouveauCRBOContent() {
                 />
               </div>
               <div className="sm:col-span-2">
-                <div className="flex items-center justify-between mb-1">
-                  <label className="block text-sm font-medium text-gray-700">Motif de consultation *</label>
-                  <MicButton
-                    value={formData.motif}
-                    onChange={(v) => setFormData(prev => ({ ...prev, motif: v }))}
-                    onError={(msg) => setError(msg)}
-                  />
+                <label
+                  className="block mb-2"
+                  style={{ fontSize: 14, fontWeight: 500, color: 'var(--fg-2)' }}
+                >
+                  Motif de consultation *
+                </label>
+                {/* Multi-select chips. Le motif final est stocké comme chaîne
+                    "Langage oral, Langage écrit" (compat DB + prompt). Le LLM
+                    le reformule ensuite en 1-2 phrases fluides via la règle
+                    motif_reformule du system-base. */}
+                <div style={{ display: 'flex', flexWrap: 'wrap', gap: 8 }}>
+                  {MOTIF_OPTIONS.map((option) => {
+                    const selected = parseMotif(formData.motif).includes(option)
+                    return (
+                      <button
+                        key={option}
+                        type="button"
+                        onClick={() => toggleMotif(option)}
+                        aria-pressed={selected}
+                        style={{
+                          padding: '8px 16px',
+                          borderRadius: 'var(--radius-pill)',
+                          fontFamily: 'var(--font-body)',
+                          fontSize: 14,
+                          fontWeight: 500,
+                          cursor: 'pointer',
+                          transition: 'all 180ms var(--ease-out)',
+                          background: selected ? 'var(--ds-primary)' : 'var(--bg-surface)',
+                          color: selected ? 'var(--fg-on-brand)' : 'var(--fg-1)',
+                          border: `1px solid ${selected ? 'transparent' : 'var(--border-ds-strong)'}`,
+                          boxShadow: selected ? 'var(--shadow-sm)' : 'none',
+                        }}
+                      >
+                        {option}
+                      </button>
+                    )
+                  })}
                 </div>
-                <textarea
-                  name="motif"
-                  value={formData.motif}
-                  onChange={handleChange}
-                  required
-                  rows={3}
-                  className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-green-500 resize-none"
-                  placeholder="Difficultés en lecture et en orthographe..."
-                />
+                <p style={{ marginTop: 8, fontSize: 12, color: 'var(--fg-3)' }}>
+                  Sélectionnez un ou plusieurs domaines. Ortho.ia reformulera le motif
+                  en 1-2 phrases fluides dans le compte-rendu.
+                </p>
               </div>
             </div>
           </div>
