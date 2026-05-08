@@ -8,21 +8,33 @@ export const metadata = {
 
 export default function CGUPage() {
   return (
-    <div className="min-h-screen bg-white">
-      <header className="border-b border-gray-100 bg-white/95 backdrop-blur sticky top-0 z-50">
+    <div style={{ minHeight: '100vh', background: 'var(--bg-canvas)', color: 'var(--fg-1)', fontFamily: 'var(--font-body)' }}>
+      <header
+        className="sticky top-0 z-50 backdrop-blur"
+        style={{
+          borderBottom: '1px solid var(--border-ds)',
+          background: 'color-mix(in srgb, var(--bg-canvas) 92%, transparent)',
+        }}
+      >
         <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 h-16 flex items-center justify-between">
-          <Link href="/" className="flex items-center gap-2 text-gray-600 hover:text-gray-900">
+          <Link
+            href="/"
+            className="flex items-center gap-2"
+            style={{ color: 'var(--fg-2)', textDecoration: 'none' }}
+          >
             <ArrowLeft size={16} />
-            <span className="text-sm">Accueil</span>
+            <span style={{ fontSize: 14 }}>Accueil</span>
           </Link>
-          <p className="text-sm font-semibold text-gray-800">CGU</p>
-          <div className="w-[80px]" />
+          <p style={{ fontSize: 14, fontWeight: 600, color: 'var(--fg-1)' }}>CGU</p>
+          <div style={{ width: 80 }} />
         </div>
       </header>
 
-      <main className="max-w-3xl mx-auto px-4 sm:px-6 lg:px-8 py-12 prose prose-gray">
-        <h1 className="text-3xl font-bold text-gray-900">Conditions Générales d&apos;Utilisation</h1>
-        <p className="text-sm text-gray-500 mt-2">Dernière mise à jour : 20 avril 2026</p>
+      <main className="max-w-3xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
+        <h1 style={{ fontFamily: 'var(--font-display)', fontSize: 32, fontWeight: 500, letterSpacing: '-0.01em', color: 'var(--fg-1)' }}>
+          Conditions Générales d&apos;Utilisation
+        </h1>
+        <p style={{ fontSize: 14, color: 'var(--fg-3)', marginTop: 8 }}>Dernière mise à jour : 20 avril 2026</p>
 
         <Section title="1. Éditeur du service">
           <p>
@@ -98,16 +110,12 @@ export default function CGUPage() {
         <Section title="6. Obligations de l'utilisateur">
           <p>L&apos;utilisateur·rice s&apos;engage à :</p>
           <ul className="list-disc pl-6 space-y-1">
-            <li>
-              Ne saisir que des informations strictement nécessaires à la rédaction du compte-rendu ;
-            </li>
+            <li>Ne saisir que des informations strictement nécessaires à la rédaction du compte-rendu ;</li>
             <li>
               Obtenir le consentement éclairé du patient (ou de son représentant légal) pour
               l&apos;utilisation d&apos;un outil d&apos;aide à la rédaction assistée par IA ;
             </li>
-            <li>
-              Relire intégralement chaque compte-rendu généré avant transmission ;
-            </li>
+            <li>Relire intégralement chaque compte-rendu généré avant transmission ;</li>
             <li>
               Ne pas utiliser le Service à des fins frauduleuses ou contraires à la déontologie
               professionnelle.
@@ -126,7 +134,7 @@ export default function CGUPage() {
         <Section title="8. Données personnelles (RGPD)">
           <p>
             Voir notre{' '}
-            <Link href="/confidentialite" className="text-green-600 hover:underline">
+            <Link href="/confidentialite" style={{ color: 'var(--fg-link)', textDecoration: 'underline' }}>
               politique de confidentialité
             </Link>{' '}
             pour le détail du traitement des données, vos droits d&apos;accès, de rectification, de
@@ -156,8 +164,11 @@ export default function CGUPage() {
           </p>
         </Section>
 
-        <div className="mt-12 pt-8 border-t border-gray-200 text-sm text-gray-500">
-          <Link href="/confidentialite" className="text-green-600 hover:underline">
+        <div
+          className="mt-12 pt-8"
+          style={{ borderTop: '1px solid var(--border-ds)', fontSize: 14, color: 'var(--fg-3)' }}
+        >
+          <Link href="/confidentialite" style={{ color: 'var(--fg-link)', textDecoration: 'underline' }}>
             Politique de confidentialité →
           </Link>
         </div>
@@ -169,8 +180,17 @@ export default function CGUPage() {
 function Section({ title, children }: { title: string; children: React.ReactNode }) {
   return (
     <section className="mt-8">
-      <h2 className="text-xl font-semibold text-gray-900 mb-3">{title}</h2>
-      <div className="text-gray-700 leading-relaxed space-y-3">{children}</div>
+      <h2
+        style={{
+          fontFamily: 'var(--font-display)',
+          fontSize: 22, fontWeight: 600, color: 'var(--fg-1)', marginBottom: 12,
+        }}
+      >
+        {title}
+      </h2>
+      <div style={{ color: 'var(--fg-2)', lineHeight: 1.6, display: 'flex', flexDirection: 'column', gap: 12 }}>
+        {children}
+      </div>
     </section>
   )
 }
