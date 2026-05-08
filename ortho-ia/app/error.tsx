@@ -6,8 +6,8 @@
  */
 
 import { useEffect } from 'react'
-import Link from 'next/link'
 import { AlertTriangle, RefreshCw, Home } from 'lucide-react'
+import { AppButton } from '@/components/ui'
 
 export default function GlobalError({
   error,
@@ -26,36 +26,74 @@ export default function GlobalError({
   }, [error])
 
   return (
-    <div className="min-h-screen bg-gray-50 dark:bg-surface-dark flex items-center justify-center px-4">
-      <div className="card-lifted max-w-md w-full p-8 text-center">
-        <div className="mx-auto w-16 h-16 rounded-2xl bg-red-100 dark:bg-red-900/30 flex items-center justify-center mb-5">
-          <AlertTriangle className="text-red-600 dark:text-red-400" size={28} />
+    <div
+      style={{
+        minHeight: '100vh',
+        background: 'var(--bg-canvas)',
+        display: 'flex', alignItems: 'center', justifyContent: 'center',
+        padding: 16,
+        fontFamily: 'var(--font-body)', color: 'var(--fg-1)',
+      }}
+    >
+      <div
+        style={{
+          maxWidth: 460, width: '100%',
+          background: 'var(--bg-surface)',
+          border: '1px solid var(--border-ds)',
+          borderRadius: 'var(--radius-lg)',
+          padding: 32,
+          boxShadow: 'var(--shadow-lg)',
+          textAlign: 'center',
+        }}
+      >
+        <div
+          style={{
+            width: 64, height: 64, borderRadius: 'var(--radius-lg)',
+            background: 'var(--ds-danger-soft)', color: 'var(--ds-danger)',
+            display: 'flex', alignItems: 'center', justifyContent: 'center',
+            margin: '0 auto 20px',
+          }}
+        >
+          <AlertTriangle size={28} />
         </div>
-        <h1 className="text-2xl font-bold text-gray-900 dark:text-gray-100">
+        <h1
+          style={{
+            fontFamily: 'var(--font-display)',
+            fontSize: 26, fontWeight: 500, letterSpacing: '-0.01em',
+            color: 'var(--fg-1)',
+          }}
+        >
           Oups, quelque chose s&apos;est mal passé
         </h1>
-        <p className="mt-2 text-gray-600 dark:text-gray-400">
+        <p style={{ marginTop: 8, color: 'var(--fg-2)', lineHeight: 1.6 }}>
           Une erreur inattendue est survenue. Vos données sont en sécurité.
           Essayez de recharger la page, ou revenez au tableau de bord.
         </p>
         {error?.digest && (
-          <p className="mt-2 text-xs text-gray-400 dark:text-gray-500 font-mono">
+          <p
+            style={{
+              marginTop: 8,
+              fontSize: 12, color: 'var(--fg-3)',
+              fontFamily: 'var(--font-mono)',
+            }}
+          >
             Code : {error.digest}
           </p>
         )}
-        <div className="mt-6 flex items-center justify-center gap-3">
-          <button onClick={() => reset()} className="btn-primary">
-            <RefreshCw size={16} />
+        <div style={{ marginTop: 24, display: 'flex', justifyContent: 'center', gap: 12 }}>
+          <AppButton onClick={() => reset()} variant="primary" icon={<RefreshCw size={16} />}>
             Réessayer
-          </button>
-          <Link href="/dashboard" className="btn-secondary">
-            <Home size={16} />
+          </AppButton>
+          <AppButton href="/dashboard" variant="secondary" icon={<Home size={16} />}>
             Tableau de bord
-          </Link>
+          </AppButton>
         </div>
-        <p className="mt-6 text-xs text-gray-500 dark:text-gray-500">
+        <p style={{ marginTop: 24, fontSize: 12, color: 'var(--fg-3)' }}>
           Si le problème persiste, contactez{' '}
-          <a href="mailto:remi.berrio@gmail.com" className="text-primary-600 dark:text-primary-400 hover:underline">
+          <a
+            href="mailto:remi.berrio@gmail.com"
+            style={{ color: 'var(--fg-link)', textDecoration: 'underline' }}
+          >
             remi.berrio@gmail.com
           </a>
         </p>
