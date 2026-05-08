@@ -1041,26 +1041,22 @@ export async function generateCRBOWord(payload: WordExportPayload): Promise<Blob
   }
 
   // ===== SIGNATURE =====
-  // En synthétique (style Laurie) la structure s'arrête à la conclusion
-  // médico-légale — pas de signature "Fait à X, le DATE".
-  if (!isSynthetique) {
-    children.push(
-      new Paragraph({ children: [new TextRun({ text: '' })] }),
-      new Paragraph({
-        alignment: AlignmentType.RIGHT,
-        children: [new TextRun({ text: `Fait à ${formData.ortho_ville || ''}, le ${bilanDateFormatted}`, size: FONT_SIZE_NORMAL, font: FONT })],
-        spacing: { before: 400 },
-      }),
-      new Paragraph({
-        alignment: AlignmentType.RIGHT,
-        children: [new TextRun({ text: formData.ortho_nom || '', size: FONT_SIZE_NORMAL, font: FONT, bold: true })],
-      }),
-      new Paragraph({
-        alignment: AlignmentType.RIGHT,
-        children: [new TextRun({ text: 'Orthophoniste', size: FONT_SIZE_NORMAL, font: FONT })],
-      }),
-    )
-  }
+  children.push(
+    new Paragraph({ children: [new TextRun({ text: '' })] }),
+    new Paragraph({
+      alignment: AlignmentType.RIGHT,
+      children: [new TextRun({ text: `Fait à ${formData.ortho_ville || ''}, le ${bilanDateFormatted}`, size: FONT_SIZE_NORMAL, font: FONT })],
+      spacing: { before: 400 },
+    }),
+    new Paragraph({
+      alignment: AlignmentType.RIGHT,
+      children: [new TextRun({ text: formData.ortho_nom || '', size: FONT_SIZE_NORMAL, font: FONT, bold: true })],
+    }),
+    new Paragraph({
+      alignment: AlignmentType.RIGHT,
+      children: [new TextRun({ text: 'Orthophoniste', size: FONT_SIZE_NORMAL, font: FONT })],
+    }),
+  )
 
   // ===== CONCLUSION (mention médico-légale, petit italique, en bas) =====
   // Règle Laurie : c'est le SEUL endroit du Word avec de l'italique.
