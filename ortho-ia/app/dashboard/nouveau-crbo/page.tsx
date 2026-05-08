@@ -100,6 +100,12 @@ function NouveauCRBOContent() {
   const [importingAnamnese, setImportingAnamnese] = useState(false)
   const [prefillBanner, setPrefillBanner] = useState<string>('')
 
+  // Upload bilan initial EXTERNE (PDF/Word rédigé en dehors d'ortho-ia).
+  // Utilisé en renouvellement quand aucun CRBO interne n'est trouvé pour
+  // ce patient. L'extraction côté serveur peuple bilan_precedent_structure.
+  const [uploadingPreviousBilan, setUploadingPreviousBilan] = useState(false)
+  const [previousBilanFilename, setPreviousBilanFilename] = useState<string | null>(null)
+
   // Patient selection
   const [patients, setPatients] = useState<Patient[]>([])
   const [selectedPatientId, setSelectedPatientId] = useState<string>('')
@@ -427,6 +433,69 @@ function NouveauCRBOContent() {
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [formData.bilan_type, selectedPatientId, formData.patient_prenom, formData.patient_nom])
+
+  // Upload bilan initial EXTERNE (PDF / Word). Appelle /api/extract-previous-bilan,
+  // récupère la structure JSON et la pose dans formData.bilan_precedent_structure
+  // pour que le pipeline de génération + le rendu Word comparatif la consomment.
+  const handleUploadPreviousBilan = async (file: File) => {
+    if (!file) return
+    setError('')
+    if (file.size > 10 * 1024 * 1024) {
+      setError('Fichier trop volumineux (max 10 Mo).')
+      return
+    }
+    const lname = file.name.toLowerCase()
+    const isPdf = file.type.includes('pdf') || lname.endsWith('.pdf')
+    const isDocx = lname.endsWith('.docx') || lname.endsWith('.doc')
+    if (!isPdf && !isDocx) {
+      setError('Format non supporté. Importez un PDF ou un document Word (.docx).')
+      return
+    }
+    setUploadingPreviousBilan(true)
+    try {
+      const fd = new FormData()
+      fd.append('file', file)
+      if (selectedPatientId) fd.append('patient_id', selectedPatientId)
+      const res = await fetch('/api/extract-previous-bilan', { method: 'POST', body: fd })
+      const data = await res.json()
+      if (!res.ok) {
+        setError(data?.error || 'Erreur lors de l\'extraction du bilan précédent.')
+        return
+      }
+      const ex = data.extracted as {
+        bilan_date: string
+        anamnese_redigee?: string
+        domains: any[]
+        diagnostic: string
+        amenagements?: string[]
+      }
+      // Conversion vers une CRBOStructure complète (le rendu Word et le prompt
+      // de génération en attendent une — recommandations / conclusion vides).
+      const reconstructed: CRBOStructure = {
+        anamnese_redigee: ex.anamnese_redigee || '',
+        domains: ex.domains || [],
+        diagnostic: ex.diagnostic || '',
+        recommandations: '',
+        conclusion: '',
+        pap_suggestions: ex.amenagements || [],
+      }
+      const isoDate = ex.bilan_date && /^\d{4}-\d{2}-\d{2}$/.test(ex.bilan_date) ? ex.bilan_date : ''
+      setFormData(prev => ({
+        ...prev,
+        bilan_precedent_structure: reconstructed,
+        bilan_precedent_date: isoDate || prev.bilan_precedent_date,
+        bilan_precedent_anamnese: ex.anamnese_redigee || prev.bilan_precedent_anamnese,
+        // Pré-remplit les éléments stables avec le résumé d'anamnèse extrait,
+        // l'ortho peut éditer librement ensuite.
+        elements_stables: prev.elements_stables || ex.anamnese_redigee || '',
+      }))
+      setPreviousBilanFilename(file.name)
+    } catch (e: any) {
+      setError(e?.message || "Erreur lors de l'extraction du bilan précédent.")
+    } finally {
+      setUploadingPreviousBilan(false)
+    }
+  }
 
   // Réinitialiser pour nouveau patient
   const handleNewPatient = () => {
@@ -1295,13 +1364,153 @@ function NouveauCRBOContent() {
               </p>
             </div>
 
-            {/* ============ MODE RENOUVELLEMENT sur patient connu ============ */}
-            {formData.bilan_type === 'renouvellement' && selectedPatientId ? (
+            {/* ============ MODE RENOUVELLEMENT ============ */}
+            {/* Note : le check `selectedPatientId` a été retiré pour permettre
+                l'upload d'un bilan initial externe même quand l'ortho saisit
+                le patient manuellement (renouvellement first-time dans ortho-ia). */}
+            {formData.bilan_type === 'renouvellement' ? (
               <>
                 {importingAnamnese && (
                   <div className="flex items-center gap-2 text-sm text-purple-600">
                     <Loader2 className="animate-spin" size={16} />
                     Chargement du bilan précédent…
+                  </div>
+                )}
+
+                {/* ===== UPLOAD bilan initial EXTERNE =====
+                    Affiché uniquement si aucun bilan précédent n'a été chargé
+                    (ni depuis la DB ortho-ia, ni encore uploadé). Une fois
+                    l'extraction faite, bilan_precedent_structure est peuplé et
+                    ce bloc disparaît au profit des blocs Évolutions / Éléments
+                    stables ci-dessous. */}
+                {!formData.bilan_precedent_structure && !importingAnamnese && (
+                  <div
+                    style={{
+                      background: 'var(--bg-surface)',
+                      border: '1px dashed var(--border-ds-strong)',
+                      borderRadius: 'var(--radius-lg)',
+                      padding: 24,
+                      fontFamily: 'var(--font-body)',
+                    }}
+                  >
+                    <div className="flex items-start gap-3">
+                      <div
+                        style={{
+                          flexShrink: 0,
+                          width: 40, height: 40, borderRadius: 'var(--radius-md)',
+                          background: 'var(--ds-primary-soft)', color: 'var(--ds-primary-hover)',
+                          display: 'flex', alignItems: 'center', justifyContent: 'center',
+                        }}
+                      >
+                        <FileUp size={20} />
+                      </div>
+                      <div className="flex-1 min-w-0">
+                        <p style={{ fontWeight: 600, color: 'var(--fg-1)' }}>
+                          📄 Bilan initial précédent
+                        </p>
+                        <p style={{ fontSize: 13, color: 'var(--fg-2)', marginTop: 4, lineHeight: 1.5 }}>
+                          Importez le compte-rendu du bilan précédent (rédigé en dehors d&apos;ortho-ia)
+                          pour permettre à l&apos;IA d&apos;analyser les évolutions épreuve par épreuve.
+                        </p>
+                        <div className="mt-3 flex items-center gap-3 flex-wrap">
+                          <label
+                            style={{
+                              display: 'inline-flex', alignItems: 'center', gap: 8,
+                              padding: '10px 16px',
+                              background: 'var(--ds-primary)',
+                              color: 'var(--fg-on-brand)',
+                              borderRadius: 'var(--radius-pill)',
+                              fontSize: 14, fontWeight: 500,
+                              cursor: uploadingPreviousBilan ? 'not-allowed' : 'pointer',
+                              opacity: uploadingPreviousBilan ? 0.6 : 1,
+                              transition: 'background 180ms',
+                            }}
+                          >
+                            {uploadingPreviousBilan ? (
+                              <>
+                                <Loader2 className="animate-spin" size={16} />
+                                Extraction en cours…
+                              </>
+                            ) : (
+                              <>
+                                <Upload size={16} />
+                                Importer le bilan initial (PDF ou Word)
+                              </>
+                            )}
+                            <input
+                              type="file"
+                              accept=".pdf,.docx,.doc,application/pdf,application/vnd.openxmlformats-officedocument.wordprocessingml.document,application/msword"
+                              onChange={(e) => {
+                                const file = e.target.files?.[0]
+                                if (file) handleUploadPreviousBilan(file)
+                                e.target.value = '' // permet de réuploader le même fichier
+                              }}
+                              disabled={uploadingPreviousBilan}
+                              style={{ display: 'none' }}
+                            />
+                          </label>
+                          <span style={{ fontSize: 12, color: 'var(--fg-3)' }}>
+                            Formats acceptés : PDF, .docx · max 10 Mo
+                          </span>
+                        </div>
+                        <p style={{ fontSize: 12, color: 'var(--fg-3)', marginTop: 12, fontStyle: 'italic' }}>
+                          Aucun import disponible ? Vous pouvez aussi continuer sans —
+                          la synthèse comparative sera alors approximative.
+                        </p>
+                      </div>
+                    </div>
+                  </div>
+                )}
+
+                {/* Confirmation après upload externe */}
+                {formData.bilan_precedent_structure && previousBilanFilename && (
+                  <div
+                    style={{
+                      background: 'var(--ds-success-soft)',
+                      border: '1px solid color-mix(in srgb, var(--ds-success) 30%, transparent)',
+                      borderRadius: 'var(--radius-md)',
+                      padding: '12px 16px',
+                      fontFamily: 'var(--font-body)',
+                      display: 'flex', alignItems: 'center', gap: 12,
+                    }}
+                  >
+                    <CheckCircle size={20} style={{ color: 'var(--ds-success)', flexShrink: 0 }} />
+                    <div className="flex-1 min-w-0">
+                      <p style={{ fontSize: 14, fontWeight: 600, color: 'var(--ds-success)' }}>
+                        Bilan initial importé
+                      </p>
+                      <p style={{ fontSize: 12, color: 'var(--fg-2)', marginTop: 2 }}>
+                        {previousBilanFilename} ·{' '}
+                        {formData.bilan_precedent_structure.domains?.length ?? 0} domaine
+                        {(formData.bilan_precedent_structure.domains?.length ?? 0) > 1 ? 's' : ''} extrait
+                        {(formData.bilan_precedent_structure.domains?.length ?? 0) > 1 ? 's' : ''}
+                        {formData.bilan_precedent_date && ` · bilan du ${new Date(formData.bilan_precedent_date).toLocaleDateString('fr-FR')}`}
+                      </p>
+                    </div>
+                    <button
+                      type="button"
+                      onClick={() => {
+                        setFormData(prev => ({
+                          ...prev,
+                          bilan_precedent_structure: null,
+                          bilan_precedent_date: undefined,
+                          bilan_precedent_anamnese: undefined,
+                        }))
+                        setPreviousBilanFilename(null)
+                      }}
+                      style={{
+                        padding: '4px 10px',
+                        background: 'transparent',
+                        color: 'var(--fg-2)',
+                        border: '1px solid var(--border-ds-strong)',
+                        borderRadius: 'var(--radius-sm)',
+                        fontFamily: 'var(--font-body)',
+                        fontSize: 12,
+                        cursor: 'pointer',
+                      }}
+                    >
+                      Réimporter
+                    </button>
                   </div>
                 )}
 

@@ -62,6 +62,16 @@ function formatBilanPrecedent(structure: CRBOStructure | null, bilanDate: string
     lines.push('Recommandations précédentes (extrait) :')
     lines.push(structure.recommandations.slice(0, 400) + (structure.recommandations.length > 400 ? '…' : ''))
   }
+  // Aménagements précédemment proposés (PAP) — utile pour la comparaison du
+  // nouveau bilan : ce qui a été MIS EN PLACE doit pouvoir être maintenu /
+  // adapté / retiré dans le nouveau jeu de pap_suggestions.
+  if (structure.pap_suggestions && structure.pap_suggestions.length > 0) {
+    lines.push('')
+    lines.push('Aménagements mis en place / proposés au précédent bilan :')
+    for (const p of structure.pap_suggestions) {
+      lines.push(`  - ${p}`)
+    }
+  }
   return lines.join('\n')
 }
 
