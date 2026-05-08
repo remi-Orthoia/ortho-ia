@@ -53,8 +53,8 @@ const BAR_FILL_OF_VALUE = (value: number): string => {
   if (value >= 76) return '#2E7D32' // vert foncé
   if (value >= 51) return '#66BB6A' // vert clair
   if (value >= 26) return '#FBC02D' // jaune (moyenne basse)
-  if (value >= 10) return '#FFA726' // orange (fragilité P10-P25)
-  if (value >= 6)  return '#EF6C00' // orange foncé (difficulté P6-P9)
+  if (value >= 10) return '#FB8C00' // orange (fragilité P10-P25)
+  if (value >= 6)  return '#E65100' // orange foncé (difficulté P6-P9)
   return '#D32F2F'                  // rouge vif (difficulté sévère P ≤ 5)
 }
 

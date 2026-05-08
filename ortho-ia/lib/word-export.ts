@@ -61,8 +61,8 @@ export type SeuilClinique = {
 //   Excellent          → #2E7D32 fond vert foncé,    texte blanc
 //   Moyenne haute      → #66BB6A fond vert clair
 //   Moyenne basse      → #FBC02D fond jaune
-//   Fragilité          → #FFA726 fond orange
-//   Difficulté         → #EF6C00 fond orange foncé,  texte blanc
+//   Fragilité          → #FB8C00 fond orange
+//   Difficulté         → #E65100 fond orange foncé,  texte blanc
 //   Difficulté sévère  → #D32F2F fond rouge vif,     texte blanc
 //
 // Pour les tableaux Word, on utilise les `shading` (cellule) + `textColor`
@@ -72,8 +72,8 @@ export const SEUILS: SeuilClinique[] = [
   { label: 'Excellent',          longLabel: 'Excellent résultat',              min: 76, shading: '2E7D32', css: '#1B5E20', textColor: 'FFFFFF', range: 'P > 75' },
   { label: 'Moyenne haute',      longLabel: 'Résultat dans la moyenne haute',  min: 51, shading: '66BB6A', css: '#2E7D32', range: 'P51-75' },
   { label: 'Moyenne basse',      longLabel: 'Résultat dans la moyenne basse',  min: 26, shading: 'FBC02D', css: '#F57F17', range: 'P26-50' },
-  { label: 'Fragilité',          longLabel: 'Zone de fragilité',               min: 10, shading: 'FFA726', css: '#E65100', range: 'P10-25' },
-  { label: 'Difficulté',         longLabel: 'Zone de difficulté',              min: 6,  shading: 'EF6C00', css: '#BF360C', textColor: 'FFFFFF', range: 'P6-9' },
+  { label: 'Fragilité',          longLabel: 'Zone de fragilité',               min: 10, shading: 'FB8C00', css: '#E65100', range: 'P10-25' },
+  { label: 'Difficulté',         longLabel: 'Zone de difficulté',              min: 6,  shading: 'E65100', css: '#BF360C', textColor: 'FFFFFF', range: 'P6-9' },
   { label: 'Difficulté sévère',  longLabel: 'Zone de difficulté sévère',       min: 0,  shading: 'D32F2F', css: '#B71C1C', textColor: 'FFFFFF', range: 'P ≤ 5' },
 ]
 
