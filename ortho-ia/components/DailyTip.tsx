@@ -76,7 +76,16 @@ const TIPS: Tip[] = [
     minCrbo: 3,
     text: (
       <>
-        Raccourci pro : <kbd className="px-1.5 py-0.5 bg-gray-100 dark:bg-surface-dark-muted rounded text-xs font-mono">⌘ + Entrée</kbd> pour
+        Raccourci pro : <kbd
+          style={{
+            padding: '2px 6px',
+            background: 'var(--bg-surface-2)',
+            color: 'var(--fg-2)',
+            borderRadius: 'var(--radius-xs)',
+            fontFamily: 'var(--font-mono)',
+            fontSize: 12,
+          }}
+        >⌘ + Entrée</kbd> pour
         lancer la génération depuis l&apos;étape 5, sans bouger la souris.
       </>
     ),
@@ -146,20 +155,63 @@ export default function DailyTip({ crboCount }: Props) {
   }
 
   return (
-    <div className="card-modern p-4 flex items-start gap-3 bg-gradient-to-r from-amber-50 to-yellow-50 dark:from-amber-900/20 dark:to-yellow-900/20 border-amber-200 dark:border-amber-800/40 animate-scale-in">
-      <div className="shrink-0 w-9 h-9 rounded-lg bg-amber-100 dark:bg-amber-900/40 flex items-center justify-center">
-        <Lightbulb className="text-amber-600 dark:text-amber-400" size={16} />
+    <div
+      className="animate-scale-in flex items-start gap-3"
+      style={{
+        padding: 16,
+        background: `linear-gradient(135deg, var(--ds-warning-soft) 0%, color-mix(in srgb, var(--ds-warning-soft) 60%, var(--bg-surface)) 100%)`,
+        border: '1px solid color-mix(in srgb, var(--ds-warning) 25%, transparent)',
+        borderRadius: 'var(--radius-md)',
+        fontFamily: 'var(--font-body)',
+      }}
+    >
+      <div
+        className="shrink-0 flex items-center justify-center"
+        style={{
+          width: 36, height: 36,
+          borderRadius: 'var(--radius-md)',
+          background: 'color-mix(in srgb, var(--ds-warning) 22%, transparent)',
+          color: 'var(--ds-warning)',
+        }}
+      >
+        <Lightbulb size={16} />
       </div>
-      <div className="flex-1 min-w-0 text-sm text-gray-800 dark:text-gray-200">
-        <p className="text-[11px] uppercase tracking-wider font-bold text-amber-700 dark:text-amber-400 mb-0.5">
+      <div className="flex-1 min-w-0" style={{ fontSize: 14, color: 'var(--fg-1)' }}>
+        <p
+          style={{
+            fontSize: 11,
+            textTransform: 'uppercase',
+            letterSpacing: '0.08em',
+            fontWeight: 700,
+            color: 'var(--ds-warning)',
+            marginBottom: 2,
+          }}
+        >
           Astuce du jour
         </p>
         {tip.text}
       </div>
       <button
         onClick={dismiss}
-        className="shrink-0 p-1 rounded text-gray-400 hover:bg-white dark:hover:bg-surface-dark-muted hover:text-gray-700 dark:hover:text-gray-200"
         aria-label="Masquer l'astuce"
+        className="shrink-0"
+        style={{
+          padding: 4,
+          borderRadius: 'var(--radius-sm)',
+          background: 'transparent',
+          color: 'var(--fg-3)',
+          border: 0,
+          cursor: 'pointer',
+          transition: 'background 180ms, color 180ms',
+        }}
+        onMouseEnter={(e) => {
+          e.currentTarget.style.background = 'var(--bg-surface)'
+          e.currentTarget.style.color = 'var(--fg-1)'
+        }}
+        onMouseLeave={(e) => {
+          e.currentTarget.style.background = 'transparent'
+          e.currentTarget.style.color = 'var(--fg-3)'
+        }}
       >
         <X size={14} />
       </button>

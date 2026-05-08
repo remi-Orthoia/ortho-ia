@@ -41,15 +41,37 @@ export default function CookieBanner() {
       <div
         role="region"
         aria-label="Bandeau d'information RGPD"
-        className="pointer-events-auto max-w-3xl mx-auto bg-white dark:bg-surface-dark border border-gray-200 dark:border-surface-dark-muted rounded-2xl shadow-card-lg p-4 sm:p-5 flex flex-col sm:flex-row items-start sm:items-center gap-3 sm:gap-4"
+        className="pointer-events-auto max-w-3xl mx-auto flex flex-col sm:flex-row items-start sm:items-center gap-3 sm:gap-4"
+        style={{
+          background: 'var(--bg-surface)',
+          border: '1px solid var(--border-ds)',
+          borderRadius: 'var(--radius-lg)',
+          boxShadow: 'var(--shadow-lg)',
+          padding: 20,
+          fontFamily: 'var(--font-body)',
+        }}
       >
         <div className="flex items-center gap-3 flex-1">
-          <div className="shrink-0 w-10 h-10 rounded-full bg-primary-100 dark:bg-primary-900/30 text-primary-700 dark:text-primary-300 flex items-center justify-center">
+          <div
+            className="shrink-0 flex items-center justify-center"
+            style={{
+              width: 40, height: 40, borderRadius: 999,
+              background: 'var(--ds-primary-soft)',
+              color: 'var(--ds-primary-hover)',
+            }}
+          >
             <Cookie size={18} />
           </div>
-          <p className="text-sm text-gray-700 dark:text-gray-200 leading-relaxed">
+          <p style={{ fontSize: 14, color: 'var(--fg-2)', lineHeight: 1.55 }}>
             Ce site utilise des cookies essentiels uniquement (session, préférences) — pas de tracking publicitaire ni de cookies tiers.{' '}
-            <Link href="/confidentialite" className="underline font-medium text-primary-700 dark:text-primary-400 hover:text-primary-800">
+            <Link
+              href="/confidentialite"
+              style={{
+                textDecoration: 'underline',
+                fontWeight: 500,
+                color: 'var(--fg-link)',
+              }}
+            >
               Politique de confidentialité
             </Link>
           </p>
@@ -58,7 +80,20 @@ export default function CookieBanner() {
           <button
             type="button"
             onClick={handleAccept}
-            className="btn-primary text-sm whitespace-nowrap"
+            style={{
+              whiteSpace: 'nowrap',
+              padding: '8px 16px',
+              background: 'var(--ds-primary)',
+              color: 'var(--fg-on-brand)',
+              border: 0,
+              borderRadius: 'var(--radius-pill)',
+              fontFamily: 'var(--font-body)',
+              fontSize: 14, fontWeight: 500,
+              cursor: 'pointer',
+              transition: 'background 180ms',
+            }}
+            onMouseEnter={(e) => (e.currentTarget.style.background = 'var(--ds-primary-hover)')}
+            onMouseLeave={(e) => (e.currentTarget.style.background = 'var(--ds-primary)')}
           >
             Accepter
           </button>
@@ -66,7 +101,23 @@ export default function CookieBanner() {
             type="button"
             onClick={handleAccept}
             aria-label="Fermer le bandeau"
-            className="p-2 rounded-lg text-gray-400 hover:text-gray-600 hover:bg-gray-100 dark:hover:bg-surface-dark-muted transition"
+            style={{
+              padding: 8,
+              background: 'transparent',
+              color: 'var(--fg-3)',
+              border: 0,
+              borderRadius: 'var(--radius-md)',
+              cursor: 'pointer',
+              transition: 'color 180ms, background 180ms',
+            }}
+            onMouseEnter={(e) => {
+              e.currentTarget.style.color = 'var(--fg-1)'
+              e.currentTarget.style.background = 'var(--bg-surface-2)'
+            }}
+            onMouseLeave={(e) => {
+              e.currentTarget.style.color = 'var(--fg-3)'
+              e.currentTarget.style.background = 'transparent'
+            }}
           >
             <X size={16} />
           </button>

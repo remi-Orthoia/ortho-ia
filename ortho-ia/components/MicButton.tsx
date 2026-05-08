@@ -76,19 +76,25 @@ export default function MicButton({
     else start()
   }
 
-  // Styles — un seul rendu, prominent + dark-mode safe.
-  // Avant : `bg-gray-100 text-gray-700` sans variante dark → invisible sur
-  // un thème sombre ou contre une carte légèrement grise. Maintenant on
-  // utilise toujours du primary-600 / primary-700 hover, en blanc texte/icône.
-  const base = variant === 'filled'
-    ? 'inline-flex items-center gap-2 rounded-lg px-3.5 py-2 text-sm font-semibold transition shadow-sm'
-    : 'inline-flex items-center gap-1.5 rounded-lg px-3 py-1.5 text-xs font-semibold transition shadow-sm'
+  // Couleurs par état — tokens DS uniquement (palette Stéphanie).
+  // - recording → danger (rouge sage), pulse + halo
+  // - transcribing → warning (ambre)
+  // - error → accent (terracotta)
+  // - idle → primary (sage)
+  const stateBg =
+    isRec ? 'var(--ds-danger)' :
+    isTranscribing ? 'var(--ds-warning)' :
+    isError ? 'var(--ds-accent)' :
+    'var(--ds-primary)'
+  const stateBgHover =
+    isRec ? 'color-mix(in srgb, var(--ds-danger) 85%, black)' :
+    isTranscribing ? 'var(--ds-warning)' :
+    isError ? 'var(--ds-accent-hover)' :
+    'var(--ds-primary-hover)'
 
-  const colors =
-    isRec ? 'bg-red-600 text-white hover:bg-red-700 ring-2 ring-red-300 animate-pulse' :
-    isTranscribing ? 'bg-amber-500 text-white' :
-    isError ? 'bg-orange-500 text-white hover:bg-orange-600' :
-    'bg-primary-600 text-white hover:bg-primary-700 dark:bg-primary-500 dark:hover:bg-primary-600'
+  const baseStyle: React.CSSProperties = variant === 'filled'
+    ? { padding: '8px 14px', fontSize: 14, gap: 8 }
+    : { padding: '6px 12px', fontSize: 12, gap: 6 }
 
   const Icon = isRec ? Square : isTranscribing ? Loader2 : isError ? MicOff : Mic
 
@@ -104,7 +110,25 @@ export default function MicButton({
         isError ? error || 'Erreur micro' :
         'Cliquez pour dicter à la voix (Whisper)'
       }
-      className={`${base} ${colors} disabled:opacity-60 disabled:cursor-not-allowed`}
+      className={isRec ? 'animate-pulse' : ''}
+      style={{
+        display: 'inline-flex', alignItems: 'center',
+        ...baseStyle,
+        background: stateBg,
+        color: 'var(--fg-on-brand)',
+        fontFamily: 'var(--font-body)',
+        fontWeight: 600,
+        border: 0,
+        borderRadius: 'var(--radius-md)',
+        boxShadow: isRec
+          ? '0 0 0 3px color-mix(in srgb, var(--ds-danger) 30%, transparent), var(--shadow-sm)'
+          : 'var(--shadow-sm)',
+        cursor: (isTranscribing || disabled) ? 'not-allowed' : 'pointer',
+        opacity: (isTranscribing || disabled) ? 0.6 : 1,
+        transition: 'background 180ms, box-shadow 180ms',
+      }}
+      onMouseEnter={(e) => { if (!disabled && !isTranscribing) e.currentTarget.style.background = stateBgHover }}
+      onMouseLeave={(e) => { e.currentTarget.style.background = stateBg }}
     >
       <Icon size={variant === 'filled' ? 18 : 15} className={isTranscribing ? 'animate-spin' : ''} aria-hidden="true" />
       {!compact && (

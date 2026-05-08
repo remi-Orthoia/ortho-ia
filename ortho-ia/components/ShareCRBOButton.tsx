@@ -60,16 +60,36 @@ export default function ShareCRBOButton({ crboId }: Props) {
 
   if (shareUrl) {
     return (
-      <div className="card-lifted p-4 bg-gradient-to-br from-blue-50 to-indigo-50 dark:from-blue-900/20 dark:to-indigo-900/20 border-blue-200 dark:border-blue-800/40">
+      <div
+        style={{
+          padding: 16,
+          background: `
+            radial-gradient(ellipse at 0% 0%, var(--ds-info-soft) 0%, transparent 70%),
+            var(--bg-surface)
+          `,
+          border: '1px solid color-mix(in srgb, var(--ds-info) 25%, transparent)',
+          borderRadius: 'var(--radius-lg)',
+          boxShadow: 'var(--shadow-md)',
+          fontFamily: 'var(--font-body)',
+        }}
+      >
         <div className="flex items-start gap-3">
-          <div className="w-9 h-9 rounded-full bg-blue-100 dark:bg-blue-900/40 flex items-center justify-center shrink-0">
-            <Share2 className="text-blue-600 dark:text-blue-400" size={18} />
+          <div
+            className="shrink-0"
+            style={{
+              width: 36, height: 36, borderRadius: 999,
+              background: 'var(--ds-info-soft)',
+              color: 'var(--ds-info)',
+              display: 'flex', alignItems: 'center', justifyContent: 'center',
+            }}
+          >
+            <Share2 size={18} />
           </div>
           <div className="flex-1 min-w-0">
-            <p className="font-semibold text-blue-900 dark:text-blue-200 text-sm">
+            <p style={{ fontWeight: 600, color: 'var(--fg-1)', fontSize: 14 }}>
               Lien de partage généré · valide 24h
             </p>
-            <p className="text-xs text-blue-700 dark:text-blue-300 mt-0.5 flex items-center gap-1">
+            <p style={{ fontSize: 12, color: 'var(--fg-2)', marginTop: 2, display: 'flex', alignItems: 'center', gap: 4 }}>
               <Clock size={11} />
               Expire le {expiresAt && new Date(expiresAt).toLocaleString('fr-FR', { dateStyle: 'short', timeStyle: 'short' })}
             </p>
@@ -79,11 +99,34 @@ export default function ShareCRBOButton({ crboId }: Props) {
                 readOnly
                 value={shareUrl}
                 onFocus={(e) => e.target.select()}
-                className="flex-1 px-3 py-1.5 bg-white dark:bg-surface-dark-subtle border border-blue-200 dark:border-blue-800/50 rounded text-xs font-mono text-gray-700 dark:text-gray-300 focus:outline-none focus:ring-2 focus:ring-blue-400"
+                className="flex-1"
+                style={{
+                  padding: '6px 12px',
+                  background: 'var(--bg-surface)',
+                  border: '1px solid var(--border-ds-strong)',
+                  borderRadius: 'var(--radius-sm)',
+                  fontFamily: 'var(--font-mono)',
+                  fontSize: 12,
+                  color: 'var(--fg-2)',
+                  outline: 'none',
+                }}
               />
               <button
                 onClick={copyUrl}
-                className="inline-flex items-center gap-1.5 px-3 py-1.5 bg-blue-600 hover:bg-blue-700 text-white rounded text-xs font-semibold transition"
+                style={{
+                  display: 'inline-flex', alignItems: 'center', gap: 6,
+                  padding: '6px 12px',
+                  background: 'var(--ds-primary)',
+                  color: 'var(--fg-on-brand)',
+                  border: 0,
+                  borderRadius: 'var(--radius-sm)',
+                  fontFamily: 'var(--font-body)',
+                  fontSize: 12, fontWeight: 600,
+                  cursor: 'pointer',
+                  transition: 'background 180ms',
+                }}
+                onMouseEnter={(e) => (e.currentTarget.style.background = 'var(--ds-primary-hover)')}
+                onMouseLeave={(e) => (e.currentTarget.style.background = 'var(--ds-primary)')}
               >
                 {copied ? <Check size={12} /> : <Copy size={12} />}
                 {copied ? 'Copié' : 'Copier'}
@@ -96,12 +139,26 @@ export default function ShareCRBOButton({ crboId }: Props) {
   }
 
   return (
-    <div className="flex items-center justify-end gap-2">
-      {error && <span className="text-xs text-red-600 dark:text-red-400">{error}</span>}
+    <div className="flex items-center justify-end gap-2" style={{ fontFamily: 'var(--font-body)' }}>
+      {error && <span style={{ fontSize: 12, color: 'var(--ds-danger)' }}>{error}</span>}
       <button
         onClick={handleShare}
         disabled={loading || !crboId}
-        className="btn-secondary text-sm"
+        style={{
+          display: 'inline-flex', alignItems: 'center', gap: 6,
+          padding: '8px 14px',
+          background: 'var(--bg-surface)',
+          color: 'var(--fg-1)',
+          border: '1px solid var(--border-ds-strong)',
+          borderRadius: 'var(--radius-md)',
+          fontFamily: 'var(--font-body)',
+          fontSize: 14, fontWeight: 500,
+          cursor: (loading || !crboId) ? 'not-allowed' : 'pointer',
+          opacity: (loading || !crboId) ? 0.6 : 1,
+          transition: 'background 180ms',
+        }}
+        onMouseEnter={(e) => { if (!loading && crboId) e.currentTarget.style.background = 'var(--bg-surface-2)' }}
+        onMouseLeave={(e) => (e.currentTarget.style.background = 'var(--bg-surface)')}
       >
         {loading ? <Loader2 className="animate-spin" size={14} /> : <Share2 size={14} />}
         {loading ? 'Création…' : 'Partager (24h)'}

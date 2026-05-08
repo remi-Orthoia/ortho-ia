@@ -30,13 +30,31 @@ export default function Tooltip({ content, children, placement = 'top' }: Props)
       onFocus={() => setOpen(true)}
       onBlur={() => setOpen(false)}
     >
-      <span tabIndex={0} className="inline-flex items-center underline decoration-dotted decoration-gray-400 underline-offset-2 cursor-help focus:outline-none focus:ring-2 focus:ring-primary-500 focus:rounded">
+      <span
+        tabIndex={0}
+        className="inline-flex items-center cursor-help focus:outline-none"
+        style={{
+          textDecoration: 'underline dotted',
+          textDecorationColor: 'var(--fg-3)',
+          textUnderlineOffset: 2,
+        }}
+      >
         {children}
       </span>
       {open && (
         <span
           role="tooltip"
-          className={`absolute z-50 ${placementClass} px-3 py-2 w-max max-w-xs bg-gray-900 dark:bg-surface-dark-muted text-white text-xs rounded-lg shadow-lg pointer-events-none animate-scale-in`}
+          className={`absolute z-50 ${placementClass} pointer-events-none animate-scale-in`}
+          style={{
+            padding: '8px 12px',
+            width: 'max-content', maxWidth: 320,
+            background: 'var(--bg-inverse)',
+            color: 'var(--fg-on-brand)',
+            fontFamily: 'var(--font-body)',
+            fontSize: 12,
+            borderRadius: 'var(--radius-md)',
+            boxShadow: 'var(--shadow-md)',
+          }}
         >
           {content}
         </span>

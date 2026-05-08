@@ -23,9 +23,9 @@ const STEPS: Step[] = [
 ]
 
 const PHASE_LABEL: Record<Step['phase'], { label: string; color: string }> = {
-  'pre':          { label: 'Préparation',   color: 'text-gray-500 dark:text-gray-400' },
-  'en-seance':    { label: 'En séance',     color: 'text-amber-600 dark:text-amber-400' },
-  'post-seance':  { label: 'Après séance',  color: 'text-primary-600 dark:text-primary-400' },
+  'pre':          { label: 'Préparation',   color: 'var(--fg-3)' },
+  'en-seance':    { label: 'En séance',     color: 'var(--ds-warning)' },
+  'post-seance':  { label: 'Après séance',  color: 'var(--ds-primary)' },
 }
 
 interface Props {
@@ -39,15 +39,22 @@ export default function StepProgress({ currentStep, onStepClick }: Props) {
   const phaseLabel = currentStepData ? PHASE_LABEL[currentStepData.phase] : null
 
   return (
-    <div className="mb-6">
+    <div className="mb-6" style={{ fontFamily: 'var(--font-body)' }}>
       {/* Info phase courante */}
-      <div className="flex items-center mb-3 text-xs">
+      <div className="flex items-center mb-3" style={{ fontSize: 12 }}>
         <div className="flex items-center gap-2">
-          <span className="text-gray-500 dark:text-gray-400">Étape {currentStep}/{STEPS.length}</span>
+          <span style={{ color: 'var(--fg-3)' }}>Étape {currentStep}/{STEPS.length}</span>
           {phaseLabel && (
             <>
-              <span className="text-gray-300 dark:text-gray-700">•</span>
-              <span className={`font-semibold uppercase tracking-wider ${phaseLabel.color}`}>
+              <span style={{ color: 'var(--border-ds-strong)' }}>•</span>
+              <span
+                style={{
+                  fontWeight: 600,
+                  letterSpacing: '0.06em',
+                  textTransform: 'uppercase',
+                  color: phaseLabel.color,
+                }}
+              >
                 {phaseLabel.label}
               </span>
             </>
@@ -63,31 +70,54 @@ export default function StepProgress({ currentStep, onStepClick }: Props) {
           const isPast = isDone || isActive
           const isClickable = isDone && !!onStepClick
 
+          const buttonBg = isDone || isActive ? 'var(--ds-primary)' : 'var(--bg-surface-2)'
+          const buttonColor = isDone || isActive ? 'var(--fg-on-brand)' : 'var(--fg-3)'
+
           return (
             <div key={step.index} className="flex-1 flex items-center gap-1 sm:gap-2 min-w-0">
               <button
                 type="button"
                 onClick={() => isClickable && onStepClick!(step.index)}
                 disabled={!isClickable}
-                className={`relative shrink-0 flex items-center justify-center w-7 h-7 sm:w-8 sm:h-8 rounded-full text-xs font-bold transition-all duration-200 ${
-                  isDone
-                    ? 'bg-primary-600 text-white cursor-pointer hover:bg-primary-700 hover:scale-110'
-                    : isActive
-                    ? 'bg-primary-600 text-white ring-4 ring-primary-200 dark:ring-primary-900/50 animate-scale-in'
-                    : 'bg-gray-200 dark:bg-surface-dark-muted text-gray-500 dark:text-gray-500'
-                }`}
                 aria-label={`Étape ${step.index} : ${step.label}`}
+                className={isActive ? 'animate-scale-in' : ''}
+                style={{
+                  position: 'relative',
+                  flexShrink: 0,
+                  display: 'flex', alignItems: 'center', justifyContent: 'center',
+                  width: 32, height: 32,
+                  borderRadius: 999,
+                  fontSize: 12, fontWeight: 700,
+                  background: buttonBg,
+                  color: buttonColor,
+                  border: 0,
+                  cursor: isClickable ? 'pointer' : 'default',
+                  transition: 'all 200ms var(--ease-out)',
+                  boxShadow: isActive
+                    ? '0 0 0 4px var(--ds-primary-soft)'
+                    : 'none',
+                }}
               >
                 {isDone ? <Check size={14} /> : step.index}
               </button>
 
               {/* Connector (sauf dernier) */}
               {idx < STEPS.length - 1 && (
-                <div className="flex-1 h-1 rounded-full bg-gray-200 dark:bg-surface-dark-muted overflow-hidden">
+                <div
+                  className="flex-1 overflow-hidden"
+                  style={{
+                    height: 4,
+                    borderRadius: 999,
+                    background: 'var(--bg-surface-2)',
+                  }}
+                >
                   <div
-                    className={`h-full bg-primary-600 transition-all duration-500 ease-smooth ${
-                      isPast ? 'w-full' : 'w-0'
-                    }`}
+                    style={{
+                      height: '100%',
+                      background: 'var(--ds-primary)',
+                      width: isPast ? '100%' : 0,
+                      transition: 'width 500ms var(--ease-out)',
+                    }}
                   />
                 </div>
               )}
@@ -98,7 +128,10 @@ export default function StepProgress({ currentStep, onStepClick }: Props) {
 
       {/* Label étape courante (visible sur mobile seulement, desktop a son titre propre) */}
       {currentStepData && (
-        <p className="mt-3 text-sm font-medium text-gray-700 dark:text-gray-300 sm:hidden">
+        <p
+          className="mt-3 sm:hidden"
+          style={{ fontSize: 14, fontWeight: 500, color: 'var(--fg-2)' }}
+        >
           {currentStepData.label}
         </p>
       )}
