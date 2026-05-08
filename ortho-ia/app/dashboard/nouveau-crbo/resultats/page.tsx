@@ -422,7 +422,7 @@ export default function ResultatsPage() {
           <div>
             <h2 className="font-bold text-primary-700 dark:text-primary-400">Anamnèse reformulée</h2>
             <p className="text-xs text-gray-500 dark:text-gray-400 mt-0.5">
-              Texte généré par l&apos;IA depuis vos notes brutes. Vous pouvez l&apos;éditer librement avant la génération finale.
+              Texte rédigé automatiquement depuis vos notes brutes. Vous pouvez l&apos;éditer librement avant la génération finale.
             </p>
           </div>
           <MicButton
@@ -483,7 +483,7 @@ export default function ResultatsPage() {
         <div>
           <h2 className="text-lg font-bold text-gray-900 dark:text-gray-100">Détails par domaine</h2>
           <p className="text-sm text-gray-500 dark:text-gray-400 mt-1">
-            Notre IA a déjà rédigé une suggestion clinique sous chaque tableau. Validez-la, modifiez-la ou complétez-la avec vos propres observations (fatigue, anxiété, conditions de passation…). Vos ajouts seront automatiquement reformulés en prose professionnelle.
+            Une suggestion clinique est déjà rédigée sous chaque tableau. Validez-la, modifiez-la ou complétez-la avec vos propres observations (fatigue, anxiété, conditions de passation…). Vos ajouts seront automatiquement reformulés en prose professionnelle.
           </p>
         </div>
 
@@ -507,7 +507,7 @@ export default function ResultatsPage() {
                 <label className="flex items-center gap-1.5 text-sm font-medium text-gray-700 dark:text-gray-300">
                   <MessageSquare size={14} className="text-primary-600" />
                   Commentaire clinique du domaine
-                  <span className="text-xs font-normal text-gray-400">— pré-rempli par l&apos;IA, modifiable</span>
+                  <span className="text-xs font-normal text-gray-400">— pré-rempli automatiquement, modifiable</span>
                 </label>
                 <MicButton
                   value={orthoComments[d.nom] || ''}
@@ -535,7 +535,7 @@ export default function ResultatsPage() {
               Tout est bon ?
             </p>
             <p className="text-xs text-gray-500 dark:text-gray-400">
-              Notre IA va rédiger le diagnostic et les recommandations en s&apos;appuyant sur vos commentaires.
+              Le diagnostic et les recommandations vont être rédigés automatiquement en s&apos;appuyant sur vos commentaires.
             </p>
           </div>
           <button

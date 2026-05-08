@@ -77,7 +77,7 @@ export default function CRBOStructuredPreview({ structure, onDownload, onEdit, o
             Aperçu du CRBO
           </h3>
           <p className="text-xs text-gray-500 dark:text-gray-400 mt-0.5">
-            Structure générée par notre IA — téléchargez en Word pour l&apos;envoi final
+            Structure générée automatiquement — téléchargez en Word pour l&apos;envoi final
           </p>
         </div>
         <div className="flex items-center gap-2">

@@ -258,7 +258,7 @@ export async function POST(request: NextRequest) {
 
     if (!process.env.ANTHROPIC_API_KEY || process.env.ANTHROPIC_API_KEY.includes('VOTRE_CLE')) {
       return NextResponse.json(
-        { error: 'Service IA non configuré côté serveur. Veuillez contacter le support.' },
+        { error: 'Service de génération non configuré côté serveur. Veuillez contacter le support.' },
         { status: 500 },
       )
     }
@@ -437,7 +437,7 @@ export async function POST(request: NextRequest) {
 
     if (!toolUseBlock || toolUseBlock.name !== toolNameExpected) {
       return NextResponse.json(
-        { error: "Notre IA n'a pas renvoyé de structure CRBO exploitable." },
+        { error: "Aucune structure CRBO exploitable n'a été produite." },
         { status: 502 },
       )
     }

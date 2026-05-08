@@ -54,7 +54,7 @@ export default function PreviewInfographiesPage() {
             </div>
             <div className="bg-green-50 rounded-lg p-3 border border-green-100">
               <p className="font-semibold text-green-800">✓ Crédibilise la tech</p>
-              <p className="text-green-700 text-xs mt-1">Affiche notre IA, 47 subtests, vraies data</p>
+              <p className="text-green-700 text-xs mt-1">Affiche le moteur Ortho.ia, 47 subtests, vraies data</p>
             </div>
             <div className="bg-amber-50 rounded-lg p-3 border border-amber-100">
               <p className="font-semibold text-amber-800">⚠ Demande de lire</p>
@@ -74,7 +74,7 @@ export default function PreviewInfographiesPage() {
             <div>
               <h2 className="text-2xl font-bold text-gray-900">Avant / Après</h2>
               <p className="text-sm text-gray-500">
-                Split émotionnel : chaos manuel (45 min, stress) vs fluidité IA (15 sec, soirée libre).
+                Split émotionnel : chaos manuel (45 min, stress) vs fluidité automatique (15 sec, soirée libre).
               </p>
             </div>
           </div>

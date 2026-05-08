@@ -39,9 +39,9 @@ const poppins = Poppins({
 })
 
 export const metadata: Metadata = {
-  title: 'Ortho.ia - Génération de CRBO par IA',
-  description: 'Réduisez votre temps de rédaction de comptes rendus de bilan orthophonique grâce à l\'intelligence artificielle.',
-  keywords: 'orthophonie, CRBO, compte rendu, bilan orthophonique, IA, intelligence artificielle',
+  title: 'Ortho.ia — Génération automatique de CRBO',
+  description: 'Réduisez votre temps de rédaction de comptes rendus de bilan orthophonique grâce à la génération automatique.',
+  keywords: 'orthophonie, CRBO, compte rendu, bilan orthophonique',
   authors: [{ name: 'Ortho.ia' }],
   // Favicon = logo Ortho.ia (cercle sauge #3F5E52 + plume cream + pointe terracotta)
   icons: {
@@ -52,7 +52,7 @@ export const metadata: Metadata = {
     apple: '/favicon.svg',
   },
   openGraph: {
-    title: 'Ortho.ia - Génération de CRBO par IA',
+    title: 'Ortho.ia — Génération automatique de CRBO',
     description: 'Transformez vos notes et résultats de bilan en comptes rendus professionnels en quelques clics.',
     type: 'website',
   },

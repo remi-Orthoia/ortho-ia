@@ -1360,7 +1360,7 @@ function NouveauCRBOContent() {
               <p className="mt-1 text-sm text-gray-500">
                 {formData.bilan_type === 'renouvellement' && selectedPatientId
                   ? 'Notez ce qui a changé depuis le dernier bilan — les éléments stables sont déjà pré-remplis.'
-                  : "Entrez vos notes librement, l'IA les reformulera en prose professionnelle."}
+                  : 'Entrez vos notes librement, Ortho.ia les reformulera en prose professionnelle.'}
               </p>
             </div>
 
@@ -1409,8 +1409,8 @@ function NouveauCRBOContent() {
                           📄 Bilan initial précédent
                         </p>
                         <p style={{ fontSize: 13, color: 'var(--fg-2)', marginTop: 4, lineHeight: 1.5 }}>
-                          Importez le compte-rendu du bilan précédent (rédigé en dehors d&apos;ortho-ia)
-                          pour permettre à l&apos;IA d&apos;analyser les évolutions épreuve par épreuve.
+                          Importez le compte-rendu du bilan précédent pour nous permettre
+                          d&apos;analyser les évolutions.
                         </p>
                         <div className="mt-3 flex items-center gap-3 flex-wrap">
                           <label

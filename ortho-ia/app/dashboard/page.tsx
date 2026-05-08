@@ -428,7 +428,7 @@ export default function DashboardPage() {
                     <Link href="/dashboard/nouveau-crbo" className="text-green-700 font-semibold underline">
                       Créez votre premier CRBO
                     </Link>{' '}
-                    — 5 étapes guidées, import PDF automatique, génération IA en 20 sec.
+                    — 5 étapes guidées, import PDF automatique, génération en 20 sec.
                   </span>
                 </li>
               </ol>

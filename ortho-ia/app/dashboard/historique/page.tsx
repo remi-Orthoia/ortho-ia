@@ -171,7 +171,7 @@ export default function HistoriquePage() {
           <p className="mt-2 text-sm text-gray-500 dark:text-gray-400 max-w-md mx-auto">
             {searchTerm
               ? `Aucun résultat pour "${searchTerm}". Essayez un autre terme ou réinitialisez la recherche.`
-              : "Lancez votre premier bilan : import PDF de résultats, génération IA en ~20 secondes, export Word professionnel avec graphiques."}
+              : "Lancez votre premier bilan : import PDF de résultats, génération automatique en ~20 secondes, export Word professionnel avec graphiques."}
           </p>
           {!searchTerm && (
             <Link

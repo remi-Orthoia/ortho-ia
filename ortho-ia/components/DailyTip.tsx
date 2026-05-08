@@ -45,7 +45,7 @@ const TIPS: Tip[] = [
     maxCrbo: 4,
     text: (
       <>
-        Vous avez testé l&apos;<strong>import PDF</strong> ? Notre IA lit votre PDF
+        Vous avez testé l&apos;<strong>import PDF</strong> ? Ortho.ia lit votre PDF
         Exalang en 10 secondes et extrait tous les scores avec les bons percentiles.
       </>
     ),

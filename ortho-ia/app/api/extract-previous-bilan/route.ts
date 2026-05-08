@@ -239,7 +239,7 @@ export async function POST(request: NextRequest) {
     }
 
     if (!process.env.ANTHROPIC_API_KEY) {
-      return NextResponse.json({ error: 'Service IA non configuré.' }, { status: 500 })
+      return NextResponse.json({ error: 'Service de génération non configuré.' }, { status: 500 })
     }
 
     const anthropic = new Anthropic({ apiKey: process.env.ANTHROPIC_API_KEY })
@@ -332,7 +332,7 @@ export async function POST(request: NextRequest) {
     )
     if (!toolUseBlock || toolUseBlock.name !== 'extract_previous_bilan') {
       return NextResponse.json(
-        { error: "Notre IA n'a pas pu extraire la structure du bilan." },
+        { error: "Le bilan précédent n'a pas pu être structuré automatiquement." },
         { status: 502 },
       )
     }

@@ -66,14 +66,15 @@ export default function ConfidentialitePage() {
           </p>
         </Section>
 
-        <Section title="5. Anonymisation des données patient avant traitement IA">
+        <Section title="5. Anonymisation des données patient avant traitement automatique">
           <p>
             <strong>Garantie centrale d&apos;Ortho.ia :</strong> les données patient sont
-            systématiquement anonymisées avant tout traitement par notre modèle d&apos;intelligence
-            artificielle. <strong>Aucune donnée nominative n&apos;est transmise au modèle d&apos;IA.</strong>
+            systématiquement anonymisées avant tout traitement automatique de génération
+            de texte. <strong>Aucune donnée nominative n&apos;est transmise au système de
+            génération.</strong>
           </p>
           <p>
-            Concrètement, avant chaque appel à notre modèle, les identifiants réels (prénom et nom du
+            Concrètement, avant chaque traitement, les identifiants réels (prénom et nom du
             patient, prénom et nom du médecin prescripteur, coordonnées de l&apos;orthophoniste, ville et
             code postal du patient) sont remplacés à la volée par des identifiants techniques non
             signifiants (jetons aléatoires). Les valeurs réelles ne sont réintégrées qu&apos;après
@@ -84,8 +85,8 @@ export default function ConfidentialitePage() {
             <li><strong>Supabase</strong> (hébergement base de données, région UE) ;</li>
             <li><strong>Vercel</strong> (hébergement de l&apos;application, région UE) ;</li>
             <li>
-              Modèle d&apos;intelligence artificielle propriétaire entraîné pour l&apos;orthophonie
-              francophone, alimenté en données <em>anonymisées uniquement</em> ;
+              Système de génération de texte automatisé propriétaire, paramétré pour
+              l&apos;orthophonie francophone, alimenté en données <em>anonymisées uniquement</em> ;
             </li>
             <li><strong>Stripe</strong> (paiements, lorsque applicable).</li>
           </ul>

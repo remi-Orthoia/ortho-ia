@@ -83,7 +83,7 @@ export default function UpgradePage() {
               'CRBO illimités',
               'Tous les tests supportés (Exalang, Examath, BETL, MoCA, OMF…)',
               'Export Word professionnel avec graphiques',
-              'Import PDF automatique (vision IA)',
+              'Import PDF automatique',
               'Historique complet et Kanban',
               'Carnet patients et médecins',
               'Anonymisation RGPD automatique',

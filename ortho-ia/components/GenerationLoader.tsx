@@ -100,7 +100,7 @@ export default function GenerationLoader({ visible }: { visible: boolean }) {
           Génération en cours…
         </h2>
         <p style={{ marginTop: 6, fontSize: 14, color: 'var(--fg-2)', lineHeight: 1.55 }}>
-          Notre IA rédige votre CRBO. Comptez 30 à 150 secondes selon la richesse du bilan.
+          Ortho.ia rédige votre CRBO. Comptez 30 à 150 secondes selon la richesse du bilan.
         </p>
 
         {/* Étapes */}

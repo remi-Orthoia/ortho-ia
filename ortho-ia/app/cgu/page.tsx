@@ -47,26 +47,26 @@ export default function CGUPage() {
           <p>
             Ortho.ia est un service SaaS destiné aux orthophonistes diplômé·e·s exerçant en France.
             Il permet de rédiger, stocker et exporter des Comptes Rendus de Bilan Orthophonique (CRBO)
-            assistés par intelligence artificielle générative.
+            assistés par un système de génération de texte automatisé.
           </p>
         </Section>
 
-        <Section title="3. Utilisation de l'intelligence artificielle">
+        <Section title="3. Génération automatique des contenus">
           <p>
-            <strong>Génération par IA :</strong> Le Service utilise un modèle d&apos;intelligence
-            artificielle propriétaire entraîné pour l&apos;orthophonie francophone, afin de générer
-            automatiquement des brouillons de comptes-rendus à partir des informations saisies par
+            <strong>Rédaction automatique :</strong> Le Service utilise un système de génération de
+            texte automatisé propriétaire, paramétré pour l&apos;orthophonie francophone, afin de
+            produire des brouillons de comptes-rendus à partir des informations saisies par
             l&apos;utilisateur (anamnèse, résultats de tests, notes d&apos;analyse).
           </p>
           <p>
-            <strong>Anonymisation préalable :</strong> Avant tout traitement par notre modèle d&apos;IA,
+            <strong>Anonymisation préalable :</strong> Avant tout traitement automatique,
             les données nominatives (prénom et nom du patient, prénom et nom du médecin prescripteur,
             coordonnées de l&apos;orthophoniste) sont remplacées par des identifiants techniques non
-            signifiants. Aucune donnée nominative n&apos;est transmise au modèle. Les valeurs réelles
-            sont réintégrées uniquement côté serveur après réception de la réponse.
+            signifiants. Aucune donnée nominative n&apos;est transmise au système de génération.
+            Les valeurs réelles sont réintégrées uniquement côté serveur après réception de la réponse.
           </p>
           <p>
-            <strong>Responsabilité clinique :</strong> Les contenus générés par l&apos;IA constituent
+            <strong>Responsabilité clinique :</strong> Les contenus générés constituent
             exclusivement des <em>brouillons techniques</em>. L&apos;orthophoniste utilisateur·rice demeure
             <strong> seul·e responsable</strong> du diagnostic, de l&apos;interprétation clinique et du
             contenu final du compte-rendu transmis au patient ou au médecin prescripteur. Toute relecture
@@ -113,7 +113,7 @@ export default function CGUPage() {
             <li>Ne saisir que des informations strictement nécessaires à la rédaction du compte-rendu ;</li>
             <li>
               Obtenir le consentement éclairé du patient (ou de son représentant légal) pour
-              l&apos;utilisation d&apos;un outil d&apos;aide à la rédaction assistée par IA ;
+              l&apos;utilisation d&apos;un outil d&apos;aide à la rédaction automatique ;
             </li>
             <li>Relire intégralement chaque compte-rendu généré avant transmission ;</li>
             <li>
@@ -146,7 +146,7 @@ export default function CGUPage() {
           <p>
             Le Service est fourni &ldquo;en l&apos;état&rdquo;. L&apos;éditeur ne peut être tenu responsable
             des conséquences cliniques, administratives ou financières liées à l&apos;utilisation de
-            brouillons générés par IA sans relecture clinique de l&apos;orthophoniste.
+            brouillons générés automatiquement sans relecture clinique de l&apos;orthophoniste.
           </p>
         </Section>
 

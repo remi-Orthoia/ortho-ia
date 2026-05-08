@@ -133,7 +133,7 @@ export async function POST(request: NextRequest) {
     )
     if (!toolUseBlock || toolUseBlock.name !== 'extract_test_results') {
       return jsonCORS(
-        { error: "Notre IA n'a pas renvoyé de structure d'extraction exploitable." },
+        { error: "Aucune structure d'extraction exploitable n'a été produite." },
         { status: 502 },
       )
     }

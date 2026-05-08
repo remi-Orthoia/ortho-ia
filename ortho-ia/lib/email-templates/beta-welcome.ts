@@ -72,7 +72,7 @@ export function renderBetaWelcome({
         <ol>
           <li>Complétez votre <em>profil</em> (adresse, téléphone, email du cabinet) — il sera pré-rempli dans chaque CRBO.</li>
           <li>Ajoutez un patient au <em>Carnet</em> (ou directement en créant votre premier CRBO).</li>
-          <li>Créez votre premier CRBO : 5 étapes guidées, import PDF possible, génération IA en ~20 secondes.</li>
+          <li>Créez votre premier CRBO : 5 étapes guidées, import PDF possible, génération automatique en ~20 secondes.</li>
           <li>Téléchargez le Word, relisez, signez.</li>
         </ol>
       </div>
@@ -83,7 +83,7 @@ export function renderBetaWelcome({
 
       <p><strong>Ce que j'attends de vous :</strong> utilisez l'outil sur vos vrais bilans de la semaine, et dès que quelque chose vous surprend, freine ou ravit, dites-le moi. Le plus simple : bouton <strong>Feedback</strong> (pilule sage en bas à droite du dashboard), ou un simple mail à <a href="mailto:remi.berrio@gmail.com">remi.berrio@gmail.com</a>.</p>
 
-      <p>Les données patient sont <strong>anonymisées avant envoi à l'IA</strong>, et protégées par Row-Level Security sur la base. Pour le détail technique : <a href="${siteUrl}/confidentialite">notre politique de confidentialité</a>.</p>
+      <p>Les données patient sont <strong>anonymisées avant tout traitement automatique</strong>, et protégées par Row-Level Security sur la base. Pour le détail technique : <a href="${siteUrl}/confidentialite">notre politique de confidentialité</a>.</p>
 
       <p>Si vous rencontrez le moindre bug ou si vous avez une question, je réponds dans la journée.</p>
 
@@ -109,7 +109,7 @@ Votre compte est actif. Connectez-vous : ${loginUrl}
 EN 5 MINUTES POUR DÉMARRER
 1. Complétez votre profil (adresse, téléphone, email) — il sera pré-rempli dans chaque CRBO.
 2. Ajoutez un patient au Carnet.
-3. Créez votre premier CRBO : 5 étapes guidées, génération IA en ~20s.
+3. Créez votre premier CRBO : 5 étapes guidées, génération automatique en ~20s.
 4. Téléchargez le Word, relisez, signez.
 
 Vos 3 premiers mois sont offerts, sans engagement, sans carte bancaire.
@@ -119,7 +119,7 @@ Utilisez l'outil sur vos vrais bilans de la semaine, et dès que quelque chose v
 - Bouton Feedback (pilule sage en bas à droite du dashboard)
 - Ou email direct : remi.berrio@gmail.com
 
-Les données patient sont anonymisées avant envoi à l'IA, et protégées par Row-Level Security sur la base.
+Les données patient sont anonymisées avant tout traitement automatique, et protégées par Row-Level Security sur la base.
 
 À très vite,
 ${fromName}
