@@ -26,32 +26,39 @@ export function renderBetaWelcome({
 }: BetaWelcomeParams) {
   const subject = `Bienvenue dans la beta Ortho.ia, ${prenom} 🌿`
 
+  // Hex en dur (pas de var(--*) en email — pas supporté par les clients).
+  // Palette DS Stéphanie direction A : sage + cream.
+  //   #3F5E52 = brand-sage-600 (signature)   |   #2E4A41 = brand-sage-700 (hover)
+  //   #557366 = brand-sage-500               |   #A8BBB1 = brand-sage-300
+  //   #EEF2EE = brand-sage-50                |   #DDE6E0 = brand-sage-100 (border)
+  //   #FAF6EF = brand-cream (canvas)         |   #FFFDF8 = brand-paper (cards)
+  //   #1F2A2A = brand-sage-900 (fg-1)        |   #74807A = fg-3
   const html = `<!DOCTYPE html>
 <html lang="fr">
 <head>
   <meta charset="UTF-8">
   <title>${subject}</title>
   <style>
-    body { margin: 0; padding: 0; background: #f8fafc; font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif; color: #1f2937; line-height: 1.6; }
-    .container { max-width: 600px; margin: 0 auto; background: #fff; }
-    .header { background: linear-gradient(135deg, #22c55e 0%, #16a34a 100%); padding: 28px 32px; text-align: center; }
-    .logo { color: #fff; font-size: 20px; font-weight: 800; letter-spacing: -0.5px; }
+    body { margin: 0; padding: 0; background: #FAF6EF; font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Inter', sans-serif; color: #1F2A2A; line-height: 1.6; }
+    .container { max-width: 600px; margin: 0 auto; background: #FFFDF8; }
+    .header { background: linear-gradient(135deg, #557366 0%, #3F5E52 100%); padding: 28px 32px; text-align: center; }
+    .logo { color: #FAF6EF; font-size: 20px; font-weight: 700; letter-spacing: -0.5px; }
     .content { padding: 32px; }
-    h1 { margin: 0 0 16px; font-size: 24px; color: #111827; }
+    h1 { margin: 0 0 16px; font-size: 26px; font-weight: 500; letter-spacing: -0.01em; color: #1F2A2A; font-family: 'Fraunces', 'Source Serif 4', Georgia, serif; }
     p { margin: 0 0 14px; font-size: 15px; }
-    .cta { display: inline-block; background: #16a34a; color: #fff !important; padding: 12px 24px; border-radius: 8px; font-weight: 600; text-decoration: none; margin: 12px 0; }
-    .steps { background: #f0fdf4; border-left: 3px solid #22c55e; padding: 16px 20px; margin: 20px 0; border-radius: 6px; }
+    .cta { display: inline-block; background: #3F5E52; color: #FAF6EF !important; padding: 12px 24px; border-radius: 999px; font-weight: 500; text-decoration: none; margin: 12px 0; }
+    .steps { background: #EEF2EE; border-left: 3px solid #3F5E52; padding: 16px 20px; margin: 20px 0; border-radius: 8px; }
     .steps ol { margin: 0; padding-left: 18px; }
     .steps li { margin-bottom: 8px; font-size: 14px; }
-    .footer { padding: 20px 32px; background: #f8fafc; font-size: 12px; color: #6b7280; text-align: center; border-top: 1px solid #e5e7eb; }
-    .footer a { color: #16a34a; text-decoration: none; }
-    hr { border: none; border-top: 1px solid #e5e7eb; margin: 24px 0; }
+    .footer { padding: 20px 32px; background: #FAF6EF; font-size: 12px; color: #74807A; text-align: center; border-top: 1px solid #DDE6E0; }
+    .footer a { color: #2E4A41; text-decoration: none; }
+    hr { border: none; border-top: 1px solid #DDE6E0; margin: 24px 0; }
   </style>
 </head>
 <body>
   <div class="container">
     <div class="header">
-      <div class="logo">Ortho<span style="color:#a7f3d0">.ia</span></div>
+      <div class="logo">Ortho<span style="color:#A8BBB1">.ia</span></div>
     </div>
     <div class="content">
       <h1>Bienvenue ${prenom} 🌿</h1>
@@ -74,7 +81,7 @@ export function renderBetaWelcome({
 
       <hr>
 
-      <p><strong>Ce que j'attends de vous :</strong> utilisez l'outil sur vos vrais bilans de la semaine, et dès que quelque chose vous surprend, freine ou ravit, dites-le moi. Le plus simple : bouton <strong>Feedback</strong> (petit cercle vert en bas à droite du dashboard), ou un simple mail à <a href="mailto:remi.berrio@gmail.com">remi.berrio@gmail.com</a>.</p>
+      <p><strong>Ce que j'attends de vous :</strong> utilisez l'outil sur vos vrais bilans de la semaine, et dès que quelque chose vous surprend, freine ou ravit, dites-le moi. Le plus simple : bouton <strong>Feedback</strong> (pilule sage en bas à droite du dashboard), ou un simple mail à <a href="mailto:remi.berrio@gmail.com">remi.berrio@gmail.com</a>.</p>
 
       <p>Les données patient sont <strong>anonymisées avant envoi à l'IA</strong>, et protégées par Row-Level Security sur la base. Pour le détail technique : <a href="${siteUrl}/confidentialite">notre politique de confidentialité</a>.</p>
 
@@ -109,7 +116,7 @@ Vos 3 premiers mois sont offerts, sans engagement, sans carte bancaire.
 
 CE QUE J'ATTENDS DE VOUS
 Utilisez l'outil sur vos vrais bilans de la semaine, et dès que quelque chose vous surprend, freine ou ravit, dites-le moi.
-- Bouton Feedback (cercle vert en bas à droite du dashboard)
+- Bouton Feedback (pilule sage en bas à droite du dashboard)
 - Ou email direct : remi.berrio@gmail.com
 
 Les données patient sont anonymisées avant envoi à l'IA, et protégées par Row-Level Security sur la base.
