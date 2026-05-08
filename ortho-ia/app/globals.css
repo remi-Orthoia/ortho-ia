@@ -308,15 +308,20 @@ input:focus, textarea:focus, select:focus {
 }
 .animate-progress-grow { transform-origin: left; animation: progress-grow 20s linear forwards; }
 
-/* Shimmer effect pour barre de progression indéterminée */
+/* Shimmer effect pour barre de progression indéterminée — couleur DS */
 .shimmer-bg {
   background: linear-gradient(
     90deg,
-    rgba(22, 163, 74, 0.15) 0%,
-    rgba(22, 163, 74, 0.4) 50%,
-    rgba(22, 163, 74, 0.15) 100%
+    color-mix(in srgb, var(--ds-primary) 12%, transparent) 0%,
+    color-mix(in srgb, var(--ds-primary) 38%, transparent) 50%,
+    color-mix(in srgb, var(--ds-primary) 12%, transparent) 100%
   );
   background-size: 200% 100%;
+  animation: shimmer 1.6s linear infinite;
+}
+@keyframes shimmer {
+  0%   { background-position: 200% 0; }
+  100% { background-position: -200% 0; }
 }
 
 /* ==========================================================================

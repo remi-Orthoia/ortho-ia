@@ -31,11 +31,9 @@ export default function GenerationLoader({ visible }: { visible: boolean }) {
       setElapsed(0)
       return
     }
-    // Avance d'étape toutes les 5-7 secondes (visuel approximatif)
     const stepInterval = setInterval(() => {
       setStepIndex(prev => Math.min(prev + 1, STEPS.length - 1))
     }, 6_000)
-    // Compteur temps
     const timeInterval = setInterval(() => {
       setElapsed(prev => prev + 1)
     }, 1_000)
@@ -48,63 +46,115 @@ export default function GenerationLoader({ visible }: { visible: boolean }) {
   if (!visible) return null
 
   return (
-    <div className="fixed inset-0 z-50 bg-white/80 dark:bg-surface-dark/80 backdrop-blur-md flex items-center justify-center p-6 animate-fade-in">
-      <div className="max-w-md w-full card-lifted p-8 text-center">
-        {/* Icône animée */}
-        <div className="relative w-16 h-16 mx-auto">
-          <div className="absolute inset-0 rounded-full bg-primary-100 dark:bg-primary-900/40 animate-ping opacity-75" />
-          <div className="relative w-16 h-16 rounded-full bg-gradient-to-br from-primary-500 to-primary-700 flex items-center justify-center shadow-lg">
-            <Sparkles className="text-white animate-sparkle" size={28} />
+    <div
+      className="animate-fade-in"
+      style={{
+        position: 'fixed', inset: 0, zIndex: 50,
+        background: 'color-mix(in srgb, var(--bg-canvas) 82%, transparent)',
+        backdropFilter: 'blur(12px)',
+        display: 'flex', alignItems: 'center', justifyContent: 'center',
+        padding: 24,
+        fontFamily: 'var(--font-body)',
+      }}
+    >
+      <div
+        style={{
+          maxWidth: 460, width: '100%',
+          background: 'var(--bg-surface)',
+          border: '1px solid var(--border-ds)',
+          borderRadius: 'var(--radius-lg)',
+          padding: 32,
+          boxShadow: 'var(--shadow-lg)',
+          textAlign: 'center',
+        }}
+      >
+        {/* Icône animée — halo + disque sage */}
+        <div style={{ position: 'relative', width: 64, height: 64, margin: '0 auto' }}>
+          <div
+            className="animate-ping"
+            style={{
+              position: 'absolute', inset: 0, borderRadius: 999,
+              background: 'var(--ds-primary-soft)', opacity: 0.75,
+            }}
+          />
+          <div
+            style={{
+              position: 'relative', width: 64, height: 64, borderRadius: 999,
+              background: `linear-gradient(135deg, var(--ds-primary) 0%, var(--brand-sage-700, var(--ds-primary-hover)) 100%)`,
+              display: 'flex', alignItems: 'center', justifyContent: 'center',
+              boxShadow: 'var(--shadow-md)',
+            }}
+          >
+            <Sparkles className="animate-sparkle" size={28} style={{ color: 'var(--fg-on-brand)' }} />
           </div>
         </div>
 
-        <h2 className="mt-6 text-xl font-bold text-gray-900 dark:text-gray-100">
+        <h2
+          style={{
+            marginTop: 24,
+            fontFamily: 'var(--font-display)',
+            fontSize: 22, fontWeight: 500, letterSpacing: '-0.01em',
+            color: 'var(--fg-1)',
+          }}
+        >
           Génération en cours…
         </h2>
-        <p className="mt-1.5 text-sm text-gray-500 dark:text-gray-400">
+        <p style={{ marginTop: 6, fontSize: 14, color: 'var(--fg-2)', lineHeight: 1.55 }}>
           Notre IA rédige votre CRBO. Comptez 30 à 150 secondes selon la richesse du bilan.
         </p>
 
         {/* Étapes */}
-        <div className="mt-6 space-y-2.5 text-left">
+        <div style={{ marginTop: 24, display: 'flex', flexDirection: 'column', gap: 10, textAlign: 'left' }}>
           {STEPS.map((step, idx) => {
             const Icon = step.icon
             const done = idx < stepIndex
             const active = idx === stepIndex
+            const labelColor = done || active ? 'var(--fg-1)' : 'var(--fg-3)'
+            const detailColor = done || active ? 'var(--fg-2)' : 'var(--fg-3)'
             return (
               <div
                 key={idx}
-                className={`flex items-start gap-3 p-2.5 rounded-lg transition-all duration-300 ${
-                  active ? 'bg-primary-50 dark:bg-primary-900/20' : ''
-                }`}
+                style={{
+                  display: 'flex', alignItems: 'flex-start', gap: 12,
+                  padding: 10,
+                  borderRadius: 'var(--radius-md)',
+                  background: active ? 'var(--ds-primary-soft)' : 'transparent',
+                  transition: 'background var(--duration) var(--ease-out)',
+                }}
               >
                 <div
-                  className={`shrink-0 w-8 h-8 rounded-full flex items-center justify-center transition-all duration-300 ${
-                    done
-                      ? 'bg-primary-600 text-white'
+                  style={{
+                    flexShrink: 0,
+                    width: 32, height: 32, borderRadius: 999,
+                    display: 'flex', alignItems: 'center', justifyContent: 'center',
+                    background: done
+                      ? 'var(--ds-primary)'
                       : active
-                      ? 'bg-primary-100 dark:bg-primary-900/50 text-primary-700 dark:text-primary-300 ring-2 ring-primary-300 dark:ring-primary-700'
-                      : 'bg-gray-100 dark:bg-surface-dark-muted text-gray-400 dark:text-gray-600'
-                  }`}
+                      ? 'var(--ds-primary-soft)'
+                      : 'var(--bg-surface-2)',
+                    color: done
+                      ? 'var(--fg-on-brand)'
+                      : active
+                      ? 'var(--ds-primary-hover)'
+                      : 'var(--fg-3)',
+                    boxShadow: active ? '0 0 0 2px color-mix(in srgb, var(--ds-primary) 40%, transparent)' : 'none',
+                    transition: 'all var(--duration) var(--ease-out)',
+                  }}
                 >
                   {done ? <CheckCircle2 size={16} /> : <Icon size={14} />}
                 </div>
-                <div className="flex-1 min-w-0">
-                  <p className={`text-sm font-medium transition-colors ${
-                    done || active ? 'text-gray-900 dark:text-gray-100' : 'text-gray-400 dark:text-gray-600'
-                  }`}>
+                <div style={{ flex: 1, minWidth: 0 }}>
+                  <p style={{ fontSize: 14, fontWeight: 500, color: labelColor, transition: 'color var(--duration)' }}>
                     {step.label}
                     {active && (
-                      <span className="inline-flex items-center ml-2 gap-0.5">
-                        <span className="w-1 h-1 rounded-full bg-primary-600 animate-dot-1" />
-                        <span className="w-1 h-1 rounded-full bg-primary-600 animate-dot-2" />
-                        <span className="w-1 h-1 rounded-full bg-primary-600 animate-dot-3" />
+                      <span style={{ display: 'inline-flex', alignItems: 'center', marginLeft: 8, gap: 2 }}>
+                        <span className="animate-dot-1" style={{ width: 4, height: 4, borderRadius: 999, background: 'var(--ds-primary)' }} />
+                        <span className="animate-dot-2" style={{ width: 4, height: 4, borderRadius: 999, background: 'var(--ds-primary)' }} />
+                        <span className="animate-dot-3" style={{ width: 4, height: 4, borderRadius: 999, background: 'var(--ds-primary)' }} />
                       </span>
                     )}
                   </p>
-                  <p className={`text-xs transition-colors ${
-                    done || active ? 'text-gray-600 dark:text-gray-400' : 'text-gray-400 dark:text-gray-600'
-                  }`}>
+                  <p style={{ fontSize: 12, color: detailColor, transition: 'color var(--duration)' }}>
                     {step.detail}
                   </p>
                 </div>
@@ -114,10 +164,23 @@ export default function GenerationLoader({ visible }: { visible: boolean }) {
         </div>
 
         {/* Barre de progression shimmer */}
-        <div className="mt-6 h-1 rounded-full bg-gray-100 dark:bg-surface-dark-muted overflow-hidden">
-          <div className="h-full shimmer-bg animate-shimmer bg-[length:200%_100%]" />
+        <div
+          style={{
+            marginTop: 24, height: 4, borderRadius: 999,
+            background: 'var(--bg-surface-2)',
+            overflow: 'hidden',
+          }}
+        >
+          <div
+            className="shimmer-bg"
+            style={{
+              height: '100%', width: '100%',
+              backgroundSize: '200% 100%',
+              animation: 'shimmer 1.6s linear infinite',
+            }}
+          />
         </div>
-        <p className="mt-2 text-xs text-gray-400 dark:text-gray-600">
+        <p style={{ marginTop: 8, fontSize: 12, color: 'var(--fg-3)' }}>
           {elapsed}s écoulées · données anonymisées avant envoi
         </p>
       </div>
