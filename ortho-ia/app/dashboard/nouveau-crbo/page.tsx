@@ -601,15 +601,26 @@ function NouveauCRBOContent() {
     }
   }
 
-  // Extraction des résultats PDF avec Claude Vision
+  // Extraction des résultats PDF avec Claude Vision (multi-fichiers).
+  // L'utilisateur peut sélectionner jusqu'à 3 PDFs / images en une fois ; chaque
+  // document est envoyé séparément à Claude Vision côté API et les résultats
+  // sont consolidés en un seul JSON. Cas d'usage typique : page 1 + page 2 d'une
+  // feuille de résultats HappyNeuron (Exalang) qu'il faut traiter ensemble.
   const handleExtractPDF = async (e: React.ChangeEvent<HTMLInputElement>) => {
-    const file = e.target.files?.[0]
-    if (!file) return
+    const files = Array.from(e.target.files ?? [])
+    if (files.length === 0) return
 
-    // Vérifier le type de fichier
-    if (!file.type.includes('pdf') && !file.type.includes('image')) {
-      setError('Format non supporté. Utilisez un PDF ou une image (PNG, JPG).')
+    if (files.length > 3) {
+      setError('Maximum 3 fichiers à la fois.')
+      e.target.value = ''
       return
+    }
+    for (const f of files) {
+      if (!f.type.includes('pdf') && !f.type.includes('image')) {
+        setError(`Format non supporté pour "${f.name}". Utilisez un PDF ou une image (PNG, JPG).`)
+        e.target.value = ''
+        return
+      }
     }
 
     setExtracting(true)
@@ -618,7 +629,12 @@ function NouveauCRBOContent() {
 
     try {
       const formDataUpload = new FormData()
-      formDataUpload.append('file', file)
+      // L'ordre d'upload détermine la priorité en cas de doublons d'épreuves :
+      // le DERNIER fichier l'emporte (= "PDF le plus récent"). L'utilisateur
+      // est libre de réordonner les sélections dans son OS.
+      for (const f of files) {
+        formDataUpload.append('files', f)
+      }
 
       const response = await fetch('/api/extract-pdf', {
         method: 'POST',
@@ -638,17 +654,19 @@ function NouveauCRBOContent() {
         ...prev,
         resultats_manuels: data.resultats,
       }))
+      const nbFiles = data.filesProcessed ?? files.length
+      const filesLabel = nbFiles > 1 ? `${nbFiles} fichiers importés` : 'PDF importé'
       setNotice(
         data.detectedTest
-          ? `PDF importé. Test détecté : "${data.detectedTest}" — cochez-le manuellement ci-dessus si vous souhaitez l'inclure.`
-          : 'PDF importé. Pensez à cocher le test correspondant dans la liste.'
+          ? `${filesLabel}. Test détecté : "${data.detectedTest}" — cochez-le manuellement ci-dessus si vous souhaitez l'inclure.`
+          : `${filesLabel}. Pensez à cocher le test correspondant dans la liste.`
       )
 
     } catch (err) {
       setError(err instanceof Error ? err.message : 'Erreur lors de l\'extraction')
     } finally {
       setExtracting(false)
-      // Reset l'input pour permettre de réimporter le même fichier
+      // Reset l'input pour permettre de réimporter les mêmes fichiers
       e.target.value = ''
     }
   }
@@ -1851,12 +1869,13 @@ function NouveauCRBOContent() {
                   <input
                     type="file"
                     accept=".pdf,image/*"
+                    multiple
                     onChange={handleExtractPDF}
                     disabled={extracting}
                     className="hidden"
                   />
                 </label>
-                <span className="ml-3 text-xs text-gray-400">PDF ou image (Exalang, EVALO, ELO...)</span>
+                <span className="ml-3 text-xs text-gray-400">Jusqu'à 3 PDFs / images (Exalang, EVALO, ELO...) — multi-page : sélectionnez page 1 + page 2</span>
               </div>
 
               {/* Message d'erreur */}
