@@ -168,10 +168,15 @@ export async function POST(request: NextRequest) {
     const abortController = new AbortController()
     const timeoutId = setTimeout(() => abortController.abort(), 75_000)
 
+    // Streaming OBLIGATOIRE : avec max_tokens > ~21k le SDK refuse l'appel
+    // non-streamé ("Streaming is strongly recommended for operations that
+    // may take longer than 10 minutes"). On utilise messages.stream().finalMessage()
+    // qui rend la même structure qu'un create() classique mais consomme le
+    // flux SSE en arrière-plan.
     let message
     try {
       message = await withRetry(
-        () => anthropic.messages.create(
+        () => anthropic.messages.stream(
           {
             model: 'claude-sonnet-4-6',
             // 32k pour absorber un Exalang 8-11 / 11-15 complet (30-40 épreuves
@@ -184,7 +189,7 @@ export async function POST(request: NextRequest) {
             messages: [{ role: 'user', content }],
           },
           { signal: abortController.signal },
-        ),
+        ).finalMessage(),
         {
           maxAttempts: 2,
           initialDelayMs: 1500,
