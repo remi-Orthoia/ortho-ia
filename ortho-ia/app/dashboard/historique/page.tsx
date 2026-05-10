@@ -3,13 +3,19 @@
 import { useState, useEffect } from 'react'
 import Link from 'next/link'
 import { createClient } from '@/lib/supabase'
-import { FileText, Download, Trash2, Search, Calendar } from 'lucide-react'
+import { FileText, Download, Trash2, Search, Calendar, Loader2 } from 'lucide-react'
+import { useToast } from '@/components/Toast'
 
 export default function HistoriquePage() {
+  const toast = useToast()
   const [crbos, setCrbos] = useState<any[]>([])
   const [profile, setProfile] = useState<any>(null)
   const [loading, setLoading] = useState(true)
   const [searchTerm, setSearchTerm] = useState('')
+  // Map CRBO ID → true si un download Word est en cours pour cette ligne.
+  // Évite : (1) les double-clics qui lancent 2 downloads, (2) ortho qui ne sait
+  // pas si elle a cliqué (la génération Word peut prendre 1-3s sur gros CRBOs).
+  const [downloading, setDownloading] = useState<Record<string, boolean>>({})
 
   useEffect(() => {
     const fetchCRBOs = async () => {
@@ -46,7 +52,7 @@ export default function HistoriquePage() {
     // CRBO disparaître alors qu'il existe encore en base).
     const { data: { user } } = await supabase.auth.getUser()
     if (!user) {
-      alert('Session expirée — reconnectez-vous.')
+      toast.error('Session expirée — reconnectez-vous.')
       return
     }
     const { data: deleted, error } = await supabase
@@ -58,13 +64,17 @@ export default function HistoriquePage() {
 
     if (error || !deleted || deleted.length === 0) {
       console.error('Erreur suppression CRBO:', error)
-      alert("La suppression n'a pas pu être enregistrée. Réessayez.")
+      toast.error("La suppression n'a pas pu être enregistrée. Réessayez.")
       return
     }
     setCrbos(crbos.filter(c => c.id !== id))
+    toast.success('CRBO supprimé.')
   }
 
   const handleDownload = async (crbo: any) => {
+    // Anti double-clic + feedback visuel pendant la génération du Word.
+    if (downloading[crbo.id]) return
+    setDownloading(prev => ({ ...prev, [crbo.id]: true }))
     try {
       const { downloadCRBOWord } = await import('@/lib/word-export')
       // Si c'est un renouvellement avec un bilan précédent lié, on charge sa structure
@@ -127,7 +137,12 @@ export default function HistoriquePage() {
       }
     } catch (err) {
       console.error('Erreur export Word historique:', err)
-      alert("Erreur lors de la génération du document Word. Réessayez ou contactez le support.")
+      toast.error("Erreur lors de la génération du document Word. Réessayez ou contactez le support.")
+    } finally {
+      setDownloading(prev => {
+        const { [crbo.id]: _, ...rest } = prev
+        return rest
+      })
     }
   }
 
@@ -234,7 +249,7 @@ export default function HistoriquePage() {
                       <div className="flex items-center">
                         <div className="w-10 h-10 bg-green-100 rounded-full flex items-center justify-center">
                           <span className="text-green-600 font-semibold">
-                            {crbo.patient_prenom[0]}{crbo.patient_nom[0]}
+                            {(crbo.patient_prenom?.[0] || '?').toUpperCase()}{(crbo.patient_nom?.[0] || '').toUpperCase()}
                           </span>
                         </div>
                         <div className="ml-4">
@@ -242,7 +257,7 @@ export default function HistoriquePage() {
                             {crbo.patient_prenom} {crbo.patient_nom}
                           </div>
                           <div className="text-sm text-gray-500">
-                            {crbo.patient_classe}
+                            {crbo.patient_classe || '—'}
                           </div>
                         </div>
                       </div>
@@ -269,10 +284,14 @@ export default function HistoriquePage() {
                       <div className="flex items-center justify-end gap-2">
                         <button
                           onClick={() => handleDownload(crbo)}
-                          className="p-2 text-gray-400 hover:text-green-600 transition"
-                          title="Télécharger"
+                          disabled={!!downloading[crbo.id]}
+                          className="p-2 text-gray-400 hover:text-green-600 transition disabled:opacity-50 disabled:cursor-wait"
+                          title={downloading[crbo.id] ? 'Génération en cours…' : 'Télécharger'}
+                          aria-label={downloading[crbo.id] ? 'Génération du Word en cours' : 'Télécharger le CRBO'}
                         >
-                          <Download size={18} />
+                          {downloading[crbo.id]
+                            ? <Loader2 size={18} className="animate-spin" />
+                            : <Download size={18} />}
                         </button>
                         <button
                           onClick={() => handleDelete(crbo.id)}

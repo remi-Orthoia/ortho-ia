@@ -13,6 +13,7 @@ import ConfettiBurst from '@/components/ConfettiBurst'
 import CRBOStructuredPreview from '@/components/CRBOStructuredPreview'
 import ShareCRBOButton from '@/components/ShareCRBOButton'
 import MicButton from '@/components/MicButton'
+import { useToast } from '@/components/Toast'
 import { playSuccessSound } from '@/lib/success-sound'
 import { 
   ChevronRight, 
@@ -102,6 +103,7 @@ function StepPhaseBadge({ step }: { step: number }) {
 function NouveauCRBOContent() {
   const router = useRouter()
   const searchParams = useSearchParams()
+  const toast = useToast()
   const [currentStep, setCurrentStep] = useState(1)
   const [loading, setLoading] = useState(false)
   const [generating, setGenerating] = useState(false)
@@ -319,7 +321,7 @@ function NouveauCRBOContent() {
 
   const handleSaveDraft = () => {
     if (persistDraft()) {
-      alert('Brouillon sauvegardé. Vous pourrez le reprendre à votre prochaine connexion.')
+      toast.success('Brouillon sauvegardé. Vous pourrez le reprendre à votre prochaine connexion.')
       router.push('/dashboard')
     } else {
       setError("Impossible de sauvegarder le brouillon localement.")

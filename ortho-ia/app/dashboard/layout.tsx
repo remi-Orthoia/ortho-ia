@@ -20,6 +20,7 @@ import ThemeToggle from '@/components/ThemeToggle'
 import FeedbackButton from '@/components/FeedbackButton'
 import { Sidebar, AppHeader, type SidebarItem } from '@/components/layout'
 import { Logo } from '@/components/ui'
+import { ToastProvider } from '@/components/Toast'
 
 interface DashboardLayoutProps {
   children: ReactNode
@@ -199,6 +200,7 @@ export default function DashboardLayout({ children }: DashboardLayoutProps) {
   )
 
   return (
+    <ToastProvider>
     <div style={{
       minHeight: '100vh', background: 'var(--bg-canvas)', color: 'var(--fg-1)',
       fontFamily: 'var(--font-body)',
@@ -272,6 +274,7 @@ export default function DashboardLayout({ children }: DashboardLayoutProps) {
       </div>
 
     </div>
+    </ToastProvider>
   )
 }
 

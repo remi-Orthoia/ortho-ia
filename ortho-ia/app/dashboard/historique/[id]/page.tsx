@@ -19,6 +19,7 @@ import {
   Sparkles
 } from 'lucide-react'
 import CRBOStructuredPreview from '@/components/CRBOStructuredPreview'
+import { useToast } from '@/components/Toast'
 
 interface CRBO {
   id: string
@@ -60,11 +61,14 @@ const statusConfig = {
 export default function CRBODetailPage() {
   const params = useParams()
   const router = useRouter()
+  const toast = useToast()
   const [crbo, setCrbo] = useState<CRBO | null>(null)
   const [profile, setProfile] = useState<any>(null)
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState('')
   const [showPreviewModal, setShowPreviewModal] = useState(false)
+  const [downloading, setDownloading] = useState(false)
+  const [deleting, setDeleting] = useState(false)
 
   useEffect(() => {
     const fetchCRBO = async () => {
@@ -100,7 +104,8 @@ export default function CRBODetailPage() {
   }, [params.id, router])
 
   const handleDownload = async () => {
-    if (!crbo) return
+    if (!crbo || downloading) return
+    setDownloading(true)
     try {
       const { downloadCRBOWord } = await import('@/lib/word-export')
 
@@ -164,15 +169,39 @@ export default function CRBODetailPage() {
       }
     } catch (err) {
       console.error('Erreur export Word:', err)
-      alert('Erreur lors de la génération du document Word.')
+      toast.error('Erreur lors de la génération du document Word.')
+    } finally {
+      setDownloading(false)
     }
   }
 
   const handleDelete = async () => {
-    if (!crbo || !confirm('Supprimer ce CRBO ? Cette action est irréversible.')) return
+    if (!crbo || deleting || !confirm('Supprimer ce CRBO ? Cette action est irréversible.')) return
 
+    setDeleting(true)
     const supabase = createClient()
-    await supabase.from('crbos').delete().eq('id', crbo.id)
+    // user_id explicite + .select() pour confirmer la suppression effective.
+    // Sinon une session expirée nous redirigeait vers /historique alors que
+    // le CRBO existait toujours en base — ortho cherche la cause.
+    const { data: { user } } = await supabase.auth.getUser()
+    if (!user) {
+      setDeleting(false)
+      toast.error('Session expirée — reconnectez-vous.')
+      return
+    }
+    const { data: deleted, error } = await supabase
+      .from('crbos')
+      .delete()
+      .eq('id', crbo.id)
+      .eq('user_id', user.id)
+      .select('id')
+    setDeleting(false)
+    if (error || !deleted || deleted.length === 0) {
+      console.error('Erreur suppression CRBO:', error)
+      toast.error("La suppression n'a pas pu être enregistrée. Réessayez.")
+      return
+    }
+    toast.success('CRBO supprimé.')
     router.push('/dashboard/historique')
   }
 
@@ -246,17 +275,20 @@ export default function CRBODetailPage() {
         <div className="flex items-center gap-2">
           <button
             onClick={handleDownload}
-            className="inline-flex items-center gap-2 px-4 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700 transition"
+            disabled={downloading}
+            className="inline-flex items-center gap-2 px-4 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700 transition disabled:opacity-60 disabled:cursor-wait"
           >
-            <Download size={18} />
-            Télécharger
+            {downloading
+              ? <><Loader2 size={18} className="animate-spin" />Génération…</>
+              : <><Download size={18} />Télécharger</>}
           </button>
           <button
             onClick={handleDelete}
-            className="p-2 text-red-600 hover:bg-red-50 rounded-lg transition"
+            disabled={deleting}
+            className="p-2 text-red-600 hover:bg-red-50 rounded-lg transition disabled:opacity-50 disabled:cursor-wait"
             title="Supprimer"
           >
-            <Trash2 size={20} />
+            {deleting ? <Loader2 size={20} className="animate-spin" /> : <Trash2 size={20} />}
           </button>
         </div>
       </div>

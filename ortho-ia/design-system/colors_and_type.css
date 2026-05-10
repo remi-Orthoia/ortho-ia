@@ -1,0 +1,371 @@
+/* ==========================================================================
+   Ortho.ia — Design Tokens
+   Two visual directions in one file. Switch with [data-direction="A"|"B"]
+   on <html> or any container. Default = A.
+   ========================================================================== */
+
+/* ---------- Webfonts ----------
+   Fraunces, Inter Tight, Inter, Manrope (substitute for "General Sans").
+   NOTE: General Sans is a paid Indian Type Foundry face; Manrope is the
+   closest free geometric-rounded sans on Google Fonts. Swap font files in
+   /fonts and update --font-display-b if you ship General Sans for real.
+*/
+@import url('https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,400;9..144,500;9..144,600;9..144,700&family=Inter+Tight:wght@400;500;600;700&family=Inter:wght@400;500;600;700&family=Manrope:wght@400;500;600;700&family=Poppins:wght@400;500;600;700&display=swap');
+
+/* ==========================================================================
+   COLOR — Direction A : Cabinet lumineux
+   Crème + encre + sauge + terracotta. Posé, papier, éditorial.
+   ========================================================================== */
+:root,
+[data-direction="A"] {
+  /* Brand */
+  --brand-sage-900: #1F2A2A;
+  --brand-sage-700: #2E4A41;
+  --brand-sage-600: #3F5E52;   /* signature */
+  --brand-sage-500: #557366;
+  --brand-sage-300: #A8BBB1;
+  --brand-sage-100: #DDE6E0;
+  --brand-sage-50:  #EEF2EE;
+
+  --brand-terracotta-700: #A55A3F;
+  --brand-terracotta-600: #C97B5E;  /* accent */
+  --brand-terracotta-300: #E8B49E;
+  --brand-terracotta-100: #F5D9CB;
+
+  --brand-sand-300: #D5C5A1;
+  --brand-sand-200: #E8DCC4;        /* secondary surface */
+  --brand-sand-100: #F2EAD8;
+
+  --brand-cream: #FAF6EF;           /* canvas */
+  --brand-paper: #FFFDF8;           /* cards */
+
+  /* Semantic */
+  --bg-canvas: var(--brand-cream);
+  --bg-surface: var(--brand-paper);
+  --bg-surface-2: var(--brand-sand-100);
+  --bg-inverse: var(--brand-sage-900);
+
+  --fg-1: var(--brand-sage-900);    /* primary text */
+  --fg-2: #4A554F;                  /* secondary text */
+  --fg-3: #74807A;                  /* muted */
+  --fg-on-brand: #FAF6EF;
+  --fg-link: var(--brand-sage-700);
+
+  --border: rgba(31, 42, 42, 0.10);
+  --border-strong: rgba(31, 42, 42, 0.20);
+
+  --accent: var(--brand-terracotta-600);
+  --accent-hover: var(--brand-terracotta-700);
+  --accent-soft: var(--brand-terracotta-100);
+
+  --primary: var(--brand-sage-600);
+  --primary-hover: var(--brand-sage-700);
+  --primary-soft: var(--brand-sage-100);
+
+  /* Status */
+  --success: #4F7A5A;
+  --success-soft: #DDEAD8;
+  --warning: #C68E2E;
+  --warning-soft: #F4E5C2;
+  --danger:  #B7503D;
+  --danger-soft: #F2D6CD;
+  --info: var(--brand-sage-600);
+  --info-soft: var(--brand-sage-50);
+
+  /* Type families */
+  --font-display: "Fraunces", "Source Serif 4", Georgia, serif;
+  --font-body:    "Inter Tight", "Inter", system-ui, sans-serif;
+  --font-mono:    "JetBrains Mono", ui-monospace, "SF Mono", Menlo, monospace;
+}
+
+/* ==========================================================================
+   COLOR — Direction B : Souffle
+   Blanc + bleu encre + jaune sable + vert d'eau. Air, modernité, calme.
+   ========================================================================== */
+[data-direction="B"] {
+  --brand-ink-900: #0E2440;
+  --brand-ink-700: #16365C;        /* signature */
+  --brand-ink-600: #244C7A;
+  --brand-ink-500: #3D6B9C;
+  --brand-ink-300: #94B3D2;
+  --brand-ink-100: #D8E4F1;
+  --brand-ink-50:  #EBF1F8;
+
+  --brand-amber-700: #C99647;
+  --brand-amber-600: #E0AE57;
+  --brand-amber-500: #F4C26B;       /* accent */
+  --brand-amber-300: #F8DAA1;
+  --brand-amber-100: #FBEED1;
+
+  --brand-aqua-300: #9FCBBE;
+  --brand-aqua-200: #CDE4DC;        /* secondary surface */
+  --brand-aqua-100: #E3F0EB;
+
+  --brand-off-white: #FBFAF7;       /* canvas */
+  --brand-pure-white: #FFFFFF;      /* cards */
+
+  --bg-canvas: var(--brand-off-white);
+  --bg-surface: var(--brand-pure-white);
+  --bg-surface-2: var(--brand-aqua-100);
+  --bg-inverse: var(--brand-ink-900);
+
+  --fg-1: var(--brand-ink-900);
+  --fg-2: #3A4A60;
+  --fg-3: #6B7A8E;
+  --fg-on-brand: #FBFAF7;
+  --fg-link: var(--brand-ink-700);
+
+  --border: rgba(14, 36, 64, 0.10);
+  --border-strong: rgba(14, 36, 64, 0.20);
+
+  --accent: var(--brand-amber-500);
+  --accent-hover: var(--brand-amber-600);
+  --accent-soft: var(--brand-amber-100);
+
+  --primary: var(--brand-ink-700);
+  --primary-hover: var(--brand-ink-900);
+  --primary-soft: var(--brand-ink-50);
+
+  --success: #2F7D6B;
+  --success-soft: #D6EAE3;
+  --warning: #C69036;
+  --warning-soft: #FBEED1;
+  --danger:  #B04B4B;
+  --danger-soft: #F2D9D9;
+  --info: var(--brand-ink-700);
+  --info-soft: var(--brand-ink-50);
+
+  --font-display: "Manrope", "General Sans", system-ui, sans-serif;
+  --font-body:    "Inter", system-ui, sans-serif;
+  --font-mono:    "JetBrains Mono", ui-monospace, "SF Mono", Menlo, monospace;
+}
+
+/* ==========================================================================
+   COLOR — Direction C : Clarté turquoise (V2)
+   Turquoise apaisant + indigo confiance + corail doux. Frais, féminin sans
+   stéréotype, accrocheur tout en restant professionnel.
+   ========================================================================== */
+[data-direction="C"] {
+  --brand-turq-900: #006A66;
+  --brand-turq-700: #009189;
+  --brand-turq-600: #00B2A9;       /* signature */
+  --brand-turq-500: #34CFC4;
+  --brand-turq-300: #8FE3DC;
+  --brand-turq-100: #CDF1ED;
+  --brand-turq-50:  #E6F8F6;
+
+  --brand-indigo-900: #15275C;
+  --brand-indigo-700: #1E3A8A;     /* secondary */
+  --brand-indigo-500: #4A6BB8;
+  --brand-indigo-300: #A8B7DC;
+  --brand-indigo-100: #DDE3F2;
+
+  --brand-coral-700: #D86250;
+  --brand-coral-500: #FF7F6E;       /* accent énergie */
+  --brand-coral-300: #FFB3A6;
+  --brand-coral-100: #FFE0D9;
+
+  --brand-mint-300: #A8E6CF;
+  --brand-mint-100: #DDF4E8;
+
+  --brand-cream: #FBF9F4;          /* canvas — beige très clair */
+  --brand-paper: #FFFFFF;
+
+  --bg-canvas: var(--brand-cream);
+  --bg-surface: var(--brand-paper);
+  --bg-surface-2: var(--brand-turq-50);
+  --bg-inverse: var(--brand-indigo-900);
+
+  --fg-1: #14213D;
+  --fg-2: #4A5568;
+  --fg-3: #7A8699;
+  --fg-on-brand: #FBF9F4;
+  --fg-link: var(--brand-turq-700);
+
+  --border: rgba(20, 33, 61, 0.10);
+  --border-strong: rgba(20, 33, 61, 0.20);
+
+  --primary: var(--brand-turq-600);
+  --primary-hover: var(--brand-turq-700);
+  --primary-soft: var(--brand-turq-100);
+
+  --accent: var(--brand-coral-500);
+  --accent-hover: var(--brand-coral-700);
+  --accent-soft: var(--brand-coral-100);
+
+  --success: #2F9E73;
+  --success-soft: var(--brand-mint-100);
+  --warning: #C68E2E;
+  --warning-soft: #F4E5C2;
+  --danger:  #B7503D;
+  --danger-soft: #F2D6CD;
+  --info: var(--brand-indigo-700);
+  --info-soft: var(--brand-indigo-100);
+
+  --font-display: "Poppins", "Inter", system-ui, sans-serif;
+  --font-body:    "Inter", system-ui, sans-serif;
+  --font-mono:    "JetBrains Mono", ui-monospace, "SF Mono", Menlo, monospace;
+}
+
+[data-direction="C"] { --shadow-focus: 0 0 0 3px rgba(0, 178, 169, 0.25); }
+   ========================================================================== */
+:root {
+  --space-1: 4px;
+  --space-2: 8px;
+  --space-3: 12px;
+  --space-4: 16px;
+  --space-5: 20px;
+  --space-6: 24px;
+  --space-8: 32px;
+  --space-10: 40px;
+  --space-12: 48px;
+  --space-16: 64px;
+  --space-20: 80px;
+  --space-24: 96px;
+
+  --radius-xs: 4px;
+  --radius-sm: 8px;
+  --radius-md: 12px;
+  --radius-lg: 20px;
+  --radius-xl: 28px;
+  --radius-pill: 999px;
+
+  /* Shadow scale — kept very subtle */
+  --shadow-xs: 0 1px 2px rgba(31, 42, 42, 0.04);
+  --shadow-sm: 0 2px 6px -2px rgba(31, 42, 42, 0.06);
+  --shadow-md: 0 8px 24px -12px rgba(31, 42, 42, 0.10);
+  --shadow-lg: 0 20px 48px -20px rgba(31, 42, 42, 0.18);
+  --shadow-focus: 0 0 0 3px rgba(63, 94, 82, 0.20);
+
+  /* Motion */
+  --ease-out: cubic-bezier(0.32, 0.72, 0, 1);
+  --ease-in-out: cubic-bezier(0.65, 0, 0.35, 1);
+  --duration-micro: 120ms;
+  --duration-fast: 180ms;
+  --duration: 280ms;
+  --duration-slow: 480ms;
+
+  /* Layout */
+  --header-h: 72px;
+  --sidebar-w: 240px;
+  --content-max: 1200px;
+  --reading-max: 720px;
+}
+
+/* Focus shadow uses signature color of active direction */
+[data-direction="B"] {
+  --shadow-focus: 0 0 0 3px rgba(22, 54, 92, 0.22);
+}
+
+/* ==========================================================================
+   TYPE SCALE — semantic
+   ========================================================================== */
+:root {
+  /* Direction A : serif display, sans body */
+  --display-1-size: 72px;  --display-1-lh: 1.05;  --display-1-tracking: -0.02em;  --display-1-weight: 500;
+  --display-2-size: 56px;  --display-2-lh: 1.08;  --display-2-tracking: -0.02em;  --display-2-weight: 500;
+  --h1-size: 40px;         --h1-lh: 1.15;         --h1-tracking: -0.015em;        --h1-weight: 500;
+  --h2-size: 32px;         --h2-lh: 1.2;          --h2-tracking: -0.01em;         --h2-weight: 500;
+  --h3-size: 24px;         --h3-lh: 1.3;          --h3-tracking: -0.005em;        --h3-weight: 600;
+  --h4-size: 20px;         --h4-lh: 1.35;         --h4-tracking: 0;               --h4-weight: 600;
+
+  --body-lg-size: 18px;    --body-lg-lh: 1.55;
+  --body-size:    16px;    --body-lh:    1.55;
+  --body-sm-size: 14px;    --body-sm-lh: 1.5;
+  --caption-size: 12px;    --caption-lh: 1.4;     --caption-tracking: 0.02em;
+
+  --eyebrow-size: 12px;    --eyebrow-tracking: 0.12em;  --eyebrow-weight: 600;
+}
+
+/* Base resets that read from tokens */
+html, body {
+  background: var(--bg-canvas);
+  color: var(--fg-1);
+  font-family: var(--font-body);
+  font-size: var(--body-size);
+  line-height: var(--body-lh);
+  -webkit-font-smoothing: antialiased;
+  text-rendering: optimizeLegibility;
+}
+
+h1, h2, h3, h4 { font-family: var(--font-display); margin: 0; text-wrap: balance; }
+p             { margin: 0; text-wrap: pretty; }
+
+.display-1 { font: var(--display-1-weight) var(--display-1-size)/var(--display-1-lh) var(--font-display); letter-spacing: var(--display-1-tracking); }
+.display-2 { font: var(--display-2-weight) var(--display-2-size)/var(--display-2-lh) var(--font-display); letter-spacing: var(--display-2-tracking); }
+.h1        { font: var(--h1-weight) var(--h1-size)/var(--h1-lh) var(--font-display); letter-spacing: var(--h1-tracking); }
+.h2        { font: var(--h2-weight) var(--h2-size)/var(--h2-lh) var(--font-display); letter-spacing: var(--h2-tracking); }
+.h3        { font: var(--h3-weight) var(--h3-size)/var(--h3-lh) var(--font-display); letter-spacing: var(--h3-tracking); }
+.h4        { font: var(--h4-weight) var(--h4-size)/var(--h4-lh) var(--font-display); }
+.body-lg   { font-size: var(--body-lg-size); line-height: var(--body-lg-lh); }
+.body      { font-size: var(--body-size);    line-height: var(--body-lh); }
+.body-sm   { font-size: var(--body-sm-size); line-height: var(--body-sm-lh); }
+.caption   { font-size: var(--caption-size); line-height: var(--caption-lh); letter-spacing: var(--caption-tracking); color: var(--fg-3); }
+.eyebrow   { font-size: var(--eyebrow-size); letter-spacing: var(--eyebrow-tracking); font-weight: var(--eyebrow-weight); text-transform: uppercase; color: var(--fg-2); font-family: var(--font-body); }
+
+/* ==========================================================================
+   COMPONENTS — minimal shared primitives
+   ========================================================================== */
+.btn {
+  display: inline-flex; align-items: center; gap: 8px;
+  padding: 12px 20px;
+  border-radius: var(--radius-pill);
+  font: 500 15px/1 var(--font-body);
+  border: 1px solid transparent;
+  cursor: pointer;
+  transition: background var(--duration-fast) var(--ease-out),
+              transform var(--duration-micro) var(--ease-out),
+              box-shadow var(--duration-fast) var(--ease-out);
+}
+.btn:active { transform: scale(0.98); }
+.btn:focus-visible { outline: none; box-shadow: var(--shadow-focus); }
+
+.btn-primary { background: var(--primary); color: var(--fg-on-brand); }
+.btn-primary:hover { background: var(--primary-hover); }
+
+.btn-secondary { background: var(--bg-surface); color: var(--fg-1); border-color: var(--border-strong); }
+.btn-secondary:hover { background: var(--bg-surface-2); }
+
+.btn-ghost { background: transparent; color: var(--fg-1); }
+.btn-ghost:hover { background: var(--primary-soft); }
+
+.btn-accent { background: var(--accent); color: var(--brand-sage-900, #1F2A2A); }
+.btn-accent:hover { background: var(--accent-hover); }
+
+.card {
+  background: var(--bg-surface);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-lg);
+  padding: var(--space-6);
+  transition: box-shadow var(--duration-fast) var(--ease-out),
+              transform var(--duration-fast) var(--ease-out);
+}
+.card-interactive:hover { box-shadow: var(--shadow-md); transform: translateY(-1px); }
+
+.input {
+  width: 100%;
+  padding: 12px 14px;
+  background: var(--bg-surface);
+  border: 1px solid var(--border-strong);
+  border-radius: var(--radius-md);
+  font: 400 15px/1.4 var(--font-body);
+  color: var(--fg-1);
+  transition: border-color var(--duration-fast), box-shadow var(--duration-fast);
+}
+.input:focus { outline: none; border-color: var(--primary); box-shadow: var(--shadow-focus); }
+.input::placeholder { color: var(--fg-3); }
+
+.badge {
+  display: inline-flex; align-items: center; gap: 6px;
+  padding: 4px 10px;
+  border-radius: var(--radius-pill);
+  font: 500 12px/1 var(--font-body);
+  background: var(--primary-soft); color: var(--primary);
+}
+.badge-accent  { background: var(--accent-soft);  color: var(--accent-hover); }
+.badge-success { background: var(--success-soft); color: var(--success); }
+.badge-warning { background: var(--warning-soft); color: var(--warning); }
+.badge-danger  { background: var(--danger-soft);  color: var(--danger); }
+
+/* Subtle eyebrow rule used in editorial sections */
+.rule { height: 1px; background: var(--border); border: 0; margin: var(--space-6) 0; }

@@ -4,6 +4,7 @@ import { useState, useEffect } from 'react'
 import { useRouter } from 'next/navigation'
 import Link from 'next/link'
 import { createClient } from '@/lib/supabase'
+import { useToast } from '@/components/Toast'
 import {
   Plus,
   Search,
@@ -38,6 +39,7 @@ interface Patient {
 
 export default function PatientsPage() {
   const router = useRouter()
+  const toast = useToast()
   const [patients, setPatients] = useState<Patient[]>([])
   const [loading, setLoading] = useState(true)
   const [searchQuery, setSearchQuery] = useState('')
@@ -133,30 +135,79 @@ export default function PatientsPage() {
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
+
+    // ============ Validations client ============
+    // 1. Nom + prénom ne peuvent pas être uniquement des espaces (le HTML
+    //    `required` accepte "   " — on doit valider en JS).
+    const prenom = (formData.prenom || '').trim()
+    const nom = (formData.nom || '').trim()
+    if (!prenom || !nom) {
+      toast.error('Le prénom et le nom sont obligatoires.')
+      return
+    }
+    // 2. Date de naissance future = saisie incohérente.
+    if (formData.date_naissance) {
+      const ddn = new Date(formData.date_naissance)
+      if (!isNaN(ddn.getTime()) && ddn.getTime() > Date.now()) {
+        toast.error('La date de naissance ne peut pas être dans le futur.')
+        return
+      }
+    }
+    // 3. Téléphone médecin : si renseigné, doit ressembler à un numéro
+    //    (chiffres, espaces, tirets, parenthèses, +). Le regex est laxiste
+    //    pour accepter formats français + internationaux + extensions.
+    if (formData.medecin_tel && !/^[\d\s\-+().]+$/.test(formData.medecin_tel)) {
+      toast.error('Le téléphone du médecin contient des caractères invalides.')
+      return
+    }
+
     setSaving(true)
 
     const supabase = createClient()
     const { data: { user } } = await supabase.auth.getUser()
 
-    if (!user) return
+    if (!user) {
+      setSaving(false)
+      toast.error('Session expirée — reconnectez-vous.')
+      return
+    }
 
+    // Trim systématique avant insert/update — évite les espaces parasites
+    // dans la DB (et les recherches qui ne matchent plus).
+    const cleanData = {
+      ...formData,
+      prenom,
+      nom,
+      classe: (formData.classe || '').trim() || null,
+      ecole: (formData.ecole || '').trim() || null,
+      medecin_nom: (formData.medecin_nom || '').trim() || null,
+      medecin_tel: (formData.medecin_tel || '').trim() || null,
+      anamnese_base: (formData.anamnese_base || '').trim() || null,
+      notes: (formData.notes || '').trim() || null,
+    }
+
+    let saveError: any = null
     if (editingPatient) {
-      // Mise à jour
-      await supabase
+      const { error } = await supabase
         .from('patients')
-        .update(formData)
+        .update(cleanData)
         .eq('id', editingPatient.id)
+        .eq('user_id', user.id)
+      saveError = error
     } else {
-      // Création
-      await supabase
+      const { error } = await supabase
         .from('patients')
-        .insert({
-          ...formData,
-          user_id: user.id,
-        })
+        .insert({ ...cleanData, user_id: user.id })
+      saveError = error
     }
 
     setSaving(false)
+    if (saveError) {
+      console.error('Erreur sauvegarde patient:', saveError)
+      toast.error("Impossible d'enregistrer le patient. Réessayez.")
+      return
+    }
+    toast.success(editingPatient ? 'Patient mis à jour.' : 'Patient enregistré.')
     handleCloseModal()
     fetchPatients()
   }
@@ -170,7 +221,7 @@ export default function PatientsPage() {
     // sans qu'il soit vraiment supprimé en base.
     const { data: { user } } = await supabase.auth.getUser()
     if (!user) {
-      alert('Session expirée — reconnectez-vous.')
+      toast.error('Session expirée — reconnectez-vous.')
       return
     }
     const { data: deleted, error } = await supabase
@@ -181,19 +232,23 @@ export default function PatientsPage() {
       .select('id')
     if (error || !deleted || deleted.length === 0) {
       console.error('Erreur suppression patient:', error)
-      alert("La suppression n'a pas pu être enregistrée. Réessayez.")
+      toast.error("La suppression n'a pas pu être enregistrée. Réessayez.")
       return
     }
     setPatients(prev => prev.filter(p => p.id !== patientId))
+    toast.success('Patient supprimé.')
   }
 
   const calculateAge = (ddn: string) => {
     if (!ddn) return ''
     const birth = new Date(ddn)
+    if (isNaN(birth.getTime())) return ''
     const now = new Date()
+    if (birth.getTime() > now.getTime()) return '' // DDN dans le futur = saisie incohérente
     let years = now.getFullYear() - birth.getFullYear()
     const months = now.getMonth() - birth.getMonth()
-    if (months < 0) years--
+    if (months < 0 || (months === 0 && now.getDate() < birth.getDate())) years--
+    if (years < 0) return ''
     return `${years} ans`
   }
 
@@ -284,7 +339,7 @@ export default function PatientsPage() {
                       <Link href={`/dashboard/patients/${patient.id}`} className="flex items-center gap-3 hover:opacity-80">
                         <div className="w-10 h-10 bg-indigo-100 rounded-full flex items-center justify-center">
                           <span className="text-indigo-600 font-medium">
-                            {patient.prenom[0]}{patient.nom[0]}
+                            {(patient.prenom?.[0] || '?').toUpperCase()}{(patient.nom?.[0] || '').toUpperCase()}
                           </span>
                         </div>
                         <div>
@@ -425,6 +480,7 @@ export default function PatientsPage() {
                         type="date"
                         value={formData.date_naissance}
                         onChange={(e) => setFormData({ ...formData, date_naissance: e.target.value })}
+                        max={new Date().toISOString().split('T')[0]}
                         className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-green-500"
                       />
                     </div>

@@ -4,10 +4,12 @@ import { useState, useEffect, Suspense } from 'react'
 import { useRouter, useSearchParams } from 'next/navigation'
 import { createClient } from '@/lib/supabase'
 import { Loader2, Save, CheckCircle, AlertCircle, Trash2, Copy, Camera, Download, Users, Heart, Sparkles } from 'lucide-react'
+import { useToast } from '@/components/Toast'
 
 function ProfilContent() {
   const router = useRouter()
   const searchParams = useSearchParams()
+  const toast = useToast()
   const isIncompleteRedirect = searchParams.get('incomplete') === '1'
   const [showDeleteModal, setShowDeleteModal] = useState(false)
   const [deleteConfirmText, setDeleteConfirmText] = useState('')
@@ -181,39 +183,57 @@ function ProfilContent() {
 
   const handleSave = async () => {
     setSaving(true)
-    
+
     const supabase = createClient()
     const { data: { user } } = await supabase.auth.getUser()
-    
-    if (!user) return
+
+    if (!user) {
+      setSaving(false)
+      toast.error('Session expirée — reconnectez-vous.')
+      return
+    }
+
+    // Téléphone : validation laxiste si renseigné (chiffres, espaces, +, -, parenthèses).
+    if (profile.telephone && !/^[\d\s\-+().]+$/.test(profile.telephone)) {
+      setSaving(false)
+      toast.error('Le numéro de téléphone contient des caractères invalides.')
+      return
+    }
 
     const { error } = await supabase
       .from('profiles')
       .update({
-        prenom: profile.prenom,
-        nom: profile.nom,
-        adresse: profile.adresse,
-        code_postal: profile.code_postal,
-        ville: profile.ville,
-        telephone: profile.telephone,
+        prenom: (profile.prenom || '').trim(),
+        nom: (profile.nom || '').trim(),
+        adresse: (profile.adresse || '').trim(),
+        code_postal: (profile.code_postal || '').trim(),
+        ville: (profile.ville || '').trim(),
+        telephone: (profile.telephone || '').trim(),
       })
       .eq('id', user.id)
 
     setSaving(false)
-    if (!error) {
-      setSaved(true)
-      // Si on est arrivé ici depuis le formulaire CRBO (profil incomplet), on
-      // renvoie l'utilisatrice vers le formulaire dès que les champs requis
-      // sont remplis.
-      const isComplete =
-        profile.prenom.trim() && profile.nom.trim() && profile.adresse.trim() &&
-        profile.code_postal.trim() && profile.ville.trim() && profile.telephone.trim()
-      if (isIncompleteRedirect && isComplete) {
-        setTimeout(() => router.push('/dashboard/nouveau-crbo'), 800)
-        return
-      }
-      setTimeout(() => setSaved(false), 3000)
+    if (error) {
+      // Précédemment : échec silencieux (juste `if (!error)`). L'ortho cliquait
+      // "Enregistrer" et n'avait aucun retour si la sauvegarde échouait.
+      console.error('Erreur sauvegarde profil:', error)
+      toast.error("Impossible d'enregistrer le profil. Réessayez.")
+      return
     }
+
+    setSaved(true)
+    toast.success('Profil enregistré.')
+    // Si on est arrivé ici depuis le formulaire CRBO (profil incomplet), on
+    // renvoie l'utilisatrice vers le formulaire dès que les champs requis
+    // sont remplis.
+    const isComplete =
+      profile.prenom.trim() && profile.nom.trim() && profile.adresse.trim() &&
+      profile.code_postal.trim() && profile.ville.trim() && profile.telephone.trim()
+    if (isIncompleteRedirect && isComplete) {
+      setTimeout(() => router.push('/dashboard/nouveau-crbo'), 800)
+      return
+    }
+    setTimeout(() => setSaved(false), 3000)
   }
 
   if (loading) {

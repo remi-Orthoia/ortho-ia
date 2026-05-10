@@ -7,11 +7,12 @@ import DailyTip from '@/components/DailyTip'
 import { useRouter } from 'next/navigation'
 import Link from 'next/link'
 import { createClient } from '@/lib/supabase'
-import { 
-  Plus, 
-  FileText, 
-  Clock, 
-  CheckCircle, 
+import { useToast } from '@/components/Toast'
+import {
+  Plus,
+  FileText,
+  Clock,
+  CheckCircle,
   Eye,
   GripVertical,
   Calendar,
@@ -79,6 +80,7 @@ const columns: KanbanColumn[] = [
 
 export default function DashboardPage() {
   const router = useRouter()
+  const toast = useToast()
   const [crbos, setCrbos] = useState<CRBO[]>([])
   const [loading, setLoading] = useState(true)
   const [userName, setUserName] = useState('')
@@ -207,7 +209,7 @@ export default function DashboardPage() {
     }
     if (!user) {
       rollback()
-      alert('Session expirée — reconnectez-vous.')
+      toast.error('Session expirée — reconnectez-vous.')
       return
     }
 
@@ -221,7 +223,7 @@ export default function DashboardPage() {
     if (error || !updated || updated.length === 0) {
       console.error('Erreur mise à jour statut Kanban:', error)
       rollback()
-      alert("Le changement de statut n'a pas pu être enregistré. Réessayez.")
+      toast.error("Le changement de statut n'a pas pu être enregistré. Réessayez.")
     }
   }
 
@@ -235,7 +237,7 @@ export default function DashboardPage() {
     // existe encore en base — l'ortho croit avoir supprimé et repaie son quota.
     const { data: { user } } = await supabase.auth.getUser()
     if (!user) {
-      alert('Session expirée — reconnectez-vous.')
+      toast.error('Session expirée — reconnectez-vous.')
       return
     }
     const { data: deleted, error } = await supabase
@@ -246,10 +248,11 @@ export default function DashboardPage() {
       .select('id')
     if (error || !deleted || deleted.length === 0) {
       console.error('Erreur suppression CRBO:', error)
-      alert("La suppression n'a pas pu être enregistrée. Réessayez.")
+      toast.error("La suppression n'a pas pu être enregistrée. Réessayez.")
       return
     }
     setCrbos(prev => prev.filter(c => c.id !== crboId))
+    toast.success('CRBO supprimé.')
   }
 
   const getCRBOsByStatus = (status: CRBOStatus) => {
