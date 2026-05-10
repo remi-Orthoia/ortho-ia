@@ -780,7 +780,16 @@ function NouveauCRBOContent() {
         sessionStorage.setItem('ortho-ia:crbo-handoff', JSON.stringify(handoff))
         localStorage.removeItem(DRAFT_KEY)
       } catch (e) {
+        // Si sessionStorage échoue (mode privé, quota dépassé, navigateur exotique),
+        // on NE navigue PAS vers /resultats — sinon la page suivante ne trouve
+        // pas le handoff et fait un redirect loop vers ici. On affiche un
+        // message actionnable et on laisse l'ortho retenter.
         console.error('SessionStorage indisponible:', e)
+        setError(
+          "Impossible de transférer le CRBO vers la page suivante (stockage navigateur indisponible). " +
+          "Désactivez le mode privé / videz le cache, puis réessayez.",
+        )
+        return
       }
 
       router.push('/dashboard/nouveau-crbo/resultats')

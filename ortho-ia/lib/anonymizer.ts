@@ -52,7 +52,15 @@ const TOKEN_ORTHO_ADRESSE = '__O_ADR__'
 /** Liste des remplacements (valeur réelle → token) à appliquer aux textes libres. */
 export type ScrubList = Array<[string | undefined, string]>
 
-/** Remplace toutes les occurrences d'une valeur sensible dans un texte libre. */
+/** Remplace toutes les occurrences d'une valeur sensible dans un texte libre.
+ *
+ *  Bordure "type lettre" plutôt que `\b` JavaScript : `\b` traite les
+ *  apostrophes, tirets et lettres accentuées comme des limites de mot,
+ *  ce qui empêche "Marie-Claire" et "O'Reilly" d'être matchés correctement
+ *  (échec d'anonymisation = fuite RGPD). On utilise un look-around qui
+ *  considère lettres Unicode + chiffres comme "intérieur" et tout le reste
+ *  comme limite, indépendamment de l'apostrophe ou du tiret du nom recherché.
+ */
 export function scrubText(text: string | undefined, replacements: ScrubList): string | undefined {
   if (!text) return text
   let out = text
@@ -60,9 +68,11 @@ export function scrubText(text: string | undefined, replacements: ScrubList): st
     if (!value) continue
     const trimmed = value.trim()
     if (trimmed.length < 2) continue
-    // regex insensible à la casse, sur mot entier
     const safe = trimmed.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')
-    const re = new RegExp(`\\b${safe}\\b`, 'gi')
+    // (?<![\p{L}\p{N}]) : avant le match, pas de lettre/chiffre Unicode.
+    // (?![\p{L}\p{N}])  : après le match, pas de lettre/chiffre Unicode.
+    // Flag `u` requis pour que les classes Unicode fonctionnent.
+    const re = new RegExp(`(?<![\\p{L}\\p{N}])${safe}(?![\\p{L}\\p{N}])`, 'giu')
     out = out.replace(re, token)
   }
   return out

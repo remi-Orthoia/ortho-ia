@@ -75,8 +75,10 @@ export const FAMILY_LABEL: Record<FamilyKey, string> = {
 
 const FAMILY_ORDER: FamilyKey[] = ['oral', 'ecrit', 'sub']
 
-export function classifyFamily(domainName: string): FamilyKey {
-  const n = (domainName || '').toLowerCase().trim()
+export function classifyFamily(domainName: string | null | undefined): FamilyKey {
+  // Garde-fou : un domaine null/undefined (CRBO legacy mal formé) ne doit pas
+  // crasher l'export Word. On retombe sur 'oral' (défaut sémantiquement neutre).
+  const n = (domainName ?? '').toLowerCase().trim()
   const codeMatch = n.match(/^([abc])\s*[.\d]/i)
   if (codeMatch) {
     const c = codeMatch[1].toLowerCase()

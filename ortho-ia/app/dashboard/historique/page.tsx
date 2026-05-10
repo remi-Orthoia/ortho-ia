@@ -41,14 +41,27 @@ export default function HistoriquePage() {
     if (!confirm('Êtes-vous sûr de vouloir supprimer ce CRBO ?')) return
 
     const supabase = createClient()
-    const { error } = await supabase
+    // user_id explicite + .select() pour ne retirer de l'UI que si la ligne
+    // a vraiment été supprimée (sinon RLS masque un échec et l'ortho voit le
+    // CRBO disparaître alors qu'il existe encore en base).
+    const { data: { user } } = await supabase.auth.getUser()
+    if (!user) {
+      alert('Session expirée — reconnectez-vous.')
+      return
+    }
+    const { data: deleted, error } = await supabase
       .from('crbos')
       .delete()
       .eq('id', id)
+      .eq('user_id', user.id)
+      .select('id')
 
-    if (!error) {
-      setCrbos(crbos.filter(c => c.id !== id))
+    if (error || !deleted || deleted.length === 0) {
+      console.error('Erreur suppression CRBO:', error)
+      alert("La suppression n'a pas pu être enregistrée. Réessayez.")
+      return
     }
+    setCrbos(crbos.filter(c => c.id !== id))
   }
 
   const handleDownload = async (crbo: any) => {

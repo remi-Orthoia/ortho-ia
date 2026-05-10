@@ -229,7 +229,26 @@ export default function DashboardPage() {
     if (!confirm('Supprimer ce CRBO ?')) return
 
     const supabase = createClient()
-    await supabase.from('crbos').delete().eq('id', crboId)
+    // user_id explicite + .select() pour vérifier que la ligne a bien été
+    // supprimée (RLS peut masquer un échec silencieux si la session est expirée
+    // ou que la politique a changé). Sinon le CRBO disparaît de l'UI mais
+    // existe encore en base — l'ortho croit avoir supprimé et repaie son quota.
+    const { data: { user } } = await supabase.auth.getUser()
+    if (!user) {
+      alert('Session expirée — reconnectez-vous.')
+      return
+    }
+    const { data: deleted, error } = await supabase
+      .from('crbos')
+      .delete()
+      .eq('id', crboId)
+      .eq('user_id', user.id)
+      .select('id')
+    if (error || !deleted || deleted.length === 0) {
+      console.error('Erreur suppression CRBO:', error)
+      alert("La suppression n'a pas pu être enregistrée. Réessayez.")
+      return
+    }
     setCrbos(prev => prev.filter(c => c.id !== crboId))
   }
 

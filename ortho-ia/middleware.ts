@@ -39,7 +39,17 @@ export async function middleware(request: NextRequest) {
     },
   )
 
-  const { data: { user } } = await supabase.auth.getUser()
+  // getUser() peut throw si Supabase est injoignable (réseau, panne, DNS).
+  // Sans try/catch, l'utilisatrice voit une 500 sans message clair. On retombe
+  // sur "pas de user" → comportement identique à une session expirée
+  // (redirect login pour /dashboard, JSON 401 pour /api/*).
+  let user = null
+  try {
+    const { data } = await supabase.auth.getUser()
+    user = data.user
+  } catch (err) {
+    console.error('[middleware] supabase.auth.getUser failed:', (err as any)?.message?.slice?.(0, 200))
+  }
 
   const pathname = request.nextUrl.pathname
   const isDashboard = pathname.startsWith('/dashboard')

@@ -165,7 +165,25 @@ export default function PatientsPage() {
     if (!confirm('Supprimer ce patient ? Les CRBO associés ne seront pas supprimés.')) return
 
     const supabase = createClient()
-    await supabase.from('patients').delete().eq('id', patientId)
+    // user_id explicite + .select() pour confirmer la suppression effective —
+    // sinon une session expirée peut faire disparaître le patient de l'UI
+    // sans qu'il soit vraiment supprimé en base.
+    const { data: { user } } = await supabase.auth.getUser()
+    if (!user) {
+      alert('Session expirée — reconnectez-vous.')
+      return
+    }
+    const { data: deleted, error } = await supabase
+      .from('patients')
+      .delete()
+      .eq('id', patientId)
+      .eq('user_id', user.id)
+      .select('id')
+    if (error || !deleted || deleted.length === 0) {
+      console.error('Erreur suppression patient:', error)
+      alert("La suppression n'a pas pu être enregistrée. Réessayez.")
+      return
+    }
     setPatients(prev => prev.filter(p => p.id !== patientId))
   }
 

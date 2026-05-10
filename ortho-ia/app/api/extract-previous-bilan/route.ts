@@ -152,7 +152,16 @@ export async function POST(request: NextRequest) {
       }
       // Tronque à ~80k caractères (large marge sur la limite de tokens) pour
       // éviter qu'un document anormalement long ne fasse exploser le coût.
+      // Si la troncature mord, on log un warn — sinon une partie du bilan
+      // (typiquement les dernières pages : aménagements, conclusion) est
+      // silencieusement absente et l'extraction renvoie une structure partielle.
       const TRUNCATE = 80_000
+      if (text.length > TRUNCATE) {
+        console.warn(
+          `[extract-previous-bilan] ⚠ DOCX tronqué : ${text.length} → ${TRUNCATE} caractères. ` +
+          `Le contenu après la troncature ne sera pas extrait (souvent : conclusion + aménagements).`,
+        )
+      }
       const truncated = text.length > TRUNCATE ? text.slice(0, TRUNCATE) + '\n\n[... document tronqué ...]' : text
       promptText = `${EXTRACT_PROMPT_DOCX}\n\n## DOCUMENT À ANALYSER\n\n${truncated}`
       content = [

@@ -313,11 +313,16 @@ export async function generateCRBOWord(payload: WordExportPayload): Promise<Blob
     // Fallback sur today si bilan_date est absent.
     const ref = formData.bilan_date ? new Date(formData.bilan_date) : new Date()
     if (isNaN(ref.getTime())) return ''
+    // DDN postérieure à la date de bilan = saisie incohérente (typo sur l'année
+    // par exemple). On retourne vide plutôt qu'un "-3 ans" qui s'imprimerait
+    // dans l'en-tête patient du Word.
+    if (birth.getTime() > ref.getTime()) return ''
     let years = ref.getFullYear() - birth.getFullYear()
     let months = ref.getMonth() - birth.getMonth()
     if (ref.getDate() < birth.getDate()) months -= 1
     if (months < 0) { years -= 1; months += 12 }
-    if (years <= 0) return `${Math.max(0, months)} mois`
+    if (years < 0) return ''
+    if (years === 0) return `${Math.max(0, months)} mois`
     return months > 0 ? `${years} ans et ${months} mois` : `${years} ans`
   }
 
