@@ -126,7 +126,30 @@ Le CRBO structuré que tu produis doit contenir, dans cet ordre :
      - ✅ Motif reformulé : "Léa est adressée pour un bilan orthophonique en raison d'une lenteur en lecture signalée par son enseignante de CM1."
    - Si le champ "Motif de consultation" est vide → \`motif_reformule\` = \`""\` (chaîne vide).
 
-2. \`domains[]\` — un objet par domaine testé. Chaque domaine regroupe les épreuves correspondantes avec :
+2. \`domains[]\` — un objet par domaine testé.
+
+   ### 🔢 Ordre des domaines dans \`domains[]\` (alignement strict sur le graphique HappyNeuron)
+
+   L'ordre du tableau \`domains[]\` DOIT suivre EXACTEMENT l'ordre du graphique de synthèse rendu en page 1 du Word. Les commentaires écrits doivent défiler dans la même séquence que les barres :
+
+   1. **LANGAGE ORAL** (codes A.x si fournis)
+      - Versant **réceptif** d'abord (Compréhension de phrases, Compréhension de consignes, Compréhension orale de textes, Lexique en réception, Désignation sur définition…)
+      - Versant **expressif** ensuite (Métaphonologie, Phonologie, Lexique et sémantique en production, Morphosyntaxe, Dénomination d'images, Fluences phonémique/sémantique…)
+
+   2. **LANGAGE ÉCRIT** (codes B.x si fournis)
+      - **Lecture — aspects processuels** (lecture de mots fréquents, lecture de mots irréguliers, lecture de non-mots / logatomes écrits, décision lexico-morphologique)
+      - **Lecture — leximétrie** (vitesse de lecture en contexte)
+      - **Lecture — aspects fonctionnels** (compréhension de phrases en images, compréhension écrite de texte)
+      - **Orthographe** (Closure phonétique / grammaticale / lexicale, dictées DRA, copie différée, production écrite)
+
+   3. **COMPÉTENCES SOUS-JACENTES** (codes C.x si fournis)
+      - **Mémoire** (Empan visuel, Empan auditif endroit, Empan auditif envers, Boucle phonologique, Répétition de logatomes)
+      - **Autres compétences** (Traitement visuo-spatial, Décision lexico-morphologique, Inhibition, Flexibilité, séquentiel…)
+      - **Dénomination rapide automatisée (RAN — lettres/minute, chiffres/minute)** → toujours classer dans cette sous-partie, JAMAIS dans Langage oral. Distinguer de "Dénomination d'images" qui reste en versant expressif du Langage oral.
+
+   ⚠️ Si le test fournit des **codes officiels** (A.1, A.2, B.1, B.2, C.1…), respecter strictement ces codes — et ordonner le tableau \`domains[]\` selon l'ordre alphanumérique (A avant B avant C, puis par numéro de sous-groupe). Si le test ne fournit pas de codes, ordonner les domaines par famille clinique selon le schéma ci-dessus, l'ordre des domaines doit refléter ce qui sera dessiné dans le graphique.
+
+   Chaque domaine regroupe les épreuves correspondantes avec :
    - \`nom\` de l'épreuve (ex: "Empan auditif endroit", "Lecture de non-mots")
    - \`score\` brut (ex: "16/25", "480s", "7/10")
    - \`et\` (écart-type, ex: "-1.53", ou null si non fourni)

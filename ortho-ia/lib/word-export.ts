@@ -13,7 +13,31 @@
  */
 
 import type { CRBOStructure } from './prompts'
-import { happyNeuronChartToPng, type ChartGroup } from './chart'
+import { happyNeuronChartToPng, classifyFamily, type ChartGroup, type FamilyKey } from './chart'
+
+// Ordre canonique des familles cliniques — identique à celui rendu par le
+// graphique HappyNeuron (page 1 du Word). Les sections narratives du CRBO
+// (tableaux par domaine, commentaires) doivent suivre exactement cet ordre
+// pour que prose et graphique racontent la même histoire.
+const FAMILY_RANK: Record<FamilyKey, number> = { oral: 0, ecrit: 1, sub: 2 }
+
+/**
+ * Re-tri défensif des domaines selon les 3 familles cliniques :
+ *   1. Langage oral
+ *   2. Langage écrit
+ *   3. Compétences sous-jacentes
+ *
+ * Le LLM est explicitement instruit (system-base.ts) de produire `domains[]`
+ * dans cet ordre. Ce tri garantit la cohérence même si une ancienne génération
+ * ou une saisie manuelle laisse les domaines mélangés. Tri stable : à
+ * l'intérieur d'une famille, l'ordre du LLM est préservé.
+ */
+function sortDomainsByFamily<T extends { nom: string }>(domains: T[]): T[] {
+  return [...domains]
+    .map((d, idx) => ({ d, idx, rank: FAMILY_RANK[classifyFamily(d.nom)] }))
+    .sort((a, b) => a.rank - b.rank || a.idx - b.idx)
+    .map((x) => x.d)
+}
 
 // Re-export pour compat avec les imports existants (CRBOStructuredPreview, etc.)
 export { ZONES, zoneFor } from './chart'
@@ -207,6 +231,12 @@ export async function generateCRBOWord(payload: WordExportPayload): Promise<Blob
   const { formData, structure, fallbackCRBO = '', previousStructure, previousBilanDate } = payload
   const hasStructure = !!structure && !!structure.domains && structure.domains.length > 0
   const hasPrevious = !!previousStructure && !!previousStructure.domains && previousStructure.domains.length > 0
+
+  // Domaines triés selon l'ordre canonique des familles (Langage oral →
+  // Langage écrit → Compétences sous-jacentes), aligné avec le graphique
+  // HappyNeuron de la page 1. Voir sortDomainsByFamily ci-dessus.
+  const orderedDomains = hasStructure ? sortDomainsByFamily(structure!.domains) : []
+  const orderedPrevDomains = hasPrevious ? sortDomainsByFamily(previousStructure!.domains) : []
   // Style "Laurie Berrio" — restructuration de la synthèse en 3 sections plates
   // (DIAGNOSTIC ORTHOPHONIQUE / PROJET THÉRAPEUTIQUE / Aménagements pédagogiques
   // proposés), sans Points forts / Difficultés / Axes / signature.
@@ -422,7 +452,7 @@ export async function generateCRBOWord(payload: WordExportPayload): Promise<Blob
 
     // Calcul stats globales d'évolution
     const prevIndex = new Map<string, { percentile: string; value: number; domain: string }>()
-    for (const d of previousStructure!.domains) {
+    for (const d of orderedPrevDomains) {
       for (const e of d.epreuves) {
         prevIndex.set(e.nom.toLowerCase().trim(), { percentile: e.percentile, value: e.percentile_value, domain: d.nom })
       }
@@ -431,7 +461,7 @@ export async function generateCRBOWord(payload: WordExportPayload): Promise<Blob
     const progresList: string[] = []
     const regressionList: string[] = []
     const nouvellesList: string[] = []
-    for (const d of structure!.domains) {
+    for (const d of orderedDomains) {
       for (const e of d.epreuves) {
         const prev = prevIndex.get(e.nom.toLowerCase().trim())
         if (!prev) {
@@ -520,7 +550,7 @@ export async function generateCRBOWord(payload: WordExportPayload): Promise<Blob
       ]}),
     ]
 
-    for (const d of structure!.domains) {
+    for (const d of orderedDomains) {
       // Row domaine (en-tête de groupe)
       compRows.push(new TableRow({ children: [
         new TableCell({
@@ -591,7 +621,7 @@ export async function generateCRBOWord(payload: WordExportPayload): Promise<Blob
 
   // ===== SYNTHÈSE VISUELLE PAGE 1 — vue HappyNeuron groupée =====
   if (hasStructure) {
-    const groups = structure!.domains.map((d) => ({
+    const groups = orderedDomains.map((d) => ({
       name: d.nom,
       bars: d.epreuves.map((e) => ({ label: e.nom, value: e.percentile_value })),
     })).filter((g) => g.bars.length > 0)
@@ -663,7 +693,7 @@ export async function generateCRBOWord(payload: WordExportPayload): Promise<Blob
   )
 
   if (hasStructure) {
-    for (const domain of structure!.domains) {
+    for (const domain of orderedDomains) {
       children.push(
         new Paragraph({
           children: [new TextRun({ text: domain.nom, bold: true, size: FONT_SIZE_NORMAL + 2, font: FONT, color: COLOR_GREEN })],

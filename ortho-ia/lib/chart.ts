@@ -84,7 +84,10 @@ export function classifyFamily(domainName: string): FamilyKey {
     if (c === 'b') return 'ecrit'
     if (c === 'c') return 'sub'
   }
-  if (/m[ée]moire|empan|boucle\s*phon|d[ée]nomination|denomination|visuo|attention|ran\b|traitement\s*visu|inhibition|flexibilit[ée]|s[ée]quentiel/.test(n)) {
+  // "Dénomination rapide" / "Dénomination automatisée" (RAN) → sous-jacentes.
+  // En revanche "Dénomination d'images" reste en langage oral expressif :
+  // on ne match donc PAS le mot "dénomination" seul.
+  if (/m[ée]moire|empan|boucle\s*phon|d[ée]nomination\s+(?:rapide|automatis[ée]e)|\bran\b|visuo|attention|traitement\s*visu|inhibition|flexibilit[ée]|s[ée]quentiel/.test(n)) {
     return 'sub'
   }
   if (/lecture|lex[ie]m[ée]trie|orthograph|dict[ée]e|closure|[ée]crit|non[\s\-]*mots?|graph[èe]m|d[ée]chiffrage/.test(n)) {
