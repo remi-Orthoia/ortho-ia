@@ -136,43 +136,61 @@ const EXTRACT_PREVIOUS_TOOL: Anthropic.Tool = {
 
 const EXTRACT_PROMPT_PDF = `# RÔLE
 
-Tu es un assistant qui extrait des données structurées depuis un compte-rendu de bilan orthophonique francophone. Le document peut être un PDF scanné ou natif. Tu utilises l'outil \`extract_previous_bilan\` pour rendre une structure JSON.
+Tu es un assistant qui extrait des données structurées depuis un document orthophonique francophone. Le document peut être :
+  - un compte-rendu de bilan orthophonique (CRBO) rédigé,
+  - une feuille de résultats brute d'une batterie de tests (HappyNeuron Exalang, Examath, BALE, etc.),
+  - un PDF natif ou scanné, mono ou **multi-pages**.
+
+Tu utilises l'outil \`extract_previous_bilan\` pour rendre une structure JSON.
 
 # OBJECTIF
 
-Cette extraction nourrit la **synthèse comparative** d'un bilan de renouvellement : Claude générera ensuite une analyse "amélioration / stable / régression" entre le bilan actuel et celui que tu extraies. Sois précis sur les percentiles : c'est la métrique principale comparée.
+Cette extraction nourrit la **synthèse comparative** d'un bilan de renouvellement : la chaîne en aval comparera ÉPREUVE PAR ÉPREUVE les scores actuels avec ceux que tu extraies. **Tout épreuve manquée sera marquée à tort comme "nouvelle"** dans le rendu final — c'est la pire erreur possible. L'exhaustivité prime sur tout le reste.
 
-# CONSIGNES
+# CONSIGNES — EXHAUSTIVITÉ ABSOLUE
 
-1. Date : repère "Bilan du X" / "Date : X" / la date en haut du document. Format ISO YYYY-MM-DD.
-2. Tests : repère les batteries citées (Exalang 8-11, BALE, Examath, MoCA…).
-3. Pour chaque épreuve : nom, score brut, écart-type si présent, percentile (Q1/Med/Q3/Pxx).
-4. **Conversion quartiles** (HappyNeuron / Exalang) :
+1. **Date** : repère "Bilan du X" / "Date : X" / la date en haut du document. Format ISO YYYY-MM-DD. Si introuvable, ''.
+2. **Tests** : repère les batteries citées (Exalang 8-11, BALE, Examath, MoCA…).
+3. 🚨 **Toutes les épreuves de toutes les pages** : un document HappyNeuron tient souvent sur 2-3 pages, parcours-les TOUTES sans exception. Chaque ligne d'un tableau d'épreuves = une entrée \`epreuves[]\`.
+4. 🚨 **Sous-épreuves SÉPARÉES** : si une épreuve a plusieurs modalités (score, temps, ratio, erreurs, mots lus, note pondérée…), retourne une entrée DISTINCTE pour chacune avec son nom complet ("Lecture de mots — score", "Lecture de mots — temps", "Lecture de mots — ratio", "Lecture de mots — erreurs"). Ne JAMAIS fusionner.
+5. Pour chaque épreuve : nom complet (avec la sous-modalité), score brut, écart-type si présent, percentile (Q1/Med/Q3/Pxx).
+6. **Conversion quartiles** (HappyNeuron / Exalang) :
    - Q1 → percentile_value = 25, interpretation = "Fragilité" (PAS "Moyenne basse" !)
    - Med / Q2 → 50 / "Moyenne basse"
    - Q3 → 75 / "Moyenne haute"
    - Pxx → la valeur exacte
-5. **Ne JAMAIS recalculer un percentile depuis un É-T**. Si le document ne donne que l'É-T sans percentile, marque \`percentile_value: null\` et laisse \`interpretation: "Moyenne basse"\` (valeur prudente par défaut).
-6. Diagnostic : repère "Diagnostic", "Conclusion clinique", "Trouble identifié". Garde la formulation exacte.
-7. Aménagements : extrais ceux mentionnés ("temps majoré", "tolérance orthographique", etc.) — pas d'invention.
+7. **Ne JAMAIS recalculer un percentile depuis un É-T**. Si le document ne donne que l'É-T sans percentile, marque \`percentile_value: null\` et laisse \`interpretation: "Moyenne basse"\` (valeur prudente par défaut).
+8. **Préserver la hiérarchie des groupes** : si le document affiche un en-tête A.1/A.2/B.1/B.2/C.1, reporte ce code dans \`domains[].nom\` (ex: "A.1 Langage oral"). Ne mélange pas les groupes.
+9. Diagnostic : repère "Diagnostic", "Conclusion clinique", "Trouble identifié". Garde la formulation exacte. Si le document est une feuille de résultats brute sans diagnostic, laisse \`diagnostic: ''\`.
+10. Aménagements : extrais ceux mentionnés ("temps majoré", "tolérance orthographique", etc.) — pas d'invention. Tableau vide si absent.
 
-Si une rubrique est absente, retourne tableau vide ou chaîne vide. **Aucune hallucination** : on préfère manquer une donnée que l'inventer.`
+# AUTOCONTRÔLE AVANT D'APPELER L'OUTIL
+
+Avant de finaliser, compte mentalement le nombre d'épreuves visibles dans le document. Pour un Exalang 8-11 complet, tu dois trouver entre **25 et 40 épreuves** (sous-modalités incluses). Si tu n'en as listé que 10-15 alors que le document en contient plus, c'est que tu en as oubliées : reprends ta lecture page par page.
+
+**Aucune hallucination** : on préfère manquer une donnée que l'inventer. Mais on préfère listée 35 vraies épreuves que d'en omettre 20.`
 
 const EXTRACT_PROMPT_DOCX = `# RÔLE
 
-Tu reçois le **texte brut** d'un compte-rendu de bilan orthophonique extrait d'un fichier Word (.docx). Tu utilises l'outil \`extract_previous_bilan\` pour rendre une structure JSON.
+Tu reçois le **texte brut** d'un document orthophonique extrait d'un fichier Word (.docx) — soit un compte-rendu de bilan rédigé, soit une transcription d'une feuille de résultats. Tu utilises l'outil \`extract_previous_bilan\` pour rendre une structure JSON.
 
 # OBJECTIF
 
-Cette extraction nourrit la synthèse comparative d'un bilan de renouvellement. Sois précis sur les percentiles.
+Cette extraction nourrit la **synthèse comparative** d'un bilan de renouvellement : la chaîne en aval comparera ÉPREUVE PAR ÉPREUVE les scores actuels avec ceux que tu extraies. **Toute épreuve manquée sera marquée à tort comme "nouvelle"** dans le rendu final — c'est la pire erreur possible. Sois exhaustif.
 
-# CONSIGNES
+# CONSIGNES — EXHAUSTIVITÉ ABSOLUE
 
-Mêmes règles que pour PDF :
-- Date au format ISO ; tests pratiqués ; épreuves avec score + É-T + percentile + interprétation.
-- **Q1 = P25 = "Fragilité"** (pas "Moyenne basse"). Med = P50. Q3 = P75.
-- **Ne JAMAIS convertir É-T → percentile**. Si percentile manquant, \`percentile_value: null\`.
-- Diagnostic et aménagements : prendre la formulation littérale du document.
+1. Date au format ISO YYYY-MM-DD ; tests pratiqués ; épreuves avec score + É-T + percentile + interprétation.
+2. 🚨 **Toutes les épreuves** présentes dans le document, quelle que soit la longueur. Pour un Exalang 8-11 complet, attends-toi à 25-40 entrées (sous-modalités incluses).
+3. 🚨 **Sous-épreuves SÉPARÉES** : "Lecture de mots — score", "Lecture de mots — temps", "Lecture de mots — ratio", "Lecture de mots — erreurs" sont 4 entrées distinctes. Ne JAMAIS fusionner.
+4. **Préserver la hiérarchie des groupes** A.1 / A.2 / B.1 / B.2 / C.1 dans \`domains[].nom\`.
+5. **Q1 = P25 = "Fragilité"** (pas "Moyenne basse"). Med = P50. Q3 = P75.
+6. **Ne JAMAIS convertir É-T → percentile**. Si percentile manquant, \`percentile_value: null\`.
+7. Diagnostic et aménagements : prendre la formulation littérale du document. Vide si absent.
+
+# AUTOCONTRÔLE
+
+Avant d'appeler l'outil, vérifie que tu as bien extrait CHAQUE ligne du tableau d'épreuves. Si le document liste 32 épreuves et que ton JSON n'en contient que 12, recommence : tu en as oubliées.
 
 Aucune hallucination. Tableau vide si rubrique absente.`
 
@@ -307,7 +325,11 @@ export async function POST(request: NextRequest) {
         () => anthropic.messages.create(
           {
             model: 'claude-sonnet-4-6',
-            max_tokens: 8192,
+            // 32k pour absorber un Exalang 8-11 / 11-15 complet (30-40 épreuves
+            // avec sous-modalités — ~15k tokens de JSON minimum). 8k tronquait
+            // systématiquement les batteries longues, qui ressortaient ensuite
+            // marquées "✦ Nouvelle" dans la synthèse comparative.
+            max_tokens: 32_768,
             tools: [EXTRACT_PREVIOUS_TOOL],
             tool_choice: { type: 'tool', name: 'extract_previous_bilan' },
             messages: [{ role: 'user', content }],
@@ -325,6 +347,13 @@ export async function POST(request: NextRequest) {
       )
     } finally {
       clearTimeout(timeoutId)
+    }
+
+    // Détection précoce d'une troncature de sortie : si Claude a atteint
+    // max_tokens, le JSON est probablement coupé et le tool_use échouera ou
+    // sera incomplet. On le logue explicitement pour debug.
+    if (message.stop_reason === 'max_tokens') {
+      console.warn('[extract-previous-bilan] ⚠ stop_reason=max_tokens — extraction probablement incomplète')
     }
 
     const toolUseBlock = message.content.find(
@@ -357,6 +386,18 @@ export async function POST(request: NextRequest) {
       amenagements?: string[]
     }
     const extracted = toolUseBlock.input as ExtractedPreviousBilan
+
+    const totalEpreuves = (extracted.domains ?? []).reduce(
+      (sum, d) => sum + (d.epreuves?.length ?? 0),
+      0,
+    )
+    console.log(
+      `[extract-previous-bilan] ${file.name?.slice(0, 80)} → ${extracted.domains?.length ?? 0} domaines, ` +
+      `${totalEpreuves} épreuves (test=${extracted.tests_utilises?.[0] ?? 'inconnu'}, ` +
+      `bilan_date=${extracted.bilan_date || 'inconnue'}, ` +
+      `${(message.usage?.input_tokens ?? 0) + (message.usage?.output_tokens ?? 0)} tokens, ` +
+      `stop=${message.stop_reason})`,
+    )
 
     // ========== PERSISTANCE ==========
     const bilanDateForRow =
