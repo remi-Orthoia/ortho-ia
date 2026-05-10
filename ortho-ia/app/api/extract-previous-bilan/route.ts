@@ -253,6 +253,45 @@ export async function POST(request: NextRequest) {
       `stop=${message.stop_reason})`,
     )
 
+    // ========== FILET DE SÉCURITÉ — SOUS-EXTRACTION ==========
+    // Si l'extraction renvoie un nombre d'épreuves suspicieusement faible
+    // pour le test détecté, on prévient l'orthophoniste plutôt que de la
+    // laisser découvrir le problème dans la table comparative du Word
+    // (où 19 épreuves manquantes apparaîtront à tort en "✦ Nouvelle").
+    //
+    // Seuils calibrés sur les batteries complètes — un Exalang 8-11 typique
+    // contient ≈30 épreuves (sous-modalités score/temps/ratio incluses).
+    // Conservateur : on n'alerte que si on est largement sous le minimum
+    // attendu, jamais sur les batteries courtes ou les tests partiels.
+    const MIN_EPREUVES_PAR_TEST: Record<string, number> = {
+      'Exalang 8-11': 18,
+      'Exalang 11-15': 18,
+      'Exalang 5-8': 12,
+      'Exalang 3-6': 8,
+      'Examath': 15,
+      'Examath 8-15': 15,
+      'BALE': 12,
+      'BELEC': 10,
+      'EVALEO 6-15': 15,
+      'EVALO 2-6': 10,
+      'BILO': 10,
+      'ELO': 8,
+      'N-EEL': 10,
+      'BETL': 10,
+      'MoCA': 5,
+    }
+    const detectedTest = extracted.tests_utilises?.[0] ?? null
+    const minExpected = detectedTest ? MIN_EPREUVES_PAR_TEST[detectedTest] : null
+    const extraction_warning =
+      minExpected != null && totalEpreuves < minExpected
+        ? `Seulement ${totalEpreuves} épreuves extraites du bilan précédent (${detectedTest}, minimum attendu : ~${minExpected}). ` +
+          `Certaines épreuves risquent d'apparaître à tort comme "nouvelles" dans la table comparative. ` +
+          `Vérifiez que toutes les pages du document ont bien été incluses, ou réessayez l'import.`
+        : null
+    if (extraction_warning) {
+      console.warn(`[extract-previous-bilan] ⚠ ${extraction_warning}`)
+    }
+
     // ========== PERSISTANCE ==========
     const bilanDateForRow =
       extracted.bilan_date && /^\d{4}-\d{2}-\d{2}$/.test(extracted.bilan_date)
@@ -284,6 +323,16 @@ export async function POST(request: NextRequest) {
       extracted,
       tokensUsed:
         (message.usage?.input_tokens ?? 0) + (message.usage?.output_tokens ?? 0),
+      // Compteurs pour permettre au front d'afficher "X domaines / Y épreuves
+      // extraites" sans recompter, et de surfacer un avertissement si la
+      // sous-extraction est suspectée.
+      stats: {
+        domains: extracted.domains?.length ?? 0,
+        epreuves: totalEpreuves,
+        detected_test: detectedTest,
+        min_expected: minExpected,
+      },
+      warning: extraction_warning,
     })
   } catch (error: any) {
     console.error('Erreur extract-previous-bilan:', {

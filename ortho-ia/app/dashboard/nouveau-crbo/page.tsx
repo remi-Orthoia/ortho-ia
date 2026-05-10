@@ -510,6 +510,16 @@ function NouveauCRBOContent() {
         elements_stables: prev.elements_stables || ex.anamnese_redigee || '',
       }))
       setPreviousBilanFilename(file.name)
+      // Si la route signale une sous-extraction probable (peu d'épreuves
+      // pour le test détecté), on remonte l'avertissement à l'ortho via
+      // le bandeau notice — elle peut alors retenter ou ajuster avant de
+      // générer le CRBO de renouvellement (sinon les épreuves manquantes
+      // ressortiraient à tort en "✦ Nouvelle" dans la table comparative).
+      if (data.warning) {
+        setNotice(`⚠ ${data.warning}`)
+      } else {
+        setNotice('')
+      }
     } catch (e: any) {
       setError(e?.message || "Erreur lors de l'extraction du bilan précédent.")
     } finally {
