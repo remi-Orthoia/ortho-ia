@@ -226,10 +226,15 @@ export default function PatientDetailPage() {
   const age = patient.date_naissance
     ? (() => {
         const d = new Date(patient.date_naissance)
+        if (isNaN(d.getTime())) return '—'
         const now = new Date()
+        if (d.getTime() > now.getTime()) return '—'
         let y = now.getFullYear() - d.getFullYear()
         let m = now.getMonth() - d.getMonth()
+        if (now.getDate() < d.getDate()) m -= 1
         if (m < 0) { y -= 1; m += 12 }
+        if (y < 0) return '—'
+        if (y === 0) return `${Math.max(0, m)} mois`
         return `${y} ans ${m} m`
       })()
     : '—'

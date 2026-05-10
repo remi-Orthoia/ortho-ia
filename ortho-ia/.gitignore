@@ -35,3 +35,9 @@ next-env.d.ts
 # IDE
 .idea/
 .vscode/
+
+# Claude Code (local agent state)
+.claude/
+
+# Design system source assets (not part of runtime — kept locally for reference)
+/design-system/*.zip

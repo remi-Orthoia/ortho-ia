@@ -147,11 +147,16 @@ export default function HistoriquePage() {
   }
 
   const filteredCRBOs = crbos.filter(crbo => {
-    const search = searchTerm.toLowerCase()
+    const search = searchTerm.toLowerCase().trim()
+    if (!search) return true
+    // Null-safe : un CRBO legacy peut avoir patient_prenom/nom à null
+    // (saisie incomplète, import). Sans `?.`, .toLowerCase() crashait
+    // toute la liste — l'ortho voyait "Aucun CRBO" alors qu'elle en avait.
     return (
-      crbo.patient_prenom.toLowerCase().includes(search) ||
-      crbo.patient_nom.toLowerCase().includes(search) ||
-      crbo.test_utilise?.toLowerCase().includes(search)
+      (crbo.patient_prenom?.toLowerCase() ?? '').includes(search) ||
+      (crbo.patient_nom?.toLowerCase() ?? '').includes(search) ||
+      (crbo.test_utilise?.toLowerCase() ?? '').includes(search) ||
+      (crbo.patient_classe?.toLowerCase() ?? '').includes(search)
     )
   })
 

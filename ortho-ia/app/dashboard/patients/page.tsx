@@ -128,10 +128,41 @@ export default function PatientsPage() {
     setShowModal(true)
   }
 
-  const handleCloseModal = () => {
+  const handleCloseModal = (opts: { skipDirtyCheck?: boolean } = {}) => {
+    // Garde-fou contre la perte de saisie : si l'ortho a tapé du contenu dans
+    // un nouveau patient (= pas en édition), on confirme avant de fermer.
+    // Pour une édition, le bouton "Annuler" reste disponible mais on ne harcèle
+    // pas — l'ortho a déjà ses données en base.
+    if (!opts.skipDirtyCheck && !editingPatient) {
+      const isDirty =
+        (formData.prenom?.trim() ?? '') !== '' ||
+        (formData.nom?.trim() ?? '') !== '' ||
+        (formData.date_naissance ?? '') !== '' ||
+        (formData.classe?.trim() ?? '') !== '' ||
+        (formData.ecole?.trim() ?? '') !== '' ||
+        (formData.medecin_nom?.trim() ?? '') !== '' ||
+        (formData.medecin_tel?.trim() ?? '') !== '' ||
+        (formData.anamnese_base?.trim() ?? '') !== '' ||
+        (formData.notes?.trim() ?? '') !== ''
+      if (isDirty && !confirm('Fermer sans enregistrer ? Les données saisies seront perdues.')) {
+        return
+      }
+    }
     setShowModal(false)
     setEditingPatient(null)
   }
+
+  // Esc ferme le modal (avec respect du dirty-check pour ne pas perdre la
+  // saisie). Pattern UX standard que l'ortho attend instinctivement.
+  useEffect(() => {
+    if (!showModal) return
+    const onKey = (e: KeyboardEvent) => {
+      if (e.key === 'Escape') handleCloseModal()
+    }
+    window.addEventListener('keydown', onKey)
+    return () => window.removeEventListener('keydown', onKey)
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [showModal, formData, editingPatient])
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
@@ -208,7 +239,7 @@ export default function PatientsPage() {
       return
     }
     toast.success(editingPatient ? 'Patient mis à jour.' : 'Patient enregistré.')
-    handleCloseModal()
+    handleCloseModal({ skipDirtyCheck: true }) // submit OK = pas de prompt
     fetchPatients()
   }
 
@@ -252,11 +283,19 @@ export default function PatientsPage() {
     return `${years} ans`
   }
 
-  const filteredPatients = patients.filter(p => 
-    `${p.prenom} ${p.nom}`.toLowerCase().includes(searchQuery.toLowerCase()) ||
-    p.classe?.toLowerCase().includes(searchQuery.toLowerCase()) ||
-    p.ecole?.toLowerCase().includes(searchQuery.toLowerCase())
-  )
+  const filteredPatients = patients.filter(p => {
+    const search = searchQuery.toLowerCase().trim()
+    if (!search) return true
+    // Concat null-safe + chaque champ aussi (un patient legacy peut avoir
+    // prenom/nom à null si saisie incomplète, et le `${null}` produit "null"
+    // qui matcherait à tort la requête "null").
+    const fullName = `${p.prenom ?? ''} ${p.nom ?? ''}`.toLowerCase()
+    return (
+      fullName.includes(search) ||
+      (p.classe?.toLowerCase() ?? '').includes(search) ||
+      (p.ecole?.toLowerCase() ?? '').includes(search)
+    )
+  })
 
   if (loading) {
     return (
@@ -425,7 +464,7 @@ export default function PatientsPage() {
             {/* Backdrop */}
             <div 
               className="fixed inset-0 bg-black/50 transition-opacity" 
-              onClick={handleCloseModal}
+              onClick={() => handleCloseModal()}
             />
 
             {/* Modal */}
@@ -436,7 +475,7 @@ export default function PatientsPage() {
                   {editingPatient ? 'Modifier le patient' : 'Nouveau patient'}
                 </h2>
                 <button
-                  onClick={handleCloseModal}
+                  onClick={() => handleCloseModal()}
                   className="p-2 hover:bg-gray-100 rounded-lg transition"
                 >
                   <X size={20} className="text-gray-500" />
@@ -571,7 +610,7 @@ export default function PatientsPage() {
                 <div className="flex justify-end gap-3 pt-4 border-t border-gray-200">
                   <button
                     type="button"
-                    onClick={handleCloseModal}
+                    onClick={() => handleCloseModal()}
                     className="px-4 py-2 border border-gray-300 rounded-lg text-gray-700 hover:bg-gray-50 transition font-medium"
                   >
                     Annuler
