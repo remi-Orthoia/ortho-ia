@@ -41,6 +41,14 @@ interface Handoff {
   extracted: ExtractedCRBO
   selectedPatientId?: string
   selectedMedecinId?: string
+  /**
+   * Idempotence : ID du CRBO inséré au 1er essai. Persisté dans sessionStorage
+   * pour qu'un retry après échec partiel (ex: Word download bloqué par le
+   * navigateur, popup refusée, disk plein) NE recrée PAS une nouvelle ligne.
+   * Tant que ce champ est présent, on skip l'INSERT et on retente uniquement
+   * le téléchargement Word + la promotion kanban → a_relire.
+   */
+  _insertedCrboId?: string | null
 }
 
 const HANDOFF_KEY = 'ortho-ia:crbo-handoff'
@@ -282,52 +290,81 @@ export default function ResultatsPage() {
         }
       }
 
-      const { data: insertedCrbo, error: insertError } = await supabase
-        .from('crbos')
-        .insert({
-          user_id: user.id,
-          patient_id: patientId,
-          patient_prenom: fd.patient_prenom,
-          patient_nom: fd.patient_nom,
-          patient_ddn: fd.patient_ddn,
-          patient_classe: fd.patient_classe,
-          bilan_date: fd.bilan_date,
-          bilan_type: fd.bilan_type,
-          medecin_nom: fd.medecin_nom,
-          medecin_tel: fd.medecin_tel,
-          motif: fd.motif,
-          anamnese: fd.anamnese,
-          test_utilise: Array.isArray(fd.test_utilise) ? fd.test_utilise.join(', ') : (fd.test_utilise || ''),
-          resultats: fd.resultats_manuels,
-          notes_analyse: fd.notes_analyse,
-          structure_json: finalStructure,
-          comportement_seance: fd.comportement_seance || null,
-          duree_seance_minutes: fd.duree_seance_minutes || null,
-          severite_globale: finalStructure.severite_globale ?? null,
-          bilan_precedent_id: fd.bilan_precedent_id || null,
-          // Statut kanban initial après génération : "à rédiger". Sera promu
-          // automatiquement à "à relire" juste après le download Word ci-dessous.
-          statut: 'a_rediger',
-        })
-        .select('id')
-        .single()
+      // ============ INSERT idempotent ============
+      // Si un précédent essai a déjà inséré le CRBO (handoff._insertedCrboId
+      // posé), on saute purement et simplement l'INSERT pour éviter le doublon
+      // sur retry après échec aval (download Word bloqué, etc.). On retente
+      // uniquement les étapes restantes : compteurs, download, promotion kanban.
+      let insertedCrboId: string | null = handoff._insertedCrboId ?? null
+      let isFirstInsert = false
 
-      if (insertError) {
-        console.error('Erreur sauvegarde CRBO:', insertError)
-        setError('Le CRBO a été généré mais n\'a pas pu être sauvegardé. Téléchargez-le maintenant.')
+      if (!insertedCrboId) {
+        const { data: insertedCrbo, error: insertError } = await supabase
+          .from('crbos')
+          .insert({
+            user_id: user.id,
+            patient_id: patientId,
+            patient_prenom: fd.patient_prenom,
+            patient_nom: fd.patient_nom,
+            patient_ddn: fd.patient_ddn,
+            patient_classe: fd.patient_classe,
+            bilan_date: fd.bilan_date,
+            bilan_type: fd.bilan_type,
+            medecin_nom: fd.medecin_nom,
+            medecin_tel: fd.medecin_tel,
+            motif: fd.motif,
+            anamnese: fd.anamnese,
+            test_utilise: Array.isArray(fd.test_utilise) ? fd.test_utilise.join(', ') : (fd.test_utilise || ''),
+            resultats: fd.resultats_manuels,
+            notes_analyse: fd.notes_analyse,
+            structure_json: finalStructure,
+            comportement_seance: fd.comportement_seance || null,
+            duree_seance_minutes: fd.duree_seance_minutes || null,
+            severite_globale: finalStructure.severite_globale ?? null,
+            bilan_precedent_id: fd.bilan_precedent_id || null,
+            // Statut kanban initial après génération : "à rédiger". Sera promu
+            // automatiquement à "à relire" juste après le download Word ci-dessous.
+            statut: 'a_rediger',
+          })
+          .select('id')
+          .single()
+
+        if (insertError) {
+          console.error('Erreur sauvegarde CRBO:', insertError)
+          setError('Le CRBO a été généré mais n\'a pas pu être sauvegardé. Téléchargez-le maintenant.')
+        }
+        insertedCrboId = insertedCrbo?.id ?? null
+        isFirstInsert = !!insertedCrboId
+
+        // Persistance du tag d'idempotence dans le handoff. Si le download Word
+        // ci-dessous échoue et que l'ortho relance "Générer", on retombera ici
+        // avec _insertedCrboId déjà posé → pas de doublon.
+        if (insertedCrboId) {
+          try {
+            const updated: Handoff = { ...handoff, _insertedCrboId: insertedCrboId }
+            sessionStorage.setItem(HANDOFF_KEY, JSON.stringify(updated))
+            setHandoff(updated)
+          } catch (e) {
+            console.warn('Handoff idempotence non persisté:', e)
+          }
+        }
+      } else {
+        console.log(`[crbo] Retry détecté — INSERT skippé, CRBO ${insertedCrboId} déjà créé.`)
       }
-      const insertedCrboId: string | null = insertedCrbo?.id ?? null
 
-      // Compteurs (best-effort) — log si échec, ne bloque pas le téléchargement
-      try {
-        const { error: rpcError } = await supabase.rpc('increment_crbo_count', { user_id: user.id })
-        if (rpcError) console.warn('Compteur CRBO non incrémenté:', rpcError)
-      } catch (e) { console.warn('Compteur CRBO RPC failed:', e) }
-      if (handoff.selectedMedecinId) {
+      // Compteurs (best-effort) — UNIQUEMENT au 1er insert, sinon double-comptage
+      // sur chaque retry (quota consommé N fois pour un seul CRBO).
+      if (isFirstInsert) {
         try {
-          const { error: medErr } = await supabase.rpc('increment_medecin_usage', { medecin_id: handoff.selectedMedecinId })
-          if (medErr) console.warn('Compteur médecin non incrémenté:', medErr)
-        } catch (e) { console.warn('Compteur médecin RPC failed:', e) }
+          const { error: rpcError } = await supabase.rpc('increment_crbo_count', { user_id: user.id })
+          if (rpcError) console.warn('Compteur CRBO non incrémenté:', rpcError)
+        } catch (e) { console.warn('Compteur CRBO RPC failed:', e) }
+        if (handoff.selectedMedecinId) {
+          try {
+            const { error: medErr } = await supabase.rpc('increment_medecin_usage', { medecin_id: handoff.selectedMedecinId })
+            if (medErr) console.warn('Compteur médecin non incrémenté:', medErr)
+          } catch (e) { console.warn('Compteur médecin RPC failed:', e) }
+        }
       }
 
       // ============ Téléchargement Word ============
