@@ -8,6 +8,7 @@ import type { CRBOStructure, CRBODomain, CRBOEpreuve } from '@/lib/prompts'
 import { downloadCRBOWord } from '@/lib/word-export'
 import StepProgress from '@/components/StepProgress'
 import GenerationLoader from '@/components/GenerationLoader'
+import AutoSaveIndicator from '@/components/AutoSaveIndicator'
 import Tooltip from '@/components/Tooltip'
 import ConfettiBurst from '@/components/ConfettiBurst'
 import CRBOStructuredPreview from '@/components/CRBOStructuredPreview'
@@ -124,6 +125,9 @@ function NouveauCRBOContent() {
   const [savedCrboId, setSavedCrboId] = useState<string | null>(null)
   const [isFirstCRBO, setIsFirstCRBO] = useState(false)
   const [lastSavedAt, setLastSavedAt] = useState<number | null>(null)
+  // État éphémère pour afficher "Sauvegarde…" pendant 600ms quand persistDraft
+  // s'exécute — donne un feedback visible sur l'auto-save toutes les 15s.
+  const [savingFlash, setSavingFlash] = useState(false)
   const [nowTick, setNowTick] = useState(0)
   const [importingAnamnese, setImportingAnamnese] = useState(false)
   const [prefillBanner, setPrefillBanner] = useState<string>('')
@@ -246,13 +250,23 @@ function NouveauCRBOContent() {
         }
       }
 
+      // ============ One-click renouvellement ============
+      // Si ?renouvellement=<crbo_id> est passé (depuis la fiche patient,
+      // bouton "Refaire un bilan"), on charge le CRBO précédent et on
+      // pré-remplit toute la fiche : bilan_type, lien bilan_precedent_*,
+      // médecin, anamnèse stable, etc. L'ortho atterrit directement à
+      // l'étape Anamnèse (3) où elle ajuste les évolutions.
+      const renouvellementId = searchParams.get('renouvellement')
+      const isRenouvellement = !!renouvellementId
+
       // Reprendre un brouillon s'il y en a un
       // Skippé si on charge un prefill (les résultats arrivent du screenshot,
-      // pas le brouillon).
+      // pas le brouillon) OU un renouvellement (les données viennent du
+      // bilan précédent, pas du brouillon — on n'écrase pas).
       const prefillIdFromUrl = searchParams.get('prefill')
       try {
         const raw = localStorage.getItem(DRAFT_KEY)
-        if (raw && !patientIdFromUrl && !prefillIdFromUrl) {
+        if (raw && !patientIdFromUrl && !prefillIdFromUrl && !isRenouvellement) {
           const draft = JSON.parse(raw) as { step: number; formData: Partial<CRBOFormData> }
           if (draft?.formData) {
             setFormData(prev => ({ ...prev, ...draft.formData }))
@@ -261,6 +275,55 @@ function NouveauCRBOContent() {
         }
       } catch {
         // brouillon corrompu → on l'ignore
+      }
+
+      // Pré-remplissage renouvellement : on charge le CRBO précédent en
+      // best-effort. Si le fetch échoue, l'ortho voit juste un form normal
+      // avec bilan_type=renouvellement (toujours préférable à 0 prefill).
+      if (renouvellementId) {
+        try {
+          const { data: prevCrbo } = await supabase
+            .from('crbos')
+            .select('id, bilan_date, anamnese, structure_json, medecin_nom, medecin_tel, motif, patient_classe, test_utilise')
+            .eq('id', renouvellementId)
+            .eq('user_id', user.id)
+            .maybeSingle()
+
+          if (prevCrbo) {
+            const prevStructure = prevCrbo.structure_json as CRBOStructure | null
+            const anamneseRedigee = prevStructure?.anamnese_redigee || ''
+            // Tests : si le bilan précédent avait des tests, on les recoche
+            // (l'ortho refera probablement les mêmes).
+            const prevTests = typeof prevCrbo.test_utilise === 'string'
+              ? prevCrbo.test_utilise.split(',').map((t: string) => t.trim()).filter(Boolean)
+              : []
+            setFormData(prev => ({
+              ...prev,
+              bilan_type: 'renouvellement',
+              bilan_precedent_id: prevCrbo.id,
+              bilan_precedent_structure: prevStructure,
+              bilan_precedent_date: prevCrbo.bilan_date,
+              bilan_precedent_anamnese: anamneseRedigee,
+              elements_stables: prev.elements_stables || anamneseRedigee || prevCrbo.anamnese || '',
+              anamnese: prev.anamnese || prevCrbo.anamnese || '',
+              medecin_nom: prev.medecin_nom || prevCrbo.medecin_nom || '',
+              medecin_tel: prev.medecin_tel || prevCrbo.medecin_tel || '',
+              motif: prev.motif || prevCrbo.motif || '',
+              patient_classe: prev.patient_classe || prevCrbo.patient_classe || '',
+              // Pré-coche les tests du bilan précédent (l'ortho décoche si besoin).
+              test_utilise: prev.test_utilise.length > 0 ? prev.test_utilise : prevTests,
+            }))
+            // Atterrir directement à l'étape Anamnèse — patient + médecin
+            // déjà pré-remplis, l'ortho édite directement les évolutions.
+            setCurrentStep(3)
+            setPrefillBanner(
+              `🔄 Renouvellement pré-rempli depuis le bilan du ${new Date(prevCrbo.bilan_date).toLocaleDateString('fr-FR')}. ` +
+              `Vous pouvez ajuster l'anamnèse et passer aux résultats.`,
+            )
+          }
+        } catch (e) {
+          console.warn('Renouvellement prefill failed:', e)
+        }
       }
 
       // Prefill depuis une session screenshot HappyNeuron
@@ -317,10 +380,16 @@ function NouveauCRBOContent() {
         serializable.patient_prenom || serializable.patient_nom ||
         serializable.motif || serializable.anamnese || serializable.resultats_manuels
       if (!hasContent) return false
+      // Flash "Sauvegarde…" pendant ~500ms pour confirmer visuellement chaque
+      // tick d'auto-save (toutes les 15s). Sans ça, l'ortho n'a aucun feedback
+      // que sa frappe est sécurisée.
+      setSavingFlash(true)
       localStorage.setItem(DRAFT_KEY, JSON.stringify({ step: currentStep, formData: serializable }))
       setLastSavedAt(Date.now())
+      setTimeout(() => setSavingFlash(false), 500)
       return true
     } catch {
+      setSavingFlash(false)
       return false
     }
   }
@@ -1023,11 +1092,24 @@ function NouveauCRBOContent() {
         </div>
       )}
 
-      {/* Progress bar moderne */}
-      <StepProgress
-        currentStep={currentStep}
-        onStepClick={(step) => setCurrentStep(step)}
-      />
+      {/* Progress bar moderne + indicateur auto-save discret aligné à droite.
+          L'indicateur reste visible en permanence dès le 1er tick, réduit
+          l'anxiété "j'ai perdu mon travail" sans encombrer la zone d'édition. */}
+      <div className="flex items-end justify-between gap-4 flex-wrap">
+        <div className="flex-1 min-w-0">
+          <StepProgress
+            currentStep={currentStep}
+            onStepClick={(step) => setCurrentStep(step)}
+          />
+        </div>
+        <div className="shrink-0 pb-1">
+          <AutoSaveIndicator
+            lastSavedAt={lastSavedAt}
+            nowTick={nowTick}
+            saving={savingFlash}
+          />
+        </div>
+      </div>
 
       {/* Overlay pendant génération Claude */}
       <GenerationLoader visible={generating} />
@@ -2026,13 +2108,9 @@ Lecture de mots (score) : 15/100, É-T : -6.62, P5
           </div>
         )}
 
-        {/* Indicateur d'auto-save */}
-        {savedAgoLabel && (
-          <div className="mt-6 text-xs text-gray-400 flex items-center justify-end gap-1.5">
-            <span aria-hidden>💾</span>
-            <span>Sauvegardé {savedAgoLabel}</span>
-          </div>
-        )}
+        {/* Auto-save indicator moved to top (AutoSaveIndicator) — plus visible
+            et accessible en permanence. Le label local `savedAgoLabel` est
+            conservé en interne pour debug si besoin futur. */}
 
         {/* Navigation buttons */}
         <div className="flex justify-between mt-4 pt-6 border-t border-gray-200">

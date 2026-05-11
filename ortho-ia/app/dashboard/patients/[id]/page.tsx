@@ -260,13 +260,39 @@ export default function PatientDetailPage() {
               <p className="mt-1 text-sm text-gray-500">Médecin : {patient.medecin_nom}</p>
             )}
           </div>
-          <Link
-            href={`/dashboard/nouveau-crbo?patient=${patient.id}`}
-            className="inline-flex items-center gap-2 px-4 py-2.5 bg-green-600 text-white rounded-lg font-medium hover:bg-green-700 transition"
-          >
-            <Plus size={18} />
-            Nouveau CRBO
-          </Link>
+          {/* CTA principal : si le patient a déjà au moins 1 CRBO, on propose
+              "Refaire un bilan" (renouvellement one-click) qui pré-remplit
+              anamnèse stable + médecin + lien bilan précédent. Sinon, le
+              bouton classique "Nouveau CRBO". */}
+          <div className="flex items-center gap-2 flex-wrap">
+            {crbos.length > 0 && (() => {
+              // Le dernier bilan = le plus récent par bilan_date (les CRBOs
+              // sont chargés tri ascendant en ligne 71 → on prend le dernier
+              // élément du tableau).
+              const lastCrbo = crbos[crbos.length - 1]
+              return (
+                <Link
+                  href={`/dashboard/nouveau-crbo?patient=${patient.id}&renouvellement=${lastCrbo.id}`}
+                  className="inline-flex items-center gap-2 px-4 py-2.5 bg-green-600 text-white rounded-lg font-medium hover:bg-green-700 transition shadow-sm"
+                  title={`Pré-remplit l'anamnèse, le médecin et lie le bilan précédent (${new Date(lastCrbo.bilan_date).toLocaleDateString('fr-FR')})`}
+                >
+                  <TrendingUp size={18} />
+                  Refaire un bilan
+                </Link>
+              )
+            })()}
+            <Link
+              href={`/dashboard/nouveau-crbo?patient=${patient.id}`}
+              className={`inline-flex items-center gap-2 px-4 py-2.5 rounded-lg font-medium transition ${
+                crbos.length > 0
+                  ? 'bg-white border border-gray-300 text-gray-700 hover:bg-gray-50'
+                  : 'bg-green-600 text-white hover:bg-green-700 shadow-sm'
+              }`}
+            >
+              <Plus size={18} />
+              {crbos.length > 0 ? 'Nouveau bilan initial' : 'Nouveau CRBO'}
+            </Link>
+          </div>
         </div>
       </div>
 
