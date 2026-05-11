@@ -35,6 +35,8 @@ import type { CRBOFormData } from '@/lib/types'
 import { drawHappyNeuronChart, computeChartHeight, computeChartWidth, type ChartGroup } from '@/lib/chart'
 import { downloadCRBOWord, SEUILS, getPercentileColor, seuilFor } from '@/lib/word-export'
 import MicButton from '@/components/MicButton'
+import StreamingCRBO from '@/components/StreamingCRBO'
+import { playSuccessSound, playSwoosh } from '@/lib/sounds'
 
 interface Handoff {
   formData: CRBOFormData
@@ -130,6 +132,8 @@ export default function ResultatsPage() {
   const [anamneseEdit, setAnamneseEdit] = useState('')
   const [motifEdit, setMotifEdit] = useState('')
   const [orthoComments, setOrthoComments] = useState<Record<string, string>>({})
+  // Buffer SSE accumulé pendant la génération streaming. Vidé au reset.
+  const [streamingBuffer, setStreamingBuffer] = useState('')
 
   useEffect(() => {
     try {
@@ -172,10 +176,15 @@ export default function ResultatsPage() {
     if (generating) return
     setGenerating(true)
     setError('')
+    setStreamingBuffer('')
 
     try {
-      // ============ PHASE 2 : SYNTHÈSE ============
-      const response = await fetch('/api/generate-crbo', {
+      // ============ PHASE 2 : SYNTHÈSE (streaming SSE) ============
+      // Plutôt qu'attendre 30-60s de spinner, on consomme un flux SSE qui
+      // remonte le texte token-par-token au fur et à mesure que Claude
+      // rédige. Visuel : sections (diagnostic / recommandations) se
+      // remplissent en direct, avec highlight des termes cliniques.
+      const response = await fetch('/api/generate-crbo?stream=1', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
@@ -191,16 +200,51 @@ export default function ResultatsPage() {
         }),
       })
 
-      const data = await response.json()
       if (!response.ok) {
         if (response.status === 401) {
           setError('Session expirée — veuillez vous reconnecter.')
           setTimeout(() => router.push('/auth/login'), 2000)
           return
         }
-        throw new Error(data.error || 'Erreur lors de la génération de la synthèse')
+        const errBody = await response.json().catch(() => ({}))
+        throw new Error(errBody?.error || 'Erreur lors de la génération de la synthèse')
       }
-      const synthesized = data.synthesized as SynthesizedCRBO
+
+      // Consommer le flux SSE event par event.
+      // Format : `data: <JSON>\n\n` répété.
+      const reader = response.body?.getReader()
+      if (!reader) throw new Error("Streaming non supporté par ce navigateur.")
+      const decoder = new TextDecoder()
+      let sseBuffer = ''
+      let accumulated = ''
+      let synthesized: SynthesizedCRBO | null = null
+      let streamError: string | null = null
+
+      while (true) {
+        const { value, done } = await reader.read()
+        if (done) break
+        sseBuffer += decoder.decode(value, { stream: true })
+        // Découper sur les délimiteurs SSE \n\n
+        const events = sseBuffer.split('\n\n')
+        sseBuffer = events.pop() ?? '' // dernier morceau possiblement incomplet
+        for (const evt of events) {
+          if (!evt.startsWith('data:')) continue
+          const dataLine = evt.replace(/^data:\s*/, '')
+          let parsed: any
+          try { parsed = JSON.parse(dataLine) } catch { continue }
+          if (parsed.type === 'delta' && typeof parsed.partial === 'string') {
+            accumulated += parsed.partial
+            setStreamingBuffer(accumulated)
+          } else if (parsed.type === 'complete' && parsed.synthesized) {
+            synthesized = parsed.synthesized as SynthesizedCRBO
+          } else if (parsed.type === 'error') {
+            streamError = parsed.message || 'Erreur streaming'
+          }
+        }
+      }
+
+      if (streamError) throw new Error(streamError)
+      if (!synthesized) throw new Error("Aucune synthèse reçue à la fin du stream.")
 
       // ============ Construction de la CRBOStructure finale ============
       // Le commentaire final de chaque domaine est la version reformulée par
@@ -367,6 +411,11 @@ export default function ResultatsPage() {
         }
       }
 
+      // Son "success" — la synthèse vient d'aboutir, l'ortho a son brouillon.
+      // Joué AVANT le download (qui peut prendre 1-2s pour générer le canvas)
+      // pour confirmer immédiatement que la partie IA est terminée.
+      playSuccessSound()
+
       // ============ Téléchargement Word ============
       await downloadCRBOWord({
         formData: fd,
@@ -374,6 +423,7 @@ export default function ResultatsPage() {
         previousStructure: fd.bilan_precedent_structure ?? null,
         previousBilanDate: fd.bilan_precedent_date,
       })
+      playSwoosh() // "swoosh" type imprimante quand le Word descend
 
       // ============ Promotion kanban : a_rediger → a_relire ============
       // Une fois le Word téléchargé, le CRBO entre dans la phase "à relire"
@@ -596,6 +646,35 @@ export default function ResultatsPage() {
           </button>
         </div>
       </div>
+
+      {/* Overlay streaming : affiché pendant la génération de la synthèse.
+          Remplace l'attente passive (spinner 30-60s) par un visuel actif
+          où l'ortho voit le diagnostic / recommandations se rédiger en
+          direct, avec highlight des termes cliniques. */}
+      {generating && (
+        <div
+          style={{
+            position: 'fixed',
+            inset: 0,
+            background: 'rgba(15, 23, 42, 0.55)',
+            backdropFilter: 'blur(4px)',
+            zIndex: 100,
+            display: 'flex',
+            alignItems: 'center',
+            justifyContent: 'center',
+            padding: 24,
+            animation: 'fade-in-overlay 220ms ease',
+          }}
+        >
+          <StreamingCRBO accumulated={streamingBuffer} active={generating} />
+          <style jsx>{`
+            @keyframes fade-in-overlay {
+              from { opacity: 0; }
+              to { opacity: 1; }
+            }
+          `}</style>
+        </div>
+      )}
     </div>
   )
 }

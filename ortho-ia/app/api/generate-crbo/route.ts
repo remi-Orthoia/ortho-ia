@@ -404,6 +404,149 @@ export async function POST(request: NextRequest) {
       },
     ]
 
+    // ============ Streaming SSE (opt-in via ?stream=1) ============
+    // Activé pour synthesize / full uniquement (extract est <30s, pas besoin).
+    // Envoie au client la progression token-par-token + rehydratation des
+    // tokens d'anonymisation avant émission → le navigateur voit les vrais
+    // prénoms / noms à mesure que Claude rédige.
+    //
+    // Format : SSE `data: {...}\n\n`, avec types :
+    //   { type: "start" }
+    //   { type: "delta", partial: "..." }     (rehydraté, accumulé côté client)
+    //   { type: "complete", phase, synthesized | structure | crbo }
+    //   { type: "error", message }
+    const isStream =
+      request.nextUrl.searchParams.get('stream') === '1' &&
+      (phase === 'synthesize' || phase === 'full')
+
+    if (isStream) {
+      const encoder = new TextEncoder()
+
+      // Pré-calcule la liste de tokens à rehydrater (du plus long au plus
+      // court — évite qu'un prefix court mange un token plus long).
+      const tokenPairs: Array<[string, string]> = Object.entries(reverseMap.tokens)
+        .sort((a, b) => b[0].length - a[0].length)
+      const rehydratePartial = (s: string): string => {
+        let out = s
+        for (const [token, value] of tokenPairs) {
+          if (out.indexOf(token) >= 0) out = out.split(token).join(value)
+        }
+        return out
+      }
+
+      const sseStream = new ReadableStream({
+        async start(controller) {
+          const send = (obj: unknown) => {
+            try {
+              controller.enqueue(encoder.encode(`data: ${JSON.stringify(obj)}\n\n`))
+            } catch {
+              // Client déconnecté en cours de stream — ignoré silencieusement.
+            }
+          }
+
+          try {
+            send({ type: 'start' })
+
+            const stream = anthropic.messages.stream(
+              {
+                model: 'claude-sonnet-4-6',
+                max_tokens: 16384,
+                system: systemBlocks,
+                tools: [toolToUse],
+                tool_choice: { type: 'tool', name: toolNameExpected },
+                messages: [{ role: 'user', content: userPrompt }],
+              },
+              { signal: abortController.signal },
+            )
+
+            for await (const event of stream as any) {
+              if (
+                event?.type === 'content_block_delta' &&
+                event.delta?.type === 'input_json_delta' &&
+                typeof event.delta.partial_json === 'string'
+              ) {
+                const partial = rehydratePartial(event.delta.partial_json)
+                send({ type: 'delta', partial })
+              }
+            }
+
+            const finalMessage = await stream.finalMessage()
+            const toolUseBlock = finalMessage.content.find(
+              (b: any): b is Anthropic.ToolUseBlock => b.type === 'tool_use',
+            )
+            if (!toolUseBlock || toolUseBlock.name !== toolNameExpected) {
+              send({ type: 'error', message: "Aucune structure CRBO exploitable n'a été produite." })
+              return
+            }
+
+            if (phase === 'synthesize') {
+              const rawSynth = toolUseBlock.input as SynthesizedCRBO
+              const tempStruct: CRBOStructure = {
+                anamnese_redigee: '',
+                motif_reformule: '',
+                domains: [],
+                diagnostic: rawSynth.diagnostic || '',
+                recommandations: rawSynth.recommandations || '',
+                conclusion: rawSynth.conclusion || '',
+                points_forts: rawSynth.points_forts || '',
+                difficultes_identifiees: rawSynth.difficultes_identifiees || '',
+                axes_therapeutiques: rawSynth.axes_therapeutiques || [],
+                pap_suggestions: rawSynth.pap_suggestions,
+                synthese_evolution: rawSynth.synthese_evolution ?? null,
+              }
+              const rehydrated = rehydrate(tempStruct, reverseMap)
+              const domain_commentaires = rehydrate(
+                Array.isArray(rawSynth.domain_commentaires) ? rawSynth.domain_commentaires : [],
+                reverseMap,
+              )
+              const result: SynthesizedCRBO = {
+                points_forts: rehydrated.points_forts ?? '',
+                difficultes_identifiees: rehydrated.difficultes_identifiees ?? '',
+                diagnostic: rehydrated.diagnostic,
+                recommandations: rehydrated.recommandations,
+                axes_therapeutiques: rehydrated.axes_therapeutiques ?? [],
+                conclusion: rehydrated.conclusion,
+                pap_suggestions: rehydrated.pap_suggestions ?? [],
+                domain_commentaires,
+                synthese_evolution: rehydrated.synthese_evolution ?? null,
+              }
+              send({ type: 'complete', phase: 'synthesize', synthesized: result })
+            } else {
+              const rawStructure = toolUseBlock.input as CRBOStructure
+              const structure = rehydrate(rawStructure, reverseMap)
+              const crbo = structureToText(structure)
+              send({ type: 'complete', phase: 'full', crbo, structure })
+            }
+          } catch (err: any) {
+            logger.error('generate-crbo (stream)', err)
+            send({
+              type: 'error',
+              message: err?.message?.slice(0, 200) || "Erreur de streaming",
+            })
+          } finally {
+            clearTimeout(timeoutId)
+            try { controller.close() } catch {}
+          }
+        },
+        cancel() {
+          // Client a coupé la connexion → on annule l'appel Anthropic en cours
+          // pour ne pas payer des tokens inutiles.
+          abortController.abort()
+        },
+      })
+
+      return new Response(sseStream, {
+        headers: {
+          'Content-Type': 'text/event-stream; charset=utf-8',
+          'Cache-Control': 'no-cache, no-transform',
+          'Connection': 'keep-alive',
+          // Désactive le buffering Vercel/Nginx → les chunks SSE arrivent
+          // immédiatement plutôt que d'attendre un flush de 64KB.
+          'X-Accel-Buffering': 'no',
+        },
+      })
+    }
+
     let message
     try {
       // Retry auto (jusqu'à 3 tentatives) sur 429 / 5xx / erreurs réseau transitoires
