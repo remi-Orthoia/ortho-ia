@@ -5,6 +5,7 @@ import DashboardSkeleton from '@/components/skeletons/DashboardSkeleton'
 import OnboardingTour from '@/components/OnboardingTour'
 import DailyTip from '@/components/DailyTip'
 import MilestoneCelebration from '@/components/MilestoneCelebration'
+import CalendarWidget from '@/components/CalendarWidget'
 import { useRouter } from 'next/navigation'
 import Link from 'next/link'
 import { createClient } from '@/lib/supabase'
@@ -294,6 +295,11 @@ export default function DashboardPage() {
       <OnboardingTour />
       <MilestoneCelebration crboCount={stats.total} />
       {stats.total > 0 && <DailyTip crboCount={stats.total} />}
+
+      {/* Widget agenda Google — affiche les prochains RDV et un bouton
+          "Démarrer le CRBO" pour les patients matchés. Auto-caché si
+          l'admin n'a pas configuré GOOGLE_OAUTH_CLIENT_ID côté serveur. */}
+      <CalendarWidget />
       {/* Header */}
       <div className="flex flex-col sm:flex-row sm:items-end sm:justify-between gap-4">
         <div>

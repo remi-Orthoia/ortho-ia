@@ -57,7 +57,11 @@ export async function middleware(request: NextRequest) {
     pathname.startsWith('/api/generate-crbo') ||
     pathname.startsWith('/api/extract-pdf') ||
     pathname.startsWith('/api/transcribe') ||
-    pathname.startsWith('/api/account/')
+    pathname.startsWith('/api/account/') ||
+    // /api/calendar/upcoming + /api/calendar/disconnect doivent être auth.
+    // /api/calendar/connect aussi, mais on laisse le matcher attraper tout
+    // /api/calendar/* (le callback OAuth a sa propre validation par state).
+    pathname.startsWith('/api/calendar/')
   // Pages /dev/* : outils internes — bloquées en prod, accessibles en dev local
   const isDevRoute = pathname.startsWith('/dev')
   const isProd = process.env.NODE_ENV === 'production'
@@ -95,6 +99,7 @@ export const config = {
     '/api/extract-pdf/:path*',
     '/api/transcribe/:path*',
     '/api/account/:path*',
+    '/api/calendar/:path*',
     '/dev/:path*',
   ],
 }
