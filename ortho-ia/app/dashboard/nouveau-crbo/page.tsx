@@ -9,6 +9,7 @@ import { downloadCRBOWord } from '@/lib/word-export'
 import StepProgress from '@/components/StepProgress'
 import GenerationLoader from '@/components/GenerationLoader'
 import AutoSaveIndicator from '@/components/AutoSaveIndicator'
+import SnippetTextarea from '@/components/SnippetTextarea'
 import Tooltip from '@/components/Tooltip'
 import ConfettiBurst from '@/components/ConfettiBurst'
 import CRBOStructuredPreview from '@/components/CRBOStructuredPreview'
@@ -1815,10 +1816,10 @@ function NouveauCRBOContent() {
                       onError={(msg) => setError(msg)}
                     />
                   </div>
-                  <textarea
+                  <SnippetTextarea
                     name="anamnese"
                     value={formData.anamnese}
-                    onChange={handleChange}
+                    onChange={(v) => setFormData(prev => ({ ...prev, anamnese: v }))}
                     required
                     rows={10}
                     className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-green-500 resize-none"
@@ -1827,7 +1828,9 @@ function NouveauCRBOContent() {
 - vision/audition : RAS, porte des lunettes (hypermétrope)
 - à la maison : il aime jouer avec son chat, construire des cabanes
 - autres suivis : bilan psychomot le 3/06/2020...
-- scolarité : CP très compliqué (6 maîtresses + confinement)"
+- scolarité : CP très compliqué (6 maîtresses + confinement)
+
+Astuce : tapez /fatigue, /anxiete, /encouragements… pour réutiliser vos formulations habituelles."
                   />
                 </div>
               </>
@@ -2096,13 +2099,13 @@ Lecture de mots (score) : 15/100, É-T : -6.62, P5
                   onError={(msg) => setError(msg)}
                 />
               </div>
-              <textarea
+              <SnippetTextarea
                 name="notes_analyse"
                 value={formData.notes_analyse}
-                onChange={handleChange}
+                onChange={(v) => setFormData(prev => ({ ...prev, notes_analyse: v }))}
                 rows={3}
                 className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-green-500 resize-none"
-                placeholder="Nombre de séances passées, matériel utilisé, adaptations..."
+                placeholder="Nombre de séances passées, matériel utilisé, adaptations… (tapez /fatigue, /anxiete pour réutiliser vos formulations)"
               />
             </div>
           </div>

@@ -5,6 +5,7 @@ import { useRouter, useSearchParams } from 'next/navigation'
 import { createClient } from '@/lib/supabase'
 import { Loader2, Save, CheckCircle, AlertCircle, Trash2, Copy, Camera, Download, Users, Heart, Sparkles } from 'lucide-react'
 import { useToast } from '@/components/Toast'
+import SnippetManager from '@/components/SnippetManager'
 
 function ProfilContent() {
   const router = useRouter()
@@ -676,6 +677,9 @@ function ProfilContent() {
           </details>
         </section>
       )}
+
+      {/* Snippets persos — raccourcis textuels insérables via /key */}
+      <SnippetManager />
 
       {/* Zone dangereuse RGPD : suppression complète du compte */}
       <div className="mt-10 rounded-2xl border-2 border-red-200 bg-red-50/50 p-5 sm:p-6">
