@@ -267,6 +267,35 @@ export default function ResultatsPage() {
           ?? (orthoComments[d.nom] || d.commentaire || '').trim(),
       }))
 
+      // ============ Track des champs édités par l'ortho ============
+      // Permet de surligner dans le Word les passages que l'ortho a
+      // explicitement modifiés (vs le draft IA brut). Construit la
+      // confiance et valorise son apport.
+      const editedFields: string[] = []
+      const initialAnamnese = handoff.extracted.anamnese_redigee?.trim() || ''
+      const editedAnamnese = anamneseEdit.trim()
+      if (editedAnamnese && editedAnamnese !== initialAnamnese) {
+        editedFields.push('anamnese_redigee')
+      }
+      const initialMotif = handoff.extracted.motif_reformule?.trim() || ''
+      const editedMotif = motifEdit.trim()
+      if (editedMotif && editedMotif !== initialMotif) {
+        editedFields.push('motif_reformule')
+      }
+      // Commentaires de domaine : édités si l'ortho a tapé du contenu dans la
+      // textarea (orthoComments) ET qu'il diffère de la suggestion IA initiale
+      // (handoff.extracted.domains[i].commentaire).
+      const initialDomainComments = new Map<string, string>()
+      for (const d of handoff.extracted.domains) {
+        initialDomainComments.set(d.nom, (d.commentaire ?? '').trim())
+      }
+      for (const [domainName, orthoText] of Object.entries(orthoComments)) {
+        const orthoTrim = (orthoText ?? '').trim()
+        if (orthoTrim && orthoTrim !== initialDomainComments.get(domainName)) {
+          editedFields.push(`domain_commentaire:${domainName}`)
+        }
+      }
+
       const rawFinalStructure: CRBOStructure = {
         anamnese_redigee: anamneseEdit.trim() || handoff.extracted.anamnese_redigee,
         motif_reformule: motifEdit.trim() || handoff.extracted.motif_reformule || '',
@@ -279,6 +308,8 @@ export default function ResultatsPage() {
         conclusion: synthesized.conclusion,
         pap_suggestions: synthesized.pap_suggestions,
         synthese_evolution: synthesized.synthese_evolution ?? null,
+        reasoning_clinical: synthesized.reasoning_clinical ?? null,
+        edited_fields: editedFields.length > 0 ? editedFields : undefined,
       }
       // Application du vocabulaire perso de l'ortho (localStorage). Réécrit
       // les sections narratives selon ses préférences ("patient" → "enfant",

@@ -1,8 +1,9 @@
 'use client'
 
-import { Download, Edit, AlertTriangle, Sparkles, BookOpen, Eye } from 'lucide-react'
+import { Download, Edit, AlertTriangle, Sparkles, BookOpen, Eye, UserCheck } from 'lucide-react'
 import type { CRBOStructure } from '@/lib/prompts'
 import { SEUILS, seuilFor, getPercentileColor } from '@/lib/word-export'
+import ReasoningClinicalDisplay from './ReasoningClinical'
 
 interface Props {
   structure: CRBOStructure
@@ -127,8 +128,8 @@ export default function CRBOStructuredPreview({ structure, onDownload, onEdit, o
         </div>
       )}
 
-      {/* Anamnèse */}
-      <Section title="Anamnèse" color="primary">
+      {/* Anamnèse — badge "édité" si l'ortho a personnalisé ce passage */}
+      <Section title="Anamnèse" color="primary" edited={structure.edited_fields?.includes('anamnese_redigee')}>
         <p className="text-gray-800 dark:text-gray-200 leading-relaxed whitespace-pre-line">
           {structure.anamnese_redigee || <em className="text-gray-400">[À compléter — anamnèse non reformulée]</em>}
         </p>
@@ -236,6 +237,12 @@ export default function CRBOStructuredPreview({ structure, onDownload, onEdit, o
       {/* Synthèse et diagnostic — les H3 internes (Comportement, Points forts, …) structurent le texte */}
       <Section title="Synthèse et diagnostic" color="primary">
         <RichText text={structure.diagnostic} />
+        {/* Toggle "Pourquoi cette conclusion ?" sous le diagnostic — révèle
+            le raisonnement IA structuré (indices retenus, dissociations,
+            sous-type, contre-indices). Replié par défaut. */}
+        {structure.reasoning_clinical && (
+          <ReasoningClinicalDisplay reasoning={structure.reasoning_clinical} />
+        )}
       </Section>
 
       {/* Recommandations */}
@@ -267,7 +274,7 @@ export default function CRBOStructuredPreview({ structure, onDownload, onEdit, o
   )
 }
 
-function Section({ title, color, children }: { title: string; color: 'primary' | 'purple' | 'blue' | 'gray'; children: React.ReactNode }) {
+function Section({ title, color, children, edited }: { title: string; color: 'primary' | 'purple' | 'blue' | 'gray'; children: React.ReactNode; edited?: boolean }) {
   const colorClass = {
     primary: 'text-primary-700 dark:text-primary-400',
     purple: 'text-purple-700 dark:text-purple-400',
@@ -276,8 +283,19 @@ function Section({ title, color, children }: { title: string; color: 'primary' |
   }[color]
 
   return (
-    <div className="card-modern p-5">
-      <h3 className={`font-bold text-base mb-3 ${colorClass}`}>{title}</h3>
+    <div className={`card-modern p-5 ${edited ? 'ring-1 ring-blue-100 dark:ring-blue-900/30' : ''}`}>
+      <div className="flex items-center justify-between gap-2 mb-3">
+        <h3 className={`font-bold text-base ${colorClass}`}>{title}</h3>
+        {edited && (
+          <span
+            title="Passage relu / édité par vous"
+            className="inline-flex items-center gap-1 px-2 py-0.5 rounded text-xs font-medium bg-blue-50 dark:bg-blue-900/30 text-blue-700 dark:text-blue-300"
+          >
+            <UserCheck size={11} />
+            édité
+          </span>
+        )}
+      </div>
       {children}
     </div>
   )

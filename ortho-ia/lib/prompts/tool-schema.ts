@@ -185,6 +185,53 @@ export const SYNTHESIZE_TOOL: Anthropic.Tool = {
           domaines_regression: { type: 'array', items: { type: 'string' } },
         },
       },
+      reasoning_clinical: {
+        type: 'object',
+        description:
+          "Raisonnement clinique structuré ayant conduit au diagnostic. Affiché à " +
+          "l'orthophoniste sous un toggle 'Pourquoi cette conclusion ?' — construit " +
+          "la confiance en désamorçant le côté 'boîte noire' de l'IA. Doit refléter " +
+          "le raisonnement réel, pas un résumé du diagnostic.",
+        properties: {
+          indices_retenus: {
+            type: 'array',
+            description:
+              "2 à 4 indices cliniques principaux qui orientent le diagnostic, formulés " +
+              "comme des observations factuelles. Ex: 'Métaphonologie en difficulté sévère " +
+              "(P5) → marqueur précurseur du décodage phonologique'. " +
+              "AUCUN chiffre de percentile DANS le diagnostic narratif final, MAIS " +
+              "autorisés ici car ce raisonnement reste interne — l'ortho l'ouvre " +
+              "explicitement pour le voir.",
+            items: { type: 'string' },
+            minItems: 2,
+            maxItems: 4,
+          },
+          dissociations: {
+            type: 'array',
+            description:
+              "Dissociations cliniques notables qui orientent vers un sous-type. " +
+              "Ex: 'Lecture de non-mots déficitaire + lecture de mots irréguliers " +
+              "préservée → voie d'assemblage atteinte (profil phonologique)'. Tableau " +
+              "vide si aucune dissociation marquante.",
+            items: { type: 'string' },
+          },
+          sous_type: {
+            type: ['string', 'null'],
+            description:
+              "Sous-type / forme du trouble retenu, si identifiable. Ex: 'phonologique', " +
+              "'de surface', 'mixte', 'compensée'. null si pas de sous-type clair.",
+          },
+          contre_indices: {
+            type: 'array',
+            description:
+              "Éléments du tableau qui POURRAIENT remettre en question le diagnostic " +
+              "(transparence intellectuelle). Ex: 'Empan envers préservé → pas " +
+              "d'argument fort pour TDA associé'. Tableau vide si tout converge.",
+            items: { type: 'string' },
+          },
+        },
+        required: ['indices_retenus'],
+      },
     },
   },
 }
@@ -263,6 +310,20 @@ export interface CRBODomain {
 
 export type SeveriteGlobale = 'Léger' | 'Modéré' | 'Sévère' | null
 
+/** Raisonnement clinique structuré affiché à l'ortho sous un toggle
+ *  "Pourquoi cette conclusion ?". Construit la confiance en désamorçant
+ *  le côté "boîte noire" de l'IA. */
+export interface ReasoningClinical {
+  /** 2-4 indices cliniques principaux qui orientent le diagnostic. */
+  indices_retenus: string[]
+  /** Dissociations cliniques notables (vide si aucune). */
+  dissociations?: string[]
+  /** Sous-type retenu (phonologique / surface / mixte / compensée…). */
+  sous_type?: string | null
+  /** Éléments qui pourraient remettre en cause le diagnostic. */
+  contre_indices?: string[]
+}
+
 export interface SyntheseEvolution {
   resume: string
   domaines_progres: string[]
@@ -303,6 +364,8 @@ export interface SynthesizedCRBO {
   comorbidites_detectees?: string[]
   /** Renouvellements uniquement. */
   synthese_evolution?: SyntheseEvolution | null
+  /** Raisonnement clinique structuré — affiché sous toggle "Pourquoi cette conclusion ?". */
+  reasoning_clinical?: ReasoningClinical | null
 }
 
 /** Structure complète du CRBO (résultat fusionné des 2 phases ou flow legacy). */
@@ -323,4 +386,17 @@ export interface CRBOStructure {
   comorbidites_detectees?: string[]
   pap_suggestions?: string[]
   synthese_evolution?: SyntheseEvolution | null
+  /** Raisonnement clinique structuré (optionnel — CRBO antérieurs n'en ont pas). */
+  reasoning_clinical?: ReasoningClinical | null
+  /**
+   * Liste des champs CRBO que l'orthophoniste a explicitement édités sur la
+   * page résultats (par opposition au draft IA brut). Utilisé par le Word
+   * export pour surligner ces passages en bleu pâle, et par la preview pour
+   * afficher un badge "édité".
+   *
+   * Valeurs possibles : "anamnese_redigee", "motif_reformule",
+   * "domain_commentaire:<nom_domaine>" pour chaque commentaire de domaine.
+   * Optionnel — CRBOs antérieurs n'ont pas ce champ.
+   */
+  edited_fields?: string[]
 }

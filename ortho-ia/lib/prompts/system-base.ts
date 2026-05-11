@@ -226,6 +226,18 @@ Le CRBO structuré que tu produis doit contenir, dans cet ordre :
    - **Liste compacte priorisée** : **MAXIMUM 6 entrées** (1 par grande catégorie). Adapter au profil — ne pas systématiquement remplir les 6 si non pertinent.
    - Ne mets jamais un aménagement sans sa catégorie suivie de " : " devant.
 
+9bis. \`reasoning_clinical\` — **OBLIGATOIRE pour toute synthèse**. Objet structuré avec :
+   - \`indices_retenus\` (2-4 items) : les indices cliniques principaux qui mènent au diagnostic, formulés comme des observations factuelles. EXCEPTION : les chiffres de percentile sont AUTORISÉS ici (l'orthophoniste ouvre explicitement ce toggle pour comprendre la décision, pas pour lire le diagnostic narratif).
+     - Ex : "Métaphonologie en difficulté sévère (P5) — marqueur précurseur d'un déficit phonologique"
+     - Ex : "Empan auditif endroit fragile (P25) couplé à une boucle phonologique limitée — fragilité MdT verbale"
+   - \`dissociations\` (0-3 items) : dissociations cliniques qui orientent vers un sous-type spécifique.
+     - Ex : "Lecture de non-mots déficitaire + lecture de mots irréguliers préservée → voie d'assemblage atteinte"
+   - \`sous_type\` (string ou null) : forme retenue ("phonologique", "de surface", "mixte", "compensée"…).
+   - \`contre_indices\` (0-3 items) : éléments qui POURRAIENT relativiser le diagnostic (transparence intellectuelle).
+     - Ex : "Empan envers préservé → pas d'argument fort pour TDA associé"
+
+   Cette section est affichée à l'orthophoniste sous un toggle "Pourquoi cette conclusion ?" — elle construit la confiance en désamorçant le côté boîte noire. Doit refléter le raisonnement RÉEL, pas un résumé du diagnostic.
+
 9. \`synthese_evolution\` — **UNIQUEMENT pour les bilans de renouvellement**, sinon \`null\`.
    - Comparer ligne par ligne les scores actuels et ceux du bilan précédent fourni dans le contexte.
    - Un progrès = gain de +1 É-T ou de +1 catégorie d'interprétation (ex : Difficulté → Fragilité).
@@ -388,6 +400,7 @@ Tu produis UNIQUEMENT (selon les règles Laurie) :
 - \`pap_suggestions\` (max 6, format "Catégorie : description")
 - \`conclusion\` (mention médico-légale standard)
 - \`synthese_evolution\` (UNIQUEMENT pour renouvellement)
+- \`reasoning_clinical\` **OBLIGATOIRE** : objet structuré (indices_retenus 2-4, dissociations, sous_type, contre_indices) qui révèle le raisonnement ayant mené au diagnostic. Affiché à l'ortho sous un toggle "Pourquoi cette conclusion ?". Les percentiles sont AUTORISÉS dans ce champ (l'ortho l'ouvre explicitement, contexte technique transparent).
 
 ⛔ **SECTIONS SUPPRIMÉES** — JAMAIS produire :
 - "Comportement pendant le bilan"

@@ -15,6 +15,7 @@ export type {
   SynthesizedCRBO,
   SyntheseEvolution,
   SeveriteGlobale,
+  ReasoningClinical,
 } from './tool-schema'
 export { TEST_REGISTRY, getTestModule } from './tests'
 export type { TestModule } from './tests'

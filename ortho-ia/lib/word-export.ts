@@ -420,6 +420,10 @@ export async function generateCRBOWord(payload: WordExportPayload): Promise<Blob
   const motifText = (hasStructure && structure!.motif_reformule?.trim())
     ? structure!.motif_reformule.trim()
     : (formData.motif || '')
+  // Edit-set précalculé pour appliquer le shading bleu pâle. Construit
+  // une seule fois ici car utilisé dans 3+ sections (motif, anamnèse, domaines).
+  const editedSetEarly = new Set(structure?.edited_fields ?? [])
+  const motifEdited = editedSetEarly.has('motif_reformule')
   if (motifText) {
     children.push(
       new Paragraph({
@@ -429,7 +433,12 @@ export async function generateCRBOWord(payload: WordExportPayload): Promise<Blob
         })],
         spacing: { before: 200 },
       }),
-      new Paragraph({ alignment: AlignmentType.BOTH, children: [new TextRun({ text: motifText, size: FONT_SIZE_NORMAL, font: FONT })], spacing: { after: 200 } }),
+      new Paragraph({
+        alignment: AlignmentType.BOTH,
+        shading: motifEdited ? { type: ShadingType.CLEAR, fill: 'EFF6FF', color: 'auto' } : undefined,
+        children: [new TextRun({ text: motifText, size: FONT_SIZE_NORMAL, font: FONT })],
+        spacing: { after: 200 },
+      }),
     )
   }
 
@@ -660,13 +669,22 @@ export async function generateCRBOWord(payload: WordExportPayload): Promise<Blob
   children.push(new Paragraph({ children: [new PageBreak()] }))
 
   // ===== ANAMNÈSE — JAMAIS de notes brutes =====
+  // Surligne en bleu pâle si l'ortho a édité ce champ (cf. edited_fields).
+  // Construit la confiance : "vous avez ajouté votre touche personnelle".
+  const anamneseEdited = editedSetEarly.has('anamnese_redigee')
+
   children.push(createSectionTitle('ANAMNÈSE'))
   const anamneseText = hasStructure && structure!.anamnese_redigee?.trim()
     ? structure!.anamnese_redigee.trim()
     : "[À COMPLÉTER — anamnèse non reformulée par l'IA. Reprenez les notes brutes et rédigez un paragraphe fluide.]"
   anamneseText.split('\n').forEach((line) => {
     if (line.trim()) {
-      children.push(new Paragraph({ alignment: AlignmentType.BOTH, children: [new TextRun({ text: line.trim(), size: FONT_SIZE_NORMAL, font: FONT })], spacing: { after: 100 } }))
+      children.push(new Paragraph({
+        alignment: AlignmentType.BOTH,
+        shading: anamneseEdited ? { type: ShadingType.CLEAR, fill: 'EFF6FF', color: 'auto' } : undefined,
+        children: [new TextRun({ text: line.trim(), size: FONT_SIZE_NORMAL, font: FONT })],
+        spacing: { after: 100 },
+      }))
     }
   })
 
@@ -745,8 +763,10 @@ export async function generateCRBOWord(payload: WordExportPayload): Promise<Blob
           .trim()
           .replace(/^\**\s*observations?\s+cliniques?\s*:\s*\**\s*/i, '')
           .trim()
+        const domainCommEdited = editedSetEarly.has(`domain_commentaire:${domain.nom}`)
         children.push(new Paragraph({
           alignment: AlignmentType.BOTH,
+          shading: domainCommEdited ? { type: ShadingType.CLEAR, fill: 'EFF6FF', color: 'auto' } : undefined,
           spacing: { after: 200 },
           children: [
             new TextRun({ text: cleaned, size: FONT_SIZE_NORMAL, font: FONT }),
@@ -1092,6 +1112,37 @@ export async function generateCRBOWord(payload: WordExportPayload): Promise<Blob
       children: [new TextRun({ text: 'Orthophoniste', size: FONT_SIZE_NORMAL, font: FONT })],
     }),
   )
+
+  // ===== LÉGENDE PASSAGES ÉDITÉS =====
+  // Si l'ortho a édité au moins un champ (anamnèse / motif / commentaires
+  // de domaine), on ajoute une mini-légende discrète juste avant la
+  // conclusion. Surlignage bleu pâle = "passage revu/édité par l'ortho".
+  // Valorise son travail et donne un repère au médecin prescripteur lors
+  // de la lecture du Word.
+  if (hasStructure && (structure!.edited_fields ?? []).length > 0) {
+    children.push(
+      new Paragraph({
+        alignment: AlignmentType.LEFT,
+        spacing: { before: 240, after: 60 },
+        shading: { type: ShadingType.CLEAR, fill: 'EFF6FF', color: 'auto' },
+        children: [
+          new TextRun({
+            text: '  ',
+            size: 18,
+            font: FONT,
+          }),
+          new TextRun({
+            text: 'Passages relus / édités par l\'orthophoniste',
+            size: 18,
+            font: FONT,
+            italics: true,
+            color: '1E40AF',
+          }),
+          new TextRun({ text: '  ', size: 18, font: FONT }),
+        ],
+      }),
+    )
+  }
 
   // ===== CONCLUSION (mention médico-légale, petit italique, en bas) =====
   // Règle Laurie : c'est le SEUL endroit du Word avec de l'italique.

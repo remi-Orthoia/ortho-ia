@@ -509,6 +509,7 @@ export async function POST(request: NextRequest) {
                 pap_suggestions: rehydrated.pap_suggestions ?? [],
                 domain_commentaires,
                 synthese_evolution: rehydrated.synthese_evolution ?? null,
+                reasoning_clinical: (rawSynth as any).reasoning_clinical ?? null,
               }
               send({ type: 'complete', phase: 'synthesize', synthesized: result })
             } else {
@@ -642,6 +643,7 @@ export async function POST(request: NextRequest) {
         pap_suggestions: rehydrated.pap_suggestions ?? [],
         domain_commentaires,
         synthese_evolution: rehydrated.synthese_evolution ?? null,
+        reasoning_clinical: (rawSynth as any).reasoning_clinical ?? null,
       }
       return NextResponse.json({ success: true, phase: 'synthesize', synthesized: result })
     }
