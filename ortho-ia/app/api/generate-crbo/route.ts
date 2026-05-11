@@ -17,6 +17,7 @@ import {
 import { anonymize, rehydrate, buildScrubList, scrubText, scrubObjectStrings } from '@/lib/anonymizer'
 import { createServerSupabaseClient } from '@/lib/supabase-server'
 import { withRetry } from '@/lib/retry'
+import { logger } from '@/lib/logger'
 
 // Vercel Pro / Enterprise : autorise jusqu'à 300s (vs 10s Hobby default).
 // Bilans complexes (Exalang 8-11, Examath complet) peuvent prendre 90-150s.
@@ -508,13 +509,9 @@ export async function POST(request: NextRequest) {
     const crbo = structureToText(structure)
     return NextResponse.json({ success: true, phase: 'full', crbo, structure })
   } catch (error: any) {
-    // Logging SANS payload — évite fuite DDN / anamnèse / résultats dans les logs
-    console.error('Erreur génération CRBO:', {
-      name: error?.name,
-      code: error?.code,
-      status: error?.status,
-      message: typeof error?.message === 'string' ? error.message.slice(0, 200) : undefined,
-    })
+    // Logging SANS payload — évite fuite DDN / anamnèse / résultats dans les logs.
+    // logger.error envoie aussi à Sentry s'il est configuré, avec scrub PII.
+    logger.error('generate-crbo', error)
 
     if (error?.name === 'AbortError') {
       return NextResponse.json(

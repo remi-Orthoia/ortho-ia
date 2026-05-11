@@ -14,7 +14,8 @@ import CRBOStructuredPreview from '@/components/CRBOStructuredPreview'
 import ShareCRBOButton from '@/components/ShareCRBOButton'
 import MicButton from '@/components/MicButton'
 import { useToast } from '@/components/Toast'
-import { playSuccessSound } from '@/lib/success-sound'
+import { useFocusMode } from '@/components/FocusMode'
+import { playSuccessSound, playDing, playSwoosh } from '@/lib/sounds'
 import { 
   ChevronRight, 
   ChevronLeft, 
@@ -107,6 +108,11 @@ function NouveauCRBOContent() {
   const [currentStep, setCurrentStep] = useState(1)
   const [loading, setLoading] = useState(false)
   const [generating, setGenerating] = useState(false)
+
+  // Mode focus auto sur l'étape Anamnèse (étape 3 du form actuel). Cache la
+  // sidebar + header + bouton feedback, centre la zone d'édition. L'ortho
+  // entre en "écriture profonde". Désactivé dès qu'elle change d'étape.
+  useFocusMode(currentStep === 3)
   const [extracting, setExtracting] = useState(false)
   const [error, setError] = useState('')
   const [notice, setNotice] = useState('')
@@ -686,6 +692,7 @@ function NouveauCRBOContent() {
   const nextStep = () => {
     if (currentStep < TOTAL_STEPS) {
       setCurrentStep(prev => prev + 1)
+      playDing() // micro-feedback satisfaisant à chaque étape franchie
     }
   }
 
@@ -811,6 +818,9 @@ function NouveauCRBOContent() {
         previousStructure: formData.bilan_precedent_structure ?? null,
         previousBilanDate: formData.bilan_precedent_date,
       })
+      // "Swoosh" type document sort de l'imprimante — feedback satisfaisant
+      // après une action longue (génération Word des graphes + tableaux).
+      playSwoosh()
     } catch (err) {
       console.error('Erreur export Word:', err)
       setError('Erreur lors de la génération du document Word.')

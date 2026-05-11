@@ -4,10 +4,12 @@ import { useState, useEffect } from 'react'
 import DashboardSkeleton from '@/components/skeletons/DashboardSkeleton'
 import OnboardingTour from '@/components/OnboardingTour'
 import DailyTip from '@/components/DailyTip'
+import MilestoneCelebration from '@/components/MilestoneCelebration'
 import { useRouter } from 'next/navigation'
 import Link from 'next/link'
 import { createClient } from '@/lib/supabase'
 import { useToast } from '@/components/Toast'
+import { playPop, playSuccessSound, isSoundEnabled } from '@/lib/sounds'
 import {
   Plus,
   FileText,
@@ -91,6 +93,11 @@ export default function DashboardPage() {
     timeSaved: 0
   })
   const [planLimit, setPlanLimit] = useState<number | null>(10) // null = illimité (Pro)
+  // ID de la carte qui vient d'arriver sur "Terminés" — affiche un glow
+  // + checkmark pendant 1.5s. Pour les 50+ drag/drops hebdomadaires, c'est
+  // un petit plaisir kinesthésique répété qui ancre l'usage (cf. dopamine
+  // pattern Linear/Todoist).
+  const [justCompletedId, setJustCompletedId] = useState<string | null>(null)
 
   useEffect(() => {
     fetchData()
@@ -224,6 +231,19 @@ export default function DashboardPage() {
       console.error('Erreur mise à jour statut Kanban:', error)
       rollback()
       toast.error("Le changement de statut n'a pas pu être enregistré. Réessayez.")
+      return
+    }
+
+    // Animation/feedback après drop réussi :
+    //   - drop sur "Terminé" → glow vert + checkmark pendant 1.5s + son
+    //     "success" (montée tonique, plus fort que pop).
+    //   - autre transition → "pop" très bref, pas d'overlay visuel.
+    if (newStatus === 'termine') {
+      setJustCompletedId(cardId)
+      setTimeout(() => setJustCompletedId(null), 1500)
+      if (isSoundEnabled()) playSuccessSound()
+    } else if (isSoundEnabled()) {
+      playPop()
     }
   }
 
@@ -272,6 +292,7 @@ export default function DashboardPage() {
   return (
     <div className="space-y-6 animate-fade-in">
       <OnboardingTour />
+      <MilestoneCelebration crboCount={stats.total} />
       {stats.total > 0 && <DailyTip crboCount={stats.total} />}
       {/* Header */}
       <div className="flex flex-col sm:flex-row sm:items-end sm:justify-between gap-4">
@@ -496,8 +517,10 @@ export default function DashboardPage() {
                   key={crbo.id}
                   draggable
                   onDragStart={(e) => handleDragStart(e, crbo.id)}
-                  className={`bg-white dark:bg-surface-dark-subtle rounded-lg border border-gray-200 dark:border-surface-dark-muted p-3 cursor-grab active:cursor-grabbing shadow-card hover:shadow-card-hover hover:-translate-y-0.5 transition-all duration-150 ease-smooth group ${
+                  className={`relative bg-white dark:bg-surface-dark-subtle rounded-lg border border-gray-200 dark:border-surface-dark-muted p-3 cursor-grab active:cursor-grabbing shadow-card hover:shadow-card-hover hover:-translate-y-0.5 transition-all duration-150 ease-smooth group ${
                     draggedCard === crbo.id ? 'opacity-40 scale-95' : ''
+                  } ${
+                    justCompletedId === crbo.id ? 'kanban-just-completed' : ''
                   }`}
                 >
                   {/* Card Header */}
@@ -568,6 +591,15 @@ export default function DashboardPage() {
                       <span>Précédent : {new Date(crbo.bilan_precedent_date).toLocaleDateString('fr-FR')}</span>
                     </p>
                   )}
+                  {/* Overlay checkmark : visible 1.5s après drop sur "Terminés".
+                      Pure CSS via classe kanban-just-completed (styles plus bas). */}
+                  {justCompletedId === crbo.id && (
+                    <div className="pointer-events-none absolute inset-0 flex items-center justify-center">
+                      <span className="kanban-completed-mark">
+                        <CheckCircle size={32} className="text-green-600" strokeWidth={2.5} />
+                      </span>
+                    </div>
+                  )}
                 </div>
               ))}
 
@@ -625,6 +657,35 @@ export default function DashboardPage() {
           </div>
         </Link>
       </div>
+
+      {/* Styles globaux pour l'animation drop-on-completed.
+          Glow vert pulsant + checkmark qui zoom-in puis fade-out. */}
+      <style jsx global>{`
+        .kanban-just-completed {
+          animation: kanban-glow 1.5s ease-out;
+        }
+        @keyframes kanban-glow {
+          0%   { box-shadow: 0 0 0 0 rgba(34, 197, 94, 0.55), 0 0 0 0 rgba(34, 197, 94, 0); }
+          20%  { box-shadow: 0 0 0 6px rgba(34, 197, 94, 0.35), 0 0 24px 4px rgba(34, 197, 94, 0.45); }
+          70%  { box-shadow: 0 0 0 12px rgba(34, 197, 94, 0), 0 0 32px 8px rgba(34, 197, 94, 0.15); }
+          100% { box-shadow: 0 0 0 12px rgba(34, 197, 94, 0), 0 0 0 0 rgba(34, 197, 94, 0); }
+        }
+        .kanban-completed-mark {
+          animation: kanban-mark 1.5s cubic-bezier(0.22, 1, 0.36, 1) forwards;
+          display: inline-flex;
+          padding: 8px;
+          border-radius: 999px;
+          background: rgba(255, 255, 255, 0.92);
+          backdrop-filter: blur(2px);
+        }
+        @keyframes kanban-mark {
+          0%   { transform: scale(0.4); opacity: 0; }
+          25%  { transform: scale(1.15); opacity: 1; }
+          45%  { transform: scale(1); opacity: 1; }
+          80%  { transform: scale(1); opacity: 1; }
+          100% { transform: scale(1.05); opacity: 0; }
+        }
+      `}</style>
     </div>
   )
 }

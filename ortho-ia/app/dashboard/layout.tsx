@@ -201,6 +201,36 @@ export default function DashboardLayout({ children }: DashboardLayoutProps) {
 
   return (
     <ToastProvider>
+    {/* Styles globaux pour le Mode Focus — déclenché par body[data-focus-mode].
+        L'idée : pendant la rédaction de l'anamnèse (étape 4 du form CRBO),
+        on cache tout le chrome (sidebar, header, badge feedback) pour ne
+        laisser que la zone d'édition. Style "distraction-free writing"
+        type iA Writer / Bear.
+        Transition douce (320ms) pour ne pas brusquer l'œil. */}
+    <style jsx global>{`
+      .dashboard-chrome,
+      .dashboard-main {
+        transition: opacity 320ms ease, transform 320ms ease, padding 320ms ease;
+      }
+      body[data-focus-mode="true"] .dashboard-sidebar {
+        opacity: 0;
+        pointer-events: none;
+        transform: translateX(-12px);
+      }
+      body[data-focus-mode="true"] .dashboard-header,
+      body[data-focus-mode="true"] .dashboard-feedback {
+        opacity: 0;
+        pointer-events: none;
+      }
+      body[data-focus-mode="true"] .dashboard-shift {
+        padding-left: 0 !important;
+      }
+      body[data-focus-mode="true"] .dashboard-main {
+        max-width: 760px;
+        margin: 0 auto;
+        padding-top: 48px !important;
+      }
+    `}</style>
     <div style={{
       minHeight: '100vh', background: 'var(--bg-canvas)', color: 'var(--fg-1)',
       fontFamily: 'var(--font-body)',
@@ -223,7 +253,7 @@ export default function DashboardLayout({ children }: DashboardLayoutProps) {
           position: 'fixed', top: 0, left: 0, zIndex: 50, height: '100vh', width: 240,
           transition: 'transform 200ms cubic-bezier(0.32,0.72,0,1)',
         }}
-        className={`${sidebarOpen ? 'translate-x-0' : '-translate-x-full'} lg:translate-x-0`}
+        className={`dashboard-sidebar dashboard-chrome ${sidebarOpen ? 'translate-x-0' : '-translate-x-full'} lg:translate-x-0`}
       >
         <Sidebar
           activeHref={pathname}
@@ -239,8 +269,9 @@ export default function DashboardLayout({ children }: DashboardLayoutProps) {
       </div>
 
       {/* Contenu principal — décalé de la largeur sidebar sur desktop */}
-      <div className="lg:pl-[240px]">
+      <div className="dashboard-shift lg:pl-[240px]">
         {/* Mini header avec breadcrumb + theme toggle */}
+        <div className="dashboard-header dashboard-chrome">
         <AppHeader
           title={
             <span style={{ display: 'flex', alignItems: 'center', gap: 8, fontSize: 14, fontWeight: 500, color: 'var(--fg-3)' }}>
@@ -266,11 +297,14 @@ export default function DashboardLayout({ children }: DashboardLayoutProps) {
           }
           right={<ThemeToggle />}
         />
+        </div>
 
-        <main style={{ padding: '24px 32px 64px' }}>
+        <main className="dashboard-main" style={{ padding: '24px 32px 64px' }}>
           {children}
         </main>
-        <FeedbackButton />
+        <div className="dashboard-feedback dashboard-chrome">
+          <FeedbackButton />
+        </div>
       </div>
 
     </div>

@@ -5,6 +5,7 @@ import Link from 'next/link'
 import { createClient } from '@/lib/supabase'
 import { FileText, Download, Trash2, Search, Calendar, Loader2 } from 'lucide-react'
 import { useToast } from '@/components/Toast'
+import { playSwoosh } from '@/lib/sounds'
 
 export default function HistoriquePage() {
   const toast = useToast()
@@ -119,6 +120,7 @@ export default function HistoriquePage() {
         previousStructure,
         previousBilanDate,
       })
+      playSwoosh() // feedback sonore "document sort"
 
       // Promotion kanban : si le CRBO est resté en "à rédiger", un download
       // Word le fait passer en "à relire". On ne régresse jamais un statut

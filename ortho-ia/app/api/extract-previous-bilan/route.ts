@@ -3,6 +3,7 @@ import Anthropic from '@anthropic-ai/sdk'
 import mammoth from 'mammoth'
 import { createServerSupabaseClient } from '@/lib/supabase-server'
 import { withRetry } from '@/lib/retry'
+import { logger } from '@/lib/logger'
 import {
   EXTRACT_PREVIOUS_TOOL,
   EXTRACT_PROMPT_PDF,
@@ -344,12 +345,7 @@ export async function POST(request: NextRequest) {
       warning: extraction_warning,
     })
   } catch (error: any) {
-    console.error('Erreur extract-previous-bilan:', {
-      name: error?.name,
-      code: error?.code,
-      status: error?.status,
-      message: typeof error?.message === 'string' ? error.message.slice(0, 200) : undefined,
-    })
+    logger.error('extract-previous-bilan', error)
 
     if (error?.name === 'AbortError') {
       return NextResponse.json(

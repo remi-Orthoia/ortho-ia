@@ -12,9 +12,11 @@ interface Props {
   trigger: number
   /** Nombre de particules. Défaut : 60. */
   count?: number
+  /** Palette personnalisée. Si omis, utilise les couleurs primaires Ortho.ia. */
+  colors?: string[]
 }
 
-const COLORS = [
+const DEFAULT_COLORS = [
   '#22c55e', // primary
   '#10b981', // emerald
   '#f5a142', // warm
@@ -23,7 +25,8 @@ const COLORS = [
   '#c084fc', // purple
 ]
 
-export default function ConfettiBurst({ trigger, count = 60 }: Props) {
+export default function ConfettiBurst({ trigger, count = 60, colors }: Props) {
+  const palette = colors && colors.length > 0 ? colors : DEFAULT_COLORS
   const [visible, setVisible] = useState(false)
   const [particles, setParticles] = useState<Array<{ id: number; left: number; delay: number; color: string; size: number; duration: number; rotation: number; drift: number }>>([])
 
@@ -34,7 +37,7 @@ export default function ConfettiBurst({ trigger, count = 60 }: Props) {
       id: i,
       left: Math.random() * 100,
       delay: Math.random() * 0.4,
-      color: COLORS[Math.floor(Math.random() * COLORS.length)],
+      color: palette[Math.floor(Math.random() * palette.length)],
       size: 6 + Math.random() * 6,
       duration: 2 + Math.random() * 1.2,
       rotation: Math.random() * 720 - 360,
@@ -44,6 +47,9 @@ export default function ConfettiBurst({ trigger, count = 60 }: Props) {
     setVisible(true)
     const t = setTimeout(() => setVisible(false), 3200)
     return () => clearTimeout(t)
+    // palette doit aussi déclencher si elle change mais c'est rare —
+    // on s'appuie sur le trigger numérique pour rejouer.
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [trigger, count])
 
   if (!visible) return null

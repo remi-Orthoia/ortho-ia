@@ -8,6 +8,7 @@ import {
 } from '@/lib/prompts/extraction'
 import { createServerSupabaseClient } from '@/lib/supabase-server'
 import { withRetry } from '@/lib/retry'
+import { logger } from '@/lib/logger'
 
 // Timeout serveur Vercel — l'extraction PDF Vision peut prendre 30-50s par
 // document. En multi-PDF on traite en parallèle, donc 90s suffit pour 3 PDFs.
@@ -346,12 +347,7 @@ export async function POST(request: NextRequest) {
       filesProcessed: parts.length,
     })
   } catch (error: any) {
-    console.error('Erreur extraction PDF:', {
-      name: error?.name,
-      code: error?.code,
-      status: error?.status,
-      message: typeof error?.message === 'string' ? error.message.slice(0, 200) : undefined,
-    })
+    logger.error('extract-pdf', error)
 
     if (error?.name === 'AbortError') {
       return NextResponse.json(
