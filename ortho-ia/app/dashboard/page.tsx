@@ -8,6 +8,7 @@ import MilestoneCelebration from '@/components/MilestoneCelebration'
 import CalendarWidget from '@/components/CalendarWidget'
 import VoiceCommandButton from '@/components/VoiceCommandButton'
 import YearHeatmap from '@/components/YearHeatmap'
+import FeedbackBanner from '@/components/FeedbackBanner'
 import { useRouter } from 'next/navigation'
 import Link from 'next/link'
 import { createClient } from '@/lib/supabase'
@@ -96,6 +97,10 @@ export default function DashboardPage() {
     timeSaved: 0
   })
   const [planLimit, setPlanLimit] = useState<number | null>(10) // null = illimité (Pro)
+  // CRBO pour lequel afficher le bandeau feedback (posé en sessionStorage
+  // par la page resultats après download Word réussi). null si rien à
+  // demander à l'ortho.
+  const [feedbackCrboId, setFeedbackCrboId] = useState<string | null>(null)
   // ID de la carte qui vient d'arriver sur "Terminés" — affiche un glow
   // + checkmark pendant 1.5s. Pour les 50+ drag/drops hebdomadaires, c'est
   // un petit plaisir kinesthésique répété qui ancre l'usage (cf. dopamine
@@ -104,6 +109,16 @@ export default function DashboardPage() {
 
   useEffect(() => {
     fetchData()
+    // Lecture du flag feedback-pending posé par la page résultats au moment
+    // du download. Consommé une seule fois (clear immédiat) pour éviter
+    // que le bandeau ne ré-apparaisse à chaque visite du dashboard.
+    try {
+      const pending = sessionStorage.getItem('orthoia.feedback-pending')
+      if (pending) {
+        sessionStorage.removeItem('orthoia.feedback-pending')
+        setFeedbackCrboId(pending)
+      }
+    } catch {}
   }, [])
 
   const fetchData = async () => {
@@ -296,6 +311,9 @@ export default function DashboardPage() {
     <div className="space-y-6 animate-fade-in">
       <OnboardingTour />
       <MilestoneCelebration crboCount={stats.total} />
+      {/* Bandeau feedback post-génération — affiché 1.8s après mount si un
+          flag pending a été posé par la page resultats au moment du download. */}
+      <FeedbackBanner crboId={feedbackCrboId} />
       {stats.total > 0 && <DailyTip crboCount={stats.total} />}
 
       {/* Widget agenda Google — affiche les prochains RDV et un bouton

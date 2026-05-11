@@ -480,6 +480,13 @@ export default function ResultatsPage() {
 
       // Nettoyage handoff + redirect (le dashboard re-fetch au mount → kanban à jour)
       sessionStorage.removeItem(HANDOFF_KEY)
+      // Signale au dashboard d'afficher le bandeau de feedback sur ce CRBO
+      // (capture immédiate post-download, avant que l'ortho ne ferme l'onglet).
+      if (insertedCrboId) {
+        try {
+          sessionStorage.setItem('orthoia.feedback-pending', insertedCrboId)
+        } catch {}
+      }
       router.push('/dashboard')
     } catch (err: any) {
       setError(err?.message || 'Erreur inattendue lors de la génération.')
