@@ -114,7 +114,24 @@ Comme Exalang (même éditeur HappyNeuron) : **Q1 → P25, Med → P50, Q3 → P
 - **PEC** : PEC du trouble primaire (dyslexie, attention). Soutien arithmétique par l'enseignant·e et/ou orthopédagogue. Pas systématiquement de PEC dyscalculie dédiée.
 - **Aménagements** : PAP au titre du trouble primaire, avec mention des besoins mathématiques (énoncés lus, calculatrice).
 
-**PROFIL 3 — Anxiété mathématique / blocage affectif**
+**PROFIL 3 — Dyscalculie ET dyslexie associées (profil mixte DYS+DYS, 30-40% des cas)**
+- Cognition numérique de base : **Déficitaire** (marqueur central dyscalculie).
+- Transcodage : **Très déficitaire** — accumulation : erreurs phonologiques (dyslexie : "quatorze/quarante") + erreurs syntaxiques (dyscalculie : 308 → 3008).
+- Calcul mental : Déficitaire (mémoire de travail surchargée).
+- Tables multiplication : Pathologique (double impact : mémoire orthographique + automatisation arithmétique).
+- Résolution problèmes : **Catastrophique** — la lecture/compréhension de l'énoncé est compromise par la dyslexie, l'exécution par la dyscalculie.
+- Géométrie : préservée (critère différentiel diagnostic).
+- Lecture (Exalang en parallèle) : déficitaire — confirme la dyslexie associée.
+- **Diagnostic** : "Le profil clinique évoque une **comorbidité dyscalculie développementale + dyslexie-dysorthographie**, deux troubles spécifiques distincts mais associés. La cognition numérique de base est déficitaire (marqueur central de la dyscalculie), tandis que les épreuves de lecture et d'orthographe confirment une dyslexie sous-jacente. Ces deux troubles s'aggravent mutuellement, en particulier sur la résolution de problèmes mathématiques où la lecture des énoncés est compromise."
+- **PEC** : **PEC orthophonique intensive et soutenue** (1-2 séances/semaine, 36+ mois). Travail séquencé :
+  1. **Phase 1** (6-12 mois) : ciblage de la dyslexie en priorité (compréhension de texte est prérequis pour les problèmes mathématiques). Renforcement décodage + voie d'adressage.
+  2. **Phase 2** (en parallèle dès le début) : travail spécifique du sens du nombre et de la cognition numérique de base (matériel manipulable, droite graduée, logiciels Dybuster Calcularis, The Number Race).
+  3. **Phase 3** : travail croisé sur la résolution de problèmes (lecture + modélisation + exécution).
+- **Aménagements MAXIMAUX** : PAP renforcé OU PPS via MDPH (recommandé vu la double atteinte). Calculatrice + énoncés lus + temps majoré 1/3 SYSTÉMATIQUE en mathématiques. Tolérance orthographique en mathématiques (ne pas pénaliser sur l'orthographe dans une copie de maths).
+- **Coordination** : enseignant·e + parents + médecin scolaire + parfois ergothérapeute (outils numériques).
+- **Pronostic** : plus lourd que dyscalculie ou dyslexie isolées. Investissement familial et scolaire indispensable. Bonne évolution possible avec PEC suivie, mais difficultés scolaires durables jusqu'au lycée minimum.
+
+**PROFIL 4 — Anxiété mathématique / blocage affectif**
 - Cognition numérique de base : **Normale**
 - Transcodage : **Normal**
 - Calcul simple sans pression : **Normal**
