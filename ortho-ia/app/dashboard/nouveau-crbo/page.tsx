@@ -262,14 +262,55 @@ function NouveauCRBOContent() {
       const renouvellementId = searchParams.get('renouvellement')
       const isRenouvellement = !!renouvellementId
 
+      // ============ Voice command prefill ============
+      // Si ?voice=1 est passé (depuis VoiceCommandButton sur le dashboard),
+      // on lit le payload de sessionStorage et on pré-remplit le form.
+      const isVoiceCommand = searchParams.get('voice') === '1'
+      let voiceVerb: 'voice' | null = null
+      if (isVoiceCommand) {
+        try {
+          const raw = sessionStorage.getItem('orthoia.voice-prefill')
+          if (raw) {
+            const v = JSON.parse(raw) as {
+              patient_prenom?: string | null
+              patient_nom?: string | null
+              patient_classe?: string | null
+              bilan_type?: 'initial' | 'renouvellement' | null
+              motif?: string | null
+              tests_utilises?: string[]
+            }
+            setFormData(prev => ({
+              ...prev,
+              patient_prenom: v.patient_prenom || prev.patient_prenom,
+              patient_nom: v.patient_nom || prev.patient_nom,
+              patient_classe: v.patient_classe || prev.patient_classe,
+              bilan_type: v.bilan_type || prev.bilan_type || 'initial',
+              motif: v.motif || prev.motif,
+              test_utilise: Array.isArray(v.tests_utilises) && v.tests_utilises.length > 0
+                ? v.tests_utilises
+                : prev.test_utilise,
+            }))
+            // Démarrage à l'étape 1 (Patient) pour permettre à l'ortho de
+            // valider/corriger les infos extraites avant d'aller plus loin.
+            setCurrentStep(1)
+            voiceVerb = 'voice'
+            // Nettoyage : on consomme le prefill une seule fois
+            sessionStorage.removeItem('orthoia.voice-prefill')
+            setPrefillBanner('🎤 Commande vocale interprétée — vérifiez et complétez si besoin.')
+          }
+        } catch (e) {
+          console.warn('Voice prefill failed:', e)
+        }
+      }
+
       // Reprendre un brouillon s'il y en a un
       // Skippé si on charge un prefill (les résultats arrivent du screenshot,
-      // pas le brouillon) OU un renouvellement (les données viennent du
-      // bilan précédent, pas du brouillon — on n'écrase pas).
+      // pas le brouillon) OU un renouvellement OU une commande vocale
+      // (les données viennent de Whisper+IA, on n'écrase pas).
       const prefillIdFromUrl = searchParams.get('prefill')
       try {
         const raw = localStorage.getItem(DRAFT_KEY)
-        if (raw && !patientIdFromUrl && !prefillIdFromUrl && !isRenouvellement) {
+        if (raw && !patientIdFromUrl && !prefillIdFromUrl && !isRenouvellement && !isVoiceCommand) {
           const draft = JSON.parse(raw) as { step: number; formData: Partial<CRBOFormData> }
           if (draft?.formData) {
             setFormData(prev => ({ ...prev, ...draft.formData }))

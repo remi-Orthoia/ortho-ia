@@ -6,6 +6,7 @@ import OnboardingTour from '@/components/OnboardingTour'
 import DailyTip from '@/components/DailyTip'
 import MilestoneCelebration from '@/components/MilestoneCelebration'
 import CalendarWidget from '@/components/CalendarWidget'
+import VoiceCommandButton from '@/components/VoiceCommandButton'
 import { useRouter } from 'next/navigation'
 import Link from 'next/link'
 import { createClient } from '@/lib/supabase'
@@ -312,13 +313,16 @@ export default function DashboardPage() {
               : `${stats.thisMonth} CRBO${stats.thisMonth > 1 ? 's' : ''} ce mois · ${Math.floor(stats.timeSaved / 60)} h gagnées au total`}
           </p>
         </div>
-        <Link
-          href="/dashboard/nouveau-crbo"
-          className="btn-primary whitespace-nowrap"
-        >
-          <Plus size={18} />
-          Nouveau CRBO
-        </Link>
+        <div className="flex items-center gap-2 flex-wrap">
+          <VoiceCommandButton />
+          <Link
+            href="/dashboard/nouveau-crbo"
+            className="btn-primary whitespace-nowrap"
+          >
+            <Plus size={18} />
+            Nouveau CRBO
+          </Link>
+        </div>
       </div>
 
       {/* Stats modernes */}
