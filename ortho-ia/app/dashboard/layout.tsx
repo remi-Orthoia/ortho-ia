@@ -14,6 +14,8 @@ import {
   X,
   ChevronRight,
   Sparkles,
+  Newspaper,
+  BookText,
 } from 'lucide-react'
 import { createClient } from '@/lib/supabase'
 import ThemeToggle from '@/components/ThemeToggle'
@@ -64,11 +66,13 @@ export default function DashboardLayout({ children }: DashboardLayoutProps) {
   }
 
   const navItems: SidebarItem[] = [
-    { id: 'dashboard', label: 'Tableau de bord', href: '/dashboard',                 icon: <LayoutDashboard size={18} /> },
-    { id: 'new',       label: 'Nouveau CRBO',    href: '/dashboard/nouveau-crbo',    icon: <FilePlus size={18} />,        primary: true },
-    { id: 'patients',  label: 'Mes patients',    href: '/dashboard/patients',        icon: <Users size={18} /> },
-    { id: 'history',   label: 'Historique',      href: '/dashboard/historique',      icon: <History size={18} /> },
-    { id: 'profile',   label: 'Mon profil',      href: '/dashboard/profil',          icon: <User size={18} /> },
+    { id: 'dashboard',  label: 'Tableau de bord', href: '/dashboard',                 icon: <LayoutDashboard size={18} /> },
+    { id: 'new',        label: 'Nouveau CRBO',    href: '/dashboard/nouveau-crbo',    icon: <FilePlus size={18} />,        primary: true },
+    { id: 'patients',   label: 'Mes patients',    href: '/dashboard/patients',        icon: <Users size={18} /> },
+    { id: 'history',    label: 'Historique',      href: '/dashboard/historique',      icon: <History size={18} /> },
+    { id: 'carnet',     label: 'Carnet de session', href: '/dashboard/carnet',        icon: <BookText size={18} /> },
+    { id: 'actualites', label: 'Actualités',      href: '/dashboard/actualites',      icon: <Newspaper size={18} /> },
+    { id: 'profile',    label: 'Mon profil',      href: '/dashboard/profil',          icon: <User size={18} /> },
   ]
 
   const activeItem = navItems.find(n => n.href === pathname)

@@ -100,6 +100,107 @@ const TIPS: Tip[] = [
       </>
     ),
   },
+  // ============================================================================
+  // Tips contextualisés sur les features avancées — proposés une fois que
+  // l'ortho a pris ses marques (≥ 4 CRBOs). Découverte progressive plutôt
+  // qu'overload au début.
+  // ============================================================================
+  {
+    id: 'voice-command',
+    minCrbo: 4,
+    text: (
+      <>
+        Saviez-vous que vous pouvez <strong>dicter une commande</strong> pour démarrer un bilan ?
+        Cliquez sur <em>« Démarrer en vocal »</em> en haut du dashboard et dites <em>« Nouveau bilan
+        Léa CE2, motif lenteur lecture, Exalang 8-11 »</em>, le formulaire se pré-remplit tout seul.
+      </>
+    ),
+  },
+  {
+    id: 'snippets',
+    minCrbo: 4,
+    text: (
+      <>
+        Économisez de la frappe : tapez <kbd
+          style={{
+            padding: '2px 6px',
+            background: 'var(--bg-surface-2)',
+            color: 'var(--fg-2)',
+            borderRadius: 'var(--radius-xs)',
+            fontFamily: 'var(--font-mono)',
+            fontSize: 12,
+          }}>/fatigue</kbd>, <kbd
+          style={{
+            padding: '2px 6px',
+            background: 'var(--bg-surface-2)',
+            color: 'var(--fg-2)',
+            borderRadius: 'var(--radius-xs)',
+            fontFamily: 'var(--font-mono)',
+            fontSize: 12,
+          }}>/empan-faible</kbd> dans l&apos;anamnèse pour réinjecter vos formulations habituelles.
+        Gérez vos snippets dans <strong>Mon profil</strong>.
+      </>
+    ),
+  },
+  {
+    id: 'calendar',
+    minCrbo: 5,
+    text: (
+      <>
+        Connectez votre <strong>agenda Google</strong> au dashboard : vos prochains RDV s&apos;affichent et un
+        bouton <em>« Démarrer »</em> apparaît à côté du patient matché dans votre carnet. Un clic, le
+        bilan démarre.
+      </>
+    ),
+  },
+  {
+    id: 'patient-notes',
+    minCrbo: 6,
+    text: (
+      <>
+        Sur chaque fiche patient, un <strong>fil de notes</strong> personnel pour vos observations
+        entre séances, retours médecin, ou rappels de renouvellement. Plus de post-its perdus.
+      </>
+    ),
+  },
+  {
+    id: 'one-click-renouv',
+    minCrbo: 8,
+    text: (
+      <>
+        Pour un patient déjà suivi, cliquez <strong>« Refaire un bilan »</strong> sur sa fiche : anamnèse
+        stable, médecin, test précédent et lien bilan initial sont pré-remplis en 1 clic.
+      </>
+    ),
+  },
+  {
+    id: 'pdf-export',
+    minCrbo: 6,
+    text: (
+      <>
+        Besoin d&apos;envoyer le CRBO au médecin prescripteur en PDF ? Cliquez l&apos;icône <strong>PDF</strong> à côté
+        du téléchargement Word, l&apos;aperçu d&apos;impression s&apos;ouvre, choisissez <em>« Enregistrer au format PDF »</em>.
+      </>
+    ),
+  },
+  {
+    id: 'focus-mode',
+    minCrbo: 5,
+    text: (
+      <>
+        À l&apos;étape <strong>Anamnèse</strong>, le mode focus s&apos;active automatiquement : sidebar et header
+        disparaissent pour que vous puissiez écrire sans distraction. Pressez <kbd
+          style={{
+            padding: '2px 6px',
+            background: 'var(--bg-surface-2)',
+            color: 'var(--fg-2)',
+            borderRadius: 'var(--radius-xs)',
+            fontFamily: 'var(--font-mono)',
+            fontSize: 12,
+          }}>Échap</kbd> à tout moment pour quitter.
+      </>
+    ),
+  },
 ]
 
 const STORAGE_KEY = 'orthoia.daily-tip.seen'
@@ -143,8 +244,13 @@ export default function DailyTip({ crboCount }: Props) {
       !seen.has(t.id),
     )
     if (candidates.length === 0) return
-    // Choisit le premier candidat (tips triés par pertinence implicite)
-    setTip(candidates[0])
+    // Sélection pseudo-aléatoire stable sur la journée pour ne pas changer
+    // de tip à chaque re-render. Hash basé sur la date du jour.
+    const today = new Date().toISOString().slice(0, 10)
+    let hash = 0
+    for (let i = 0; i < today.length; i++) hash = (hash * 31 + today.charCodeAt(i)) | 0
+    const idx = Math.abs(hash) % candidates.length
+    setTip(candidates[idx])
   }, [crboCount])
 
   if (!tip) return null

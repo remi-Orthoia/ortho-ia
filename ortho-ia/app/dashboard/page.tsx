@@ -7,6 +7,7 @@ import DailyTip from '@/components/DailyTip'
 import MilestoneCelebration from '@/components/MilestoneCelebration'
 import CalendarWidget from '@/components/CalendarWidget'
 import VoiceCommandButton from '@/components/VoiceCommandButton'
+import YearHeatmap from '@/components/YearHeatmap'
 import { useRouter } from 'next/navigation'
 import Link from 'next/link'
 import { createClient } from '@/lib/supabase'
@@ -301,6 +302,12 @@ export default function DashboardPage() {
           "Démarrer le CRBO" pour les patients matchés. Auto-caché si
           l'admin n'a pas configuré GOOGLE_OAUTH_CLIENT_ID côté serveur. */}
       <CalendarWidget />
+
+      {/* Heatmap année — uniquement si l'ortho a au moins 1 CRBO, sinon
+          on affiche un état initial vide pas très valorisant. */}
+      {stats.total > 0 && (
+        <YearHeatmap crboDates={crbos.map(c => c.created_at)} />
+      )}
       {/* Header */}
       <div className="flex flex-col sm:flex-row sm:items-end sm:justify-between gap-4">
         <div>
