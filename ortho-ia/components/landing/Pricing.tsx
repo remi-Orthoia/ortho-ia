@@ -5,9 +5,12 @@ import { Button, Container, Eyebrow } from './Primitives'
 
 interface Plan {
   name: string
+  /** Prix mensuel TTC en facturation au mois. */
   monthly: number
-  /** Prix annuel TTC (€). Si défini, écrase le calcul automatique. */
-  yearly?: number
+  /** Prix mensuel ÉQUIVALENT affiché en mode annuel (gros chiffre dans la carte). */
+  yearlyMonthly: number
+  /** Total annuel TTC à afficher en mode annuel ("Soit X € facturés une fois par an"). */
+  yearlyTotal: number
   tagline: string
   features: string[]
   cta: string
@@ -15,12 +18,17 @@ interface Plan {
   featured: boolean
 }
 
-// Tarification ortho.ia : 19,90€/mois ou 215€/an (-10% vs 19,90×12=238,80).
+// Tarification ortho.ia validée :
+//   Ortho Pro    : 19,90€/mois OU 17,90€/mois en annuel = 215,00€/an (arrondi marketing — 17.90×12=214.80)
+//   Cabinet      : 39,90€/mois OU 35,90€/mois en annuel = 430,80€/an
+// Le mois annuel affiché est volontairement le prix marketing rond
+// (17,90 / 35,90), pas le yearlyTotal/12 strict.
 const PLANS: Plan[] = [
   {
     name: 'Ortho pro',
     monthly: 19.90,
-    yearly: 215,
+    yearlyMonthly: 17.90,
+    yearlyTotal: 215.00,
     tagline: 'Pour démarrer, ou pour une activité à temps partiel.',
     features: [
       "Jusqu'à 10 CRBO par mois",
@@ -31,11 +39,13 @@ const PLANS: Plan[] = [
     ],
     cta: 'Essayer gratuitement',
     ctaHref: '/auth/register',
-    featured: false,
+    featured: true,
   },
   {
     name: 'Cabinet',
     monthly: 39.90,
+    yearlyMonthly: 35.90,
+    yearlyTotal: 430.80,
     tagline: 'Pour une activité libérale à plein régime.',
     features: [
       "Jusqu'à 40 CRBO par mois",
@@ -46,27 +56,19 @@ const PLANS: Plan[] = [
     ],
     cta: 'Essayer gratuitement',
     ctaHref: '/auth/register',
-    featured: true,
+    featured: false,
   },
 ]
-
-const YEARLY_DISCOUNT = 0.10
 
 const fmt = (n: number) => n.toFixed(2).replace('.', ',') + ' €'
 
 export default function Pricing() {
   const [billing, setBilling] = useState<'monthly' | 'yearly'>('monthly')
 
-  const monthlyPriceShown = (p: Plan) => {
-    if (billing === 'monthly') return fmt(p.monthly)
-    const yearly = p.yearly ?? p.monthly * (1 - YEARLY_DISCOUNT) * 12
-    return fmt(yearly / 12)
-  }
+  const monthlyPriceShown = (p: Plan) =>
+    fmt(billing === 'monthly' ? p.monthly : p.yearlyMonthly)
 
-  const yearlyTotal = (p: Plan) => {
-    const yearly = p.yearly ?? p.monthly * (1 - YEARLY_DISCOUNT) * 12
-    return fmt(yearly)
-  }
+  const yearlyTotalShown = (p: Plan) => fmt(p.yearlyTotal)
 
   return (
     <section id="tarifs" style={{ padding: '96px 0' }}>
@@ -104,7 +106,7 @@ export default function Pricing() {
                     fontFamily: 'var(--font-body)', fontSize: 14, fontWeight: 500,
                     padding: '8px 16px', borderRadius: 999, cursor: 'pointer',
                     border: 'none', display: 'inline-flex', alignItems: 'center', gap: 8,
-                    background: active ? 'var(--bg-inverse)' : 'transparent',
+                    background: active ? 'var(--ds-primary)' : 'transparent',
                     color: active ? 'var(--fg-on-brand)' : 'var(--fg-2)',
                     transition: 'background 180ms cubic-bezier(0.32,0.72,0,1)',
                   }}
@@ -159,22 +161,24 @@ export default function Pricing() {
                 margin: '0 0 6px', minHeight: 18,
               }}>
                 {billing === 'yearly'
-                  ? `Soit ${yearlyTotal(p)} facturés une fois par an.`
+                  ? `Soit ${yearlyTotalShown(p)} facturés une fois par an.`
                   : 'Facturé chaque mois.'}
               </p>
               {/* Footnote parrainage — uniquement sur le plan Ortho pro
                   (le plus probable pour une nouvelle inscrite) et en mensuel
-                  (la remise -5€ s'applique sur le mensuel). Couleur primary
-                  (sage 600) pour matcher le bouton "Essayer gratuitement". */}
-              {!p.featured && billing === 'monthly' && (
+                  (la remise -5€ s'applique sur le mensuel). Sur la carte
+                  featured (fond sombre) on utilise l'accent crème, sinon le
+                  primary sage. */}
+              {p.name === 'Ortho pro' && billing === 'monthly' && (
                 <p style={{
-                  fontSize: 13, color: 'var(--ds-primary)',
+                  fontSize: 13,
+                  color: p.featured ? 'var(--ds-accent)' : 'var(--ds-primary)',
                   margin: '0 0 24px', fontWeight: 500,
                 }}>
                   💚 Parrainée par une collègue ? <strong>14,90€/mois</strong>
                 </p>
               )}
-              {(p.featured || billing !== 'monthly') && (
+              {!(p.name === 'Ortho pro' && billing === 'monthly') && (
                 <div style={{ marginBottom: 24 }} />
               )}
               <ul style={{ listStyle: 'none', padding: 0, margin: '0 0 28px', display: 'flex', flexDirection: 'column', gap: 10 }}>
