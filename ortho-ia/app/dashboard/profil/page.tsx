@@ -6,6 +6,7 @@ import { createClient } from '@/lib/supabase'
 import { Loader2, Save, CheckCircle, AlertCircle, Trash2, Copy, Camera, Download, Users, Heart, Sparkles } from 'lucide-react'
 import { useToast } from '@/components/Toast'
 import SnippetManager from '@/components/SnippetManager'
+import VocabManager from '@/components/VocabManager'
 
 function ProfilContent() {
   const router = useRouter()
@@ -680,6 +681,9 @@ function ProfilContent() {
 
       {/* Snippets persos — raccourcis textuels insérables via /key */}
       <SnippetManager />
+
+      {/* Vocabulaire perso — substitutions appliquées sur les drafts IA */}
+      <VocabManager />
 
       {/* Zone dangereuse RGPD : suppression complète du compte */}
       <div className="mt-10 rounded-2xl border-2 border-red-200 bg-red-50/50 p-5 sm:p-6">

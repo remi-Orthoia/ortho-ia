@@ -38,6 +38,7 @@ import MicButton from '@/components/MicButton'
 import StreamingCRBO from '@/components/StreamingCRBO'
 import { playPrintAnimation } from '@/components/PrintAnimation'
 import { playSuccessSound, playSwoosh } from '@/lib/sounds'
+import { applyVocabToObject } from '@/lib/vocab-perso'
 
 interface Handoff {
   formData: CRBOFormData
@@ -266,7 +267,7 @@ export default function ResultatsPage() {
           ?? (orthoComments[d.nom] || d.commentaire || '').trim(),
       }))
 
-      const finalStructure: CRBOStructure = {
+      const rawFinalStructure: CRBOStructure = {
         anamnese_redigee: anamneseEdit.trim() || handoff.extracted.anamnese_redigee,
         motif_reformule: motifEdit.trim() || handoff.extracted.motif_reformule || '',
         domains: domainsWithOrthoComments,
@@ -279,6 +280,10 @@ export default function ResultatsPage() {
         pap_suggestions: synthesized.pap_suggestions,
         synthese_evolution: synthesized.synthese_evolution ?? null,
       }
+      // Application du vocabulaire perso de l'ortho (localStorage). Réécrit
+      // les sections narratives selon ses préférences ("patient" → "enfant",
+      // "voie d'assemblage" → "décodage", etc.). No-op si aucune règle.
+      const finalStructure: CRBOStructure = applyVocabToObject(rawFinalStructure)
 
       // ============ Persistance Supabase ============
       const supabase = createClient()

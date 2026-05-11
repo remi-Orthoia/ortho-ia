@@ -22,6 +22,7 @@ import {
 import CRBOStructuredPreview from '@/components/CRBOStructuredPreview'
 import { useToast } from '@/components/Toast'
 import { playPrintAnimation } from '@/components/PrintAnimation'
+import { applyVocabToObject } from '@/lib/vocab-perso'
 
 interface CRBO {
   id: string
@@ -151,7 +152,7 @@ export default function CRBODetailPage() {
             : [],
           resultats_manuels: crbo.resultats ?? '',
         },
-        structure: crbo.structure_json ?? null,
+        structure: crbo.structure_json ? applyVocabToObject(crbo.structure_json) : null,
         fallbackCRBO: crbo.crbo_text || crbo.crbo_genere || '',
         previousStructure,
         previousBilanDate,

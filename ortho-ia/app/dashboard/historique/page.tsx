@@ -7,6 +7,7 @@ import { FileText, Download, Trash2, Search, Calendar, Loader2, FileDown } from 
 import { useToast } from '@/components/Toast'
 import { playSwoosh } from '@/lib/sounds'
 import { playPrintAnimation } from '@/components/PrintAnimation'
+import { applyVocabToObject } from '@/lib/vocab-perso'
 
 export default function HistoriquePage() {
   const toast = useToast()
@@ -119,7 +120,10 @@ export default function HistoriquePage() {
           test_utilise: crbo.test_utilise ? String(crbo.test_utilise).split(',').map((t: string) => t.trim()) : [],
           resultats_manuels: crbo.resultats,
         },
-        structure: crbo.structure_json ?? null,
+        // Vocabulaire perso appliqué juste avant download : permet à l'ortho
+        // d'avoir un Word à jour si elle a ajouté/édité des règles depuis
+        // la génération initiale.
+        structure: crbo.structure_json ? applyVocabToObject(crbo.structure_json) : null,
         fallbackCRBO: crbo.crbo_genere || '',
         previousStructure,
         previousBilanDate,
