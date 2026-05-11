@@ -126,28 +126,26 @@ export default function Pricing() {
           </div>
         </div>
 
-        <div className="pricing-grid" style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 20 }}>
+        <div className="pricing-grid" style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 20, alignItems: 'stretch' }}>
           {PLANS.map(p => (
             <div key={p.name} style={{
-              background: p.featured ? 'var(--bg-inverse)' : 'var(--bg-surface)',
-              color: p.featured ? 'var(--fg-on-brand)' : 'var(--fg-1)',
-              border: '1px solid ' + (p.featured ? 'transparent' : 'var(--border-ds)'),
-              borderRadius: 24, padding: 32,
+              background: 'var(--bg-surface)',
+              color: 'var(--fg-1)',
+              border: p.featured ? '2px solid var(--ds-primary)' : '1px solid var(--border-ds)',
+              borderRadius: 24,
+              padding: p.featured ? 36 : 32,
+              boxShadow: p.featured ? 'var(--shadow-md)' : 'none',
             }}>
               <div style={{ display: 'flex', alignItems: 'center', gap: 10, marginBottom: 8 }}>
                 <h3 style={{ fontFamily: 'var(--font-display)', fontSize: 24, fontWeight: 600, margin: 0 }}>{p.name}</h3>
                 {p.featured && (
                   <span style={{
-                    background: 'var(--ds-accent)', color: 'var(--bg-inverse)',
+                    background: 'var(--ds-primary)', color: 'var(--fg-on-brand)',
                     padding: '3px 10px', borderRadius: 999, fontSize: 11, fontWeight: 600, whiteSpace: 'nowrap',
                   }}>Le plus choisi</span>
                 )}
               </div>
-              <p style={{
-                fontSize: 14,
-                color: p.featured ? 'rgba(250,246,239,0.75)' : 'var(--fg-2)',
-                margin: '0 0 22px',
-              }}>{p.tagline}</p>
+              <p style={{ fontSize: 14, color: 'var(--fg-2)', margin: '0 0 22px' }}>{p.tagline}</p>
               <div style={{ display: 'flex', alignItems: 'baseline', gap: 6, marginBottom: 6, flexWrap: 'nowrap', whiteSpace: 'nowrap' }}>
                 <span style={{
                   fontFamily: 'var(--font-display)', fontSize: 52, fontWeight: 500,
@@ -156,9 +154,7 @@ export default function Pricing() {
                 <span style={{ fontSize: 14, opacity: 0.7, whiteSpace: 'nowrap' }}>/ mois</span>
               </div>
               <p style={{
-                fontSize: 13,
-                color: p.featured ? 'rgba(250,246,239,0.65)' : 'var(--fg-3)',
-                margin: '0 0 6px', minHeight: 18,
+                fontSize: 13, color: 'var(--fg-3)', margin: '0 0 6px', minHeight: 18,
               }}>
                 {billing === 'yearly'
                   ? `Soit ${yearlyTotalShown(p)} facturés une fois par an.`
@@ -166,13 +162,10 @@ export default function Pricing() {
               </p>
               {/* Footnote parrainage — uniquement sur le plan Ortho pro
                   (le plus probable pour une nouvelle inscrite) et en mensuel
-                  (la remise -5€ s'applique sur le mensuel). Sur la carte
-                  featured (fond sombre) on utilise l'accent crème, sinon le
-                  primary sage. */}
+                  (la remise -5€ s'applique sur le mensuel). */}
               {p.name === 'Ortho pro' && billing === 'monthly' && (
                 <p style={{
-                  fontSize: 13,
-                  color: p.featured ? 'var(--ds-accent)' : 'var(--ds-primary)',
+                  fontSize: 13, color: 'var(--ds-primary)',
                   margin: '0 0 24px', fontWeight: 500,
                 }}>
                   💚 Parrainée par une collègue ? <strong>14,90€/mois</strong>
@@ -184,17 +177,16 @@ export default function Pricing() {
               <ul style={{ listStyle: 'none', padding: 0, margin: '0 0 28px', display: 'flex', flexDirection: 'column', gap: 10 }}>
                 {p.features.map(f => (
                   <li key={f} style={{ fontSize: 14, display: 'flex', gap: 10, alignItems: 'flex-start', lineHeight: 1.45 }}>
-                    <span style={{ color: p.featured ? 'var(--ds-accent)' : 'var(--ds-primary)', flex: '0 0 auto', lineHeight: 1.45 }}>✓</span>
+                    <span style={{ color: 'var(--ds-primary)', flex: '0 0 auto', lineHeight: 1.45 }}>✓</span>
                     <span style={{ flex: 1, minWidth: 0 }}>{f}</span>
                   </li>
                 ))}
               </ul>
-              <Button variant={p.featured ? 'accent' : 'primary'} size="lg" href={p.ctaHref} style={{ width: '100%', justifyContent: 'center' }}>
+              <Button variant="primary" size="lg" href={p.ctaHref} style={{ width: '100%', justifyContent: 'center' }}>
                 {p.cta}
               </Button>
               <p style={{
-                fontSize: 12, textAlign: 'center', margin: '14px 0 0',
-                color: p.featured ? 'rgba(250,246,239,0.65)' : 'var(--fg-3)',
+                fontSize: 12, textAlign: 'center', margin: '14px 0 0', color: 'var(--fg-3)',
               }}>
                 Sans carte bancaire · 3 CRBO offerts
               </p>
