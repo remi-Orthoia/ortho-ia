@@ -18,6 +18,7 @@ import { anonymize, rehydrate, buildScrubList, scrubText, scrubObjectStrings } f
 import { createServerSupabaseClient } from '@/lib/supabase-server'
 import { withRetry } from '@/lib/retry'
 import { logger } from '@/lib/logger'
+import { fetchReferenceExamples, formatFewShotBlock } from '@/lib/prompts/few-shot'
 
 // Vercel Pro / Enterprise : autorise jusqu'à 300s (vs 10s Hobby default).
 // Bilans complexes (Exalang 8-11, Examath complet) peuvent prendre 90-150s.
@@ -393,16 +394,55 @@ export async function POST(request: NextRequest) {
     const abortController = new AbortController()
     const timeoutId = setTimeout(() => abortController.abort(), phase === 'extract' ? 90_000 : 180_000)
 
+    // ============ Few-shot injection (post-beta) ============
+    // Récupère 1-2 exemples validés par des orthos pour le même test_type
+    // (+ tranche d'âge si possible) avec qualite_score ≥ 4, et les injecte
+    // après le prompt système. Calibre l'IA sur des CRBOs réels de référence.
+    // No-op silencieux si aucun exemple disponible (DB vide en début de beta).
+    // Skipped pour la phase 'extract' (parsing déterministe, peu de plus-value).
+    let fewShotBlock = ''
+    if (phase !== 'extract') {
+      try {
+        const examples = await fetchReferenceExamples({
+          test_type: tests[0], // 1er test = test principal
+          patient_classe: formData.patient_classe,
+          limit: 2,
+        })
+        fewShotBlock = formatFewShotBlock(examples)
+      } catch (err) {
+        // DB inaccessible ou table absente (migration pas appliquée) →
+        // continuer sans few-shot, c'est gracieux.
+        logger.warn('few-shot-fetch-failed', String(err).slice(0, 200))
+      }
+    }
+
     // Prompt caching sur system prompt : économise ~80% de coût en entrée sur
     // les requêtes successives (le prompt système pèse ~15k tokens avec les
     // référentiels tests). Cache TTL = 5 min par défaut.
-    const systemBlocks = [
-      {
-        type: 'text' as const,
-        text: buildSystemPrompt(tests, phase, format),
-        cache_control: { type: 'ephemeral' as const },
-      },
-    ]
+    // Note : le few-shot block est dans son propre bloc cache_control séparé
+    // — il change selon le patient (tranche d'âge), on ne veut pas casser
+    // le cache global du prompt système qui est stable.
+    const baseSystemText = buildSystemPrompt(tests, phase, format)
+    const systemBlocks = fewShotBlock
+      ? [
+          {
+            type: 'text' as const,
+            text: baseSystemText,
+            cache_control: { type: 'ephemeral' as const },
+          },
+          {
+            type: 'text' as const,
+            text: fewShotBlock,
+            cache_control: { type: 'ephemeral' as const },
+          },
+        ]
+      : [
+          {
+            type: 'text' as const,
+            text: baseSystemText,
+            cache_control: { type: 'ephemeral' as const },
+          },
+        ]
 
     // ============ Streaming SSE (opt-in via ?stream=1) ============
     // Activé pour synthesize / full uniquement (extract est <30s, pas besoin).
