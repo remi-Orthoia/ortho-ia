@@ -6,6 +6,7 @@ import { createClient } from '@/lib/supabase'
 import { FileText, Download, Trash2, Search, Calendar, Loader2, FileDown } from 'lucide-react'
 import { useToast } from '@/components/Toast'
 import { playSwoosh } from '@/lib/sounds'
+import { playPrintAnimation } from '@/components/PrintAnimation'
 
 export default function HistoriquePage() {
   const toast = useToast()
@@ -76,6 +77,9 @@ export default function HistoriquePage() {
     // Anti double-clic + feedback visuel pendant la génération du Word.
     if (downloading[crbo.id]) return
     setDownloading(prev => ({ ...prev, [crbo.id]: true }))
+    // Overlay 3D flip — déclenché AVANT le download pour absorber le temps
+    // de génération canvas + docx (souvent 1-3s sur gros CRBOs).
+    playPrintAnimation(1500)
     try {
       const { downloadCRBOWord } = await import('@/lib/word-export')
       // Si c'est un renouvellement avec un bilan précédent lié, on charge sa structure

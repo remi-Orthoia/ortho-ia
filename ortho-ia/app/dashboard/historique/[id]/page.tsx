@@ -21,6 +21,7 @@ import {
 } from 'lucide-react'
 import CRBOStructuredPreview from '@/components/CRBOStructuredPreview'
 import { useToast } from '@/components/Toast'
+import { playPrintAnimation } from '@/components/PrintAnimation'
 
 interface CRBO {
   id: string
@@ -107,6 +108,8 @@ export default function CRBODetailPage() {
   const handleDownload = async () => {
     if (!crbo || downloading) return
     setDownloading(true)
+    // Overlay 3D flip pour la génération + download (1500ms garantis).
+    playPrintAnimation(1500)
     try {
       const { downloadCRBOWord } = await import('@/lib/word-export')
 

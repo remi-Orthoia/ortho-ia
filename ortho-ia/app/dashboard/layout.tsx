@@ -21,6 +21,8 @@ import FeedbackButton from '@/components/FeedbackButton'
 import { Sidebar, AppHeader, type SidebarItem } from '@/components/layout'
 import { Logo } from '@/components/ui'
 import { ToastProvider } from '@/components/Toast'
+import RgpdFooter from '@/components/RgpdFooter'
+import PrintAnimation from '@/components/PrintAnimation'
 
 interface DashboardLayoutProps {
   children: ReactNode
@@ -201,6 +203,10 @@ export default function DashboardLayout({ children }: DashboardLayoutProps) {
 
   return (
     <ToastProvider>
+    {/* Overlay 3D flip déclenché par playPrintAnimation() — mounté une seule
+        fois dans le layout, observe body[data-print-animation]. Affiché
+        au-dessus de tout (zIndex 9000), masqué automatiquement après 1.5s. */}
+    <PrintAnimation />
     {/* Styles globaux pour le Mode Focus — déclenché par body[data-focus-mode].
         L'idée : pendant la rédaction de l'anamnèse (étape 4 du form CRBO),
         on cache tout le chrome (sidebar, header, badge feedback) pour ne
@@ -218,7 +224,8 @@ export default function DashboardLayout({ children }: DashboardLayoutProps) {
         transform: translateX(-12px);
       }
       body[data-focus-mode="true"] .dashboard-header,
-      body[data-focus-mode="true"] .dashboard-feedback {
+      body[data-focus-mode="true"] .dashboard-feedback,
+      body[data-focus-mode="true"] .dashboard-rgpd {
         opacity: 0;
         pointer-events: none;
       }
@@ -299,9 +306,13 @@ export default function DashboardLayout({ children }: DashboardLayoutProps) {
         />
         </div>
 
-        <main className="dashboard-main" style={{ padding: '24px 32px 64px' }}>
+        <main className="dashboard-main" style={{ padding: '24px 32px 0' }}>
           {children}
         </main>
+        {/* Footer RGPD discret — masqué en Mode Focus (data-focus-mode) */}
+        <div className="dashboard-rgpd dashboard-chrome">
+          <RgpdFooter />
+        </div>
         <div className="dashboard-feedback dashboard-chrome">
           <FeedbackButton />
         </div>

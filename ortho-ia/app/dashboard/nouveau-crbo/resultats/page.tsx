@@ -36,6 +36,7 @@ import { drawHappyNeuronChart, computeChartHeight, computeChartWidth, type Chart
 import { downloadCRBOWord, SEUILS, getPercentileColor, seuilFor } from '@/lib/word-export'
 import MicButton from '@/components/MicButton'
 import StreamingCRBO from '@/components/StreamingCRBO'
+import { playPrintAnimation } from '@/components/PrintAnimation'
 import { playSuccessSound, playSwoosh } from '@/lib/sounds'
 
 interface Handoff {
@@ -417,6 +418,8 @@ export default function ResultatsPage() {
       playSuccessSound()
 
       // ============ Téléchargement Word ============
+      // Animation 3D flip pour ponctuer l'arrivée du document (1500ms).
+      playPrintAnimation(1500)
       await downloadCRBOWord({
         formData: fd,
         structure: finalStructure,

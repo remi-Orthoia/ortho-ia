@@ -17,6 +17,7 @@ import ShareCRBOButton from '@/components/ShareCRBOButton'
 import MicButton from '@/components/MicButton'
 import { useToast } from '@/components/Toast'
 import { useFocusMode } from '@/components/FocusMode'
+import { playPrintAnimation } from '@/components/PrintAnimation'
 import { playSuccessSound, playDing, playSwoosh } from '@/lib/sounds'
 import { 
   ChevronRight, 
@@ -882,6 +883,9 @@ function NouveauCRBOContent() {
 
   const handleDownloadWord = async () => {
     try {
+      // Animation 3D flip pendant la génération (1500ms garantis même si
+      // le download est instantané).
+      playPrintAnimation(1500)
       await downloadCRBOWord({
         formData,
         structure: generatedStructure,
