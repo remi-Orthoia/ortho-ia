@@ -30,11 +30,11 @@ const MILESTONES: Array<{
   colors?: string[]
 }> = [
   { threshold: 1,    emoji: '🎉', message: 'Bravo pour votre premier CRBO ! Bienvenue dans Ortho.ia.' },
-  { threshold: 10,   emoji: '🌱', message: '10 CRBOs déjà — vous prenez le rythme !', colors: ['#22c55e', '#10b981', '#84cc16'] },
+  { threshold: 10,   emoji: '🌱', message: '10 CRBOs déjà, vous prenez le rythme !', colors: ['#22c55e', '#10b981', '#84cc16'] },
   { threshold: 25,   emoji: '⭐', message: '25 CRBOs. Vos patients sont chanceux.', colors: ['#fbbf24', '#f59e0b', '#facc15'] },
   { threshold: 50,   emoji: '🏆', message: '50 CRBOs ! Vous avez économisé ~35h cette saison.', colors: ['#a855f7', '#9333ea', '#c084fc'] },
   { threshold: 100,  emoji: '🌟', message: '100 CRBOs. Officiellement, vous maîtrisez Ortho.ia.', colors: ['#3b82f6', '#06b6d4', '#0ea5e9'] },
-  { threshold: 250,  emoji: '🚀', message: '250 CRBOs — c\'est ~190h gagnées. Continuez à transformer vos bilans !', colors: ['#ef4444', '#f97316', '#fbbf24'] },
+  { threshold: 250,  emoji: '🚀', message: '250 CRBOs, c\'est ~190h gagnées. Continuez à transformer vos bilans !', colors: ['#ef4444', '#f97316', '#fbbf24'] },
   { threshold: 500,  emoji: '👑', message: '500 CRBOs. Quelle régularité ! Merci de faire grandir Ortho.ia avec nous.', colors: ['#f43f5e', '#ec4899', '#d946ef'] },
   { threshold: 1000, emoji: '💎', message: '1 000 CRBOs. Vous êtes une légende. Ortho.ia s\'incline.', colors: ['#fde047', '#facc15', '#fbbf24'] },
 ]
