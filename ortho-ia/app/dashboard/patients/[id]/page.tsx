@@ -7,6 +7,7 @@ import { createClient } from '@/lib/supabase'
 import { ArrowLeft, FileText, Calendar, TrendingUp, Loader2, Plus, Download } from 'lucide-react'
 import type { CRBOStructure } from '@/lib/prompts'
 import { SEUILS } from '@/lib/word-export'
+import PatientNotesThread from '@/components/PatientNotesThread'
 
 interface Patient {
   id: string
@@ -318,6 +319,9 @@ export default function PatientDetailPage() {
           ))}
         </div>
       </div>
+
+      {/* Fil de notes / observations entre séances. Scope personnel V1. */}
+      <PatientNotesThread patientId={patient.id} patientFirstName={patient.prenom} />
 
       {/* Liste chronologique des bilans */}
       <div className="bg-white rounded-xl border border-gray-200 p-6">

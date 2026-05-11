@@ -3,7 +3,7 @@
 import { useState, useEffect } from 'react'
 import Link from 'next/link'
 import { createClient } from '@/lib/supabase'
-import { FileText, Download, Trash2, Search, Calendar, Loader2 } from 'lucide-react'
+import { FileText, Download, Trash2, Search, Calendar, Loader2, FileDown } from 'lucide-react'
 import { useToast } from '@/components/Toast'
 import { playSwoosh } from '@/lib/sounds'
 
@@ -293,13 +293,23 @@ export default function HistoriquePage() {
                           onClick={() => handleDownload(crbo)}
                           disabled={!!downloading[crbo.id]}
                           className="p-2 text-gray-400 hover:text-green-600 transition disabled:opacity-50 disabled:cursor-wait"
-                          title={downloading[crbo.id] ? 'Génération en cours…' : 'Télécharger'}
-                          aria-label={downloading[crbo.id] ? 'Génération du Word en cours' : 'Télécharger le CRBO'}
+                          title={downloading[crbo.id] ? 'Génération en cours…' : 'Télécharger en Word'}
+                          aria-label={downloading[crbo.id] ? 'Génération du Word en cours' : 'Télécharger le CRBO en Word'}
                         >
                           {downloading[crbo.id]
                             ? <Loader2 size={18} className="animate-spin" />
                             : <Download size={18} />}
                         </button>
+                        <a
+                          href={`/dashboard/historique/${crbo.id}/print`}
+                          target="_blank"
+                          rel="noopener noreferrer"
+                          className="p-2 text-gray-400 hover:text-blue-600 transition"
+                          title="Exporter en PDF (via aperçu d'impression)"
+                          aria-label="Exporter le CRBO en PDF"
+                        >
+                          <FileDown size={18} />
+                        </a>
                         <button
                           onClick={() => handleDelete(crbo.id)}
                           className="p-2 text-gray-400 hover:text-red-600 transition"

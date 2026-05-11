@@ -27,6 +27,7 @@ import {
   CheckCircle,
   AlertCircle,
   Download,
+  FileDown,
   Sparkles,
   UserPlus,
   Users,
@@ -968,10 +969,24 @@ function NouveauCRBOContent() {
             <div className="card-lifted overflow-hidden">
               <div className="px-6 py-4 border-b border-gray-200 dark:border-surface-dark-muted flex items-center justify-between">
                 <h3 className="font-semibold text-gray-900 dark:text-gray-100">Texte éditable du CRBO</h3>
-                <button onClick={handleDownloadWord} className="btn-primary">
-                  <Download size={16} />
-                  Télécharger en Word
-                </button>
+                <div className="flex items-center gap-2">
+                  <button onClick={handleDownloadWord} className="btn-primary">
+                    <Download size={16} />
+                    Télécharger en Word
+                  </button>
+                  {savedCrboId && (
+                    <a
+                      href={`/dashboard/historique/${savedCrboId}/print`}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="btn-secondary"
+                      title="Exporter au format PDF via l'aperçu d'impression"
+                    >
+                      <FileDown size={16} />
+                      PDF
+                    </a>
+                  )}
+                </div>
               </div>
               <div className="p-6">
                 <textarea

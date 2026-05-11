@@ -61,7 +61,8 @@ export async function middleware(request: NextRequest) {
     // /api/calendar/upcoming + /api/calendar/disconnect doivent être auth.
     // /api/calendar/connect aussi, mais on laisse le matcher attraper tout
     // /api/calendar/* (le callback OAuth a sa propre validation par state).
-    pathname.startsWith('/api/calendar/')
+    pathname.startsWith('/api/calendar/') ||
+    pathname.startsWith('/api/patients/')
   // Pages /dev/* : outils internes — bloquées en prod, accessibles en dev local
   const isDevRoute = pathname.startsWith('/dev')
   const isProd = process.env.NODE_ENV === 'production'
@@ -100,6 +101,7 @@ export const config = {
     '/api/transcribe/:path*',
     '/api/account/:path*',
     '/api/calendar/:path*',
+    '/api/patients/:path*',
     '/dev/:path*',
   ],
 }

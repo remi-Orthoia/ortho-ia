@@ -7,6 +7,7 @@ import { createClient } from '@/lib/supabase'
 import {
   ArrowLeft,
   Download,
+  FileDown,
   Loader2,
   Calendar,
   User,
@@ -280,8 +281,18 @@ export default function CRBODetailPage() {
           >
             {downloading
               ? <><Loader2 size={18} className="animate-spin" />Génération…</>
-              : <><Download size={18} />Télécharger</>}
+              : <><Download size={18} />Word</>}
           </button>
+          <a
+            href={`/dashboard/historique/${crbo?.id}/print`}
+            target="_blank"
+            rel="noopener noreferrer"
+            className="inline-flex items-center gap-2 px-4 py-2 bg-white border border-gray-300 text-gray-700 rounded-lg hover:bg-gray-50 transition"
+            title="Exporter au format PDF via l'aperçu d'impression"
+          >
+            <FileDown size={18} />
+            PDF
+          </a>
           <button
             onClick={handleDelete}
             disabled={deleting}
