@@ -24,3 +24,4 @@ export {
   getKnowledgeForTest,
   scoresFromDomains,
 } from './knowledge-base'
+export { getFewShots } from './few-shots-loader'
