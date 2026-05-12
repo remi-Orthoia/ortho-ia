@@ -19,6 +19,7 @@ import { createServerSupabaseClient } from '@/lib/supabase-server'
 import { withRetry } from '@/lib/retry'
 import { logger } from '@/lib/logger'
 import { fetchReferenceExamples, formatFewShotBlock } from '@/lib/prompts/few-shot'
+import { scoresFromDomains } from '@/lib/prompts/knowledge-base'
 
 // Vercel Pro / Enterprise : autorise jusqu'à 300s (vs 10s Hobby default).
 // Bilans complexes (Exalang 8-11, Examath complet) peuvent prendre 90-150s.
@@ -422,7 +423,16 @@ export async function POST(request: NextRequest) {
     // Note : le few-shot block est dans son propre bloc cache_control séparé
     // — il change selon le patient (tranche d'âge), on ne veut pas casser
     // le cache global du prompt système qui est stable.
-    const baseSystemText = buildSystemPrompt(tests, phase, format)
+    // Knowledge base : on extrait les percentile_value des épreuves déjà
+    // structurées (phase synthèse) pour inférer un profil clinique probable
+    // et l'injecter dans le prompt système. En phase extract / full, on n'a
+    // pas encore de scores structurés → on passe un map vide (le prompt
+    // contiendra alors uniquement la partie style Laurie + seuils).
+    const knowledgeScores =
+      phase === 'synthesize' && anonymizedExtracted
+        ? scoresFromDomains(anonymizedExtracted.domains as any)
+        : {}
+    const baseSystemText = buildSystemPrompt(tests, phase, format, knowledgeScores)
     const systemBlocks = fewShotBlock
       ? [
           {

@@ -19,3 +19,8 @@ export type {
 } from './tool-schema'
 export { TEST_REGISTRY, getTestModule } from './tests'
 export type { TestModule } from './tests'
+export {
+  KNOWLEDGE_BASE,
+  getKnowledgeForTest,
+  scoresFromDomains,
+} from './knowledge-base'

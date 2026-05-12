@@ -1,4 +1,5 @@
 import { getTestModule } from './tests'
+import { getKnowledgeForTest } from './knowledge-base'
 
 const SYSTEM_BASE = `# IDENTITÉ
 
@@ -530,6 +531,7 @@ export function buildSystemPrompt(
   tests: string[],
   phase: CRBOPhase = 'full',
   format: CRBOFormat = 'complet',
+  scores: Record<string, number> = {},
 ): string {
   const activeModules = tests
     .map((t) => getTestModule(t))
@@ -547,7 +549,17 @@ export function buildSystemPrompt(
     format === 'synthetique' ? FORMAT_SYNTHETIQUE_INSTRUCTIONS :
     FORMAT_COMPLET_INSTRUCTIONS
 
-  if (activeModules.length === 0) return SYSTEM_BASE + phaseSuffix + formatSuffix
+  // Knowledge base : profil clinique inféré depuis les scores + style Laurie.
+  // Sans scores (phase 'extract' en général), seule la partie style + seuils
+  // est utile, donc on l'injecte aussi. Pour la phase 'extract' on s'abstient
+  // pour ne pas amorcer un diagnostic trop tôt (l'IA ne doit produire que les
+  // domaines + suggestions de commentaire, pas la formulation finale).
+  const knowledgeBlock =
+    phase === 'extract'
+      ? ''
+      : `\n\n---\n\n${getKnowledgeForTest(tests[0] ?? '', scores)}`
+
+  if (activeModules.length === 0) return SYSTEM_BASE + phaseSuffix + formatSuffix + knowledgeBlock
 
   const referentielSections = activeModules
     .map((m) => {
@@ -569,5 +581,5 @@ export function buildSystemPrompt(
     })
     .join('\n\n---\n\n')
 
-  return `${SYSTEM_BASE}\n\n---\n\n# RÉFÉRENTIEL DES TESTS UTILISÉS\n\n${referentielSections}${phaseSuffix}${formatSuffix}`
+  return `${SYSTEM_BASE}\n\n---\n\n# RÉFÉRENTIEL DES TESTS UTILISÉS\n\n${referentielSections}${phaseSuffix}${formatSuffix}${knowledgeBlock}`
 }
