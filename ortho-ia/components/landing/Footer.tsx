@@ -6,8 +6,8 @@ const COLUMNS: Array<{ title: string; links: Array<{ label: string; href: string
   {
     title: 'Produit',
     links: [
-      { label: 'Comment ça marche', href: '#comment-ca-marche' },
-      { label: 'Tarifs',            href: '#tarifs' },
+      { label: 'Comment ça marche', href: '/#comment-ca-marche' },
+      { label: 'Tarifs',            href: '/#tarifs' },
       { label: 'Sécurité & RGPD',   href: '/confidentialite' },
       { label: 'Roadmap',           href: '/roadmap' },
     ],
@@ -15,8 +15,9 @@ const COLUMNS: Array<{ title: string; links: Array<{ label: string; href: string
   {
     title: 'Ressources',
     links: [
-      { label: 'FAQ',           href: '#faq' },
-      { label: 'Témoignages',   href: '#temoignages' },
+      { label: 'Le Blog',       href: '/blog' },
+      { label: 'FAQ',           href: '/#faq' },
+      { label: 'Témoignages',   href: '/#temoignages' },
       { label: 'Beta',          href: '/beta' },
     ],
   },

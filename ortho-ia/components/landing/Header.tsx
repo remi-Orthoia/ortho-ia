@@ -5,10 +5,11 @@ import { Button, Container } from './Primitives'
 import { Logo } from '@/components/ui'
 
 const NAV_LINKS = [
-  { label: 'Comment ça marche', href: '#comment-ca-marche' },
-  { label: 'Tarifs',            href: '#tarifs' },
-  { label: 'Témoignages',       href: '#temoignages' },
-  { label: 'FAQ',               href: '#faq' },
+  { label: 'Comment ça marche', href: '/#comment-ca-marche' },
+  { label: 'Tarifs',            href: '/#tarifs' },
+  { label: 'Le Blog',           href: '/blog' },
+  { label: 'Témoignages',       href: '/#temoignages' },
+  { label: 'FAQ',               href: '/#faq' },
 ]
 
 export default function Header() {
