@@ -15,6 +15,7 @@ import ConfettiBurst from '@/components/ConfettiBurst'
 import CRBOStructuredPreview from '@/components/CRBOStructuredPreview'
 import ShareCRBOButton from '@/components/ShareCRBOButton'
 import MicButton from '@/components/MicButton'
+import MocaScoresInput from '@/components/forms/MocaScoresInput'
 import { useToast } from '@/components/Toast'
 import { useFocusMode } from '@/components/FocusMode'
 import { playPrintAnimation } from '@/components/PrintAnimation'
@@ -2014,75 +2015,108 @@ Astuce : tapez /fatigue, /anxiete, /encouragements… pour réutiliser vos formu
               </div>
             </div>
 
-            <div>
-              <label className="block text-sm font-medium text-gray-700 mb-1">
-                Résultats (scores) *
-              </label>
-              <p className="text-xs text-gray-500 mb-3">
-                Importez un PDF de résultats ou entrez-les manuellement
-              </p>
-              
-              {/* Bouton Import PDF */}
-              <div className="mb-3">
-                <label 
-                  className={`inline-flex items-center gap-2 px-4 py-2.5 border-2 border-dashed rounded-lg cursor-pointer transition ${
-                    extracting 
-                      ? 'border-green-400 bg-green-50 text-green-700' 
-                      : 'border-green-500 bg-green-50 text-green-700 hover:bg-green-100'
-                  }`}
-                >
-                  {extracting ? (
-                    <>
-                      <Loader2 className="animate-spin" size={18} />
-                      <span className="text-sm font-medium">Extraction en cours...</span>
-                    </>
-                  ) : (
-                    <>
-                      <FileUp size={18} />
-                      <span className="text-sm font-medium">📄 Importer PDF résultats</span>
-                    </>
-                  )}
-                  <input
-                    type="file"
-                    accept=".pdf,image/*"
-                    multiple
-                    onChange={handleExtractPDF}
-                    disabled={extracting}
-                    className="hidden"
-                  />
+            {/* MoCA — saisie structurée. Quand le seul test sélectionné est la MoCA,
+                on remplace le textarea + import PDF (un screening 10 min se saisit
+                directement, pas par PDF) par une grille des 7 sous-scores avec
+                calcul automatique du total et badge sévérité. */}
+            {formData.test_utilise.length === 1 && formData.test_utilise[0] === 'MoCA' ? (
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-3">
+                  Résultats MoCA *
                 </label>
-                <span className="ml-3 text-xs text-gray-400">Jusqu'à 3 PDFs / images (Exalang, EVALO, ELO...) — multi-page : sélectionnez page 1 + page 2</span>
+                {error && (
+                  <div className="mb-3 p-3 bg-red-50 border border-red-200 rounded-lg flex items-center gap-2 text-red-700 text-sm">
+                    <AlertCircle size={16} />
+                    {error}
+                  </div>
+                )}
+                <MocaScoresInput
+                  notes={formData.comportement_seance || ''}
+                  onNotesChange={(v) => setFormData(prev => ({ ...prev, comportement_seance: v }))}
+                  onResultatsChange={(v) => setFormData(prev => ({ ...prev, resultats_manuels: v }))}
+                  onError={(msg) => setError(msg)}
+                />
               </div>
+            ) : (
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-1">
+                  Résultats (scores) *
+                </label>
+                <p className="text-xs text-gray-500 mb-3">
+                  Importez un PDF de résultats ou entrez-les manuellement
+                </p>
 
-              {/* Message d'erreur */}
-              {error && (
-                <div className="mb-3 p-3 bg-red-50 border border-red-200 rounded-lg flex items-center gap-2 text-red-700 text-sm">
-                  <AlertCircle size={16} />
-                  {error}
+                {/* Bouton Import PDF */}
+                <div className="mb-3">
+                  <label
+                    className={`inline-flex items-center gap-2 px-4 py-2.5 border-2 border-dashed rounded-lg cursor-pointer transition ${
+                      extracting
+                        ? 'border-green-400 bg-green-50 text-green-700'
+                        : 'border-green-500 bg-green-50 text-green-700 hover:bg-green-100'
+                    }`}
+                  >
+                    {extracting ? (
+                      <>
+                        <Loader2 className="animate-spin" size={18} />
+                        <span className="text-sm font-medium">Extraction en cours...</span>
+                      </>
+                    ) : (
+                      <>
+                        <FileUp size={18} />
+                        <span className="text-sm font-medium">📄 Importer PDF résultats</span>
+                      </>
+                    )}
+                    <input
+                      type="file"
+                      accept=".pdf,image/*"
+                      multiple
+                      onChange={handleExtractPDF}
+                      disabled={extracting}
+                      className="hidden"
+                    />
+                  </label>
+                  <span className="ml-3 text-xs text-gray-400">Jusqu'à 3 PDFs / images (Exalang, EVALO, ELO...) — multi-page : sélectionnez page 1 + page 2</span>
                 </div>
-              )}
 
-              <textarea
-                name="resultats_manuels"
-                value={formData.resultats_manuels}
-                onChange={handleChange}
-                required
-                rows={12}
-                className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-green-500 resize-none font-mono text-sm"
-                placeholder="Empan auditif endroit : 3/7, É-T : -2.11, P5
+                {/* Message d'erreur */}
+                {error && (
+                  <div className="mb-3 p-3 bg-red-50 border border-red-200 rounded-lg flex items-center gap-2 text-red-700 text-sm">
+                    <AlertCircle size={16} />
+                    {error}
+                  </div>
+                )}
+
+                <textarea
+                  name="resultats_manuels"
+                  value={formData.resultats_manuels}
+                  onChange={handleChange}
+                  required
+                  rows={12}
+                  className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-green-500 resize-none font-mono text-sm"
+                  placeholder="Empan auditif endroit : 3/7, É-T : -2.11, P5
 Empan auditif envers : 3/6, É-T : -0.79, Q3 (P75)
 Métaphonologie - traitement syllabique : 5/11, É-T : -3.32, P5
 Lecture de mots (score) : 15/100, É-T : -6.62, P5
 ..."
-              />
-              
-              {formData.resultats_manuels && (
-                <p className="mt-2 text-xs text-green-600 flex items-center gap-1">
-                  <CheckCircle size={14} />
-                  {formData.resultats_manuels.split('\n').filter(l => l.trim()).length} résultats détectés
-                </p>
-              )}
-            </div>
+                />
+
+                {formData.resultats_manuels && (
+                  <p className="mt-2 text-xs text-green-600 flex items-center gap-1">
+                    <CheckCircle size={14} />
+                    {formData.resultats_manuels.split('\n').filter(l => l.trim()).length} résultats détectés
+                  </p>
+                )}
+
+                {/* Hint si MoCA est mélangé avec d'autres tests */}
+                {formData.test_utilise.includes('MoCA') && formData.test_utilise.length > 1 && (
+                  <div className="mt-3 p-3 rounded-lg border border-amber-200 bg-amber-50 text-xs text-amber-800">
+                    <strong>MoCA + autre(s) test(s) sélectionné(s)</strong> : la saisie structurée MoCA
+                    est disponible uniquement quand la MoCA est le seul test choisi. Vous pouvez ici
+                    saisir les scores MoCA librement ligne par ligne (ex : « Mémoire : 3/5 »).
+                  </div>
+                )}
+              </div>
+            )}
 
             {/* Comportement en séance — observations structurées */}
             <div className="bg-indigo-50 border border-indigo-200 rounded-xl p-4 space-y-3">

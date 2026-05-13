@@ -242,6 +242,50 @@ export async function generateCRBOWord(payload: WordExportPayload): Promise<Blob
   // proposés), sans Points forts / Difficultés / Axes / signature.
   const isSynthetique = formData.format_crbo === 'synthetique'
 
+  // ============ Détection MoCA ============
+  //
+  // Le MoCA est un screening cognitif /30, pas un bilan percentile-based.
+  // Quand c'est le seul test du bilan, on remplace le graphique HappyNeuron et
+  // le tableau percentile par un rendu MoCA dédié (4 colonnes Domaine/Score/
+  // Max/Interprétation + bandeau Total avec badge sévérité).
+  const testList = Array.isArray(formData.test_utilise) ? formData.test_utilise : [formData.test_utilise]
+  const isMocaOnly = testList.length === 1 && testList[0] === 'MoCA'
+
+  /** Parse "X/Y" en {score, max}. Tolère espaces. Renvoie null si pas parsable. */
+  const parseScoreFraction = (raw: string): { score: number; max: number } | null => {
+    if (!raw) return null
+    const m = raw.trim().match(/^\s*(\d+)\s*\/\s*(\d+)\s*$/)
+    if (!m) return null
+    const score = parseInt(m[1], 10)
+    const max = parseInt(m[2], 10)
+    if (isNaN(score) || isNaN(max) || max <= 0) return null
+    return { score, max }
+  }
+
+  /**
+   * Seuils MoCA officiels (Nasreddine et al. 2005) sur le total /30.
+   * À appliquer au TOTAL CORRIGÉ (après +1 si scolarité ≤ 12 ans).
+   */
+  const mocaSeverity = (total: number): { label: string; shading: string; textColor?: string } => {
+    if (total >= 26) return { label: 'Pas d\'atteinte',     shading: '2E7D32', textColor: 'FFFFFF' }
+    if (total >= 18) return { label: 'Atteinte légère',     shading: 'FBC02D', textColor: '5D4037' }
+    if (total >= 10) return { label: 'Atteinte modérée',    shading: 'E65100', textColor: 'FFFFFF' }
+    return                   { label: 'Atteinte sévère',    shading: 'D32F2F', textColor: 'FFFFFF' }
+  }
+
+  /**
+   * Couleur d'interprétation par domaine MoCA : palette 3 zones sur le ratio
+   * score/max — différente des SEUILS percentiles (qui sont une grille 6 zones).
+   *   ≥ 80% → préservé (vert)
+   *   50-79% → fragilisé (orange)
+   *   < 50%  → déficitaire (rouge)
+   */
+  const mocaDomainSeverity = (pct: number): { label: string; shading: string; textColor?: string } => {
+    if (pct >= 80) return { label: 'Préservé',     shading: '2E7D32', textColor: 'FFFFFF' }
+    if (pct >= 50) return { label: 'Fragilisé',    shading: 'FB8C00', textColor: 'FFFFFF' }
+    return                  { label: 'Déficitaire', shading: 'D32F2F', textColor: 'FFFFFF' }
+  }
+
   // ============ Helpers ============
 
   const createCell = (text: string, options: { bold?: boolean, dxa: number, shading?: string, alignment?: any, textColor?: string }) => {
@@ -634,7 +678,9 @@ export async function generateCRBOWord(payload: WordExportPayload): Promise<Blob
   }
 
   // ===== SYNTHÈSE VISUELLE PAGE 1 — vue HappyNeuron groupée =====
-  if (hasStructure) {
+  // ⚠️ Skip pour les bilans MoCA : le graphique percentile n'a aucun sens pour
+  // un screening cognitif /30. Le tableau MoCA dans la section BILAN suffit.
+  if (hasStructure && !isMocaOnly) {
     const groups = orderedDomains.map((d) => ({
       name: d.nom,
       bars: d.epreuves.map((e) => ({ label: e.nom, value: e.percentile_value })),
@@ -691,31 +737,167 @@ export async function generateCRBOWord(payload: WordExportPayload): Promise<Blob
   // ===== BILAN =====
   children.push(createSectionTitle('BILAN'))
 
-  // Légende (dynamique depuis SEUILS)
-  children.push(
-    new Paragraph({ children: [new TextRun({ text: 'Légende des scores (percentiles) :', size: 18, font: FONT, bold: true })], spacing: { before: 200, after: 100 } }),
-    (() => {
-      const cols = dxaCols(SEUILS.map(() => 100 / SEUILS.length))
-      return new Table({
-        width: { size: TOTAL_DXA, type: WidthType.DXA },
-        columnWidths: cols,
-        rows: [new TableRow({
-          children: SEUILS.map((s, i) =>
-            createCell(`${s.longLabel} (${s.range})`, {
-              shading: s.shading,
-              dxa: cols[i],
-              alignment: AlignmentType.CENTER,
-              bold: true,
-              textColor: s.textColor,
-            }),
-          ),
+  // Légende — varie selon le type de bilan.
+  // MoCA : 3 zones (Préservé / Fragilisé / Déficitaire) sur le ratio score/max.
+  // Autres tests : 6 zones percentiles (SEUILS).
+  if (isMocaOnly) {
+    children.push(
+      new Paragraph({
+        children: [new TextRun({ text: 'Légende des scores (% du score max par domaine) :', size: 18, font: FONT, bold: true })],
+        spacing: { before: 200, after: 100 },
+      }),
+      (() => {
+        const cells = [
+          { label: 'Préservé (≥ 80 %)',    shading: '2E7D32', textColor: 'FFFFFF' },
+          { label: 'Fragilisé (50 – 79 %)', shading: 'FB8C00', textColor: 'FFFFFF' },
+          { label: 'Déficitaire (< 50 %)',  shading: 'D32F2F', textColor: 'FFFFFF' },
+        ]
+        const cols = dxaCols(cells.map(() => 100 / cells.length))
+        return new Table({
+          width: { size: TOTAL_DXA, type: WidthType.DXA },
+          columnWidths: cols,
+          rows: [new TableRow({
+            children: cells.map((c, i) =>
+              createCell(c.label, {
+                shading: c.shading,
+                dxa: cols[i],
+                alignment: AlignmentType.CENTER,
+                bold: true,
+                textColor: c.textColor,
+              }),
+            ),
+          })],
+        })
+      })(),
+      new Paragraph({ children: [new TextRun({ text: '' })] }),
+      new Paragraph({
+        children: [new TextRun({
+          text: 'Le MoCA est un outil de dépistage rapide des fonctions cognitives. Il ne pose aucun diagnostic — un bilan neuropsychologique approfondi est nécessaire si une atteinte est mise en évidence.',
+          size: 18, font: FONT, italics: true, color: '666666',
         })],
-      })
-    })(),
-    new Paragraph({ children: [new TextRun({ text: '' })] }),
-  )
+        spacing: { after: 200 },
+      }),
+    )
+  } else {
+    children.push(
+      new Paragraph({ children: [new TextRun({ text: 'Légende des scores (percentiles) :', size: 18, font: FONT, bold: true })], spacing: { before: 200, after: 100 } }),
+      (() => {
+        const cols = dxaCols(SEUILS.map(() => 100 / SEUILS.length))
+        return new Table({
+          width: { size: TOTAL_DXA, type: WidthType.DXA },
+          columnWidths: cols,
+          rows: [new TableRow({
+            children: SEUILS.map((s, i) =>
+              createCell(`${s.longLabel} (${s.range})`, {
+                shading: s.shading,
+                dxa: cols[i],
+                alignment: AlignmentType.CENTER,
+                bold: true,
+                textColor: s.textColor,
+              }),
+            ),
+          })],
+        })
+      })(),
+      new Paragraph({ children: [new TextRun({ text: '' })] }),
+    )
+  }
 
-  if (hasStructure) {
+  if (hasStructure && isMocaOnly) {
+    // ============ Rendu MoCA dédié ============
+    // Un seul tableau 4 colonnes Domaine / Score / Max / Interprétation,
+    // suivi d'un bandeau Total /30 avec badge sévérité officiel.
+    //
+    // On agrège tous les domains[].epreuves dans un seul tableau (l'IA peut
+    // produire 1 domain "MoCA — Profil cognitif" avec 7 epreuves OU 7 domains
+    // d'1 epreuve, on traite les deux cas de la même façon).
+
+    const allEpreuves = orderedDomains.flatMap(d => d.epreuves)
+    const mocaCols = dxaCols([45, 15, 15, 25])
+    const mocaRows = [
+      new TableRow({ children: [
+        createCell('Domaine',         { bold: true, dxa: mocaCols[0], shading: 'E8F5E9' }),
+        createCell('Score',           { bold: true, dxa: mocaCols[1], shading: 'E8F5E9', alignment: AlignmentType.CENTER }),
+        createCell('Score max',       { bold: true, dxa: mocaCols[2], shading: 'E8F5E9', alignment: AlignmentType.CENTER }),
+        createCell('Interprétation',  { bold: true, dxa: mocaCols[3], shading: 'E8F5E9', alignment: AlignmentType.CENTER }),
+      ]}),
+    ]
+    let totalObtenu = 0
+    let totalMax = 0
+    for (const e of allEpreuves) {
+      const parsed = parseScoreFraction(e.score)
+      if (parsed) {
+        totalObtenu += parsed.score
+        totalMax += parsed.max
+      }
+      const score = parsed ? String(parsed.score) : e.score
+      const max = parsed ? String(parsed.max) : '—'
+      // L'IA encode score/max × 100 dans percentile_value : on s'en sert
+      // directement pour la couleur d'interprétation (3 zones MoCA).
+      const sev = mocaDomainSeverity(e.percentile_value)
+      mocaRows.push(new TableRow({ children: [
+        createCell(e.nom, { dxa: mocaCols[0] }),
+        createCell(score, { dxa: mocaCols[1], alignment: AlignmentType.CENTER }),
+        createCell(max,   { dxa: mocaCols[2], alignment: AlignmentType.CENTER }),
+        createCell(sev.label, { dxa: mocaCols[3], alignment: AlignmentType.CENTER, shading: sev.shading, textColor: sev.textColor, bold: true }),
+      ]}))
+    }
+    children.push(
+      new Table({
+        width: { size: TOTAL_DXA, type: WidthType.DXA },
+        columnWidths: mocaCols,
+        rows: mocaRows,
+      }),
+      new Paragraph({ children: [new TextRun({ text: '' })] }),
+    )
+
+    // Bandeau TOTAL — utilise le total parsé des épreuves, normalisé à /30.
+    // Si l'IA a saisi un total cohérent (totalMax === 30) on l'utilise tel
+    // quel. Sinon on tente une lecture depuis resultats_manuels (qui contient
+    // "TOTAL CORRIGÉ : X/30" écrit par MocaScoresInput).
+    let totalForBadge: number | null = null
+    if (totalMax === 30) {
+      totalForBadge = totalObtenu
+    } else if (formData.resultats_manuels) {
+      const m = formData.resultats_manuels.match(/TOTAL\s+(?:CORRIG[ÉE]|MoCA)?\s*:?\s*(\d+)\s*\/\s*30/i)
+      if (m) totalForBadge = parseInt(m[1], 10)
+    }
+    if (totalForBadge !== null) {
+      const sev = mocaSeverity(totalForBadge)
+      const totalCols = dxaCols([55, 20, 25])
+      children.push(
+        new Table({
+          width: { size: TOTAL_DXA, type: WidthType.DXA },
+          columnWidths: totalCols,
+          rows: [
+            new TableRow({ children: [
+              createCell('TOTAL MoCA',           { bold: true, dxa: totalCols[0], shading: 'E8F5E9' }),
+              createCell(`${totalForBadge} / 30`, { bold: true, dxa: totalCols[1], shading: 'E8F5E9', alignment: AlignmentType.CENTER }),
+              createCell(sev.label,               { bold: true, dxa: totalCols[2], shading: sev.shading, textColor: sev.textColor, alignment: AlignmentType.CENTER }),
+            ]}),
+          ],
+        }),
+        new Paragraph({ children: [new TextRun({ text: '' })] }),
+      )
+    }
+
+    // Commentaires de domaine (si fournis par l'IA) — rendus sous le tableau.
+    for (const domain of orderedDomains) {
+      if (domain.commentaire && domain.commentaire.trim()) {
+        const cleaned = domain.commentaire
+          .trim()
+          .replace(/^\**\s*observations?\s+cliniques?\s*:\s*\**\s*/i, '')
+          .trim()
+        const domainCommEdited = editedSetEarly.has(`domain_commentaire:${domain.nom}`)
+        children.push(new Paragraph({
+          alignment: AlignmentType.BOTH,
+          shading: domainCommEdited ? { type: ShadingType.CLEAR, fill: 'EFF6FF', color: 'auto' } : undefined,
+          spacing: { after: 200 },
+          children: [new TextRun({ text: cleaned, size: FONT_SIZE_NORMAL, font: FONT })],
+        }))
+      }
+    }
+  } else if (hasStructure) {
     for (const domain of orderedDomains) {
       children.push(
         new Paragraph({

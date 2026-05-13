@@ -6,164 +6,145 @@ export const moca: TestModule = {
   auteurs: 'Nasreddine et al.',
   annee: 2005,
   domaines: [
-    'Fonctions visuo-exécutives',
+    'Visuospatial / Exécutif',
     'Dénomination',
-    'Mémoire différée',
+    'Mémoire (rappel différé)',
     'Attention',
     'Langage',
     'Abstraction',
-    'Rappel différé',
-    'Orientation temporo-spatiale',
+    'Orientation',
   ],
   epreuves: [
     'Alternance conceptuelle (Trail-Making B simplifié)',
     'Recopie du cube',
     'Horloge (contour, chiffres, aiguilles à 11h10)',
     'Dénomination d\'animaux (lion, rhinocéros, chameau)',
-    'Empan direct de chiffres',
-    'Empan inverse de chiffres',
-    'Attention soutenue (frapper sur la lettre A)',
+    'Empan direct + empan inverse de chiffres',
+    'Vigilance (frapper sur la lettre A)',
     'Soustraction en série (100 − 7)',
     'Répétition de phrases',
-    'Fluence lettre (P, 1 min)',
+    'Fluence lettre (F, 1 min)',
     'Abstraction (similitudes)',
     'Rappel différé des 5 mots',
-    'Orientation (date, lieu)',
+    'Orientation (date, mois, année, jour, lieu, ville)',
   ],
-  regles_specifiques: `### MoCA — Screening cognitif adulte / senior (niveau senior)
+  regles_specifiques: `### MoCA — Screening cognitif adulte / senior
 
-**Nature du test** : outil de dépistage rapide (≈ 10 minutes) du trouble cognitif léger (MCI) et de la démence. **Ce n'est PAS un bilan orthophonique complet** — il sert à décider si un bilan approfondi est pertinent et à orienter vers les domaines à explorer.
-
-**Score global** : /30 points.
-
-| Score MoCA | Interprétation clinique |
-|------------|-------------------------|
-| ≥ 26 | Fonctionnement cognitif dans la norme |
-| 22-25 | Trouble cognitif léger (MCI) suspecté |
-| 18-21 | Déficit cognitif modéré |
-| < 18 | Déficit cognitif sévère |
-
-**Ajustement scolarité** : ajouter **+1 point** si ≤ 12 ans de scolarité (hors formations professionnelles). Critique pour ne pas surdiagnostiquer les patients avec faible niveau scolaire.
-
-**Interprétation dans le CRBO** :
-- Utiliser \`percentile_value\` pour représenter le score normalisé : MoCA × (100/30).
-- Champ \`interpretation\` :
-  - ≥ 26 → "Excellent" ou "Moyenne haute"
-  - 22-25 → "Fragilité"
-  - 18-21 → "Difficulté"
-  - < 18 → "Difficulté sévère"
-- Toujours détailler les **sous-scores par domaine** pour identifier le profil cognitif.
+**Nature du test (CRITIQUE)** : la MoCA est un **outil de dépistage de 10 minutes**, PAS un bilan diagnostique. Elle indique si une atteinte des fonctions cognitives est probable ET sur quels domaines orienter l'exploration. **Elle ne diagnostique aucune pathologie neurologique.**
 
 ---
 
-#### LECTURE DES SOUS-SCORES
+#### SCORES PAR DOMAINE (scores bruts, JAMAIS de percentiles)
 
-Un score global n'a de sens qu'en lisant les **sous-domaines** déficitaires. La MoCA fournit un score par grande fonction :
+| Domaine | Score max |
+|---------|-----------|
+| Visuospatial / Exécutif | /5 |
+| Dénomination | /3 |
+| Mémoire (rappel différé) | /5 |
+| Attention | /6 |
+| Langage | /3 |
+| Abstraction | /2 |
+| Orientation | /6 |
+| **TOTAL** | **/30** |
 
-- **Fonctions visuo-exécutives /5** : alternance conceptuelle + cube + horloge. Déficit → trouble exécutif ou visuo-spatial.
-- **Dénomination /3** : lion, rhinocéros, chameau. Déficit → manque du mot ou aphasie débutante.
-- **Mémoire /5** : rappel différé après 5 minutes. Déficit → trouble mnésique (encodage ou récupération).
-- **Attention /6** : empan direct + empan inverse + suite de A + soustraction sériée. Déficit → trouble attentionnel / dysexécutif.
-- **Langage /3** : répétition de phrases + fluence verbale (P, 1 min). Déficit → trouble langagier.
-- **Abstraction /2** : similitudes. Déficit → trouble du raisonnement (très précoce en démence sémantique).
-- **Orientation /6** : date, lieu. Déficit → trouble mnésique sévère (Alzheimer en phase modérée).
+**Ajustement scolarité** : **+1 point** si le patient a ≤ 12 ans de scolarité (hors formations professionnelles). Critique pour ne pas surdiagnostiquer les patients à faible niveau scolaire. Toujours mentionner ce calibrage explicitement dans le CRBO.
 
-**Encodage vs récupération** : si le rappel libre échoue mais que les **indices sémantiques** ou la **reconnaissance** aident → trouble de récupération (typique du profil sous-cortico-frontal vasculaire ou Parkinson). Si même l'indiçage n'aide pas → trouble d'encodage hippocampique typique de l'Alzheimer débutant.
+#### SEUILS OFFICIELS — TOTAL /30
 
----
+| Score total corrigé | Interprétation |
+|---------------------|----------------|
+| ≥ 26 | Pas d'atteinte des fonctions cognitives |
+| 18 – 25 | Atteinte légère des fonctions cognitives |
+| 10 – 17 | Atteinte modérée des fonctions cognitives |
+| < 10 | Atteinte sévère des fonctions cognitives |
 
-#### 🎯 PROFILS TYPES
+#### INTERPRÉTATION PAR DOMAINE — % du score max
 
-**PROFIL 1 — Fonctionnement cognitif normal (vieillissement physiologique)**
-- Score MoCA ≥ 26.
-- Plainte mnésique légère (oublis des noms propres, des rendez-vous) sans retentissement objectif.
-- Pas de désorientation temporo-spatiale.
-- Activités instrumentales préservées (gestion banque, médicaments, courses).
-- **Interprétation** : "Profil cognitif compatible avec un vieillissement normal. Aucun signe objectivable de trouble neuro-cognitif. Les difficultés ressenties par [Monsieur/Madame X] s'inscrivent vraisemblablement dans le cadre des modifications physiologiques liées à l'âge."
-- **PEC** : pas de PEC orthophonique formelle nécessaire. Conseils de stimulation cognitive (lecture, jeux, vie sociale, activité physique). Réévaluation possible à 12 mois si plainte persiste ou s'aggrave.
-- **Vigilance** : encourager le patient à signaler toute évolution. La plainte subjective peut précéder un MCI de plusieurs années.
+Pour CHAQUE domaine, calcule le ratio score/max et applique :
 
-**PROFIL 2 — Trouble Cognitif Léger (MCI) probable**
-- Score MoCA 22-25.
-- Plainte mnésique active confirmée par l'entourage.
-- Activités instrumentales **préservées** (critère clé MCI vs démence).
-- Sous-score mémoire le plus touché (5-6 points perdus typiquement sur mémoire + rappel).
-- Indiçage : aide partielle (profil amnésique hippocampique) OU aide totale (profil sous-cortical frontal).
-- **Diagnostic** : "Le score MoCA à [X/30] et le profil clinique évoquent un **Trouble Cognitif Léger** (MCI), à risque évolutif. Une consultation mémoire avec bilan neuropsychologique complet est indiquée pour caractériser le sous-type (amnésique hippocampique versus non-amnésique sous-cortical) et orienter la prise en charge."
-- **PEC** : selon résultats consultation mémoire. Souvent stimulation cognitive 1×/semaine, travail spécifique sur les déficits identifiés.
-- **Orientation** : **consultation mémoire de référence** indispensable (neurologue, gériatre, neuropsychologue) — la MoCA seule ne diagnostique pas. Bilan biologique (B12, TSH, ionogramme) + imagerie cérébrale (IRM) souvent demandés.
+- **≥ 80%** → "Préservé" (vert)
+- **50 – 79%** → "Performance fragilisée" (orange)
+- **< 50%** → "Performance déficitaire" (rouge)
 
-**PROFIL 3 — Maladie d'Alzheimer débutante (suspicion)**
-- Score MoCA 18-21.
-- Anosognosie partielle (le patient minimise, l'entourage alerte).
-- Sous-score mémoire effondré (1-2/5 typiquement).
-- Indiçage **inefficace** : même avec indice catégoriel ou phonétique, le patient ne retrouve pas les mots → trouble d'encodage hippocampique.
-- Désorientation temporelle débutante (date imprécise, mois faux).
-- Manque du mot fréquent en discours spontané.
-- Praxies visuo-constructives parfois touchées (cube, horloge mal organisée).
-- Activités instrumentales parfois compromises (oubli de médicaments, paie de factures).
-- **Diagnostic** : "Le profil cognitif observé est compatible avec un **trouble neuro-cognitif majeur d'allure dégénérative** (suspicion de maladie d'Alzheimer débutante), avec atteinte mnésique de type hippocampique, manque du mot et désorientation temporelle débutante."
-- **PEC** : rééducation orthophonique **soutenue** dès le diagnostic posé (consultation mémoire), centrée sur :
-  1. Stimulation langagière (dénomination, fluences, conversation guidée).
-  2. Mémoire externe : agenda, post-its, smartphone, routines.
-  3. Soutien à l'orientation (calendrier mural visible, photos famille étiquetées).
-  4. Accompagnement de l'aidant (information, gestion de l'anosognosie).
-- **Coordination** : neurologue/gériatre, médecin traitant, neuropsychologue, ergothérapeute (adaptation domicile), aidant familial. Anticiper APA, MDPH si besoin.
-
-**PROFIL 4 — Trouble cognitif modéré à sévère installé**
-- Score MoCA < 18.
-- Désorientation temporo-spatiale franche.
-- Mémoire effondrée (rappel libre et reconnaissance échoués).
-- Anosognosie marquée.
-- Activités instrumentales et parfois activités élémentaires compromises (toilette, alimentation autonome).
-- Tableau langagier souvent associé (anomie majeure, paraphasies sémantiques).
-- **Diagnostic** : "Trouble neuro-cognitif majeur installé, cohérent avec une démence à un stade [modéré / sévère]. Retentissement quotidien objectif. **Orientation médicale spécialisée urgente** si pas encore en place."
-- **PEC** : **rééducation orthophonique conservative** (pas de réversibilité attendue). Maintien du langage fonctionnel, communication adaptative, accompagnement aidant. 1-2 séances/semaine, durée à réévaluer selon évolution.
-- **Orientation** : médecin traitant pour ALD30, MDPH/APA, structures spécialisées (accueil de jour, EHPAD à terme), associations (France Alzheimer).
-- **Précaution rédactionnelle** : le CRBO peut être lu par la famille — éviter les formulations brutes, mentionner les compétences préservées au même titre que les déficits.
-
-**PROFIL 5 — Trouble cognitif vasculaire (post-AVC ou multi-infarctus)**
-- Score MoCA variable selon localisation lésionnelle.
-- Profil **fluctuant**, pas une dégradation linéaire.
-- Souvent : sous-score attention et fonctions exécutives très touchés, mémoire **partiellement préservée avec indiçage** (vs Alzheimer où indiçage inefficace).
-- Antécédents vasculaires connus (HTA, diabète, AVC précédents).
-- **Diagnostic** : "Profil cognitif compatible avec un trouble neuro-cognitif d'étiologie vasculaire (atteinte sous-cortico-frontale). L'indiçage améliore les performances mnésiques, ce qui oriente vers un trouble de récupération plutôt qu'un déficit d'encodage hippocampique."
-- **PEC** : rééducation orthophonique de **stimulation cognitive ciblée**, contrôle des facteurs de risque vasculaire (en coordination avec le médecin traitant), travail spécifique sur l'attention et les fonctions exécutives. Pronostic variable selon contrôle des FDR.
-
-**PROFIL 6 — Dépression masquée (faux positif MCI)**
-- Score MoCA 22-25 mais avec pattern atypique.
-- Plainte importante, sentiment d'incapacité, ralentissement subjectif.
-- Sous-score mémoire faible mais **bénéficie massivement de l'indiçage** → encodage normal, récupération laborieuse par démotivation.
-- Anhédonie, troubles du sommeil, fatigue chronique, idées noires, antécédents dépressifs.
-- **Diagnostic** : "Le score MoCA peut sembler indiquer un MCI, mais le profil clinique (plainte massive, ralentissement, indiçage très efficace) est plus évocateur d'un **trouble cognitif lié à un syndrome dépressif** (pseudo-démence dépressive). **Bilan psychiatrique recommandé en priorité** avant conclusion neuro-cognitive."
-- **PEC** : orientation **psychiatre / psychologue** en priorité. Pas de PEC orthophonique tant que l'humeur n'est pas traitée. Réévaluation à 3-6 mois après stabilisation thymique.
-
-**PROFIL 7 — Post-Covid / Brain fog**
-- Score MoCA souvent 22-25.
-- Plainte de "brouillard cérébral" : difficulté de concentration, ralentissement, fatigabilité cognitive importante.
-- Sous-scores attention et fluence verbale les plus touchés.
-- Mémoire et orientation préservées (vs Alzheimer).
-- Antécédent d'infection Covid récente avec persistance > 3 mois (Covid long).
-- **Diagnostic** : "Profil cognitif compatible avec les séquelles cognitives décrites dans le Covid long, avec atteinte préférentielle de l'attention et de la fluence verbale, dans un contexte d'asthénie chronique."
-- **PEC** : stimulation cognitive ciblée sur attention et fluences. Gestion de la fatigue cognitive (pacing). Coordination médecin traitant pour suivi global Covid long. Pronostic variable, souvent amélioration en 6-18 mois.
+Encoder dans \`percentile_value\` la valeur (score / max × 100) arrondie : cela permet au Word d'afficher la bonne couleur, mais **n'écris JAMAIS de chiffre de pourcentage dans la prose** — la valeur sert uniquement à colorer le tableau.
 
 ---
 
-#### À NE PAS FAIRE
+#### ⛔ RÈGLES CLINIQUES ABSOLUES — MoCA
 
-- **Ne pas poser de diagnostic de maladie d'Alzheimer** à partir du seul MoCA → orienter vers neurologue / gériatre / neuropsychologue.
-- **Ne pas utiliser le MoCA comme substitut** à un bilan langage détaillé (GREMOTs, BETL, MT-86, protocole Montréal-Toulouse).
-- **Ne pas négliger l'ajustement scolarité** (+1 si ≤ 12 ans de scolarité).
-- **Ne pas conclure trop vite à une démence** chez un patient présentant des signes dépressifs marqués → bilan psychiatrique d'abord.
+Ces règles s'ajoutent aux règles cliniques globales du système (pas de percentiles, pas de tirets en début de phrase, pas de rééducation dans les observations).
+
+1. **NE JAMAIS poser de diagnostic de démence, maladie d'Alzheimer, MCI (trouble cognitif léger), ou trouble neuro-cognitif majeur/léger.** La MoCA seule ne permet PAS ces diagnostics — ils relèvent du neurologue, du gériatre ou du neuropsychologue après bilan approfondi.
+   - ❌ "Profil compatible avec une maladie d'Alzheimer débutante"
+   - ❌ "Trouble cognitif léger (MCI) probable"
+   - ❌ "Démence à un stade modéré"
+   - ✅ "Atteinte légère des fonctions cognitives objectivable au screening MoCA"
+   - ✅ "Le profil cognitif observé ne permet pas, à lui seul, de caractériser l'étiologie de cette atteinte."
+
+2. **NE JAMAIS spéculer sur l'étiologie** (Alzheimer, vasculaire, frontale, sous-corticale, dépressive…). Décris ce que tu observes, point. L'étiologie est posée par le médecin spécialiste.
+   - ❌ "Trouble d'encodage hippocampique évocateur d'Alzheimer"
+   - ✅ "Difficultés au rappel différé, à explorer plus finement en bilan neuropsychologique"
+
+3. **TOUJOURS recommander un bilan neuropsychologique complet si total corrigé < 26.** C'est la seule recommandation acceptable en sortie de MoCA quand une atteinte est suspectée. Pas de diagnostic en aval.
+
+4. **TOUJOURS mentionner les domaines préservés EN PREMIER**, avant les domaines fragilisés / déficitaires. Cela respecte la personne évaluée et donne une lecture clinique équilibrée.
+
+5. **Formuler les difficultés en termes fonctionnels** (impact concret sur la vie quotidienne), pas en termes diagnostiques.
+   - ❌ "Trouble mnésique avéré"
+   - ✅ "Difficulté à mémoriser des informations nouvelles après quelques minutes, pouvant gêner la mémorisation des rendez-vous ou des consignes médicales."
+   - ❌ "Dysexécutif probable"
+   - ✅ "Lenteur d'alternance entre deux tâches, pouvant impacter la planification d'activités complexes au quotidien."
+
+6. **JAMAIS de pourcentages ni de percentiles dans la prose narrative.** Le tableau de scores parle de lui-même. Décris cliniquement, sans chiffrer.
+
+7. **Précaution rédactionnelle** : le CRBO peut être lu par le patient et sa famille. Éviter toute formulation alarmante. Ne jamais utiliser les mots "démence", "Alzheimer", "déclin", "dégénérescence", "détérioration".
 
 ---
 
-#### RECOMMANDATIONS TYPES
+#### STRUCTURE ATTENDUE DU CRBO MoCA
 
-- **Score ≥ 26 + plainte légère** : pas de PEC formelle. Réévaluation 12 mois si évolution.
-- **Score 22-25** : consultation mémoire systématique + bilan orthophonique approfondi sur les domaines déficitaires.
-- **Score 18-21** : consultation mémoire urgente, démarrage PEC orthophonique dès diagnostic posé.
-- **Score < 18** : démarche multidisciplinaire urgente, PEC orthophonique conservative.
+Le CRBO d'un screening MoCA suit la structure standard mais avec un contenu adapté :
 
-**Articulation** : MoCA en amont d'un bilan approfondi pour cibler les domaines à explorer (GREMOTs si langage, BETL si manque du mot, échelle attention si dysexécutif). Réévaluation MoCA à 12 mois pour suivi longitudinal.`,
+1. **Anamnèse** : motif de la consultation cognitive (plainte mnésique, alerte de l'entourage, suivi post-AVC, etc.), antécédents médicaux pertinents, niveau de scolarité (déterminant pour l'ajustement +1).
+
+2. **Domaines** : un seul \`domain\` nommé **"MoCA — Profil cognitif"** contenant les 7 sous-épreuves, chacune avec :
+   - \`nom\` = nom du domaine MoCA (ex: "Visuospatial / Exécutif")
+   - \`score\` = "X/Y" (ex: "4/5")
+   - \`et\` = null (MoCA n'utilise pas d'écart-type)
+   - \`percentile_value\` = (X/Y × 100) arrondi
+   - \`percentile\` = "" (laisser vide, n'a pas de sens en MoCA)
+   - \`interpretation\` = mapper le % : ≥80 "Excellent" (=Préservé), 50-79 "Fragilité" (=Fragilisé), <50 "Difficulté sévère" (=Déficitaire). Ces étiquettes existantes alimentent la couleur du tableau ; **le commentaire prose doit utiliser le vocabulaire "préservé / fragilisé / déficitaire"**.
+   - \`commentaire\` du domaine : synthèse clinique en 3-4 lignes mentionnant d'ABORD les domaines préservés, puis les fragilités, en termes fonctionnels.
+
+3. **Synthèse / Diagnostic** :
+   - Décrire le résultat global en **score brut** (ex: "Le score total au MoCA est de 23/30 (24/30 après ajustement scolarité)").
+   - Conclure avec le label correspondant au seuil : "Pas d'atteinte des fonctions cognitives" / "Atteinte légère" / "Atteinte modérée" / "Atteinte sévère".
+   - **JAMAIS** de diagnostic étiologique (Alzheimer, démence, MCI, vasculaire…).
+   - Mentionner les domaines préservés puis les domaines fragilisés.
+
+4. **Recommandations** — phrase imposée pour les bilans MoCA :
+   - Si total corrigé ≥ 26 : "Le screening cognitif ne met pas en évidence d'atteinte objectivable à ce stade. Une réévaluation à 12 mois peut être envisagée si la plainte persiste ou évolue."
+   - Si total corrigé < 26 : "Ce bilan de screening met en évidence [une atteinte légère / modérée / sévère] des fonctions cognitives. **Un bilan neuropsychologique approfondi est recommandé** pour caractériser le profil cognitif et orienter la prise en charge."
+
+5. **Pas de PAP / aménagements scolaires** : la MoCA concerne presque toujours des adultes hors cadre scolaire. Si la table \`pap_suggestions\` doit être remplie, la laisser vide (\`[]\`).
+
+---
+
+#### À NE JAMAIS FAIRE EN MoCA
+
+- ❌ Poser un diagnostic d'Alzheimer, démence, MCI, trouble neuro-cognitif.
+- ❌ Spéculer sur l'étiologie (vasculaire, dépressive, dégénérative…).
+- ❌ Utiliser la MoCA comme substitut à un bilan langagier détaillé.
+- ❌ Recommander des séances de rééducation orthophonique sans bilan approfondi préalable.
+- ❌ Oublier l'ajustement scolarité (+1 si ≤ 12 ans).
+- ❌ Écrire des pourcentages ou des percentiles dans la prose.
+- ❌ Utiliser un vocabulaire alarmant ("déclin", "détérioration", "dégénérescence").
+
+#### TOUJOURS FAIRE EN MoCA
+
+- ✅ Mentionner les domaines préservés en premier.
+- ✅ Formuler en impact fonctionnel concret (vie quotidienne).
+- ✅ Recommander un bilan neuropsychologique si score corrigé < 26.
+- ✅ Rester neutre : "le screening met en évidence", "le profil observé", sans projection diagnostique.
+- ✅ Adapter le ton : le patient et sa famille liront ce document.`,
 }
