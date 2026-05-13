@@ -19,7 +19,9 @@ import {
   Eye,
   Sparkles,
   Target,
+  RotateCw,
 } from 'lucide-react'
+import type { SmartObjectivesPayload } from '@/app/api/generate-smart-objectives/route'
 import CRBOStructuredPreview from '@/components/CRBOStructuredPreview'
 import { useToast } from '@/components/Toast'
 import { playPrintAnimation } from '@/components/PrintAnimation'
@@ -52,6 +54,8 @@ interface CRBO {
   bilan_precedent_id?: string | null
   comportement_seance?: string | null
   duree_seance_minutes?: number | null
+  smart_objectives?: SmartObjectivesPayload | null
+  smart_objectives_generated_at?: string | null
 }
 
 const statusConfig = {
@@ -75,6 +79,7 @@ export default function CRBODetailPage() {
   const [downloading, setDownloading] = useState(false)
   const [deleting, setDeleting] = useState(false)
   const [generatingSmart, setGeneratingSmart] = useState(false)
+  const [regeneratingSmart, setRegeneratingSmart] = useState(false)
 
   useEffect(() => {
     const fetchCRBO = async () => {
@@ -185,21 +190,23 @@ export default function CRBODetailPage() {
     }
   }
 
-  const handleGenerateSmart = async () => {
-    if (!crbo || generatingSmart) return
-    setGeneratingSmart(true)
+  const handleGenerateSmart = async (force = false) => {
+    if (!crbo) return
+    if (force ? regeneratingSmart : generatingSmart) return
+    const setLoading = force ? setRegeneratingSmart : setGeneratingSmart
+    setLoading(true)
     try {
       const res = await fetch('/api/generate-smart-objectives', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ crbo_id: crbo.id }),
+        body: JSON.stringify({ crbo_id: crbo.id, force }),
       })
       if (!res.ok) {
         const err = await res.json().catch(() => ({}))
         toast.error(err?.error || 'Génération impossible.')
         return
       }
-      const { smart } = await res.json()
+      const { smart, cached, generated_at } = await res.json()
 
       const { downloadSmartObjectivesWord } = await import('@/lib/word/smart-objectives-generator')
       await downloadSmartObjectivesWord({
@@ -223,12 +230,27 @@ export default function CRBODetailPage() {
       } catch (e) {
         console.warn('Ouverture aperçu PDF impossible:', e)
       }
-      toast.success('Fiche objectifs SMART générée.')
+
+      // Mise a jour locale pour refleter le cache fraichement ecrit / la regeneration
+      // sans avoir a re-fetch le CRBO complet depuis Supabase.
+      setCrbo({
+        ...crbo,
+        smart_objectives: smart,
+        smart_objectives_generated_at: generated_at ?? crbo.smart_objectives_generated_at ?? null,
+      })
+
+      if (cached) {
+        toast.success('Fiche rouverte depuis votre dernière génération.')
+      } else if (force) {
+        toast.success('Fiche objectifs SMART régénérée.')
+      } else {
+        toast.success('Fiche objectifs SMART générée.')
+      }
     } catch (e) {
       console.error('Erreur SMART:', e)
       toast.error('Erreur lors de la génération de la fiche.')
     } finally {
-      setGeneratingSmart(false)
+      setLoading(false)
     }
   }
 
@@ -323,6 +345,14 @@ export default function CRBODetailPage() {
     Array.isArray((crbo.structure_json as any)?.domains) &&
     (crbo.structure_json as any).domains.length > 0
   const canGenerateSmart = !isMocaOnly && hasStructure
+  const hasCachedSmart = !!crbo.smart_objectives
+  const smartGeneratedAt = crbo.smart_objectives_generated_at
+    ? new Date(crbo.smart_objectives_generated_at).toLocaleDateString('fr-FR', {
+        day: 'numeric',
+        month: 'long',
+        year: 'numeric',
+      })
+    : null
 
   return (
     <div className="space-y-6">
@@ -365,24 +395,47 @@ export default function CRBODetailPage() {
             PDF
           </a>
           {canGenerateSmart && (
-            <button
-              onClick={handleGenerateSmart}
-              disabled={generatingSmart}
-              className="inline-flex items-center gap-2 px-4 py-2 bg-emerald-50 border border-emerald-200 text-emerald-800 rounded-lg hover:bg-emerald-100 transition disabled:opacity-60 disabled:cursor-wait"
-              title="Génère une fiche d'objectifs thérapeutiques SMART (Word + PDF) basée sur ce bilan"
-            >
-              {generatingSmart ? (
-                <>
-                  <Loader2 size={18} className="animate-spin" />
-                  Génération…
-                </>
-              ) : (
-                <>
-                  <Target size={18} />
-                  Objectifs SMART
-                </>
+            <div className="inline-flex items-center">
+              <button
+                onClick={() => handleGenerateSmart(false)}
+                disabled={generatingSmart || regeneratingSmart}
+                className={`inline-flex items-center gap-2 px-4 py-2 bg-emerald-50 border border-emerald-200 text-emerald-800 hover:bg-emerald-100 transition disabled:opacity-60 disabled:cursor-wait ${
+                  hasCachedSmart ? 'rounded-l-lg border-r-0' : 'rounded-lg'
+                }`}
+                title={
+                  hasCachedSmart
+                    ? `Réouvrir la fiche${smartGeneratedAt ? ` (générée le ${smartGeneratedAt})` : ''}`
+                    : "Génère une fiche d'objectifs thérapeutiques SMART (Word + PDF)"
+                }
+              >
+                {generatingSmart ? (
+                  <>
+                    <Loader2 size={18} className="animate-spin" />
+                    {hasCachedSmart ? 'Ouverture…' : 'Génération…'}
+                  </>
+                ) : (
+                  <>
+                    <Target size={18} />
+                    Objectifs SMART
+                  </>
+                )}
+              </button>
+              {hasCachedSmart && (
+                <button
+                  onClick={() => handleGenerateSmart(true)}
+                  disabled={generatingSmart || regeneratingSmart}
+                  className="inline-flex items-center gap-2 px-3 py-2 bg-emerald-50 border border-emerald-200 text-emerald-700 rounded-r-lg hover:bg-emerald-100 transition disabled:opacity-60 disabled:cursor-wait"
+                  title="Régénérer la fiche — nouvel appel à l'IA, écrase la version précédente"
+                  aria-label="Régénérer la fiche"
+                >
+                  {regeneratingSmart ? (
+                    <Loader2 size={16} className="animate-spin" />
+                  ) : (
+                    <RotateCw size={16} />
+                  )}
+                </button>
               )}
-            </button>
+            </div>
           )}
           <button
             onClick={handleDelete}

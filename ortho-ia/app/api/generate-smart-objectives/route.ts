@@ -183,6 +183,7 @@ export async function POST(request: NextRequest) {
 
     const body = await request.json()
     const crboId: string | undefined = body?.crbo_id
+    const force: boolean = body?.force === true
     if (!crboId || typeof crboId !== 'string') {
       return NextResponse.json({ error: 'crbo_id manquant.' }, { status: 400 })
     }
@@ -196,6 +197,18 @@ export async function POST(request: NextRequest) {
 
     if (crboErr || !crbo) {
       return NextResponse.json({ error: 'CRBO introuvable.' }, { status: 404 })
+    }
+
+    // Cache : si la fiche existe deja en BDD et que l'ortho ne force pas la
+    // regeneration, on relit sans rappeler Claude. Garantit la reproductibilite
+    // (meme contenu d'une session a l'autre) et evite le cout Claude.
+    if (!force && crbo.smart_objectives) {
+      return NextResponse.json({
+        success: true,
+        smart: crbo.smart_objectives as SmartObjectivesPayload,
+        cached: true,
+        generated_at: crbo.smart_objectives_generated_at ?? null,
+      })
     }
 
     const testList = (crbo.test_utilise ? String(crbo.test_utilise).split(',').map((t: string) => t.trim()) : [])
@@ -299,7 +312,30 @@ export async function POST(request: NextRequest) {
     const raw = toolUseBlock.input as SmartObjectivesPayload
     const rehydrated = rehydrate(raw, reverseMap) as SmartObjectivesPayload
 
-    return NextResponse.json({ success: true, smart: rehydrated })
+    // Persistance : best-effort. Si l'UPDATE echoue (RLS, colonne pas encore
+    // migree...), on log mais on renvoie quand meme la fiche a l'ortho — elle
+    // l'a vue generee a l'ecran, on ne veut pas la perdre. Le pire scenario :
+    // au prochain clic, on regenere (cout ~0,02€) plutot que de relire le cache.
+    const generatedAt = new Date().toISOString()
+    const { error: updateErr } = await supabase
+      .from('crbos')
+      .update({
+        smart_objectives: rehydrated,
+        smart_objectives_generated_at: generatedAt,
+      })
+      .eq('id', crboId)
+      .eq('user_id', user.id)
+
+    if (updateErr) {
+      logger.warn('smart-objectives-persist-failed', String(updateErr.message ?? updateErr).slice(0, 200))
+    }
+
+    return NextResponse.json({
+      success: true,
+      smart: rehydrated,
+      cached: false,
+      generated_at: generatedAt,
+    })
   } catch (error: any) {
     logger.error('generate-smart-objectives', error)
     if (error?.name === 'AbortError') {
