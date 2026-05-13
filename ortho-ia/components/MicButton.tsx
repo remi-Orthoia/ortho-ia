@@ -3,6 +3,7 @@
 import { useEffect, useRef, useState } from 'react'
 import { Mic, MicOff, Loader2, Square } from 'lucide-react'
 import { useWhisper } from '@/hooks/useWhisper'
+import { applyGlossaire } from '@/lib/glossaire'
 
 interface Props {
   /** Valeur courante du textarea cible. */
@@ -43,9 +44,14 @@ export default function MicButton({
   const { state, error, start, stop } = useWhisper({
     onResult: (text) => {
       if (!text) return
+      // Glossaire CRBO : rattrape les mistranscriptions Whisper sur les
+      // termes spécifiques (ULIS, AESH, Exalang, EVALO...) AVANT que le
+      // texte n'arrive dans le textarea, pour que l'ortho voie déjà le
+      // texte propre et n'ait rien à corriger à la main.
+      const corrected = applyGlossaire(text)
       const prev = valueRef.current
       const sep = prev && !/\s$/.test(prev) ? ' ' : ''
-      onChange((prev + sep + text).trim())
+      onChange((prev + sep + corrected).trim())
     },
     onError: (msg) => onError?.(msg),
   })

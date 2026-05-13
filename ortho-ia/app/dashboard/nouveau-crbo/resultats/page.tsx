@@ -39,6 +39,7 @@ import StreamingCRBO from '@/components/StreamingCRBO'
 import { playPrintAnimation } from '@/components/PrintAnimation'
 import { playSuccessSound, playSwoosh } from '@/lib/sounds'
 import { applyVocabToObject } from '@/lib/vocab-perso'
+import { applyGlossaireToObject } from '@/lib/glossaire'
 
 interface Handoff {
   formData: CRBOFormData
@@ -314,7 +315,11 @@ export default function ResultatsPage() {
       // Application du vocabulaire perso de l'ortho (localStorage). Réécrit
       // les sections narratives selon ses préférences ("patient" → "enfant",
       // "voie d'assemblage" → "décodage", etc.). No-op si aucune règle.
-      const finalStructure: CRBOStructure = applyVocabToObject(rawFinalStructure)
+      // Puis glossaire CRBO (rattrape les mistranscriptions Whisper qui auraient
+      // survécu jusque dans le draft IA — ex. "ulysse" → "ULIS").
+      const finalStructure: CRBOStructure = applyGlossaireToObject(
+        applyVocabToObject(rawFinalStructure),
+      )
 
       // ============ Persistance Supabase ============
       const supabase = createClient()
