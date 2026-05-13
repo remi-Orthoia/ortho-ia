@@ -17,7 +17,8 @@ import {
   CheckCircle,
   Clock,
   Eye,
-  Sparkles
+  Sparkles,
+  Target,
 } from 'lucide-react'
 import CRBOStructuredPreview from '@/components/CRBOStructuredPreview'
 import { useToast } from '@/components/Toast'
@@ -73,6 +74,7 @@ export default function CRBODetailPage() {
   const [showPreviewModal, setShowPreviewModal] = useState(false)
   const [downloading, setDownloading] = useState(false)
   const [deleting, setDeleting] = useState(false)
+  const [generatingSmart, setGeneratingSmart] = useState(false)
 
   useEffect(() => {
     const fetchCRBO = async () => {
@@ -183,6 +185,53 @@ export default function CRBODetailPage() {
     }
   }
 
+  const handleGenerateSmart = async () => {
+    if (!crbo || generatingSmart) return
+    setGeneratingSmart(true)
+    try {
+      const res = await fetch('/api/generate-smart-objectives', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ crbo_id: crbo.id }),
+      })
+      if (!res.ok) {
+        const err = await res.json().catch(() => ({}))
+        toast.error(err?.error || 'Génération impossible.')
+        return
+      }
+      const { smart } = await res.json()
+
+      const { downloadSmartObjectivesWord } = await import('@/lib/word/smart-objectives-generator')
+      await downloadSmartObjectivesWord({
+        patient_prenom: crbo.patient_prenom,
+        patient_nom: crbo.patient_nom,
+        bilan_date: crbo.bilan_date,
+        smart,
+      })
+
+      try {
+        sessionStorage.setItem(
+          `ortho-ia:smart-objectives-print:${crbo.id}`,
+          JSON.stringify({
+            patient_prenom: crbo.patient_prenom,
+            patient_nom: crbo.patient_nom,
+            bilan_date: crbo.bilan_date,
+            smart,
+          }),
+        )
+        window.open(`/dashboard/historique/${crbo.id}/smart-objectives/print`, '_blank', 'noopener')
+      } catch (e) {
+        console.warn('Ouverture aperçu PDF impossible:', e)
+      }
+      toast.success('Fiche objectifs SMART générée.')
+    } catch (e) {
+      console.error('Erreur SMART:', e)
+      toast.error('Erreur lors de la génération de la fiche.')
+    } finally {
+      setGeneratingSmart(false)
+    }
+  }
+
   const handleDelete = async () => {
     if (!crbo || deleting || !confirm('Supprimer ce CRBO ? Cette action est irréversible.')) return
 
@@ -260,6 +309,21 @@ export default function CRBODetailPage() {
   const status = statusConfig[crbo.statut as keyof typeof statusConfig] || statusConfig.termine
   const StatusIcon = status.icon
 
+  // La fiche d'objectifs SMART s'appuie sur des scores percentile-based.
+  // Le MoCA est un screening cognitif /30 — pas pertinent pour des objectifs
+  // de rééducation orthophonique structurés en SMART. On masque le bouton
+  // quand c'est le seul test du bilan.
+  const testList = (crbo.test_utilise || '')
+    .split(',')
+    .map((t: string) => t.trim())
+    .filter(Boolean)
+  const isMocaOnly = testList.length === 1 && testList[0] === 'MoCA'
+  const hasStructure =
+    !!crbo.structure_json &&
+    Array.isArray((crbo.structure_json as any)?.domains) &&
+    (crbo.structure_json as any).domains.length > 0
+  const canGenerateSmart = !isMocaOnly && hasStructure
+
   return (
     <div className="space-y-6">
       {/* Header */}
@@ -300,6 +364,26 @@ export default function CRBODetailPage() {
             <FileDown size={18} />
             PDF
           </a>
+          {canGenerateSmart && (
+            <button
+              onClick={handleGenerateSmart}
+              disabled={generatingSmart}
+              className="inline-flex items-center gap-2 px-4 py-2 bg-emerald-50 border border-emerald-200 text-emerald-800 rounded-lg hover:bg-emerald-100 transition disabled:opacity-60 disabled:cursor-wait"
+              title="Génère une fiche d'objectifs thérapeutiques SMART (Word + PDF) basée sur ce bilan"
+            >
+              {generatingSmart ? (
+                <>
+                  <Loader2 size={18} className="animate-spin" />
+                  Génération…
+                </>
+              ) : (
+                <>
+                  <Target size={18} />
+                  Objectifs SMART
+                </>
+              )}
+            </button>
+          )}
           <button
             onClick={handleDelete}
             disabled={deleting}
