@@ -41,3 +41,7 @@ next-env.d.ts
 
 # Design system source assets (not part of runtime — kept locally for reference)
 /design-system/*.zip
+
+# Manuels des tests (matériel propriétaire Ortho Édition / autres éditeurs).
+# Source de référence pour enrichir les prompts ; jamais commité.
+/docs/Bilans Sources/
