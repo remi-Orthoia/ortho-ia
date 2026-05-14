@@ -380,6 +380,26 @@ export async function POST(request: NextRequest) {
         { status: 429 },
       )
     }
+    // Solde de crédits Anthropic épuisé — Anthropic renvoie status 400 avec
+    // un message explicite "credit balance is too low". On le détecte pour
+    // afficher un message clair plutôt que le générique "réessayez", qui
+    // induit l'ortho à retenter en boucle sans succès. Affecte aussi
+    // extract-pdf, generate-crbo, etc. — à fixer côté billing Anthropic.
+    const errMsg = String(error?.message ?? error?.error?.error?.message ?? '').toLowerCase()
+    if (
+      error?.status === 400 &&
+      (errMsg.includes('credit balance') || errMsg.includes('credit') || errMsg.includes('billing'))
+    ) {
+      return NextResponse.json(
+        {
+          error:
+            "Service IA temporairement indisponible (solde de crédits Anthropic à recharger). " +
+            "Cette indisponibilité affecte aussi l'import PDF et la génération du CRBO. " +
+            "Contactez l'administrateur ou réessayez plus tard.",
+        },
+        { status: 503 },
+      )
+    }
     return NextResponse.json(
       { error: "Erreur lors de la lecture de la photo. Veuillez réessayer." },
       { status: 500 },
