@@ -738,44 +738,18 @@ export async function generateCRBOWord(payload: WordExportPayload): Promise<Blob
   children.push(createSectionTitle('BILAN'))
 
   // Légende — varie selon le type de bilan.
-  // MoCA : 3 zones (Préservé / Fragilisé / Déficitaire) sur le ratio score/max.
+  // MoCA : pas de légende colorée. Le tableau MoCA est dépouillé (Épreuve /
+  // Score / Commentaire), aucune zone d'interprétation type Excellent /
+  // Fragilité / Difficulté — incohérent pour un screening cognitif /30.
   // Autres tests : 6 zones percentiles (SEUILS).
   if (isMocaOnly) {
     children.push(
-      new Paragraph({
-        children: [new TextRun({ text: 'Légende des scores (% du score max par domaine) :', size: 18, font: FONT, bold: true })],
-        spacing: { before: 200, after: 100 },
-      }),
-      (() => {
-        const cells = [
-          { label: 'Préservé (≥ 80 %)',    shading: '2E7D32', textColor: 'FFFFFF' },
-          { label: 'Fragilisé (50 – 79 %)', shading: 'FB8C00', textColor: 'FFFFFF' },
-          { label: 'Déficitaire (< 50 %)',  shading: 'D32F2F', textColor: 'FFFFFF' },
-        ]
-        const cols = dxaCols(cells.map(() => 100 / cells.length))
-        return new Table({
-          width: { size: TOTAL_DXA, type: WidthType.DXA },
-          columnWidths: cols,
-          rows: [new TableRow({
-            children: cells.map((c, i) =>
-              createCell(c.label, {
-                shading: c.shading,
-                dxa: cols[i],
-                alignment: AlignmentType.CENTER,
-                bold: true,
-                textColor: c.textColor,
-              }),
-            ),
-          })],
-        })
-      })(),
-      new Paragraph({ children: [new TextRun({ text: '' })] }),
       new Paragraph({
         children: [new TextRun({
           text: 'Le MoCA est un outil de dépistage rapide des fonctions cognitives. Il ne pose aucun diagnostic — un bilan neuropsychologique approfondi est nécessaire si une atteinte est mise en évidence.',
           size: 18, font: FONT, italics: true, color: '666666',
         })],
-        spacing: { after: 200 },
+        spacing: { before: 200, after: 200 },
       }),
     )
   } else {
@@ -805,21 +779,23 @@ export async function generateCRBOWord(payload: WordExportPayload): Promise<Blob
 
   if (hasStructure && isMocaOnly) {
     // ============ Rendu MoCA dédié ============
-    // Un seul tableau 4 colonnes Domaine / Score / Max / Interprétation,
-    // suivi d'un bandeau Total /30 avec badge sévérité officiel.
-    //
-    // On agrège tous les domains[].epreuves dans un seul tableau (l'IA peut
-    // produire 1 domain "MoCA — Profil cognitif" avec 7 epreuves OU 7 domains
-    // d'1 epreuve, on traite les deux cas de la même façon).
+    // Tableau 3 colonnes : Épreuve | Score | Commentaire.
+    // - Lignes principales : un domaine cognitif (Visuospatial / Mémoire…)
+    //   avec son score total (X/Y) et son commentaire clinique éditable.
+    // - Sous-lignes indentées : sous-items (alternance, cube, horloge…) avec
+    //   leur sous-score (X/Y) — sans commentaire (le commentaire reste au
+    //   niveau du domaine pour éviter de fragmenter la lecture).
+    // Aucune coloration "Préservé / Fragilisé / Déficitaire" — la MoCA est
+    // un screening, pas un test interprété en zones percentiles.
+    // Un bandeau Total /30 + sévérité officielle suit le tableau.
 
     const allEpreuves = orderedDomains.flatMap(d => d.epreuves)
-    const mocaCols = dxaCols([45, 15, 15, 25])
+    const mocaCols = dxaCols([35, 15, 50])
     const mocaRows = [
       new TableRow({ children: [
-        createCell('Domaine',         { bold: true, dxa: mocaCols[0], shading: 'E8F5E9' }),
-        createCell('Score',           { bold: true, dxa: mocaCols[1], shading: 'E8F5E9', alignment: AlignmentType.CENTER }),
-        createCell('Score max',       { bold: true, dxa: mocaCols[2], shading: 'E8F5E9', alignment: AlignmentType.CENTER }),
-        createCell('Interprétation',  { bold: true, dxa: mocaCols[3], shading: 'E8F5E9', alignment: AlignmentType.CENTER }),
+        createCell('Épreuve',     { bold: true, dxa: mocaCols[0], shading: 'E8F5E9' }),
+        createCell('Score',       { bold: true, dxa: mocaCols[1], shading: 'E8F5E9', alignment: AlignmentType.CENTER }),
+        createCell('Commentaire', { bold: true, dxa: mocaCols[2], shading: 'E8F5E9' }),
       ]}),
     ]
     let totalObtenu = 0
@@ -830,17 +806,22 @@ export async function generateCRBOWord(payload: WordExportPayload): Promise<Blob
         totalObtenu += parsed.score
         totalMax += parsed.max
       }
-      const score = parsed ? String(parsed.score) : e.score
-      const max = parsed ? String(parsed.max) : '—'
-      // L'IA encode score/max × 100 dans percentile_value : on s'en sert
-      // directement pour la couleur d'interprétation (3 zones MoCA).
-      const sev = mocaDomainSeverity(e.percentile_value)
+      // Ligne principale = domaine MoCA
+      const scoreCell = parsed ? `${parsed.score}/${parsed.max}` : e.score
       mocaRows.push(new TableRow({ children: [
-        createCell(e.nom, { dxa: mocaCols[0] }),
-        createCell(score, { dxa: mocaCols[1], alignment: AlignmentType.CENTER }),
-        createCell(max,   { dxa: mocaCols[2], alignment: AlignmentType.CENTER }),
-        createCell(sev.label, { dxa: mocaCols[3], alignment: AlignmentType.CENTER, shading: sev.shading, textColor: sev.textColor, bold: true }),
+        createCell(e.nom, { dxa: mocaCols[0], bold: true }),
+        createCell(scoreCell, { dxa: mocaCols[1], alignment: AlignmentType.CENTER, bold: true }),
+        createCell(e.commentaire || '', { dxa: mocaCols[2] }),
       ]}))
+      // Sous-lignes : décomposition par sous-item, indentée par "  • " devant
+      // le nom. Pas de commentaire sur les sous-rows pour ne pas alourdir.
+      for (const se of e.sous_epreuves ?? []) {
+        mocaRows.push(new TableRow({ children: [
+          createCell(`    • ${se.nom}`, { dxa: mocaCols[0] }),
+          createCell(se.score, { dxa: mocaCols[1], alignment: AlignmentType.CENTER }),
+          createCell('', { dxa: mocaCols[2] }),
+        ]}))
+      }
     }
     children.push(
       new Table({
@@ -881,22 +862,10 @@ export async function generateCRBOWord(payload: WordExportPayload): Promise<Blob
       )
     }
 
-    // Commentaires de domaine (si fournis par l'IA) — rendus sous le tableau.
-    for (const domain of orderedDomains) {
-      if (domain.commentaire && domain.commentaire.trim()) {
-        const cleaned = domain.commentaire
-          .trim()
-          .replace(/^\**\s*observations?\s+cliniques?\s*:\s*\**\s*/i, '')
-          .trim()
-        const domainCommEdited = editedSetEarly.has(`domain_commentaire:${domain.nom}`)
-        children.push(new Paragraph({
-          alignment: AlignmentType.BOTH,
-          shading: domainCommEdited ? { type: ShadingType.CLEAR, fill: 'EFF6FF', color: 'auto' } : undefined,
-          spacing: { after: 200 },
-          children: [new TextRun({ text: cleaned, size: FONT_SIZE_NORMAL, font: FONT })],
-        }))
-      }
-    }
+    // En MoCA, les commentaires sont au niveau de chaque épreuve (rendus
+    // dans la colonne "Commentaire" du tableau). On NE rend PAS le
+    // domain.commentaire global pour éviter de dupliquer une synthèse qui
+    // appartient à la section "Hypothèse de diagnostic" en aval.
   } else if (hasStructure) {
     for (const domain of orderedDomains) {
       children.push(

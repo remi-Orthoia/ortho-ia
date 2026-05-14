@@ -16,7 +16,7 @@
  * boutons) — seul le contenu CRBO s'imprime.
  */
 
-import { useEffect, useState } from 'react'
+import React, { useEffect, useState } from 'react'
 import { useParams, useRouter } from 'next/navigation'
 import { createClient } from '@/lib/supabase'
 import { Loader2, Printer, ArrowLeft } from 'lucide-react'
@@ -323,36 +323,69 @@ function CRBOPrintableStructure({ structure, testUtilise }: { structure: CRBOStr
               <h3 style={{ fontSize: 13.5, fontWeight: 700, margin: '0 0 4px', color: '#16a34a' }}>
                 {d.nom}
               </h3>
-              <table style={{ width: '100%', borderCollapse: 'collapse', fontSize: 12, marginBottom: 6 }}>
-                <thead>
-                  <tr style={{ background: '#E8F5E9' }}>
-                    <th style={{ padding: '4px 8px', textAlign: 'left', border: '1px solid #BFBFBF' }}>Épreuve</th>
-                    <th style={{ padding: '4px 8px', textAlign: 'center', border: '1px solid #BFBFBF', width: 60 }}>Score</th>
-                    <th style={{ padding: '4px 8px', textAlign: 'center', border: '1px solid #BFBFBF', width: 50 }}>É-T</th>
-                    <th style={{ padding: '4px 8px', textAlign: 'center', border: '1px solid #BFBFBF', width: 60 }}>Centile</th>
-                    <th style={{ padding: '4px 8px', textAlign: 'center', border: '1px solid #BFBFBF', width: 90 }}>Interprétation</th>
-                  </tr>
-                </thead>
-                <tbody>
-                  {d.epreuves.map((e, j) => {
-                    const seuil = seuilFor(e.percentile_value)
-                    return (
-                      <tr key={j}>
-                        <td style={{ padding: '4px 8px', border: '1px solid #BFBFBF' }}>{e.nom}</td>
-                        <td style={{ padding: '4px 8px', textAlign: 'center', border: '1px solid #BFBFBF' }}>{e.score || '—'}</td>
-                        <td style={{ padding: '4px 8px', textAlign: 'center', border: '1px solid #BFBFBF' }}>{e.et || '—'}</td>
-                        <td style={{ padding: '4px 8px', textAlign: 'center', border: '1px solid #BFBFBF', backgroundColor: '#' + seuil.shading, color: seuil.textColor ? '#' + seuil.textColor : '#000', fontWeight: 600 }}>
-                          {e.percentile || `P${e.percentile_value}`}
-                        </td>
-                        <td style={{ padding: '4px 8px', textAlign: 'center', border: '1px solid #BFBFBF', backgroundColor: '#' + seuil.shading, color: seuil.textColor ? '#' + seuil.textColor : '#000', fontWeight: 600 }}>
-                          {seuil.label}
-                        </td>
-                      </tr>
-                    )
-                  })}
-                </tbody>
-              </table>
-              {d.commentaire && (
+              {isMoca ? (
+                /* MoCA : tableau 3 colonnes Épreuve / Score / Commentaire avec
+                   sous-lignes pour les sous-épreuves. Aucune mention É-T,
+                   centile ou zone d'interprétation. */
+                <table style={{ width: '100%', borderCollapse: 'collapse', fontSize: 12, marginBottom: 6 }}>
+                  <thead>
+                    <tr style={{ background: '#E8F5E9' }}>
+                      <th style={{ padding: '4px 8px', textAlign: 'left', border: '1px solid #BFBFBF' }}>Épreuve</th>
+                      <th style={{ padding: '4px 8px', textAlign: 'center', border: '1px solid #BFBFBF', width: 80 }}>Score</th>
+                      <th style={{ padding: '4px 8px', textAlign: 'left', border: '1px solid #BFBFBF' }}>Commentaire</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    {d.epreuves.map((e, j) => (
+                      <React.Fragment key={j}>
+                        <tr style={{ background: '#F0FDF4' }}>
+                          <td style={{ padding: '4px 8px', border: '1px solid #BFBFBF', fontWeight: 600 }}>{e.nom}</td>
+                          <td style={{ padding: '4px 8px', textAlign: 'center', border: '1px solid #BFBFBF', fontWeight: 600 }}>{e.score || '—'}</td>
+                          <td style={{ padding: '4px 8px', border: '1px solid #BFBFBF', whiteSpace: 'pre-line' }}>{e.commentaire || ''}</td>
+                        </tr>
+                        {(e.sous_epreuves ?? []).map((se, k) => (
+                          <tr key={`se-${j}-${k}`}>
+                            <td style={{ padding: '3px 8px 3px 20px', border: '1px solid #BFBFBF', color: '#6B7280', fontSize: 11 }}>• {se.nom}</td>
+                            <td style={{ padding: '3px 8px', textAlign: 'center', border: '1px solid #BFBFBF', color: '#6B7280', fontSize: 11 }}>{se.score}</td>
+                            <td style={{ padding: '3px 8px', border: '1px solid #BFBFBF', color: '#9CA3AF' }}>—</td>
+                          </tr>
+                        ))}
+                      </React.Fragment>
+                    ))}
+                  </tbody>
+                </table>
+              ) : (
+                <table style={{ width: '100%', borderCollapse: 'collapse', fontSize: 12, marginBottom: 6 }}>
+                  <thead>
+                    <tr style={{ background: '#E8F5E9' }}>
+                      <th style={{ padding: '4px 8px', textAlign: 'left', border: '1px solid #BFBFBF' }}>Épreuve</th>
+                      <th style={{ padding: '4px 8px', textAlign: 'center', border: '1px solid #BFBFBF', width: 60 }}>Score</th>
+                      <th style={{ padding: '4px 8px', textAlign: 'center', border: '1px solid #BFBFBF', width: 50 }}>É-T</th>
+                      <th style={{ padding: '4px 8px', textAlign: 'center', border: '1px solid #BFBFBF', width: 60 }}>Centile</th>
+                      <th style={{ padding: '4px 8px', textAlign: 'center', border: '1px solid #BFBFBF', width: 90 }}>Interprétation</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    {d.epreuves.map((e, j) => {
+                      const seuil = seuilFor(e.percentile_value)
+                      return (
+                        <tr key={j}>
+                          <td style={{ padding: '4px 8px', border: '1px solid #BFBFBF' }}>{e.nom}</td>
+                          <td style={{ padding: '4px 8px', textAlign: 'center', border: '1px solid #BFBFBF' }}>{e.score || '—'}</td>
+                          <td style={{ padding: '4px 8px', textAlign: 'center', border: '1px solid #BFBFBF' }}>{e.et || '—'}</td>
+                          <td style={{ padding: '4px 8px', textAlign: 'center', border: '1px solid #BFBFBF', backgroundColor: '#' + seuil.shading, color: seuil.textColor ? '#' + seuil.textColor : '#000', fontWeight: 600 }}>
+                            {e.percentile || `P${e.percentile_value}`}
+                          </td>
+                          <td style={{ padding: '4px 8px', textAlign: 'center', border: '1px solid #BFBFBF', backgroundColor: '#' + seuil.shading, color: seuil.textColor ? '#' + seuil.textColor : '#000', fontWeight: 600 }}>
+                            {seuil.label}
+                          </td>
+                        </tr>
+                      )
+                    })}
+                  </tbody>
+                </table>
+              )}
+              {!isMoca && d.commentaire && (
                 <p style={{ fontSize: 12.5, color: '#374151', margin: '4px 0 0', lineHeight: 1.55 }}>
                   {d.commentaire}
                 </p>

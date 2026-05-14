@@ -58,15 +58,17 @@ export const moca: TestModule = {
 | 10 – 17 | Atteinte modérée des fonctions cognitives |
 | < 10 | Atteinte sévère des fonctions cognitives |
 
-#### INTERPRÉTATION PAR DOMAINE — % du score max
+#### INTERPRÉTATION PAR DOMAINE — DESCRIPTION QUALITATIVE UNIQUEMENT
 
-Pour CHAQUE domaine, calcule le ratio score/max et applique :
+⚠️ **Pour la MoCA, AUCUNE étiquette "Excellent / Fragilité / Difficulté sévère" n'est utilisée** — ces zones percentile-based n'ont aucun sens pour un screening cognitif /30.
 
-- **≥ 80%** → "Préservé" (vert)
-- **50 – 79%** → "Performance fragilisée" (orange)
-- **< 50%** → "Performance déficitaire" (rouge)
+Dans le \`commentaire\` de chaque domaine, décris en prose :
+- ce que le patient a fait correctement (en premier),
+- les sous-items qui ont posé difficulté (avec type d'erreur si pertinent),
+- l'implication fonctionnelle concrète au quotidien,
+- toujours en termes de "fragilité" / "performance abaissée" / "domaine préservé" — JAMAIS "performance déficitaire / pathologique".
 
-Encoder dans \`percentile_value\` la valeur (score / max × 100) arrondie : cela permet au Word d'afficher la bonne couleur, mais **n'écris JAMAIS de chiffre de pourcentage dans la prose** — la valeur sert uniquement à colorer le tableau.
+Aucune valeur numérique de pourcentage, aucune étiquette colorée : le tableau MoCA affiche uniquement Épreuve / Score / Commentaire.
 
 ---
 
@@ -107,14 +109,30 @@ Le CRBO d'un screening MoCA suit la structure standard mais avec un contenu adap
 
 1. **Anamnèse** : motif de la consultation cognitive (plainte mnésique, alerte de l'entourage, suivi post-AVC, etc.), antécédents médicaux pertinents, niveau de scolarité (déterminant pour l'ajustement +1).
 
-2. **Domaines** : un seul \`domain\` nommé **"MoCA — Profil cognitif"** contenant les 7 sous-épreuves, chacune avec :
-   - \`nom\` = nom du domaine MoCA (ex: "Visuospatial / Exécutif")
-   - \`score\` = "X/Y" (ex: "4/5")
-   - \`et\` = null (MoCA n'utilise pas d'écart-type)
-   - \`percentile_value\` = (X/Y × 100) arrondi
-   - \`percentile\` = "" (laisser vide, n'a pas de sens en MoCA)
-   - \`interpretation\` = mapper le % : ≥80 "Excellent" (=Préservé), 50-79 "Fragilité" (=Fragilisé), <50 "Difficulté sévère" (=Déficitaire). Ces étiquettes existantes alimentent la couleur du tableau ; **le commentaire prose doit utiliser le vocabulaire "préservé / fragilisé / déficitaire"**.
-   - \`commentaire\` du domaine : synthèse clinique en 3-4 lignes mentionnant d'ABORD les domaines préservés, puis les fragilités, en termes fonctionnels.
+2. **Domaines** : un seul \`domain\` nommé **"MoCA — Profil cognitif"** contenant 7 épreuves (une par domaine cognitif MoCA). Chaque épreuve doit suivre EXACTEMENT cette structure :
+
+   - \`nom\` = nom du domaine cognitif MoCA (ex: "Visuospatial / Exécutif", "Mémoire (rappel différé)", "Orientation").
+   - \`score\` = score total du domaine au format "X/Y" (ex: "4/5", "5/6", "3/3").
+   - \`et\` = null (la MoCA n'utilise pas d'écart-type).
+   - \`percentile\` = "" (vide — la MoCA n'utilise pas de percentile).
+   - \`percentile_value\` = 0 (valeur neutre, **n'est pas affichée** dans le rendu MoCA).
+   - \`interpretation\` = "" (vide — **ne JAMAIS** émettre "Excellent" / "Fragilité" / "Difficulté sévère" pour la MoCA ; ces étiquettes percentile-based n'ont pas de sens pour un screening cognitif et sont supprimées du rendu).
+   - \`sous_epreuves\` : décomposition obligatoire en sous-items à 1 pt chacun (sauf domaine attention où la soustraction sérielle vaut /3). Voir tableau ci-dessous pour les items canoniques.
+   - \`commentaire\` : commentaire clinique propre à CE domaine (3-4 lignes max) — décrit la performance en termes fonctionnels, formulé prudemment (ce sera affiché aussi à côté de la ligne dans le rapport Word). Cette suggestion sera modifiable par l'orthophoniste sur la page de validation.
+
+   **Sous-items canoniques par domaine MoCA** :
+
+   | Domaine | Sous-items (à émettre dans \`sous_epreuves\`) |
+   |---------|----------------------------------------------|
+   | Visuospatial / Exécutif | Alternance (Trail B) /1 — Recopie du cube /1 — Horloge contour /1 — Horloge chiffres /1 — Horloge aiguilles /1 |
+   | Dénomination | Lion /1 — Rhinocéros /1 — Chameau /1 |
+   | Attention | Empan direct /1 — Empan inverse /1 — Vigilance lettre A /1 — Soustraction 100−7 /3 |
+   | Langage | Répétition phrase 1 /1 — Répétition phrase 2 /1 — Fluence lettre F /1 |
+   | Abstraction | Train-bicyclette /1 — Montre-règle /1 |
+   | Mémoire (rappel différé) | 5 mots — rappel libre /5 (et reporter aussi dans le commentaire l'éventuelle facilitation par indice / choix multiple sans la compter dans le score) |
+   | Orientation | Date /1 — Mois /1 — Année /1 — Jour /1 — Lieu /1 — Ville /1 |
+
+   **Inférence des sous-scores** : si l'orthophoniste a indiqué un score total + une observation (ex. "horloge: aiguilles inversées"), tu DÉCOMPOSES le score de manière plausible (ici : alternance 1/1, cube 1/1, horloge contour 1/1, horloge chiffres 1/1, horloge aiguilles 0/1 → total 4/5). En l'absence d'observation, distribue les pertes sur l'item le plus difficile statistiquement (horloge avant alternance, fluence avant répétitions, etc.). Si tu n'es pas sûr, mets "?/1" et signale dans le commentaire que la décomposition n'a pas pu être inférée.
 
 3. **Synthèse / Hypothèse de diagnostic** :
    - En MoCA, le bloc de synthèse s'intitule **"Hypothèse de diagnostic"** (PAS "Diagnostic"). La MoCA est un screening : elle ne pose JAMAIS un diagnostic ferme, elle ouvre des hypothèses à confirmer en bilan neuropsychologique.

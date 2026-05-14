@@ -23,7 +23,7 @@
  *  - redirect vers le dashboard
  */
 
-import { useState, useEffect, useRef } from 'react'
+import React, { useState, useEffect, useRef } from 'react'
 import { useRouter } from 'next/navigation'
 import Link from 'next/link'
 import {
@@ -135,6 +135,11 @@ export default function ResultatsPage() {
   const [anamneseEdit, setAnamneseEdit] = useState('')
   const [motifEdit, setMotifEdit] = useState('')
   const [orthoComments, setOrthoComments] = useState<Record<string, string>>({})
+  // MoCA spécifique : commentaires par ÉPREUVE (et non par domaine). La MoCA
+  // a 7 domaines cognitifs (Visuospatial / Mémoire / Orientation…) qui sont
+  // rendus comme épreuves d'un domaine unique "MoCA — Profil cognitif" — on
+  // mappe leur commentaire par épreuve.nom.
+  const [mocaEpreuveComments, setMocaEpreuveComments] = useState<Record<string, string>>({})
   // Buffer SSE accumulé pendant la génération streaming. Vidé au reset.
   const [streamingBuffer, setStreamingBuffer] = useState('')
   // Modal post-génération : propose de chaîner un second bilan pour le même
@@ -166,10 +171,18 @@ export default function ResultatsPage() {
       // phase 1. L'ortho peut la valider, modifier ou compléter — la phase 2
       // reformulera le contenu final en prose pro.
       const initialComments: Record<string, string> = {}
+      const initialMocaEpreuveComments: Record<string, string> = {}
       for (const d of data.extracted.domains) {
         if (d.commentaire?.trim()) initialComments[d.nom] = d.commentaire.trim()
+        // Pré-remplit les commentaires par épreuve (MoCA). L'IA met le
+        // commentaire clinique propre à chaque domaine cognitif dans
+        // épreuve.commentaire — on l'expose à l'ortho pour validation.
+        for (const e of d.epreuves) {
+          if (e.commentaire?.trim()) initialMocaEpreuveComments[e.nom] = e.commentaire.trim()
+        }
       }
       setOrthoComments(initialComments)
+      setMocaEpreuveComments(initialMocaEpreuveComments)
     } catch (e) {
       console.error('Handoff illisible:', e)
       router.push('/dashboard/nouveau-crbo')
@@ -274,6 +287,15 @@ export default function ResultatsPage() {
         commentaire:
           reformulatedByName.get(d.nom.trim())
           ?? (orthoComments[d.nom] || d.commentaire || '').trim(),
+        // MoCA : propager les commentaires édités par épreuve (clé = épreuve.nom)
+        // dans CRBOEpreuve.commentaire pour qu'ils apparaissent dans la colonne
+        // "Commentaire" du tableau Word. Aucun effet pour les autres tests
+        // (mocaEpreuveComments reste vide).
+        epreuves: d.epreuves.map(e => ({
+          ...e,
+          commentaire:
+            (mocaEpreuveComments[e.nom] || e.commentaire || '').trim() || undefined,
+        })),
       }))
 
       // ============ Track des champs édités par l'ortho ============
@@ -525,7 +547,14 @@ export default function ResultatsPage() {
   if (!handoff) return null
 
   const { formData: fd, extracted } = handoff
-  const groups: ChartGroup[] = extracted.domains
+  // MoCA-only : pas de graphique percentile, pas de légende SEUILS, table
+  // simplifiée 3 colonnes (Épreuve / Score / Commentaire) avec sous-rows.
+  // Les commentaires sont par ÉPREUVE (et non par domaine) — chaque domaine
+  // cognitif MoCA mérite son propre paragraphe clinique.
+  const isMoca = (Array.isArray(fd.test_utilise) ? fd.test_utilise : [fd.test_utilise || ''])
+    .length === 1 &&
+    (Array.isArray(fd.test_utilise) ? fd.test_utilise[0] : fd.test_utilise) === 'MoCA'
+  const groups: ChartGroup[] = isMoca ? [] : extracted.domains
     .map(d => ({ name: d.nom, bars: d.epreuves.map(e => ({ label: e.nom, value: e.percentile_value })) }))
     .filter(g => g.bars.length > 0)
 
@@ -639,44 +668,101 @@ export default function ResultatsPage() {
           </p>
         </div>
 
-        {/* Légende des seuils */}
-        <div className="flex flex-wrap gap-2 text-xs">
-          {SEUILS.map(s => (
-            <span key={s.label} className="inline-flex items-center gap-1.5 px-2 py-1 rounded border" style={{ backgroundColor: '#' + s.shading, borderColor: '#' + s.shading, color: s.textColor ? '#' + s.textColor : undefined }}>
-              <strong>{s.label}</strong> {s.range}
-            </span>
-          ))}
-        </div>
+        {/* Légende des seuils — masquée pour MoCA (screening cognitif :
+            pas de zones percentile, le tableau MoCA est dépouillé). */}
+        {!isMoca && (
+          <div className="flex flex-wrap gap-2 text-xs">
+            {SEUILS.map(s => (
+              <span key={s.label} className="inline-flex items-center gap-1.5 px-2 py-1 rounded border" style={{ backgroundColor: '#' + s.shading, borderColor: '#' + s.shading, color: s.textColor ? '#' + s.textColor : undefined }}>
+                <strong>{s.label}</strong> {s.range}
+              </span>
+            ))}
+          </div>
+        )}
 
-        {extracted.domains.map((d, dIdx) => (
-          <div key={dIdx} className="card-modern p-5 space-y-3">
-            <h3 className="font-bold text-primary-700 dark:text-primary-400 text-base">
-              {d.nom}
-            </h3>
-            <DomainTable domain={d} />
-            <div className="pt-2 space-y-2">
-              <div className="flex items-center justify-between">
-                <label className="flex items-center gap-1.5 text-sm font-medium text-gray-700 dark:text-gray-300">
-                  <MessageSquare size={14} className="text-primary-600" />
-                  Commentaire clinique du domaine
-                  <span className="text-xs font-normal text-gray-400">— pré-rempli automatiquement, modifiable</span>
-                </label>
-                <MicButton
+        {isMoca ? (
+          /* Rendu MoCA dédié : un seul tableau 3 colonnes Épreuve / Score /
+             Commentaire avec sous-rows pour les sous-épreuves, et une zone
+             d'édition du commentaire PAR épreuve (et non par domaine). */
+          extracted.domains.map((d, dIdx) => (
+            <div key={dIdx} className="card-modern p-5 space-y-4">
+              <h3 className="font-bold text-primary-700 dark:text-primary-400 text-base">
+                {d.nom}
+              </h3>
+              <div className="overflow-x-auto -mx-5 px-5">
+                <table className="w-full text-sm">
+                  <thead className="text-xs uppercase tracking-wider text-gray-500 dark:text-gray-400 border-b border-gray-200 dark:border-surface-dark-muted">
+                    <tr>
+                      <th className="text-left py-2 pr-3">Épreuve</th>
+                      <th className="text-center py-2 px-2 w-24">Score</th>
+                      <th className="text-left py-2 pl-2">Commentaire</th>
+                    </tr>
+                  </thead>
+                  <tbody className="divide-y divide-gray-100 dark:divide-surface-dark-muted/50">
+                    {d.epreuves.map((e, eIdx) => (
+                      <React.Fragment key={eIdx}>
+                        <tr className="hover:bg-gray-50 dark:hover:bg-surface-dark-muted/30 bg-emerald-50/30">
+                          <td className="py-2 pr-3 font-semibold text-gray-900 dark:text-gray-100">{e.nom}</td>
+                          <td className="py-2 px-2 text-center font-mono font-semibold text-gray-800 dark:text-gray-200">{e.score}</td>
+                          <td className="py-2 pl-2 align-top">
+                            <textarea
+                              value={mocaEpreuveComments[e.nom] || ''}
+                              onChange={(ev) => setMocaEpreuveComments(prev => ({ ...prev, [e.nom]: ev.target.value }))}
+                              rows={2}
+                              placeholder="Commentaire clinique pour ce domaine (préservation, fragilité, type d'erreur…)"
+                              className="w-full px-2 py-1.5 border border-gray-300 dark:border-surface-dark-muted rounded-md focus:outline-none focus:ring-2 focus:ring-emerald-400 text-xs leading-relaxed dark:bg-surface-dark resize-none"
+                            />
+                          </td>
+                        </tr>
+                        {(e.sous_epreuves ?? []).map((se, seIdx) => (
+                          <tr key={`se-${eIdx}-${seIdx}`} className="text-gray-600 dark:text-gray-400">
+                            <td className="py-1.5 pr-3 pl-6 text-xs">• {se.nom}</td>
+                            <td className="py-1.5 px-2 text-center font-mono text-xs">{se.score}</td>
+                            <td className="py-1.5 pl-2 text-xs text-gray-400">—</td>
+                          </tr>
+                        ))}
+                      </React.Fragment>
+                    ))}
+                  </tbody>
+                </table>
+              </div>
+              <p className="text-[11px] text-gray-500 italic">
+                Le tableau ci-dessus reprend les 7 domaines MoCA décomposés par sous-item. Le commentaire est éditable par domaine.
+                Aucun pourcentage, aucune étiquette « Excellent / Fragilité » — la MoCA est un screening, pas un test percentile-based.
+              </p>
+            </div>
+          ))
+        ) : (
+          extracted.domains.map((d, dIdx) => (
+            <div key={dIdx} className="card-modern p-5 space-y-3">
+              <h3 className="font-bold text-primary-700 dark:text-primary-400 text-base">
+                {d.nom}
+              </h3>
+              <DomainTable domain={d} />
+              <div className="pt-2 space-y-2">
+                <div className="flex items-center justify-between">
+                  <label className="flex items-center gap-1.5 text-sm font-medium text-gray-700 dark:text-gray-300">
+                    <MessageSquare size={14} className="text-primary-600" />
+                    Commentaire clinique du domaine
+                    <span className="text-xs font-normal text-gray-400">— pré-rempli automatiquement, modifiable</span>
+                  </label>
+                  <MicButton
+                    value={orthoComments[d.nom] || ''}
+                    onChange={(v) => handleCommentChange(d.nom, v)}
+                    onError={(msg) => setError(msg)}
+                  />
+                </div>
+                <textarea
                   value={orthoComments[d.nom] || ''}
-                  onChange={(v) => handleCommentChange(d.nom, v)}
-                  onError={(msg) => setError(msg)}
+                  onChange={(e) => handleCommentChange(d.nom, e.target.value)}
+                  rows={3}
+                  placeholder="Ex: enfant fatigué sur cette épreuve, encouragements nécessaires, score sous-estimé car distracteurs visuels…"
+                  className="w-full px-3 py-2 border border-gray-300 dark:border-surface-dark-muted rounded-lg focus:outline-none focus:ring-2 focus:ring-green-500 text-sm dark:bg-surface-dark"
                 />
               </div>
-              <textarea
-                value={orthoComments[d.nom] || ''}
-                onChange={(e) => handleCommentChange(d.nom, e.target.value)}
-                rows={3}
-                placeholder="Ex: enfant fatigué sur cette épreuve, encouragements nécessaires, score sous-estimé car distracteurs visuels…"
-                className="w-full px-3 py-2 border border-gray-300 dark:border-surface-dark-muted rounded-lg focus:outline-none focus:ring-2 focus:ring-green-500 text-sm dark:bg-surface-dark"
-              />
             </div>
-          </div>
-        ))}
+          ))
+        )}
       </section>
 
       {/* CTA finale — déclenche phase 2 + sauvegarde + téléchargement */}

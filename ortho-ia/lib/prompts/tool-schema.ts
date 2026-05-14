@@ -35,6 +35,29 @@ const EPREUVE_SCHEMA = {
         "'Fragilité' pour P10-P25 (Q1 inclus, **PAS** moyenne basse) ; 'Difficulté' pour P6-P9 ; " +
         "'Difficulté sévère' pour P ≤ 5.",
     },
+    sous_epreuves: {
+      type: 'array' as const,
+      description:
+        "Décomposition de l'épreuve en sous-items pour les tests à scoring hiérarchique " +
+        "(typique MoCA : chaque domaine /5 est décomposé en items à 1pt chacun). " +
+        "Vide ou absent pour les tests sans hiérarchie (Exalang, BETL, etc.).",
+      items: {
+        type: 'object' as const,
+        required: ['nom', 'score'],
+        properties: {
+          nom: { type: 'string' as const, description: "Nom du sous-item (ex: 'Cube', 'Horloge — aiguilles', '5 mots — rappel libre')." },
+          score: { type: 'string' as const, description: "Score du sous-item (ex: '1/1', '0/1', '3/5')." },
+        },
+      },
+    },
+    commentaire: {
+      type: 'string' as const,
+      description:
+        "Commentaire clinique pour cette épreuve spécifique (3-4 lignes max). " +
+        "Utilisé pour les tests où le commentaire est par ÉPREUVE et pas par domaine — " +
+        "typiquement MoCA, où chaque domaine cognitif mérite son propre paragraphe " +
+        "clinique. Vide ('') si non applicable.",
+    },
   },
 }
 
@@ -298,6 +321,17 @@ export interface CRBOEpreuve {
    * Au rendu, normalizeInterpretation() de lib/word-export les remappe.
    */
   interpretation: string
+  /**
+   * Décomposition hiérarchique de l'épreuve (MoCA principalement). Optionnel —
+   * les tests percentile-based (Exalang…) ne l'utilisent pas.
+   */
+  sous_epreuves?: { nom: string; score: string }[]
+  /**
+   * Commentaire clinique par épreuve (MoCA — un commentaire par domaine
+   * cognitif). Optionnel ; pour les autres tests, le commentaire reste au
+   * niveau du domaine via CRBODomain.commentaire.
+   */
+  commentaire?: string
 }
 
 export interface CRBODomain {
