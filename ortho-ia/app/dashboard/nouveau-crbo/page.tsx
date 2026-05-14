@@ -72,10 +72,10 @@ const DRAFT_KEY = 'ortho-ia:crbo-draft'
 /** Motifs de consultation proposés en multi-sélection à l'étape 2.
  *  Le LLM reformule la sélection en 1-2 phrases fluides via la règle
  *  motif_reformule du system-base. */
-const MOTIF_OPTIONS = ['Langage oral', 'Langage écrit', 'Mémoire', 'OMF'] as const
+const MOTIF_OPTIONS = ['Langage oral', 'Langage écrit', 'Cognitif', 'OMF'] as const
 
 /** Parse la chaîne `formData.motif` en tableau d'options sélectionnées.
- *  La chaîne est de la forme "Langage oral, Mémoire". Tolère les espaces
+ *  La chaîne est de la forme "Langage oral, Cognitif". Tolère les espaces
  *  superflus et filtre les valeurs hors MOTIF_OPTIONS (compat ancienne saisie
  *  libre — un CRBO sauvegardé avec un motif libre rendra simplement aucun chip
  *  sélectionné, sans planter). */
@@ -811,7 +811,7 @@ function NouveauCRBOContent() {
   }
 
   /** Toggle d'une option motif (multi-sélection). Met à jour formData.motif
-   *  comme chaîne CSV "Langage oral, Mémoire" — compat persistance DB et
+   *  comme chaîne CSV "Langage oral, Cognitif" — compat persistance DB et
    *  injection prompt. Ordre conservé selon MOTIF_OPTIONS pour stabilité. */
   const toggleMotif = (option: string) => {
     setFormData(prev => {
