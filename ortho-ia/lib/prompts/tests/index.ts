@@ -14,6 +14,7 @@ import { examath } from './examath'
 import { omfDeglutition } from './omf-deglutition'
 import { moca } from './moca'
 import { betl } from './betl'
+import { predimem } from './predimem'
 
 export const TEST_REGISTRY: Record<string, TestModule> = {
   'Exalang 3-6': exalang36,
@@ -31,6 +32,7 @@ export const TEST_REGISTRY: Record<string, TestModule> = {
   'OMF / Déglutition': omfDeglutition,
   'MoCA': moca,
   'BETL': betl,
+  'PREDIMEM': predimem,
 }
 
 export function getTestModule(nom: string): TestModule | null {
