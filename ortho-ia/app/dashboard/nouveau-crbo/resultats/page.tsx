@@ -137,6 +137,14 @@ export default function ResultatsPage() {
   const [orthoComments, setOrthoComments] = useState<Record<string, string>>({})
   // Buffer SSE accumulé pendant la génération streaming. Vidé au reset.
   const [streamingBuffer, setStreamingBuffer] = useState('')
+  // Modal post-génération : propose de chaîner un second bilan pour le même
+  // patient (cas typique : screening MoCA → bilan langagier plus profond
+  // type BETL). Évite de ressaisir patient + médecin pour le second CRBO.
+  const [chainSuggestion, setChainSuggestion] = useState<null | {
+    patientId: string | null
+    patientLabel: string
+    firstTest: string
+  }>(null)
 
   useEffect(() => {
     try {
@@ -483,16 +491,22 @@ export default function ResultatsPage() {
         }
       }
 
-      // Nettoyage handoff + redirect (le dashboard re-fetch au mount → kanban à jour)
+      // Nettoyage handoff + signale au dashboard d'afficher le bandeau de
+      // feedback sur ce CRBO (capture immédiate post-download).
       sessionStorage.removeItem(HANDOFF_KEY)
-      // Signale au dashboard d'afficher le bandeau de feedback sur ce CRBO
-      // (capture immédiate post-download, avant que l'ortho ne ferme l'onglet).
       if (insertedCrboId) {
         try {
           sessionStorage.setItem('orthoia.feedback-pending', insertedCrboId)
         } catch {}
       }
-      router.push('/dashboard')
+
+      // Ouvre la modale de chaînage : propose de démarrer un 2ᵉ bilan pour
+      // le même patient (cas typique screening MoCA → BETL approfondi). Si
+      // l'ortho répond "Non", on bascule sur le dashboard comme avant.
+      const firstTestArr = Array.isArray(fd.test_utilise) ? fd.test_utilise : [fd.test_utilise || '']
+      const firstTest = firstTestArr.filter(Boolean).join(', ') || 'ce bilan'
+      const patientLabel = [fd.patient_prenom, fd.patient_nom].filter(Boolean).join(' ').trim() || 'ce patient'
+      setChainSuggestion({ patientId: patientId || null, patientLabel, firstTest })
     } catch (err: any) {
       setError(err?.message || 'Erreur inattendue lors de la génération.')
     } finally {
@@ -717,13 +731,77 @@ export default function ResultatsPage() {
             animation: 'fade-in-overlay 220ms ease',
           }}
         >
-          <StreamingCRBO accumulated={streamingBuffer} active={generating} />
+          <StreamingCRBO
+            accumulated={streamingBuffer}
+            active={generating}
+            isMoca={(Array.isArray(fd.test_utilise) ? fd.test_utilise : [fd.test_utilise || '']).length === 1
+              && (Array.isArray(fd.test_utilise) ? fd.test_utilise[0] : fd.test_utilise) === 'MoCA'}
+          />
           <style jsx>{`
             @keyframes fade-in-overlay {
               from { opacity: 0; }
               to { opacity: 1; }
             }
           `}</style>
+        </div>
+      )}
+
+      {/* Modale de chaînage post-CRBO — propose un second bilan pour le même
+          patient. Particulièrement utile après un MoCA (screening) qui
+          nécessite presque toujours un bilan langagier approfondi (BETL,
+          Examath, etc.). L'ortho repart du formulaire CRBO avec patient
+          pré-sélectionné, choisit le nouveau test à l'étape 4. */}
+      {chainSuggestion && (
+        <div
+          className="fixed inset-0 z-[110] flex items-center justify-center p-4"
+          style={{ background: 'rgba(15, 23, 42, 0.55)', backdropFilter: 'blur(4px)' }}
+        >
+          <div className="bg-white dark:bg-surface-dark rounded-2xl shadow-xl max-w-md w-full p-6 space-y-4">
+            <div className="flex items-start gap-3">
+              <div className="w-10 h-10 rounded-full bg-emerald-100 flex items-center justify-center shrink-0">
+                <Sparkles size={20} className="text-emerald-700" />
+              </div>
+              <div>
+                <h3 className="font-semibold text-gray-900 dark:text-gray-100 text-base">
+                  CRBO téléchargé.
+                </h3>
+                <p className="text-sm text-gray-600 dark:text-gray-300 mt-1">
+                  Le bilan <strong>{chainSuggestion.firstTest}</strong> pour <strong>{chainSuggestion.patientLabel}</strong> est enregistré.
+                  Souhaitez-vous enchaîner un second bilan pour ce patient maintenant&nbsp;?
+                </p>
+              </div>
+            </div>
+            <p className="text-xs text-gray-500 bg-gray-50 dark:bg-surface-dark-muted rounded-md px-3 py-2">
+              Le patient sera pré-sélectionné. Vous choisirez le second test à l&apos;étape&nbsp;4.
+              Cas typique&nbsp;: screening MoCA → bilan langagier approfondi (BETL, EVALEO…).
+            </p>
+            <div className="flex flex-col sm:flex-row gap-2 justify-end">
+              <button
+                type="button"
+                onClick={() => {
+                  setChainSuggestion(null)
+                  router.push('/dashboard')
+                }}
+                className="px-4 py-2 rounded-lg border border-gray-300 text-sm font-medium text-gray-700 hover:bg-gray-50"
+              >
+                Retour au tableau de bord
+              </button>
+              <button
+                type="button"
+                onClick={() => {
+                  const url = chainSuggestion.patientId
+                    ? `/dashboard/nouveau-crbo?patient=${encodeURIComponent(chainSuggestion.patientId)}`
+                    : '/dashboard/nouveau-crbo'
+                  setChainSuggestion(null)
+                  router.push(url)
+                }}
+                className="px-4 py-2 rounded-lg bg-emerald-600 hover:bg-emerald-700 text-white text-sm font-semibold inline-flex items-center justify-center gap-1.5"
+              >
+                <Sparkles size={14} />
+                Enchaîner un autre bilan
+              </button>
+            </div>
+          </div>
         </div>
       )}
     </div>
