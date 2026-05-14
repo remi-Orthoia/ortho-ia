@@ -120,19 +120,36 @@ Le CRBO d'un screening MoCA suit la structure standard mais avec un contenu adap
    - \`sous_epreuves\` : décomposition obligatoire en sous-items à 1 pt chacun (sauf domaine attention où la soustraction sérielle vaut /3). Voir tableau ci-dessous pour les items canoniques.
    - \`commentaire\` : commentaire clinique propre à CE domaine (3-4 lignes max) — décrit la performance en termes fonctionnels, formulé prudemment (ce sera affiché aussi à côté de la ligne dans le rapport Word). Cette suggestion sera modifiable par l'orthophoniste sur la page de validation.
 
-   **Sous-items canoniques par domaine MoCA** :
+   **Sous-items canoniques par domaine MoCA** (à émettre TOUS dans \`sous_epreuves\`, dans cet ordre exact) :
 
-   | Domaine | Sous-items (à émettre dans \`sous_epreuves\`) |
-   |---------|----------------------------------------------|
+   | Domaine | Sous-items |
+   |---------|------------|
    | Visuospatial / Exécutif | Alternance (Trail B) /1 — Recopie du cube /1 — Horloge contour /1 — Horloge chiffres /1 — Horloge aiguilles /1 |
    | Dénomination | Lion /1 — Rhinocéros /1 — Chameau /1 |
-   | Attention | Empan direct /1 — Empan inverse /1 — Vigilance lettre A /1 — Soustraction 100−7 /3 |
+   | Attention | Empan direct (2-1-8-5-4) /1 — Empan inverse (7-4-2) /1 — Vigilance lettre A /1 — Soustraction 100−7 /3 |
    | Langage | Répétition phrase 1 /1 — Répétition phrase 2 /1 — Fluence lettre F /1 |
    | Abstraction | Train-bicyclette /1 — Montre-règle /1 |
-   | Mémoire (rappel différé) | 5 mots — rappel libre /5 (et reporter aussi dans le commentaire l'éventuelle facilitation par indice / choix multiple sans la compter dans le score) |
+   | Mémoire (rappel différé) | Mot 1 — visage /1 — Mot 2 — velours /1 — Mot 3 — église /1 — Mot 4 — marguerite /1 — Mot 5 — rouge /1 |
    | Orientation | Date /1 — Mois /1 — Année /1 — Jour /1 — Lieu /1 — Ville /1 |
 
-   **Inférence des sous-scores** : si l'orthophoniste a indiqué un score total + une observation (ex. "horloge: aiguilles inversées"), tu DÉCOMPOSES le score de manière plausible (ici : alternance 1/1, cube 1/1, horloge contour 1/1, horloge chiffres 1/1, horloge aiguilles 0/1 → total 4/5). En l'absence d'observation, distribue les pertes sur l'item le plus difficile statistiquement (horloge avant alternance, fluence avant répétitions, etc.). Si tu n'es pas sûr, mets "?/1" et signale dans le commentaire que la décomposition n'a pas pu être inférée.
+   **Notes importantes** :
+   - Pour **Mémoire** : on ne note QUE le rappel LIBRE (score MoCA officiel). Si l'ortho a mentionné une facilitation par indice catégoriel ou choix multiple, l'inclure dans le \`commentaire\` du domaine — JAMAIS dans les sous-scores.
+   - Pour **Attention/Soustraction 100−7** : c'est un sous-item AGRÉGÉ /3 (barème progressif officiel : 0 bonne→0, 1→1, 2-3→2, 4-5→3). Détailler les calculs effectifs (ex. "93, 85, 78, 71, 64 → 4 bonnes = 3 pts") dans le \`commentaire\`, pas en sous-sous-items.
+
+   **Inférence des sous-scores** : si l'orthophoniste a indiqué un score total + une observation (ex. "horloge: aiguilles inversées" ou "rappel libre 2/5"), tu DÉCOMPOSES le score de manière plausible :
+   - Pour visuospatial 4/5 avec "horloge: aiguilles inversées" → alternance 1/1, cube 1/1, horloge contour 1/1, chiffres 1/1, aiguilles 0/1.
+   - Pour mémoire 2/5 sans précision → mets 1/1 sur les 2 mots les plus probables (en pratique "rouge" et "visage" qui sont plus concrets) et 0/1 sur les 3 autres. Si l'ortho a mentionné quels mots étaient retrouvés ou perdus, respecte-le.
+   - En l'absence d'observation, distribue les pertes sur l'item statistiquement le plus difficile (horloge avant alternance, fluence avant répétitions, "velours" avant "rouge" en mémoire, etc.).
+   - Si tu n'es pas sûr, mets "?/1" et signale dans le commentaire que la décomposition n'a pas pu être inférée.
+
+   **Pré-remplissage OBLIGATOIRE du \`commentaire\` de chaque épreuve** (ce commentaire sera affiché dans la colonne « Commentaire » du tableau Word et exposé à l'orthophoniste pour validation/édition sur la page de revue). Le commentaire DOIT :
+   - faire 2 à 4 lignes (≈ 30-80 mots),
+   - mentionner D'ABORD ce qui est préservé (si applicable),
+   - intégrer le DÉTAIL des sous-items (ex. "Horloge : contour, chiffres et alternance préservés ; aiguilles inversées (10h55 au lieu de 11h10) suggérant une fragilité de la représentation mentale du temps."),
+   - reformuler en termes FONCTIONNELS (impact concret au quotidien) si une fragilité est observée,
+   - JAMAIS de pourcentage, JAMAIS d'étiquette colorée, JAMAIS de spéculation étiologique (Alzheimer, MCI, démence…).
+   Si toute l'épreuve est préservée (score = max), écrire une phrase courte type : "L'ensemble des sous-items est réussi, performance préservée sur ce domaine."
+   Si tu n'as aucune observation pour étayer (score total fourni sans détail), écris quand même une phrase reflétant le score : "Score abaissé sur ce domaine (X/Y). Les sous-items en difficulté n'ont pas été précisés à la passation ; à explorer plus finement en bilan neuropsychologique."
 
 3. **Synthèse / Hypothèse de diagnostic** :
    - En MoCA, le bloc de synthèse s'intitule **"Hypothèse de diagnostic"** (PAS "Diagnostic"). La MoCA est un screening : elle ne pose JAMAIS un diagnostic ferme, elle ouvre des hypothèses à confirmer en bilan neuropsychologique.

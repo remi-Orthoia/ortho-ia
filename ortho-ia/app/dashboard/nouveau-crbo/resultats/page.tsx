@@ -83,6 +83,65 @@ function HappyNeuronCanvas({ groups, title }: { groups: ChartGroup[]; title: str
   )
 }
 
+/**
+ * Mini-icône schématique pour les sous-items MoCA qui ont une représentation
+ * graphique conventionnelle (cube en 3D, horloge à 11h10). Aide l'orthophoniste
+ * à associer rapidement le sous-item à la consigne du test au moment de la
+ * relecture, sans avoir à se référer au manuel.
+ *
+ * Retourne null si aucune icône ne correspond — la grande majorité des
+ * sous-items (mots, fluences, orientations) n'en a pas besoin.
+ */
+function SousItemIcon({ nom }: { nom: string }) {
+  const n = nom.toLowerCase()
+  const stroke = 'currentColor'
+  // Cube 3D wireframe — pour "Recopie du cube"
+  if (n.includes('cube')) {
+    return (
+      <svg viewBox="0 0 28 28" width={22} height={22} fill="none" stroke={stroke} strokeWidth={1.4} strokeLinejoin="round" aria-hidden="true">
+        <path d="M5 10 L14 6 L23 10 L14 14 Z" />
+        <path d="M5 10 L5 20 L14 24 L14 14" />
+        <path d="M23 10 L23 20 L14 24" />
+        <path d="M14 6 L14 14" strokeDasharray="1.5 2" opacity={0.5} />
+      </svg>
+    )
+  }
+  // Horloge — 3 variantes selon la sous-épreuve évaluée (contour seul,
+  // contour + chiffres, contour + chiffres + aiguilles à 11h10).
+  if (n.includes('horloge')) {
+    const withChiffres = n.includes('chiffre') || n.includes('aiguille')
+    const withAiguilles = n.includes('aiguille')
+    return (
+      <svg viewBox="0 0 28 28" width={22} height={22} fill="none" stroke={stroke} strokeWidth={1.4} aria-hidden="true">
+        <circle cx="14" cy="14" r="11" />
+        {withChiffres && (
+          <g>
+            {/* 12 marques aux positions horaires */}
+            <line x1="14" y1="3.5" x2="14" y2="5.2" />
+            <line x1="14" y1="22.8" x2="14" y2="24.5" />
+            <line x1="3.5" y1="14" x2="5.2" y2="14" />
+            <line x1="22.8" y1="14" x2="24.5" y2="14" />
+            <line x1="6.4" y1="6.4" x2="7.6" y2="7.6" />
+            <line x1="20.4" y1="6.4" x2="21.6" y2="7.6" />
+            <line x1="6.4" y1="21.6" x2="7.6" y2="20.4" />
+            <line x1="20.4" y1="21.6" x2="21.6" y2="20.4" />
+          </g>
+        )}
+        {withAiguilles && (
+          <g strokeLinecap="round">
+            {/* Petite aiguille pointant sur 11 (heures) */}
+            <line x1="14" y1="14" x2="10.4" y2="9.6" strokeWidth={2} />
+            {/* Grande aiguille pointant sur 2 (10 minutes) */}
+            <line x1="14" y1="14" x2="21" y2="9.6" strokeWidth={1.5} />
+            <circle cx="14" cy="14" r="1.2" fill={stroke} stroke="none" />
+          </g>
+        )}
+      </svg>
+    )
+  }
+  return null
+}
+
 function DomainTable({ domain }: { domain: CRBODomain }) {
   return (
     <div className="overflow-x-auto -mx-5 px-5">
@@ -714,13 +773,24 @@ export default function ResultatsPage() {
                             />
                           </td>
                         </tr>
-                        {(e.sous_epreuves ?? []).map((se, seIdx) => (
-                          <tr key={`se-${eIdx}-${seIdx}`} className="text-gray-600 dark:text-gray-400">
-                            <td className="py-1.5 pr-3 pl-6 text-xs">• {se.nom}</td>
-                            <td className="py-1.5 px-2 text-center font-mono text-xs">{se.score}</td>
-                            <td className="py-1.5 pl-2 text-xs text-gray-400">—</td>
-                          </tr>
-                        ))}
+                        {(e.sous_epreuves ?? []).map((se, seIdx) => {
+                          // Détecte "0/N" pour griser la ligne (sous-item raté)
+                          // — feedback visuel léger, pas une étiquette colorée.
+                          const m = se.score.match(/^(\d+)\s*\/\s*\d+/)
+                          const isZero = !!m && parseInt(m[1], 10) === 0
+                          return (
+                            <tr key={`se-${eIdx}-${seIdx}`} className={isZero ? 'text-gray-400 dark:text-gray-500' : 'text-gray-700 dark:text-gray-300'}>
+                              <td className="py-1.5 pr-3 pl-6 text-xs">
+                                <span className="inline-flex items-center gap-2">
+                                  <SousItemIcon nom={se.nom} />
+                                  <span>• {se.nom}</span>
+                                </span>
+                              </td>
+                              <td className={`py-1.5 px-2 text-center font-mono text-xs ${isZero ? '' : 'font-semibold text-gray-900 dark:text-gray-100'}`}>{se.score}</td>
+                              <td className="py-1.5 pl-2 text-xs text-gray-400">—</td>
+                            </tr>
+                          )
+                        })}
                       </React.Fragment>
                     ))}
                   </tbody>

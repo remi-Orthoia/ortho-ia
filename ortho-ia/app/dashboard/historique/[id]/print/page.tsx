@@ -296,6 +296,53 @@ export default function PrintCRBOPage() {
  * Rendu CRBO simplifié pour la version imprimable.
  * Plus dense que CRBOStructuredPreview (qui est optimisé pour l'écran).
  */
+/**
+ * Mini-icône SVG des sous-items MoCA conventionnels (cube 3D, horloge à 11h10
+ * décomposée par phase). Inline pour rester self-contained dans le rendu print.
+ */
+function PrintSousItemIcon({ nom }: { nom: string }) {
+  const n = nom.toLowerCase()
+  if (n.includes('cube')) {
+    return (
+      <svg viewBox="0 0 28 28" width={18} height={18} fill="none" stroke="#374151" strokeWidth={1.4} strokeLinejoin="round" style={{ verticalAlign: 'middle', marginRight: 4 }}>
+        <path d="M5 10 L14 6 L23 10 L14 14 Z" />
+        <path d="M5 10 L5 20 L14 24 L14 14" />
+        <path d="M23 10 L23 20 L14 24" />
+        <path d="M14 6 L14 14" strokeDasharray="1.5 2" opacity={0.5} />
+      </svg>
+    )
+  }
+  if (n.includes('horloge')) {
+    const withChiffres = n.includes('chiffre') || n.includes('aiguille')
+    const withAiguilles = n.includes('aiguille')
+    return (
+      <svg viewBox="0 0 28 28" width={18} height={18} fill="none" stroke="#374151" strokeWidth={1.4} style={{ verticalAlign: 'middle', marginRight: 4 }}>
+        <circle cx="14" cy="14" r="11" />
+        {withChiffres && (
+          <g>
+            <line x1="14" y1="3.5" x2="14" y2="5.2" />
+            <line x1="14" y1="22.8" x2="14" y2="24.5" />
+            <line x1="3.5" y1="14" x2="5.2" y2="14" />
+            <line x1="22.8" y1="14" x2="24.5" y2="14" />
+            <line x1="6.4" y1="6.4" x2="7.6" y2="7.6" />
+            <line x1="20.4" y1="6.4" x2="21.6" y2="7.6" />
+            <line x1="6.4" y1="21.6" x2="7.6" y2="20.4" />
+            <line x1="20.4" y1="21.6" x2="21.6" y2="20.4" />
+          </g>
+        )}
+        {withAiguilles && (
+          <g strokeLinecap="round">
+            <line x1="14" y1="14" x2="10.4" y2="9.6" strokeWidth={2} />
+            <line x1="14" y1="14" x2="21" y2="9.6" strokeWidth={1.5} />
+            <circle cx="14" cy="14" r="1.2" fill="#374151" stroke="none" />
+          </g>
+        )}
+      </svg>
+    )
+  }
+  return null
+}
+
 function CRBOPrintableStructure({ structure, testUtilise }: { structure: CRBOStructure; testUtilise: string | null }) {
   const isMoca = testUtilise === 'MoCA'
   return (
@@ -343,13 +390,20 @@ function CRBOPrintableStructure({ structure, testUtilise }: { structure: CRBOStr
                           <td style={{ padding: '4px 8px', textAlign: 'center', border: '1px solid #BFBFBF', fontWeight: 600 }}>{e.score || '—'}</td>
                           <td style={{ padding: '4px 8px', border: '1px solid #BFBFBF', whiteSpace: 'pre-line' }}>{e.commentaire || ''}</td>
                         </tr>
-                        {(e.sous_epreuves ?? []).map((se, k) => (
-                          <tr key={`se-${j}-${k}`}>
-                            <td style={{ padding: '3px 8px 3px 20px', border: '1px solid #BFBFBF', color: '#6B7280', fontSize: 11 }}>• {se.nom}</td>
-                            <td style={{ padding: '3px 8px', textAlign: 'center', border: '1px solid #BFBFBF', color: '#6B7280', fontSize: 11 }}>{se.score}</td>
-                            <td style={{ padding: '3px 8px', border: '1px solid #BFBFBF', color: '#9CA3AF' }}>—</td>
-                          </tr>
-                        ))}
+                        {(e.sous_epreuves ?? []).map((se, k) => {
+                          const m = se.score.match(/^(\d+)\s*\/\s*\d+/)
+                          const isZero = !!m && parseInt(m[1], 10) === 0
+                          return (
+                            <tr key={`se-${j}-${k}`}>
+                              <td style={{ padding: '3px 8px 3px 20px', border: '1px solid #BFBFBF', color: isZero ? '#9CA3AF' : '#374151', fontSize: 11 }}>
+                                <PrintSousItemIcon nom={se.nom} />
+                                • {se.nom}
+                              </td>
+                              <td style={{ padding: '3px 8px', textAlign: 'center', border: '1px solid #BFBFBF', color: isZero ? '#9CA3AF' : '#111827', fontSize: 11, fontWeight: isZero ? 400 : 600 }}>{se.score}</td>
+                              <td style={{ padding: '3px 8px', border: '1px solid #BFBFBF', color: '#9CA3AF' }}>—</td>
+                            </tr>
+                          )
+                        })}
                       </React.Fragment>
                     ))}
                   </tbody>
