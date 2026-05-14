@@ -24,7 +24,7 @@
  */
 
 import { useEffect, useMemo, useRef, useState } from 'react'
-import { Brain, CheckCircle2, AlertCircle, ChevronDown, Camera, Loader2 } from 'lucide-react'
+import { Brain, CheckCircle2, AlertCircle, ChevronDown, Camera, Loader2, Lightbulb } from 'lucide-react'
 import MicButton from '../MicButton'
 
 interface Props {
@@ -50,6 +50,18 @@ interface MocaState {
   scores: Record<DomainKey, string>
   observations: Record<DomainKey, string>
   scolariteCourte: boolean
+  /**
+   * Détails du rappel mémoire au-delà du rappel libre (= scores.memoire).
+   * Ces deux valeurs N'ENTRENT PAS dans le score MoCA officiel mais
+   * orientent l'hypothèse de diagnostic :
+   *   - indice catégoriel/choix multiple efficace → trouble de récupération
+   *     (encodage préservé)
+   *   - indice/choix multiple inefficace → fragilité d'encodage
+   */
+  rappelIndice: {
+    categoriel: string   // /5 — facilitation par indice catégoriel
+    choixMultiple: string // /5 — facilitation par choix multiple
+  }
 }
 
 /**
@@ -66,6 +78,12 @@ const DOMAINS: Array<{
   hint: string
   rules: string[]
   obsPlaceholder: string
+  /**
+   * Aide à l'interprétation qualitative (au-delà du score). Sert à orienter
+   * l'ortho dans la rédaction de l'observation pour nourrir l'hypothèse de
+   * diagnostic. Ne JAMAIS basculer en spéculation étiologique.
+   */
+  interpretation?: string[]
 }> = [
   {
     key: 'visuospatial',
@@ -80,6 +98,19 @@ const DOMAINS: Array<{
       'Horloge — Aiguilles (1 pt) : petite sur 11, grande sur 2, longueurs différenciées.',
     ],
     obsPlaceholder: 'Ex. horloge : aiguilles inversées (10h55 au lieu de 11h10).',
+    interpretation: [
+      'TMT B (alternance) : explore la flexibilité mentale et l\'inhibition. Un échec oriente vers une fragilité des fonctions exécutives.',
+      'Recopie du cube : visuo-construction et planification visuo-spatiale. Noter le TYPE d\'erreur :',
+      '   • absence de perspective / dessin "à plat" → difficulté de représentation 3D',
+      '   • lignes superposées ou parallélisme rompu → fragilité de planification',
+      '   • arêtes omises ou ajoutées → fragilité d\'analyse visuo-spatiale',
+      'Horloge (11h10) : intègre construction, planification et représentation mentale du temps. Le TYPE d\'erreur est plus informatif que le score :',
+      '   • contour absent / fortement déformé → fragilité visuo-constructive',
+      '   • chiffres regroupés à droite, partie gauche vide → suspicion de négligence spatiale gauche (à confirmer cliniquement)',
+      '   • aiguille longue placée sur 10 au lieu de 2 (= "10h11" au lieu de 11h10) → trouble de la représentation mentale ou persévération',
+      '   • chiffres en désordre ou répétés → fragilité d\'organisation séquentielle',
+      'Décrire l\'erreur en termes FONCTIONNELS dans l\'observation. Pas de spéculation étiologique : "fragilité" plutôt que "trouble dysexécutif avéré".',
+    ],
   },
   {
     key: 'denomination',
@@ -146,12 +177,19 @@ const DOMAINS: Array<{
     hint: '5 mots à rappeler ~5 min plus tard, SANS indice',
     rules: [
       '5 mots cibles : visage, velours, église, marguerite, rouge.',
-      '1 pt par mot rappelé spontanément, dans n\'importe quel ordre.',
+      'Score MoCA officiel = rappel LIBRE uniquement. 1 pt par mot rappelé spontanément, dans n\'importe quel ordre.',
       '⚠️ Rappel avec indice catégoriel ou choix multiple : à NOTER cliniquement, mais ne compte PAS dans le score MoCA.',
-      'La récupération avec indice indique un trouble de récupération plutôt que d\'encodage — information précieuse pour le commentaire.',
       'Variantes du même mot non acceptées (ex. "rouge" ≠ "rougeur").',
+      'Saisir séparément la facilitation par indice et par choix multiple dans les champs ci-dessous : ces informations orientent l\'hypothèse de diagnostic.',
     ],
-    obsPlaceholder: 'Ex. 2/5 en rappel libre. Indice catégoriel : retrouve 4/5 → encodage préservé, récupération fragile.',
+    obsPlaceholder: 'Ex. 2/5 en rappel libre. Indice catégoriel : 4/5. Choix multiple : 5/5. Profil compatible avec un trouble de récupération.',
+    interpretation: [
+      'Le profil de rappel oriente l\'hypothèse de diagnostic — à formuler PRUDEMMENT, sans nommer d\'étiologie (Alzheimer, MCI, etc.) :',
+      '   • Rappel libre faible + indice catégoriel ou choix multiple efficace (gain marqué) → suggère un trouble de RÉCUPÉRATION, l\'encodage est préservé. Profil typique d\'une fragilité sous-cortico-frontale, à explorer en bilan neuropsychologique.',
+      '   • Rappel libre faible + indices peu ou pas efficaces (pas de gain) → suggère une fragilité d\'ENCODAGE / consolidation, à caractériser en bilan neuropsychologique.',
+      '   • Rappel libre normal (≥ 4/5) → pas d\'argument mnésique objectivé au screening, vérifier les autres domaines (langage, exécutif, attention).',
+      'En CRBO, toujours formuler en "hypothèse" : "Le profil de rappel est compatible avec …", "à confirmer par un bilan neuropsychologique approfondi". La MoCA seule ne permet pas de poser un diagnostic.',
+    ],
   },
   {
     key: 'orientation',
@@ -215,6 +253,7 @@ export default function MocaScoresInput({ notes, onNotesChange, onResultatsChang
     scores: EMPTY_SCORES,
     observations: EMPTY_OBS,
     scolariteCourte: false,
+    rappelIndice: { categoriel: '', choixMultiple: '' },
   })
 
   // Upload photo MoCA → Claude Vision pré-remplit les 7 domaines.
@@ -249,10 +288,16 @@ export default function MocaScoresInput({ notes, onNotesChange, onResultatsChang
           const obs = data.observations?.[d.key]
           if (typeof obs === 'string' && obs.trim()) nextObs[d.key] = obs
         }
+        const nextIndice = { ...prev.rappelIndice }
+        const cat = data.memoire_indices?.indice_categoriel
+        const cm = data.memoire_indices?.choix_multiple
+        if (typeof cat === 'number') nextIndice.categoriel = String(cat)
+        if (typeof cm === 'number') nextIndice.choixMultiple = String(cm)
         return {
           scores: nextScores,
           observations: nextObs,
           scolariteCourte: data.scolarite_courte === true ? true : prev.scolariteCourte,
+          rappelIndice: nextIndice,
         }
       })
 
@@ -302,6 +347,15 @@ export default function MocaScoresInput({ notes, onNotesChange, onResultatsChang
       const v = parseScore(state.scores[d.key], d.max)
       const pct = Math.round((v / d.max) * 100)
       lines.push(`${d.label} : ${v}/${d.max} (${pct}%)`)
+      // Pour la mémoire : injecter les sous-scores d'indice/choix multiple
+      // dans la sortie normalisée pour que le LLM générateur puisse en tirer
+      // une hypothèse de diagnostic (cf. règles cliniques MoCA system-base).
+      if (d.key === 'memoire') {
+        const cat = state.rappelIndice.categoriel.trim()
+        const cm = state.rappelIndice.choixMultiple.trim()
+        if (cat) lines.push(`  +Indice catégoriel : ${parseScore(cat, 5)}/5`)
+        if (cm) lines.push(`  +Choix multiple : ${parseScore(cm, 5)}/5`)
+      }
       const obs = state.observations[d.key].trim()
       if (obs) {
         lines.push(`  Obs : ${obs}`)
@@ -476,6 +530,89 @@ export default function MocaScoresInput({ notes, onNotesChange, onResultatsChang
                   ))}
                 </ul>
               </details>
+
+              {/* Aide à l'interprétation clinique — uniquement pour les domaines
+                  qui ont une lecture qualitative riche (visuospatial, mémoire).
+                  Couleur ambre + icône ampoule pour distinguer des règles de
+                  cotation (qui sont indigo). */}
+              {d.interpretation && d.interpretation.length > 0 && (
+                <details className="group mt-2 rounded-md border border-amber-200 bg-amber-50/60">
+                  <summary className="flex items-center gap-1.5 px-3 py-2 cursor-pointer select-none text-xs font-medium text-amber-900 hover:bg-amber-100/50">
+                    <Lightbulb size={14} className="shrink-0" />
+                    Aide à l&apos;interprétation clinique
+                  </summary>
+                  <ul className="px-3 pb-3 pt-1 space-y-1 text-xs text-gray-700">
+                    {d.interpretation.map((r, i) => (
+                      <li key={i} className="leading-relaxed">{r}</li>
+                    ))}
+                  </ul>
+                </details>
+              )}
+
+              {/* Mémoire uniquement : sous-scores de facilitation par indice.
+                  N'entrent PAS dans le total MoCA mais sont injectés dans
+                  resultats_manuels pour nourrir l'hypothèse de diagnostic. */}
+              {d.key === 'memoire' && (
+                <div className="mt-3 rounded-md border border-purple-200 bg-purple-50/60 p-3">
+                  <p className="text-xs font-semibold text-purple-900 mb-0.5">
+                    Facilitation par indice (optionnel — n&apos;entre pas dans le score MoCA)
+                  </p>
+                  <p className="text-[11px] text-purple-700 mb-2 leading-relaxed">
+                    Si vous avez proposé un indice catégoriel puis un choix multiple, indiquez le nombre de mots
+                    rappelés à chaque étape. Un gain marqué oriente vers un trouble de récupération&nbsp;; pas de gain oriente vers une fragilité d&apos;encodage.
+                  </p>
+                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
+                    <label className="flex items-center gap-2 bg-white rounded border border-purple-200 px-2 py-1.5">
+                      <span className="text-xs text-gray-700 flex-1">+ Indice catégoriel</span>
+                      <input
+                        type="number"
+                        min={0}
+                        max={5}
+                        step={1}
+                        value={state.rappelIndice.categoriel}
+                        onChange={(e) => {
+                          const v = e.target.value
+                          if (v === '') {
+                            setState(s => ({ ...s, rappelIndice: { ...s.rappelIndice, categoriel: '' } }))
+                            return
+                          }
+                          const n = parseInt(v, 10)
+                          if (isNaN(n)) return
+                          const c = Math.min(5, Math.max(0, n))
+                          setState(s => ({ ...s, rappelIndice: { ...s.rappelIndice, categoriel: String(c) } }))
+                        }}
+                        placeholder="0"
+                        className="w-14 px-2 py-1 border border-gray-300 rounded text-center text-sm font-mono focus:outline-none focus:ring-2 focus:ring-purple-400"
+                      />
+                      <span className="text-xs text-gray-500">/ 5</span>
+                    </label>
+                    <label className="flex items-center gap-2 bg-white rounded border border-purple-200 px-2 py-1.5">
+                      <span className="text-xs text-gray-700 flex-1">+ Choix multiple</span>
+                      <input
+                        type="number"
+                        min={0}
+                        max={5}
+                        step={1}
+                        value={state.rappelIndice.choixMultiple}
+                        onChange={(e) => {
+                          const v = e.target.value
+                          if (v === '') {
+                            setState(s => ({ ...s, rappelIndice: { ...s.rappelIndice, choixMultiple: '' } }))
+                            return
+                          }
+                          const n = parseInt(v, 10)
+                          if (isNaN(n)) return
+                          const c = Math.min(5, Math.max(0, n))
+                          setState(s => ({ ...s, rappelIndice: { ...s.rappelIndice, choixMultiple: String(c) } }))
+                        }}
+                        placeholder="0"
+                        className="w-14 px-2 py-1 border border-gray-300 rounded text-center text-sm font-mono focus:outline-none focus:ring-2 focus:ring-purple-400"
+                      />
+                      <span className="text-xs text-gray-500">/ 5</span>
+                    </label>
+                  </div>
+                </div>
+              )}
 
               {/* Observation libre + dictée vocale */}
               <div className="mt-3">

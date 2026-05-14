@@ -116,11 +116,27 @@ Le CRBO d'un screening MoCA suit la structure standard mais avec un contenu adap
    - \`interpretation\` = mapper le % : ≥80 "Excellent" (=Préservé), 50-79 "Fragilité" (=Fragilisé), <50 "Difficulté sévère" (=Déficitaire). Ces étiquettes existantes alimentent la couleur du tableau ; **le commentaire prose doit utiliser le vocabulaire "préservé / fragilisé / déficitaire"**.
    - \`commentaire\` du domaine : synthèse clinique en 3-4 lignes mentionnant d'ABORD les domaines préservés, puis les fragilités, en termes fonctionnels.
 
-3. **Synthèse / Diagnostic** :
+3. **Synthèse / Hypothèse de diagnostic** :
+   - En MoCA, le bloc de synthèse s'intitule **"Hypothèse de diagnostic"** (PAS "Diagnostic"). La MoCA est un screening : elle ne pose JAMAIS un diagnostic ferme, elle ouvre des hypothèses à confirmer en bilan neuropsychologique.
    - Décrire le résultat global en **score brut** (ex: "Le score total au MoCA est de 23/30 (24/30 après ajustement scolarité)").
    - Conclure avec le label correspondant au seuil : "Pas d'atteinte des fonctions cognitives" / "Atteinte légère" / "Atteinte modérée" / "Atteinte sévère".
    - **JAMAIS** de diagnostic étiologique (Alzheimer, démence, MCI, vasculaire…).
    - Mentionner les domaines préservés puis les domaines fragilisés.
+   - Formuler toute hypothèse avec un verbe de modalisation : "le profil observé est compatible avec…", "ces éléments suggèrent…", "ce tableau évoque, sous réserve d'un bilan approfondi…". JAMAIS "le patient présente un trouble X".
+
+   **Règle d'interprétation du rappel mémoire** (si le bloc \`Mémoire (rappel différé)\` est renseigné dans les résultats avec \`+Indice catégoriel\` et/ou \`+Choix multiple\`) :
+   - Si rappel libre faible (≤ 2/5) ET indice catégoriel ou choix multiple efficace (gain ≥ 2 points) → hypothèse formulée comme : "Le profil de rappel, marqué par une nette amélioration sous indiçage, **est compatible avec un trouble de récupération**, l'encodage paraissant préservé. Cette piste devra être confirmée en bilan neuropsychologique."
+   - Si rappel libre faible (≤ 2/5) ET indices peu ou pas efficaces (pas de gain notable) → hypothèse formulée comme : "L'absence de bénéfice à l'indiçage **suggère plutôt une fragilité d'encodage/consolidation**, à caractériser plus finement en bilan neuropsychologique."
+   - Si rappel libre normal (≥ 4/5) → "Pas d'argument mnésique objectivé au screening sur le rappel des cinq mots."
+   - JAMAIS nommer une étiologie (sous-cortico-frontale, hippocampique, Alzheimer, etc.). Décrire le PROFIL fonctionnel, point.
+
+   **Règle d'interprétation visuo-spatiale / exécutive** (cube, alternance, horloge) :
+   - Le SCORE seul ne suffit pas : décrire le TYPE d'erreur en termes fonctionnels.
+   - Horloge avec aiguilles inversées ou erreur "10h11" au lieu de "11h10" → "fragilité de la représentation mentale du temps, à explorer".
+   - Chiffres regroupés à droite, partie gauche vide → "asymétrie d'occupation de l'espace de la feuille, à confirmer".
+   - Cube sans perspective / parallélisme rompu → "difficulté de représentation 3D et de planification visuo-constructive".
+   - Échec à l'alternance (TMT B) → "fragilité de flexibilité mentale".
+   - Toujours formuler en "fragilité" / "à explorer", JAMAIS en "trouble dysexécutif avéré".
 
 4. **Recommandations** — phrase imposée pour les bilans MoCA :
    - Si total corrigé ≥ 26 : "Le screening cognitif ne met pas en évidence d'atteinte objectivable à ce stade. Une réévaluation à 12 mois peut être envisagée si la plainte persiste ou évolue."

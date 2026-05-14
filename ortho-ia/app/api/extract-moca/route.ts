@@ -84,6 +84,30 @@ const EXTRACT_MOCA_TOOL: Anthropic.Tool = {
           "true si la case \"≤ 12 ans de scolarité\" est cochée (ajout +1 point officiel). " +
           "false si non cochée. null si non visible / non identifiable sur la photo.",
       },
+      memoire_indices: {
+        type: 'object',
+        description:
+          "Sous-scores de facilitation au rappel mémoire si la feuille distingue " +
+          "rappel libre / indice catégoriel / choix multiple. Ces valeurs ne sont " +
+          "PAS comptées dans le score MoCA (seul scores.memoire = rappel libre l'est), " +
+          "mais elles orientent l'hypothèse de diagnostic : un gain marqué avec indices " +
+          "suggère un trouble de récupération ; pas de gain suggère une fragilité d'encodage.",
+        properties: {
+          indice_categoriel: {
+            type: ['integer', 'null'],
+            minimum: 0,
+            maximum: 5,
+            description: "Nombre de mots rappelés AVEC l'indice catégoriel (cumulé, /5). null si non visible.",
+          },
+          choix_multiple: {
+            type: ['integer', 'null'],
+            minimum: 0,
+            maximum: 5,
+            description: "Nombre de mots rappelés AVEC le choix multiple (cumulé, /5). null si non visible.",
+          },
+        },
+        required: ['indice_categoriel', 'choix_multiple'],
+      },
       total_lu: {
         type: ['integer', 'null'],
         minimum: 0,
@@ -137,7 +161,12 @@ Ton rôle : lire la feuille et extraire les **scores bruts par domaine** (entier
 5. **Case scolarité** : true si cochée, false si visible mais non cochée, null si non identifiable.
 6. **Total** : si le total /30 est inscrit en bas de la feuille, reporte-le dans \`total_lu\`. Sinon null.
 7. **NE JAMAIS inventer** : en cas d'ambiguïté, mets null + warning explicite. L'ortho relira et corrigera dans l'UI.
-8. **Cas particulier rappel différé (mémoire)** : si la feuille montre plusieurs colonnes ("rappel libre", "indice catégoriel", "choix multiple"), seul le **rappel libre** compte dans le score MoCA officiel. Les autres vont dans \`observations.memoire\`.
+8. **Cas particulier rappel différé (mémoire)** : si la feuille montre plusieurs colonnes ("rappel libre", "indice catégoriel", "choix multiple") :
+   - \`scores.memoire\` = nombre de mots en RAPPEL LIBRE uniquement (= score MoCA officiel).
+   - \`memoire_indices.indice_categoriel\` = nombre de mots rappelés avec l'indice catégoriel (cumulé, sur 5).
+   - \`memoire_indices.choix_multiple\` = nombre de mots rappelés avec le choix multiple (cumulé, sur 5).
+   - Si la feuille ne distingue pas ces colonnes, mets \`memoire_indices\` à \`{ indice_categoriel: null, choix_multiple: null }\`.
+   - Tu peux AUSSI reporter une synthèse libre dans \`observations.memoire\` (ex. "Indice catégoriel très efficace, profil compatible avec un trouble de récupération").
 
 ## Format de sortie
 

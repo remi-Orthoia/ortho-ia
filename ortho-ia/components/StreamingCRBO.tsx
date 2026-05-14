@@ -24,19 +24,27 @@ interface Props {
   accumulated: string
   /** Vrai pendant que la génération tourne, faux à `complete` ou `error`. */
   active: boolean
+  /**
+   * Vrai si le bilan ne contient QUE la MoCA — alors le label du champ
+   * diagnostic devient "Hypothèse de diagnostic" (screening cognitif sans
+   * diagnostic ferme).
+   */
+  isMoca?: boolean
 }
 
 // ============================================================================
 // Extraction tolérante : récupère la valeur courante de champs string connus
 // ============================================================================
 
-const STREAM_FIELDS = [
-  { key: 'points_forts',           label: 'Points forts' },
-  { key: 'difficultes_identifiees', label: 'Difficultés identifiées' },
-  { key: 'diagnostic',             label: 'Diagnostic' },
-  { key: 'recommandations',        label: 'Recommandations' },
-  { key: 'conclusion',             label: 'Conclusion' },
-] as const
+function buildStreamFields(isMoca: boolean) {
+  return [
+    { key: 'points_forts',           label: 'Points forts' },
+    { key: 'difficultes_identifiees', label: 'Difficultés identifiées' },
+    { key: 'diagnostic',             label: isMoca ? 'Hypothèse de diagnostic' : 'Diagnostic' },
+    { key: 'recommandations',        label: 'Recommandations' },
+    { key: 'conclusion',             label: 'Conclusion' },
+  ] as const
+}
 
 function extractField(accumulated: string, fieldKey: string): { value: string; complete: boolean } | null {
   // Match "<fieldKey>": " puis contenu jusqu'à un guillemet non-échappé.
@@ -116,12 +124,15 @@ function highlightClinicalTerms(text: string): string {
 // Composant principal
 // ============================================================================
 
-export default function StreamingCRBO({ accumulated, active }: Props) {
+export default function StreamingCRBO({ accumulated, active, isMoca = false }: Props) {
   const containerRef = useRef<HTMLDivElement>(null)
+
+  // Champs affichés (labels ajustés selon le type de bilan).
+  const streamFields = useMemo(() => buildStreamFields(isMoca), [isMoca])
 
   // Extrait les champs courants depuis le buffer accumulé.
   const fields = useMemo(() => {
-    return STREAM_FIELDS.map((f) => {
+    return streamFields.map((f) => {
       const extracted = extractField(accumulated, f.key)
       return {
         ...f,
@@ -130,7 +141,7 @@ export default function StreamingCRBO({ accumulated, active }: Props) {
         started: extracted !== null,
       }
     })
-  }, [accumulated])
+  }, [accumulated, streamFields])
 
   // Le champ courant = le dernier qui a démarré mais pas terminé.
   const currentFieldIndex = useMemo(() => {

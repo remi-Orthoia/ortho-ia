@@ -277,7 +277,7 @@ export default function PrintCRBOPage() {
         {/* Corps CRBO via le composant preview existant */}
         {crbo.structure_json ? (
           <div style={{ marginTop: 16 }}>
-            <CRBOPrintableStructure structure={crbo.structure_json} />
+            <CRBOPrintableStructure structure={crbo.structure_json} testUtilise={crbo.test_utilise} />
           </div>
         ) : (
           <pre style={{
@@ -296,7 +296,8 @@ export default function PrintCRBOPage() {
  * Rendu CRBO simplifié pour la version imprimable.
  * Plus dense que CRBOStructuredPreview (qui est optimisé pour l'écran).
  */
-function CRBOPrintableStructure({ structure }: { structure: CRBOStructure }) {
+function CRBOPrintableStructure({ structure, testUtilise }: { structure: CRBOStructure; testUtilise: string | null }) {
+  const isMoca = testUtilise === 'MoCA'
   return (
     <>
       {/* Anamnèse */}
@@ -375,10 +376,15 @@ function CRBOPrintableStructure({ structure }: { structure: CRBOStructure }) {
         </section>
       )}
 
-      {/* Diagnostic */}
+      {/* Diagnostic — sur les bilans MoCA (screening), le titre devient
+          "Hypothèse de diagnostic" : la MoCA seule ne permet pas un diagnostic
+          étiologique ferme, elle ouvre des pistes à confirmer en bilan
+          neuropsychologique. */}
       {structure.diagnostic && (
         <section style={{ marginBottom: 12 }}>
-          <h3 style={{ fontSize: 13, color: '#16a34a', fontWeight: 700, margin: '0 0 4px' }}>Diagnostic</h3>
+          <h3 style={{ fontSize: 13, color: '#16a34a', fontWeight: 700, margin: '0 0 4px' }}>
+            {isMoca ? 'Hypothèse de diagnostic' : 'Diagnostic'}
+          </h3>
           <div style={{ whiteSpace: 'pre-line', fontSize: 13 }}>{structure.diagnostic}</div>
         </section>
       )}

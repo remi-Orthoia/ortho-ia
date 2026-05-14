@@ -1125,6 +1125,12 @@ export async function generateCRBOWord(payload: WordExportPayload): Promise<Blob
       if (isSynthetique) {
         children.push(createSectionTitle('DIAGNOSTIC ORTHOPHONIQUE'))
         renderRichContent(s.diagnostic.trim())
+      } else if (isMocaOnly) {
+        // MoCA = screening, jamais de diagnostic frontal. Le bloc s'intitule
+        // "Hypothèse de diagnostic" pour rappeler le statut non-conclusif et
+        // protéger l'ortho juridiquement (la MoCA seule n'autorise aucun
+        // diagnostic étiologique de démence / MCI / Alzheimer).
+        pushBlock('Hypothèse de diagnostic', s.diagnostic.trim())
       } else {
         pushBlock('Diagnostic', s.diagnostic.trim())
       }
