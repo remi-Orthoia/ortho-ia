@@ -16,6 +16,7 @@ import CRBOStructuredPreview from '@/components/CRBOStructuredPreview'
 import ShareCRBOButton from '@/components/ShareCRBOButton'
 import MicButton from '@/components/MicButton'
 import MocaScoresInput from '@/components/forms/MocaScoresInput'
+import BetlScoresInput from '@/components/forms/BetlScoresInput'
 import { useToast } from '@/components/Toast'
 import { useFocusMode } from '@/components/FocusMode'
 import { playPrintAnimation } from '@/components/PrintAnimation'
@@ -2035,6 +2036,33 @@ Astuce : tapez /fatigue, /anxiete, /encouragements… pour réutiliser vos formu
                   onNotesChange={(v) => setFormData(prev => ({ ...prev, comportement_seance: v }))}
                   onResultatsChange={(v) => setFormData(prev => ({ ...prev, resultats_manuels: v }))}
                   onError={(msg) => setError(msg)}
+                />
+              </div>
+            ) : formData.test_utilise.length === 1 && formData.test_utilise[0] === 'BETL' ? (
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-3">
+                  Résultats BETL *
+                </label>
+                {error && (
+                  <div className="mb-3 p-3 bg-red-50 border border-red-200 rounded-lg flex items-center gap-2 text-red-700 text-sm">
+                    <AlertCircle size={16} />
+                    {error}
+                  </div>
+                )}
+                <BetlScoresInput
+                  notes={formData.comportement_seance || ''}
+                  onNotesChange={(v) => setFormData(prev => ({ ...prev, comportement_seance: v }))}
+                  onResultatsChange={(v) => setFormData(prev => ({ ...prev, resultats_manuels: v }))}
+                  onError={(msg) => setError(msg)}
+                  ageEstime={(() => {
+                    if (!formData.patient_ddn) return undefined
+                    const birth = new Date(formData.patient_ddn)
+                    const bilan = new Date(formData.bilan_date)
+                    let years = bilan.getFullYear() - birth.getFullYear()
+                    const m = bilan.getMonth() - birth.getMonth()
+                    if (m < 0 || (m === 0 && bilan.getDate() < birth.getDate())) years--
+                    return years
+                  })()}
                 />
               </div>
             ) : (
