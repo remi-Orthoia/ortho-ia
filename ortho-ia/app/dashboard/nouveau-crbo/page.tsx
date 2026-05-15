@@ -3,7 +3,7 @@
 import { useState, useEffect, Suspense } from 'react'
 import { useRouter, useSearchParams } from 'next/navigation'
 import { createClient } from '@/lib/supabase'
-import { CLASSES_OPTIONS, TESTS_OPTIONS, TESTS_SCREENING_OPTIONS, CRBOFormData } from '@/lib/types'
+import { CLASSES_OPTIONS, CLASSES_GROUPS, TESTS_OPTIONS, TESTS_SCREENING_OPTIONS, CRBOFormData } from '@/lib/types'
 import type { CRBOStructure, CRBODomain, CRBOEpreuve } from '@/lib/prompts'
 import { downloadCRBOWord } from '@/lib/word-export'
 import StepProgress from '@/components/StepProgress'
@@ -1320,7 +1320,7 @@ function NouveauCRBOContent() {
               </div>
               <div>
                 <label className="block text-sm font-medium text-gray-700 mb-1">
-                  Classe *
+                  Classe / niveau *
                   {formData.bilan_type === 'renouvellement' && selectedPatientId && (
                     <span className="ml-1 text-xs text-purple-600 dark:text-purple-400">✏️ modifiable</span>
                   )}
@@ -1333,8 +1333,12 @@ function NouveauCRBOContent() {
                   className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-green-500"
                 >
                   <option value="">Sélectionner...</option>
-                  {CLASSES_OPTIONS.map(classe => (
-                    <option key={classe} value={classe}>{classe}</option>
+                  {CLASSES_GROUPS.map(group => (
+                    <optgroup key={group.label} label={group.label}>
+                      {group.options.map(opt => (
+                        <option key={opt} value={opt}>{opt}</option>
+                      ))}
+                    </optgroup>
                   ))}
                 </select>
               </div>

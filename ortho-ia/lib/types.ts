@@ -119,14 +119,47 @@ export interface GenerateCRBOResponse {
   error?: string
 }
 
-// Options de formulaire
-export const CLASSES_OPTIONS = [
-  'PS', 'MS', 'GS',
-  'CP', 'CE1', 'CE2', 'CM1', 'CM2',
-  '6ème', '5ème', '4ème', '3ème',
-  '2nde', '1ère', 'Terminale',
-  'Adulte', 'Autre'
+// Options de formulaire — Classe / niveau (du préscolaire à la retraite).
+// Regroupées en familles pour rendu avec <optgroup>. La liste à plat
+// CLASSES_OPTIONS reste exportée pour la validation et le voice-command.
+export const CLASSES_GROUPS = [
+  {
+    label: 'Préscolaire',
+    options: ['TPS', 'PS', 'MS', 'GS'] as const,
+  },
+  {
+    label: 'Primaire',
+    options: ['CP', 'CE1', 'CE2', 'CM1', 'CM2'] as const,
+  },
+  {
+    label: 'Collège',
+    options: ['6ème', '5ème', '4ème', '3ème'] as const,
+  },
+  {
+    label: 'Lycée',
+    options: ['2nde', '1ère', 'Terminale'] as const,
+  },
+  {
+    label: 'Études supérieures',
+    options: ['Bac+1', 'Bac+2', 'Bac+3', 'Bac+4', 'Bac+5', 'Doctorat'] as const,
+  },
+  {
+    label: 'Adulte',
+    options: [
+      'Adulte actif',
+      'Adulte au foyer',
+      'Sans emploi',
+      'Retraité',
+      'Adulte',
+    ] as const,
+  },
+  {
+    label: 'Autre',
+    options: ['Autre'] as const,
+  },
 ] as const
+
+export const CLASSES_OPTIONS = CLASSES_GROUPS.flatMap(g => g.options) as readonly string[]
 
 /** Tests de screening rapide — à proposer AVANT un bilan complet (adulte / senior). */
 export const TESTS_SCREENING_OPTIONS = [
@@ -154,5 +187,8 @@ export const TESTS_OPTIONS = [
   'Autre'
 ] as const
 
-export type ClasseOption = typeof CLASSES_OPTIONS[number]
+// Avec le passage à CLASSES_GROUPS.flatMap, l'inférence d'union de tuple
+// n'est plus directe — on type sur string pour rester souple (les fallback
+// "Autre" et la validation au runtime via CLASSES_OPTIONS.includes() gèrent).
+export type ClasseOption = string
 export type TestOption = typeof TESTS_OPTIONS[number]
