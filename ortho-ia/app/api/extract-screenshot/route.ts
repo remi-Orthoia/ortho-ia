@@ -8,6 +8,7 @@ import {
   type ExtractedResults,
 } from '@/lib/prompts/extraction'
 import { createServerSupabaseClient } from '@/lib/supabase-server'
+import { isAnthropicCreditError } from '@/lib/anthropic-error'
 import { withRetry } from '@/lib/retry'
 
 // Vision Claude peut prendre 30-50s sur une grande image stitchée.
@@ -214,6 +215,19 @@ export async function POST(request: NextRequest) {
         { error: "L'analyse Vision a dépassé 60 secondes. Réessayez avec moins de pages." },
         { status: 504 },
       )
+    }
+    if (isAnthropicCreditError(error)) {
+      return jsonCORS(
+        {
+          error:
+            "Service IA temporairement indisponible (solde de crédits Anthropic à recharger). " +
+            "Contactez l'administrateur ou réessayez plus tard.",
+        },
+        { status: 503 },
+      )
+    }
+    if (error?.status === 429) {
+      return jsonCORS({ error: 'Trop de demandes. Attendez une minute.' }, { status: 429 })
     }
     return jsonCORS(
       { error: error?.message || 'Erreur interne durant l\'extraction.' },

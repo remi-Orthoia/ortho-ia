@@ -3,6 +3,7 @@ import Anthropic from '@anthropic-ai/sdk'
 import { createServerSupabaseClient } from '@/lib/supabase-server'
 import { withRetry } from '@/lib/retry'
 import { logger } from '@/lib/logger'
+import { handleAnthropicError } from '@/lib/anthropic-error'
 import { CLASSES_OPTIONS, TESTS_OPTIONS } from '@/lib/types'
 
 /**
@@ -203,6 +204,8 @@ export async function POST(request: NextRequest) {
     if (err?.name === 'AbortError') {
       return NextResponse.json({ error: "L'analyse de la commande vocale a échoué (timeout)." }, { status: 504 })
     }
+    const anthropicHandled = handleAnthropicError(err, "l'analyse de la commande vocale")
+    if (anthropicHandled) return anthropicHandled
     return NextResponse.json({ error: "Erreur d'analyse de la commande vocale." }, { status: 500 })
   } finally {
     clearTimeout(timeoutId)

@@ -9,6 +9,7 @@ import {
 import { createServerSupabaseClient } from '@/lib/supabase-server'
 import { withRetry } from '@/lib/retry'
 import { logger } from '@/lib/logger'
+import { handleAnthropicError } from '@/lib/anthropic-error'
 
 // Timeout serveur Vercel — l'extraction PDF Vision peut prendre 30-50s par
 // document. En multi-PDF on traite en parallèle, donc 90s suffit pour 3 PDFs.
@@ -361,21 +362,14 @@ export async function POST(request: NextRequest) {
         { status: 503 },
       )
     }
-    if (error?.status === 401) {
-      return NextResponse.json({ error: 'Service temporairement indisponible.' }, { status: 503 })
-    }
-    if (error?.status === 429) {
-      return NextResponse.json(
-        { error: 'Trop de demandes. Attendez une minute et réessayez.' },
-        { status: 429 },
-      )
-    }
     if (error?.status === 502) {
       return NextResponse.json(
         { error: error.message || "Aucune structure d'extraction exploitable n'a été produite." },
         { status: 502 },
       )
     }
+    const anthropicHandled = handleAnthropicError(error, "l'import du PDF")
+    if (anthropicHandled) return anthropicHandled
     return NextResponse.json(
       { error: "Erreur lors de l'extraction. Veuillez réessayer." },
       { status: 500 },

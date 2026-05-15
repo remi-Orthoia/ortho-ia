@@ -4,6 +4,7 @@ import mammoth from 'mammoth'
 import { createServerSupabaseClient } from '@/lib/supabase-server'
 import { withRetry } from '@/lib/retry'
 import { logger } from '@/lib/logger'
+import { handleAnthropicError } from '@/lib/anthropic-error'
 import {
   EXTRACT_PREVIOUS_TOOL,
   EXTRACT_PROMPT_PDF,
@@ -359,12 +360,8 @@ export async function POST(request: NextRequest) {
         { status: 503 },
       )
     }
-    if (error?.status === 429) {
-      return NextResponse.json(
-        { error: 'Trop de demandes. Attendez une minute et réessayez.' },
-        { status: 429 },
-      )
-    }
+    const anthropicHandled = handleAnthropicError(error, "l'extraction du bilan précédent")
+    if (anthropicHandled) return anthropicHandled
     return NextResponse.json(
       { error: "Erreur lors de l'extraction du bilan précédent." },
       { status: 500 },

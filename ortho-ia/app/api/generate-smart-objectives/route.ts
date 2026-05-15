@@ -9,6 +9,7 @@ import {
 import { createServerSupabaseClient } from '@/lib/supabase-server'
 import { withRetry } from '@/lib/retry'
 import { logger } from '@/lib/logger'
+import { handleAnthropicError } from '@/lib/anthropic-error'
 import type { CRBOStructure } from '@/lib/prompts'
 import type { CRBOFormData } from '@/lib/types'
 
@@ -344,12 +345,8 @@ export async function POST(request: NextRequest) {
         { status: 504 },
       )
     }
-    if (error?.status === 429) {
-      return NextResponse.json(
-        { error: 'Trop de demandes, attendez une minute.' },
-        { status: 429 },
-      )
-    }
+    const anthropicHandled = handleAnthropicError(error, 'la génération de la fiche SMART')
+    if (anthropicHandled) return anthropicHandled
     return NextResponse.json(
       { error: 'Erreur lors de la génération de la fiche SMART.' },
       { status: 500 },

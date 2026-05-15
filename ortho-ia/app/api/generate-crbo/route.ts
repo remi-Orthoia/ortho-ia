@@ -18,6 +18,7 @@ import { anonymize, rehydrate, buildScrubList, scrubText, scrubObjectStrings } f
 import { createServerSupabaseClient } from '@/lib/supabase-server'
 import { withRetry } from '@/lib/retry'
 import { logger } from '@/lib/logger'
+import { handleAnthropicError } from '@/lib/anthropic-error'
 import { fetchReferenceExamples, formatFewShotBlock } from '@/lib/prompts/few-shot'
 import { scoresFromDomains } from '@/lib/prompts/knowledge-base'
 
@@ -720,18 +721,8 @@ export async function POST(request: NextRequest) {
         { status: 503 },
       )
     }
-    if (error?.status === 401) {
-      return NextResponse.json(
-        { error: 'Service temporairement indisponible.' },
-        { status: 503 },
-      )
-    }
-    if (error?.status === 429) {
-      return NextResponse.json(
-        { error: 'Trop de demandes. Attendez une minute et réessayez.' },
-        { status: 429 },
-      )
-    }
+    const anthropicHandled = handleAnthropicError(error, 'la génération du CRBO')
+    if (anthropicHandled) return anthropicHandled
 
     return NextResponse.json(
       { error: 'Erreur lors de la génération du CRBO. Veuillez réessayer.' },

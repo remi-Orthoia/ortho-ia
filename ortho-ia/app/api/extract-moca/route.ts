@@ -22,6 +22,7 @@ import Anthropic from '@anthropic-ai/sdk'
 import { createServerSupabaseClient } from '@/lib/supabase-server'
 import { withRetry } from '@/lib/retry'
 import { logger } from '@/lib/logger'
+import { handleAnthropicError } from '@/lib/anthropic-error'
 
 // Vision sur une photo de feuille A4 = 15-30s. 45s laisse de la marge en cas
 // de retry transitoire.
@@ -371,35 +372,8 @@ export async function POST(request: NextRequest) {
         { status: 503 },
       )
     }
-    if (error?.status === 401) {
-      return NextResponse.json({ error: 'Service temporairement indisponible.' }, { status: 503 })
-    }
-    if (error?.status === 429) {
-      return NextResponse.json(
-        { error: 'Trop de demandes. Attendez une minute et réessayez.' },
-        { status: 429 },
-      )
-    }
-    // Solde de crédits Anthropic épuisé — Anthropic renvoie status 400 avec
-    // un message explicite "credit balance is too low". On le détecte pour
-    // afficher un message clair plutôt que le générique "réessayez", qui
-    // induit l'ortho à retenter en boucle sans succès. Affecte aussi
-    // extract-pdf, generate-crbo, etc. — à fixer côté billing Anthropic.
-    const errMsg = String(error?.message ?? error?.error?.error?.message ?? '').toLowerCase()
-    if (
-      error?.status === 400 &&
-      (errMsg.includes('credit balance') || errMsg.includes('credit') || errMsg.includes('billing'))
-    ) {
-      return NextResponse.json(
-        {
-          error:
-            "Service IA temporairement indisponible (solde de crédits Anthropic à recharger). " +
-            "Cette indisponibilité affecte aussi l'import PDF et la génération du CRBO. " +
-            "Contactez l'administrateur ou réessayez plus tard.",
-        },
-        { status: 503 },
-      )
-    }
+    const anthropicHandled = handleAnthropicError(error, 'la lecture de la photo')
+    if (anthropicHandled) return anthropicHandled
     return NextResponse.json(
       { error: "Erreur lors de la lecture de la photo. Veuillez réessayer." },
       { status: 500 },
