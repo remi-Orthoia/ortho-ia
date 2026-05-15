@@ -18,7 +18,6 @@ import {
   BookText,
 } from 'lucide-react'
 import { createClient } from '@/lib/supabase'
-import ThemeToggle from '@/components/ThemeToggle'
 import FeedbackButton from '@/components/FeedbackButton'
 import { Sidebar, AppHeader, type SidebarItem } from '@/components/layout'
 import { Logo } from '@/components/ui'
@@ -306,7 +305,6 @@ export default function DashboardLayout({ children }: DashboardLayoutProps) {
               )}
             </span>
           }
-          right={<ThemeToggle />}
         />
         </div>
 
