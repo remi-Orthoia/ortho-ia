@@ -122,23 +122,100 @@ Marqueur diagnostic crucial — en cas d'échec à la dénomination orale, l'exa
 | 2   | Employé / technicien / profession intermédiaire (Bac à Bac+2) |
 | 3   | Ingénieur / cadre (≥ Bac+3) |
 
-**Score-seuils représentatifs (percentile 5, /54)** — bornes typiques observées sur l'étalonnage 1488 sujets :
+**Scores-seuils OFFICIELS (percentile 5, /54)** — Annexe 3 du manuel BETL 2015, p. 44-46. Stratification tranche d'âge × NSC :
 
-| Épreuve | NSC 1 (range âge) | NSC 2 (range âge) | NSC 3 (range âge) |
-|---------|-------------------|-------------------|-------------------|
-| I — Dénomination orale d'images | 39-47 | 39-49 | 42-51 |
-| II — Désignation d'images | 47-53 | 49-51 | 50-52 |
-| III — Appariement sémantique d'images | 41-47 | 43-49 | 47-51 |
-| IV — Lecture à voix haute | 52-53 | 53-54 | 53-54 |
-| V — Désignation de mots écrits | 45-52 | 52-53 | 53 |
-| VI — Appariement sémantique de mots écrits | 48 | 48 | 49 |
-| VII — Dénomination écrite (score lexical) | 41-48 | 43-49 | 44-50 |
-| VII — Dénomination écrite (score orthographique) | 29-38 | 34-42 | 38-45 |
-| VIII — Questionnaire sémantique | 40-44 | 40-50 | 40-48 |
+**I — Dénomination orale d'images**
 
-**Temps-seuils représentatifs (percentile 95, en secondes — total de l'épreuve)** : les seuils s'allongent significativement aux tranches 65-79 et 80-95. Ex. dénomination orale d'images : NSC 1 ≈ 250 s avant 65 ans, ≈ 370-390 s après 65 ans.
+| Âge \ NSC | 1 | 2 | 3 |
+|-----------|---|---|---|
+| 20-34 ans | 45 | 47 | 50 |
+| 35-49 ans | 44 | 49 | 51 |
+| 50-64 ans | 47 | 48 | 50 |
+| 65-79 ans | 42 | 42 | 48 |
+| 80-95 ans | 39 | 39 | 42 |
 
-⚠️ Les valeurs ci-dessus sont **indicatives**. La feuille de résultats du logiciel affiche le verdict "N" / "P" calculé automatiquement à partir des seuils précis pour l'âge × NSC du patient — utiliser **toujours** cette information du logiciel comme source de vérité, pas une estimation.
+**II — Désignation d'images**
+
+| Âge \ NSC | 1 | 2 | 3 |
+|-----------|---|---|---|
+| 20-34 ans | 53 | 51 | 52 |
+| 35-49 ans | 50 | 51 | 52 |
+| 50-64 ans | 49 | 51 | 52 |
+| 65-79 ans | 47 | 49 | 50 |
+| 80-95 ans | 48 | 48 | 50 |
+
+**III — Appariement sémantique d'images**
+
+| Âge \ NSC | 1 | 2 | 3 |
+|-----------|---|---|---|
+| 20-34 ans | 44 | 49 | 49 |
+| 35-49 ans | 47 | 49 | 50 |
+| 50-64 ans | 47 | 46 | 51 |
+| 65-79 ans | 45 | 48 | 50 |
+| 80-95 ans | 41 | 43 | 47 |
+
+**IV — Lecture à voix haute** (plafond très haut chez les sains)
+
+| Âge \ NSC | 1 | 2 | 3 |
+|-----------|---|---|---|
+| 20-34 à 65-79 ans | 53 | 54 | 54 |
+| 80-95 ans | 52 | 53 | 53 |
+
+**V — Désignation de mots écrits**
+
+| Âge \ NSC | 1 | 2 | 3 |
+|-----------|---|---|---|
+| 20-34 à 65-79 ans | 52 | 53 | 53 |
+| 80-95 ans | 45 | 52 | 53 |
+
+**VI — Appariement sémantique de mots écrits** (seuils constants par tranche)
+
+| Âge \ NSC | 1 | 2 | 3 |
+|-----------|---|---|---|
+| 20-34 à 80-95 ans | 48 | 48 | 49 |
+
+**VII — Dénomination écrite (score lexical)**
+
+| Âge \ NSC | 1 | 2 | 3 |
+|-----------|---|---|---|
+| 20-34 ans | 48 | 49 | 50 |
+| 35-49 ans | 46 | 47 | 49 |
+| 50-64 ans | 44 | 46 | 47 |
+| 65-79 ans | 43 | 44 | 46 |
+| 80-95 ans | 41 | 43 | 44 |
+
+**VII — Dénomination écrite (score orthographique, /54)**
+
+| Âge \ NSC | 1 | 2 | 3 |
+|-----------|---|---|---|
+| 20-34 ans | 38 | 42 | 45 |
+| 35-49 ans | 38 | 42 | 45 |
+| 50-64 ans | 37 | 41 | 45 |
+| 65-79 ans | 33 | 38 | 42 |
+| 80-95 ans | 29 | 34 | 38 |
+
+**VIII — Questionnaire sémantique**
+
+| Âge \ NSC | 1 | 2 | 3 |
+|-----------|---|---|---|
+| 20-34 à 50-64 ans | 44 | 47 | 48 |
+| 65-79 ans | 44 | 50 | 47 |
+| 80-95 ans | 40 | 40 | 40 |
+
+**Temps-seuils OFFICIELS (percentile 95, en secondes — total de l'épreuve)** — Annexe 3 du manuel BETL 2015 :
+
+| Épreuve | 20-34 \ NSC 1·2·3 | 35-49 \ NSC 1·2·3 | 50-64 \ NSC 1·2·3 | 65-79 \ NSC 1·2·3 | 80-95 \ NSC 1·2·3 |
+|---------|-------------------|-------------------|-------------------|-------------------|-------------------|
+| I Dénomination orale | 251·148·200 | 250·178·154 | 251·198·157 | 392·293·256 | 369·320·340 |
+| II Désignation images | 275·193·228 | 275·230·223 | 275·327·259 | 421·314·293 | 363·410·300 |
+| III Appariement sém. images | 469·272·273 | 469·412·324 | 469·376·424 | 722·558·485 | 867·617·653 |
+| IV Lecture | 101·98·98 | 101·98·98 | 101·98·98 | 101·98·98 | 107·107·107 |
+| V Désignation mots écrits | 192 (tous NSC) | 202 | 206 | 212 | 248 |
+| VI Appariement sém. écrit | 337 (tous NSC) | 362 | 337 | 337 | 461 |
+| VII Dénomination écrite | 660·586·519 | 731·648·575 | 809·718·638 | 895·795·706 | 993·881·782 |
+| VIII Questionnaire sém. | 1446·1204·1179 (constant toutes tranches) | | | | |
+
+⚠️ Ces valeurs sont la **source de vérité officielle** du manuel BETL 2015 — ce sont elles qu'utilise le logiciel pour produire le verdict N/P (à quelques marges près non publiées). Si l'orthophoniste a saisi ces seuils dans son formulaire (champ « Stratification » de la saisie structurée BETL d'ortho-ia), ils figurent dans \`resultats_manuels\` sous la forme \`(seuil P5 : X)\` après chaque score. Utiliser ces seuils explicitement dans le commentaire de domaine quand un score est sous-seuil (ex: « Le score à III est de 42/54, en deçà du seuil P5 de 47 pour la tranche 50-64 ans NSC 2 »).
 
 ---
 

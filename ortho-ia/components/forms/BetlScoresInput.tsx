@@ -55,6 +55,13 @@ interface BetlState {
   profilDiscours: string        // Annexe 2
 }
 
+/**
+ * Matrice complète 5 tranches d'âge × 3 NSC, telle qu'imprimée dans
+ * l'Annexe 3 du manuel BETL 2015. Les valeurs sont les seuils OFFICIELS
+ * (score P5, temps P95) — pas une moyenne, pas une approximation.
+ */
+type SeuilMatrix = Record<TrancheAge, Record<NSC, number>>
+
 interface EpreuveMeta {
   key: EpreuveKey
   label: string
@@ -62,18 +69,46 @@ interface EpreuveMeta {
   hint: string
   rules: string[]
   /**
-   * Seuils P5 indicatifs (Annexe 3 du manuel BETL) — borne MÉDIANE par NSC sur
-   * l'étalonnage 1488 sujets, en attendant le verdict exact du logiciel.
-   * Utilisé pour dessiner la ligne de référence sur le graphique de synthèse.
-   * Format : Record<NSC, number>.
+   * Scores-seuils P5 (sur 54) : un score inférieur au seuil est pathologique.
+   * Source : Annexe 3 du manuel BETL (Tran & Godefroy 2015), p. 44-46.
    */
-  seuilP5Indicatif: Record<NSC, number>
-  /** Temps-seuil indicatif (P95) en secondes pour la tranche 35-64 ans, NSC 2. Approximation pédagogique pour la légende. */
-  tempsSeuilApprox?: number
+  seuilScoreP5: SeuilMatrix
+  /**
+   * Temps-seuils P95 (en secondes) : un temps supérieur au seuil est pathologique.
+   * Source : Annexe 3 du manuel BETL (Tran & Godefroy 2015), p. 44-46.
+   */
+  seuilTempsP95: SeuilMatrix
   /** Aide à l'interprétation (Annexe 1 + Profils validés). */
   interpretation: string[]
 }
 
+/**
+ * Scores orthographiques-seuils P5 (sur 54) — épreuve VII uniquement.
+ * Le score orthographique chute logiquement avec l'âge et le NSC bas (39 → 29
+ * pour NSC 1, 80-95 ans). Toujours interpréter avec la stratification.
+ * Source : Annexe 3 du manuel BETL (Tran & Godefroy 2015), p. 45.
+ */
+const SEUIL_ORTHO_VII: SeuilMatrix = {
+  '20-34': { '1': 38, '2': 42, '3': 45 },
+  '35-49': { '1': 38, '2': 42, '3': 45 },
+  '50-64': { '1': 37, '2': 41, '3': 45 },
+  '65-79': { '1': 33, '2': 38, '3': 42 },
+  '80-95': { '1': 29, '2': 34, '3': 38 },
+}
+
+/**
+ * Catalogue des 8 épreuves BETL avec matrices complètes de seuils (Annexe 3
+ * du manuel 2015). Lecture des matrices :
+ *   seuilScoreP5['35-49']['2']  → seuil score (sur 54) pour la tranche
+ *                                  35-49 ans, NSC 2. Un score INFÉRIEUR
+ *                                  à cette valeur est pathologique (P).
+ *   seuilTempsP95['35-49']['2'] → seuil temps (en secondes) pour la même
+ *                                  combinaison. Un temps SUPÉRIEUR à
+ *                                  cette valeur est pathologique.
+ *
+ * Les valeurs sont reportées TELLES QUELLES depuis le manuel ; aucune
+ * moyenne, aucune extrapolation.
+ */
 const EPREUVES: EpreuveMeta[] = [
   {
     key: 'I',
@@ -86,8 +121,20 @@ const EPREUVES: EpreuveMeta[] = [
       'En cas d\'échec, proposer l\'ébauche orale (1ʳᵉ syllabe) et noter sa facilitation séparément.',
       'Atteinte ISOLÉE de cette épreuve (II et III préservées) → trouble lexico-phonologique.',
     ],
-    seuilP5Indicatif: { '1': 43, '2': 44, '3': 47 },
-    tempsSeuilApprox: 260,
+    seuilScoreP5: {
+      '20-34': { '1': 45, '2': 47, '3': 50 },
+      '35-49': { '1': 44, '2': 49, '3': 51 },
+      '50-64': { '1': 47, '2': 48, '3': 50 },
+      '65-79': { '1': 42, '2': 42, '3': 48 },
+      '80-95': { '1': 39, '2': 39, '3': 42 },
+    },
+    seuilTempsP95: {
+      '20-34': { '1': 251, '2': 148, '3': 200 },
+      '35-49': { '1': 250, '2': 178, '3': 154 },
+      '50-64': { '1': 251, '2': 198, '3': 157 },
+      '65-79': { '1': 392, '2': 293, '3': 256 },
+      '80-95': { '1': 369, '2': 320, '3': 340 },
+    },
     interpretation: [
       'Épreuve centrale du diagnostic lexical. Très touchée dans l\'aphasie vasculaire (profil 1).',
       'Dans l\'Alzheimer débutant : score souvent conservé mais TEMPS pathologique (manque du mot sub-clinique).',
@@ -105,8 +152,20 @@ const EPREUVES: EpreuveMeta[] = [
       'Tâche réceptive : pas de production verbale exigée.',
       'Peu atteinte dans la maladie d\'Alzheimer débutante (préservation relative de la reconnaissance).',
     ],
-    seuilP5Indicatif: { '1': 49, '2': 50, '3': 51 },
-    tempsSeuilApprox: 200,
+    seuilScoreP5: {
+      '20-34': { '1': 53, '2': 51, '3': 52 },
+      '35-49': { '1': 50, '2': 51, '3': 52 },
+      '50-64': { '1': 49, '2': 51, '3': 52 },
+      '65-79': { '1': 47, '2': 49, '3': 50 },
+      '80-95': { '1': 48, '2': 48, '3': 50 },
+    },
+    seuilTempsP95: {
+      '20-34': { '1': 275, '2': 193, '3': 228 },
+      '35-49': { '1': 275, '2': 230, '3': 223 },
+      '50-64': { '1': 275, '2': 327, '3': 259 },
+      '65-79': { '1': 421, '2': 314, '3': 293 },
+      '80-95': { '1': 363, '2': 410, '3': 300 },
+    },
     interpretation: [
       'Épreuve de compréhension lexicale orale sur support imagé.',
       'Atteinte simultanée de II et III → orientation lexico-sémantique.',
@@ -123,8 +182,20 @@ const EPREUVES: EpreuveMeta[] = [
       'Tâche entièrement non verbale : évalue le traitement sémantique imagé pur.',
       'TRÈS touchée dans l\'Alzheimer (80 % des cas dans la cohorte de validation).',
     ],
-    seuilP5Indicatif: { '1': 44, '2': 46, '3': 49 },
-    tempsSeuilApprox: 320,
+    seuilScoreP5: {
+      '20-34': { '1': 44, '2': 49, '3': 49 },
+      '35-49': { '1': 47, '2': 49, '3': 50 },
+      '50-64': { '1': 47, '2': 46, '3': 51 },
+      '65-79': { '1': 45, '2': 48, '3': 50 },
+      '80-95': { '1': 41, '2': 43, '3': 47 },
+    },
+    seuilTempsP95: {
+      '20-34': { '1': 469, '2': 272, '3': 273 },
+      '35-49': { '1': 469, '2': 412, '3': 324 },
+      '50-64': { '1': 469, '2': 376, '3': 424 },
+      '65-79': { '1': 722, '2': 558, '3': 485 },
+      '80-95': { '1': 867, '2': 617, '3': 653 },
+    },
     interpretation: [
       'Si atteinte → forte présomption d\'atteinte sémantique centrale, à confirmer en VIII.',
       'Conjuguée à I et II touchées (≥ 2 sur 3 en étape A) : trouble lexico-sémantique avéré.',
@@ -140,8 +211,20 @@ const EPREUVES: EpreuveMeta[] = [
       'Atteinte ISOLÉE → trouble du transcodage grapho-phonémique (transposition visuo-phonatoire).',
       'Plafond rapide chez les sujets sains : la moindre baisse est significative.',
     ],
-    seuilP5Indicatif: { '1': 52, '2': 53, '3': 53 },
-    tempsSeuilApprox: 200,
+    seuilScoreP5: {
+      '20-34': { '1': 53, '2': 54, '3': 54 },
+      '35-49': { '1': 53, '2': 54, '3': 54 },
+      '50-64': { '1': 53, '2': 54, '3': 54 },
+      '65-79': { '1': 53, '2': 54, '3': 54 },
+      '80-95': { '1': 52, '2': 53, '3': 53 },
+    },
+    seuilTempsP95: {
+      '20-34': { '1': 101, '2': 98, '3': 98 },
+      '35-49': { '1': 101, '2': 98, '3': 98 },
+      '50-64': { '1': 101, '2': 98, '3': 98 },
+      '65-79': { '1': 101, '2': 98, '3': 98 },
+      '80-95': { '1': 107, '2': 107, '3': 107 },
+    },
     interpretation: [
       'Lecture préservée + dénomination orale atteinte → trouble d\'accès au lexique phonologique de sortie (ébauche efficace attendue).',
       'Lecture atteinte + dénomination atteinte → atteinte des représentations phonologiques (ébauche peu efficace).',
@@ -157,8 +240,20 @@ const EPREUVES: EpreuveMeta[] = [
       'Évalue le lexique orthographique d\'entrée + appariement oral/écrit.',
       'Préservée dans l\'aphasie phonologique pure.',
     ],
-    seuilP5Indicatif: { '1': 48, '2': 52, '3': 53 },
-    tempsSeuilApprox: 270,
+    seuilScoreP5: {
+      '20-34': { '1': 52, '2': 53, '3': 53 },
+      '35-49': { '1': 52, '2': 53, '3': 53 },
+      '50-64': { '1': 52, '2': 53, '3': 53 },
+      '65-79': { '1': 52, '2': 53, '3': 53 },
+      '80-95': { '1': 45, '2': 52, '3': 53 },
+    },
+    seuilTempsP95: {
+      '20-34': { '1': 192, '2': 192, '3': 192 },
+      '35-49': { '1': 202, '2': 202, '3': 202 },
+      '50-64': { '1': 206, '2': 206, '3': 206 },
+      '65-79': { '1': 212, '2': 212, '3': 212 },
+      '80-95': { '1': 248, '2': 248, '3': 248 },
+    },
     interpretation: [
       'Atteinte de V (avec II préservée) → atteinte spécifique de la modalité écrite réceptive.',
     ],
@@ -172,8 +267,20 @@ const EPREUVES: EpreuveMeta[] = [
       'Score = nombre d\'appariements corrects / 54.',
       'Recommandée EN PRIORITÉ pour suspicion d\'Alzheimer débutant (Ageon & Caze-Blanc 2014) : minimise la composante visuo-perceptive, profite de la meilleure préservation de l\'écrit.',
     ],
-    seuilP5Indicatif: { '1': 48, '2': 48, '3': 49 },
-    tempsSeuilApprox: 380,
+    seuilScoreP5: {
+      '20-34': { '1': 48, '2': 48, '3': 49 },
+      '35-49': { '1': 48, '2': 48, '3': 49 },
+      '50-64': { '1': 48, '2': 48, '3': 49 },
+      '65-79': { '1': 48, '2': 48, '3': 49 },
+      '80-95': { '1': 48, '2': 48, '3': 49 },
+    },
+    seuilTempsP95: {
+      '20-34': { '1': 337, '2': 337, '3': 337 },
+      '35-49': { '1': 362, '2': 362, '3': 362 },
+      '50-64': { '1': 337, '2': 337, '3': 337 },
+      '65-79': { '1': 337, '2': 337, '3': 337 },
+      '80-95': { '1': 461, '2': 461, '3': 461 },
+    },
     interpretation: [
       'Atteinte de VI ↔ atteinte sémantique centrale, à coupler avec VIII.',
       'Atteinte VI > III dans certains profils Alzheimer : explorer systématiquement même si III préservée.',
@@ -187,11 +294,23 @@ const EPREUVES: EpreuveMeta[] = [
     rules: [
       'DEUX SCORES distincts :',
       '   • Score LEXICAL : nombre d\'items où le bon mot a été récupéré (/ 54).',
-      '   • Score ORTHOGRAPHIQUE : précision orthographique des mots produits (peut être /54 ou /N selon items réussis).',
-      'Renseigner le score orthographique dans le champ dédié plus bas.',
+      '   • Score ORTHOGRAPHIQUE : précision orthographique des mots produits (sur 54).',
+      'Renseigner le score orthographique dans le champ dédié plus bas — il a sa propre matrice de seuils.',
     ],
-    seuilP5Indicatif: { '1': 44, '2': 46, '3': 47 },
-    tempsSeuilApprox: 700,
+    seuilScoreP5: {
+      '20-34': { '1': 48, '2': 49, '3': 50 },
+      '35-49': { '1': 46, '2': 47, '3': 49 },
+      '50-64': { '1': 44, '2': 46, '3': 47 },
+      '65-79': { '1': 43, '2': 44, '3': 46 },
+      '80-95': { '1': 41, '2': 43, '3': 44 },
+    },
+    seuilTempsP95: {
+      '20-34': { '1': 660, '2': 586, '3': 519 },
+      '35-49': { '1': 731, '2': 648, '3': 575 },
+      '50-64': { '1': 809, '2': 718, '3': 638 },
+      '65-79': { '1': 895, '2': 795, '3': 706 },
+      '80-95': { '1': 993, '2': 881, '3': 782 },
+    },
     interpretation: [
       'VII lexical préservé + I lexical atteint → dissociation orale/écrite, atteinte de la modalité orale de production.',
       'Le score orthographique chute logiquement avec l\'âge et le NSC bas : interpréter strictement avec la stratification.',
@@ -208,8 +327,20 @@ const EPREUVES: EpreuveMeta[] = [
       '⚠️ NE PAS proposer en première intention aux aphasies modérées à sévères vasculaires/traumatiques.',
       'Réservée aux profils SUSPECTÉS lexico-sémantiques (Alzheimer, démence sémantique, APP).',
     ],
-    seuilP5Indicatif: { '1': 42, '2': 45, '3': 46 },
-    tempsSeuilApprox: 900,
+    seuilScoreP5: {
+      '20-34': { '1': 44, '2': 47, '3': 48 },
+      '35-49': { '1': 44, '2': 47, '3': 48 },
+      '50-64': { '1': 44, '2': 47, '3': 48 },
+      '65-79': { '1': 44, '2': 50, '3': 47 },
+      '80-95': { '1': 40, '2': 40, '3': 40 },
+    },
+    seuilTempsP95: {
+      '20-34': { '1': 1446, '2': 1204, '3': 1179 },
+      '35-49': { '1': 1446, '2': 1204, '3': 1179 },
+      '50-64': { '1': 1446, '2': 1204, '3': 1179 },
+      '65-79': { '1': 1446, '2': 1204, '3': 1179 },
+      '80-95': { '1': 1446, '2': 1204, '3': 1179 },
+    },
     interpretation: [
       'Épreuve qui CONFIRME ou INFIRME l\'atteinte des connaissances sémantiques centrales.',
       'Atteinte → forte orientation vers un processus neurodégénératif. Référence systématique en consultation mémoire.',
@@ -266,9 +397,23 @@ export default function BetlScoresInput({ notes, onNotesChange, onResultatsChang
     trancheAge: ageEstime ? trancheFromAge(ageEstime) : '',
   }))
 
-  // Stratification : on doit utiliser une valeur par défaut "2" (NSC moyen) si
-  // l'ortho ne précise pas — c'est le segment majoritaire de la population.
+  // Stratification : valeurs par défaut quand l'ortho n'a pas (encore) précisé.
+  // NSC 2 = segment majoritaire de la population. Tranche 50-64 = milieu de
+  // l'étalonnage. Les seuils affichés tant que la stratification reste à ces
+  // défauts ne sont qu'indicatifs — un bandeau ci-dessous invite à compléter.
   const nscEffectif: NSC = (state.nsc || '2') as NSC
+  const trancheEffective: TrancheAge = (state.trancheAge || '50-64') as TrancheAge
+  const stratificationComplete = !!state.nsc && !!state.trancheAge
+
+  /** Renvoie le seuil score P5 du manuel pour l'épreuve, en fonction de la
+   *  stratification courante (tranche × NSC). */
+  const seuilScore = (meta: EpreuveMeta): number =>
+    meta.seuilScoreP5[trancheEffective][nscEffectif]
+  /** Idem pour le temps-seuil P95 (en secondes). */
+  const seuilTemps = (meta: EpreuveMeta): number =>
+    meta.seuilTempsP95[trancheEffective][nscEffectif]
+  /** Seuil score orthographique VII selon stratification courante. */
+  const seuilOrthoVII = (): number => SEUIL_ORTHO_VII[trancheEffective][nscEffectif]
 
   const hasAnyScore = useMemo(
     () => Object.values(state.epreuves).some(e => e.score.trim() !== ''),
@@ -285,7 +430,8 @@ export default function BetlScoresInput({ notes, onNotesChange, onResultatsChang
     }
     const lines: string[] = []
     lines.push('=== BETL — Batterie d\'Évaluation des Troubles Lexicaux (Tran & Godefroy 2015) ===')
-    lines.push(`Stratification : tranche d'âge ${state.trancheAge || 'non précisée'} × NSC ${state.nsc || 'non précisé (2 par défaut)'}`)
+    lines.push(`Stratification : tranche d'âge ${state.trancheAge || `non précisée (${trancheEffective} par défaut)`} × NSC ${state.nsc || '2 par défaut'}`)
+    lines.push(`Seuils officiels appliqués : score P5 (manuel BETL Annexe 3) — temps P95 (manuel BETL Annexe 3).`)
     lines.push('---')
     for (const meta of EPREUVES) {
       const e = state.epreuves[meta.key]
@@ -293,16 +439,23 @@ export default function BetlScoresInput({ notes, onNotesChange, onResultatsChang
       if (!score) continue
       const scoreNum = clampScore(score, meta.max)
       const tempsNum = e.temps.trim() ? parseInt(e.temps.trim(), 10) : null
+      const sScore = seuilScore(meta)
+      const sTemps = seuilTemps(meta)
       const verdicts: string[] = []
       if (e.verdictScore) verdicts.push(`Score ${e.verdictScore}`)
       if (e.verdictTemps) verdicts.push(`Temps ${e.verdictTemps}`)
       const verdictStr = verdicts.length > 0 ? ` — ${verdicts.join(' / ')}` : ''
       const tempsStr = tempsNum != null ? ` — Temps : ${tempsNum} s` : ''
-      lines.push(`${meta.label} : ${scoreNum}/${meta.max}${tempsStr}${verdictStr}`)
+      lines.push(
+        `${meta.label} : ${scoreNum}/${meta.max} (seuil P5 : ${sScore})${tempsStr}` +
+        (tempsNum != null ? ` (seuil P95 : ${sTemps} s)` : '') +
+        verdictStr,
+      )
       if (meta.key === 'VII' && state.scoreOrthoVII.trim()) {
         const ortho = clampScore(state.scoreOrthoVII, 54)
+        const sOrtho = seuilOrthoVII()
         const v = state.verdictOrthoVII ? ` — Score orthographique ${state.verdictOrthoVII}` : ''
-        lines.push(`  Score orthographique VII : ${ortho}/54${v}`)
+        lines.push(`  Score orthographique VII : ${ortho}/54 (seuil P5 : ${sOrtho})${v}`)
       }
       if (e.observation.trim()) {
         lines.push(`  Obs : ${e.observation.trim()}`)
@@ -414,11 +567,24 @@ export default function BetlScoresInput({ notes, onNotesChange, onResultatsChang
         </div>
       </div>
 
+      {/* Bandeau indiquant que la stratification est complète / par défaut */}
+      {!stratificationComplete && (
+        <div className="rounded-lg border border-amber-200 bg-amber-50 px-3 py-2 text-xs text-amber-900 flex items-start gap-2">
+          <AlertCircle size={14} className="shrink-0 mt-0.5" />
+          <span>
+            Stratification incomplète — les seuils affichés reposent sur les valeurs par défaut
+            (tranche <strong>50-64 ans</strong>, NSC <strong>2</strong>). Renseignez l&apos;âge et le NSC ci-dessus
+            pour obtenir les seuils OFFICIELS exacts du manuel BETL (Annexe 3) pour ce patient.
+          </span>
+        </div>
+      )}
+
       {/* 8 cartes épreuves */}
       <div className="space-y-3">
         {EPREUVES.map(meta => {
           const e = state.epreuves[meta.key]
-          const seuilIndicatif = meta.seuilP5Indicatif[nscEffectif]
+          const seuilScoreVal = seuilScore(meta)
+          const seuilTempsVal = seuilTemps(meta)
           const scoreNum = e.score.trim() ? clampScore(e.score, meta.max) : null
           const scorePct = scoreNum != null ? Math.round((scoreNum / meta.max) * 100) : null
 
@@ -429,8 +595,8 @@ export default function BetlScoresInput({ notes, onNotesChange, onResultatsChang
                   <label className="block text-sm font-semibold text-gray-900">{meta.label}</label>
                   <p className="text-xs text-gray-500 mt-0.5">{meta.hint}</p>
                   <p className="text-[11px] text-gray-400 mt-1">
-                    Seuil P5 indicatif (NSC {nscEffectif}) : <span className="font-mono">{seuilIndicatif}/{meta.max}</span>
-                    {meta.tempsSeuilApprox ? ` — Temps-seuil ≈ ${meta.tempsSeuilApprox} s` : ''}
+                    Seuil P5 ({trancheEffective} ans, NSC {nscEffectif}) : <span className="font-mono">&lt; {seuilScoreVal}/{meta.max}</span> = pathologique
+                    {' · '}Temps-seuil P95 : <span className="font-mono">&gt; {seuilTempsVal} s</span>
                   </p>
                 </div>
               </div>
@@ -525,6 +691,9 @@ export default function BetlScoresInput({ notes, onNotesChange, onResultatsChang
                 <div className="mt-3 rounded-md border border-purple-200 bg-purple-50/60 p-2.5">
                   <p className="text-[11px] font-semibold text-purple-900 mb-1">
                     Score orthographique (qualité orthographique des mots produits)
+                  </p>
+                  <p className="text-[10px] text-purple-700 mb-1">
+                    Seuil P5 ({trancheEffective} ans, NSC {nscEffectif}) : <span className="font-mono">&lt; {seuilOrthoVII()}/54</span> = pathologique
                   </p>
                   <div className="flex items-center gap-2 flex-wrap">
                     <input
@@ -699,7 +868,7 @@ export default function BetlScoresInput({ notes, onNotesChange, onResultatsChang
 
       {/* Synthèse graphique + tableau récap */}
       {hasAnyScore && (
-        <BetlSummary state={state} nsc={nscEffectif} />
+        <BetlSummary state={state} nsc={nscEffectif} tranche={trancheEffective} />
       )}
 
       {/* Compteurs synthétiques */}
@@ -750,17 +919,18 @@ export default function BetlScoresInput({ notes, onNotesChange, onResultatsChang
 
 /**
  * Tableau récap + graphique de synthèse (SVG simple) montrant pour chaque
- * épreuve le score du patient (barre) vs le seuil P5 indicatif (ligne) du NSC
- * sélectionné. Couleur de la barre selon le verdict logiciel saisi par l'ortho.
+ * épreuve le score du patient (barre) vs le seuil P5 OFFICIEL (ligne) pour la
+ * tranche d'âge × NSC sélectionnée. Couleur de la barre selon le verdict
+ * logiciel saisi par l'ortho.
  */
-function BetlSummary({ state, nsc }: { state: BetlState; nsc: NSC }) {
+function BetlSummary({ state, nsc, tranche }: { state: BetlState; nsc: NSC; tranche: TrancheAge }) {
   // Préparer les données — uniquement les épreuves avec score saisi.
   const rows = EPREUVES
     .map(meta => {
       const e = state.epreuves[meta.key]
       if (!e.score.trim()) return null
       const score = clampScore(e.score, meta.max)
-      const seuil = meta.seuilP5Indicatif[nsc]
+      const seuil = meta.seuilScoreP5[tranche][nsc]
       return { meta, e, score, seuil }
     })
     .filter((r): r is { meta: EpreuveMeta; e: EpreuveState; score: number; seuil: number } => r !== null)
@@ -777,7 +947,9 @@ function BetlSummary({ state, nsc }: { state: BetlState; nsc: NSC }) {
     <div className="rounded-lg border border-gray-200 bg-white p-4 space-y-3">
       <div className="flex items-center gap-2">
         <CheckCircle2 size={16} className="text-emerald-600" />
-        <p className="text-sm font-semibold text-gray-900">Synthèse — scores patient vs seuils indicatifs (NSC {nsc})</p>
+        <p className="text-sm font-semibold text-gray-900">
+          Synthèse — scores patient vs seuils P5 officiels (tranche {tranche} ans, NSC {nsc})
+        </p>
       </div>
 
       {/* Graphique */}
@@ -880,7 +1052,7 @@ function BetlSummary({ state, nsc }: { state: BetlState; nsc: NSC }) {
               <th className="border border-emerald-200 px-2 py-1.5 text-center">Verdict</th>
               <th className="border border-emerald-200 px-2 py-1.5 text-center">Temps</th>
               <th className="border border-emerald-200 px-2 py-1.5 text-center">Verdict temps</th>
-              <th className="border border-emerald-200 px-2 py-1.5 text-center">Seuil P5 (NSC {nsc})</th>
+              <th className="border border-emerald-200 px-2 py-1.5 text-center">Seuil P5 ({tranche}, NSC {nsc})</th>
             </tr>
           </thead>
           <tbody>
@@ -909,9 +1081,9 @@ function BetlSummary({ state, nsc }: { state: BetlState; nsc: NSC }) {
       <p className="text-[11px] text-gray-500 italic flex items-start gap-1.5">
         <AlertCircle size={11} className="shrink-0 mt-0.5" />
         <span>
-          Les seuils P5 affichés sont indicatifs (médianes par NSC, Annexe 3 du manuel). La feuille de
-          résultats du logiciel BETL donne le verdict exact pour l&apos;âge × NSC du patient — c&apos;est lui
-          qui doit être saisi dans la colonne « Verdict ».
+          Seuils P5 officiels du manuel BETL 2015 (Annexe 3, Tran & Godefroy) pour la stratification
+          {' '}<strong>{tranche} ans × NSC {nsc}</strong>. Le verdict N/P à saisir reste celui produit par
+          le logiciel BETL, qui peut prendre en compte des marges supplémentaires non publiées.
         </span>
       </p>
     </div>
