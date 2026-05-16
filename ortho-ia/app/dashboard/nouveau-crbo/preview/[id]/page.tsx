@@ -33,7 +33,8 @@ import { useParams, useRouter } from 'next/navigation'
 import Link from 'next/link'
 import {
   ArrowLeft, Download, FileDown, Loader2, AlertCircle, Sparkles,
-  Check, Edit3, Eye, Save, FileText, BookOpen, AlertTriangle, ListChecks, Lightbulb,
+  Check, Edit3, Eye, FileText, BookOpen, AlertTriangle, ListChecks, Lightbulb,
+  RefreshCw, X,
 } from 'lucide-react'
 import { createClient } from '@/lib/supabase'
 import type { CRBOStructure, CRBODomain } from '@/lib/prompts'
@@ -154,6 +155,7 @@ function SectionEditor({
   fieldPath,
   initialValue,
   onSave,
+  onRegenerate,
   placeholder,
   multiline = true,
   helperText,
@@ -164,6 +166,9 @@ function SectionEditor({
   fieldPath: string
   initialValue: string
   onSave: (path: string, value: string) => void
+  /** Si fourni, expose un bouton "Régénérer" qui appellera ce callback avec
+   *  le contenu actuel. Le parent ouvre alors la modale d'instruction. */
+  onRegenerate?: (currentText: string) => void
   placeholder?: string
   multiline?: boolean
   helperText?: string
@@ -219,13 +224,25 @@ function SectionEditor({
           {title}
           <EditedBadge shown={isEdited} />
         </h3>
-        <button
-          type="button"
-          onClick={() => editing ? (flushSave(), setEditing(false)) : setEditing(true)}
-          className="text-xs text-gray-500 hover:text-primary-600 inline-flex items-center gap-1 px-2 py-1 rounded hover:bg-gray-50"
-        >
-          {editing ? <><Eye size={12} /> Aperçu</> : <><Edit3 size={12} /> Éditer</>}
-        </button>
+        <div className="flex items-center gap-1.5">
+          {onRegenerate && (
+            <button
+              type="button"
+              onClick={() => onRegenerate(value)}
+              className="text-xs text-gray-500 hover:text-purple-600 inline-flex items-center gap-1 px-2 py-1 rounded hover:bg-purple-50 transition"
+              title="Régénérer cette section avec une instruction libre"
+            >
+              <RefreshCw size={12} /> Régénérer
+            </button>
+          )}
+          <button
+            type="button"
+            onClick={() => editing ? (flushSave(), setEditing(false)) : setEditing(true)}
+            className="text-xs text-gray-500 hover:text-primary-600 inline-flex items-center gap-1 px-2 py-1 rounded hover:bg-gray-50"
+          >
+            {editing ? <><Eye size={12} /> Aperçu</> : <><Edit3 size={12} /> Éditer</>}
+          </button>
+        </div>
       </div>
 
       {editing ? (
@@ -276,6 +293,7 @@ function ListEditor({
   fieldPath,
   initialItems,
   onSave,
+  onRegenerate,
   placeholder,
   helperText,
 }: {
@@ -285,6 +303,8 @@ function ListEditor({
   fieldPath: string
   initialItems: string[]
   onSave: (path: string, value: string[]) => void
+  /** Régénérer la liste : reçoit le texte (un item par ligne) actuel. */
+  onRegenerate?: (currentText: string) => void
   placeholder?: string
   helperText?: string
 }) {
@@ -339,13 +359,25 @@ function ListEditor({
           {title}
           <EditedBadge shown={isEdited} />
         </h3>
-        <button
-          type="button"
-          onClick={() => editing ? (flushSave(), setEditing(false)) : setEditing(true)}
-          className="text-xs text-gray-500 hover:text-primary-600 inline-flex items-center gap-1 px-2 py-1 rounded hover:bg-gray-50"
-        >
-          {editing ? <><Eye size={12} /> Aperçu</> : <><Edit3 size={12} /> Éditer</>}
-        </button>
+        <div className="flex items-center gap-1.5">
+          {onRegenerate && (
+            <button
+              type="button"
+              onClick={() => onRegenerate(text)}
+              className="text-xs text-gray-500 hover:text-purple-600 inline-flex items-center gap-1 px-2 py-1 rounded hover:bg-purple-50 transition"
+              title="Régénérer cette liste avec une instruction libre"
+            >
+              <RefreshCw size={12} /> Régénérer
+            </button>
+          )}
+          <button
+            type="button"
+            onClick={() => editing ? (flushSave(), setEditing(false)) : setEditing(true)}
+            className="text-xs text-gray-500 hover:text-primary-600 inline-flex items-center gap-1 px-2 py-1 rounded hover:bg-gray-50"
+          >
+            {editing ? <><Eye size={12} /> Aperçu</> : <><Edit3 size={12} /> Éditer</>}
+          </button>
+        </div>
       </div>
 
       {editing ? (
@@ -488,6 +520,24 @@ export default function CRBOPreviewPage() {
   const [lastSavedAt, setLastSavedAt] = useState<number | null>(null)
   const [downloadingWord, setDownloadingWord] = useState(false)
 
+  /** Modale de régénération de section. `field_path` est le chemin éditable
+   *  (ex. "diagnostic", "axes_therapeutiques") ; `section_name` est la clé
+   *  reconnue par l'API (toujours identique au field_path racine ici). */
+  const [regenModal, setRegenModal] = useState<null | {
+    section_name: string
+    section_label: string
+    field_path: string
+    current_text: string
+    is_list: boolean
+  }>(null)
+  const [regenInstruction, setRegenInstruction] = useState('')
+  const [regenLoading, setRegenLoading] = useState(false)
+  const [regenError, setRegenError] = useState<string | null>(null)
+
+  /** Modale de chaînage de bilan : proposée après le téléchargement Word/PDF. */
+  const [chainShown, setChainShown] = useState(false)
+  const [chainTriggered, setChainTriggered] = useState(false)
+
   // Charge le CRBO + le profil ortho au mount. Vocab perso / glossaire
   // appliqués à l'affichage uniquement (on n'écrit pas en DB).
   useEffect(() => {
@@ -545,6 +595,19 @@ export default function CRBOPreviewPage() {
     return () => window.removeEventListener('beforeunload', onBeforeUnload)
   }, [])
 
+  /** Ouvre la modale de régénération pour une section donnée. */
+  const openRegen = useCallback((
+    section_name: string,
+    section_label: string,
+    field_path: string,
+    current_text: string,
+    is_list: boolean = false,
+  ) => {
+    setRegenModal({ section_name, section_label, field_path, current_text, is_list })
+    setRegenInstruction('')
+    setRegenError(null)
+  }, [])
+
   /** Callback générique pour les enfants : applique un patch local +
    *  PATCH /api/crbo/[id]. Une seule en-vol à la fois (les enfants utilisent
    *  un debounce, le risque de course est très faible). */
@@ -584,6 +647,53 @@ export default function CRBOPreviewPage() {
       setSaveStatus('error')
     }
   }, [id, structure])
+
+  /** Soumet la modale de régénération : POST /api/crbo/[id]/regenerate-section,
+   *  applique le texte régénéré via handleSave (qui PATCH en DB), ferme la modale. */
+  const confirmRegen = useCallback(async () => {
+    if (!regenModal || !regenInstruction.trim() || regenLoading) return
+    setRegenLoading(true)
+    setRegenError(null)
+    try {
+      const res = await fetch(`/api/crbo/${id}/regenerate-section`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          section_name: regenModal.section_name,
+          section_label: regenModal.section_label,
+          current_text: regenModal.current_text,
+          instruction: regenInstruction.trim(),
+        }),
+      })
+      const data = await res.json().catch(() => ({}))
+      if (!res.ok) {
+        setRegenError(data?.error || 'Erreur lors de la régénération.')
+        return
+      }
+      const regenerated: string = String(data.regenerated ?? '').trim()
+      if (!regenerated) {
+        setRegenError('La régénération n\'a rien retourné.')
+        return
+      }
+      // Pour les listes (axes_therapeutiques) : on convertit le texte (1 item
+      // par ligne) en array. Sinon on enregistre tel quel.
+      if (regenModal.is_list) {
+        const items = regenerated
+          .split('\n')
+          .map(s => s.replace(/^[-•*\d.)\s]+/, '').trim())
+          .filter(Boolean)
+        await handleSave(regenModal.field_path, items)
+      } else {
+        await handleSave(regenModal.field_path, regenerated)
+      }
+      setRegenModal(null)
+      setRegenInstruction('')
+    } catch (e: any) {
+      setRegenError(e?.message || 'Erreur réseau.')
+    } finally {
+      setRegenLoading(false)
+    }
+  }, [id, regenModal, regenInstruction, regenLoading, handleSave])
 
   const handleDownloadWord = async () => {
     if (!crbo || !structure || downloadingWord) return
@@ -632,6 +742,13 @@ export default function CRBOPreviewPage() {
         previousStructure,
         previousBilanDate,
       })
+      // Premier téléchargement Word/PDF de la session → propose le chaînage
+      // d'un 2ᵉ bilan pour le même patient (cas typique : screening MoCA →
+      // bilan langagier approfondi).
+      if (!chainTriggered) {
+        setChainTriggered(true)
+        setChainShown(true)
+      }
     } catch (e) {
       console.error('Word download failed:', e)
       setError('Erreur lors du téléchargement Word.')
@@ -645,6 +762,10 @@ export default function CRBOPreviewPage() {
     // qui auto-déclenche window.print(). 1 onglet → 2 clics (Imprimer →
     // Enregistrer en PDF). Robuste, pas de dép supplémentaire.
     window.open(`/dashboard/historique/${id}/print`, '_blank', 'noopener')
+    if (!chainTriggered) {
+      setChainTriggered(true)
+      setChainShown(true)
+    }
   }
 
   if (loading) {
@@ -774,6 +895,7 @@ export default function CRBOPreviewPage() {
             fieldPath="anamnese_redigee"
             initialValue={structure.anamnese_redigee || ''}
             onSave={handleSave}
+            onRegenerate={(cur) => openRegen('anamnese_redigee', 'Anamnèse', 'anamnese_redigee', cur)}
             placeholder="Cliquez pour ajouter l'anamnèse rédigée…"
           />
 
@@ -784,6 +906,7 @@ export default function CRBOPreviewPage() {
             fieldPath="motif_reformule"
             initialValue={structure.motif_reformule || ''}
             onSave={handleSave}
+            onRegenerate={(cur) => openRegen('motif_reformule', 'Motif de consultation', 'motif_reformule', cur)}
             placeholder="Reformulation clinique du motif…"
             multiline={false}
           />
@@ -840,6 +963,7 @@ export default function CRBOPreviewPage() {
               fieldPath="points_forts"
               initialValue={structure.points_forts || ''}
               onSave={handleSave}
+              onRegenerate={(cur) => openRegen('points_forts', 'Points forts', 'points_forts', cur)}
               placeholder="Synthèse des points forts du patient (3-5 lignes)…"
             />
           )}
@@ -852,6 +976,7 @@ export default function CRBOPreviewPage() {
               fieldPath="difficultes_identifiees"
               initialValue={structure.difficultes_identifiees || ''}
               onSave={handleSave}
+              onRegenerate={(cur) => openRegen('difficultes_identifiees', 'Difficultés identifiées', 'difficultes_identifiees', cur)}
               placeholder="Synthèse des difficultés identifiées (3-5 lignes)…"
             />
           )}
@@ -863,6 +988,7 @@ export default function CRBOPreviewPage() {
             fieldPath="diagnostic"
             initialValue={structure.diagnostic || ''}
             onSave={handleSave}
+            onRegenerate={(cur) => openRegen('diagnostic', 'Diagnostic', 'diagnostic', cur)}
             placeholder="Diagnostic orthophonique ou hypothèse de diagnostic…"
           />
 
@@ -873,6 +999,7 @@ export default function CRBOPreviewPage() {
             fieldPath="recommandations"
             initialValue={structure.recommandations || ''}
             onSave={handleSave}
+            onRegenerate={(cur) => openRegen('recommandations', 'Recommandations', 'recommandations', cur)}
             placeholder="Recommandations cliniques…"
           />
 
@@ -884,6 +1011,7 @@ export default function CRBOPreviewPage() {
               fieldPath="axes_therapeutiques"
               initialItems={structure.axes_therapeutiques || []}
               onSave={handleSave}
+              onRegenerate={(cur) => openRegen('axes_therapeutiques', 'Axes thérapeutiques', 'axes_therapeutiques', cur, true)}
               placeholder="Un axe par ligne — max 4 axes…"
             />
           )}
@@ -907,6 +1035,7 @@ export default function CRBOPreviewPage() {
             fieldPath="conclusion"
             initialValue={structure.conclusion || ''}
             onSave={handleSave}
+            onRegenerate={(cur) => openRegen('conclusion', 'Conclusion', 'conclusion', cur)}
             placeholder="Mention médico-légale de conclusion…"
           />
 
@@ -941,6 +1070,122 @@ export default function CRBOPreviewPage() {
       </div>
 
       <AutoSaveBadge status={saveStatus} lastSavedAt={lastSavedAt} />
+
+      {/* Modale de régénération de section — instruction libre de l'ortho. */}
+      {regenModal && (
+        <div
+          className="fixed inset-0 z-40 bg-black/50 flex items-center justify-center p-4"
+          onClick={() => !regenLoading && setRegenModal(null)}
+          role="dialog"
+          aria-modal="true"
+        >
+          <div
+            onClick={(e) => e.stopPropagation()}
+            className="w-full max-w-lg bg-white rounded-xl shadow-xl"
+          >
+            <div className="px-5 py-4 border-b border-gray-200 flex items-center justify-between">
+              <h3 className="text-base font-bold text-gray-900 flex items-center gap-2">
+                <RefreshCw size={16} className="text-purple-600" />
+                Régénérer « {regenModal.section_label} »
+              </h3>
+              <button
+                onClick={() => !regenLoading && setRegenModal(null)}
+                className="text-gray-400 hover:text-gray-700"
+                aria-label="Fermer"
+              >
+                <X size={18} />
+              </button>
+            </div>
+            <div className="px-5 py-4 space-y-3">
+              <p className="text-sm text-gray-600">
+                Décrivez ce que vous voulez modifier ou améliorer dans cette section. L&apos;IA réécrira
+                uniquement « {regenModal.section_label} » selon votre instruction. Vous pourrez encore
+                éditer le résultat manuellement après.
+              </p>
+              <textarea
+                value={regenInstruction}
+                onChange={(e) => setRegenInstruction(e.target.value)}
+                rows={4}
+                placeholder="Ex. Rends-le plus concis. / Ajoute une mention du suivi TDAH. / Reformule en insistant sur les compétences préservées."
+                className="w-full px-3 py-2.5 border border-gray-300 rounded-lg text-sm leading-relaxed focus:outline-none focus:ring-2 focus:ring-purple-400 resize-y"
+                disabled={regenLoading}
+                autoFocus
+              />
+              {regenError && (
+                <div className="text-sm bg-red-50 border border-red-200 text-red-700 px-3 py-2 rounded-lg flex items-center gap-2">
+                  <AlertCircle size={14} />
+                  {regenError}
+                </div>
+              )}
+            </div>
+            <div className="px-5 py-3 bg-gray-50 border-t border-gray-200 flex items-center justify-end gap-2 rounded-b-xl">
+              <button
+                onClick={() => setRegenModal(null)}
+                disabled={regenLoading}
+                className="px-3 py-2 rounded-lg text-sm text-gray-700 hover:bg-gray-100 disabled:opacity-50"
+              >
+                Annuler
+              </button>
+              <button
+                onClick={confirmRegen}
+                disabled={regenLoading || !regenInstruction.trim()}
+                className="inline-flex items-center gap-1.5 px-4 py-2 rounded-lg bg-purple-600 hover:bg-purple-700 disabled:bg-purple-300 text-white text-sm font-medium transition"
+              >
+                {regenLoading ? <Loader2 size={14} className="animate-spin" /> : <RefreshCw size={14} />}
+                Régénérer
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Modale de chaînage : après le 1er téléchargement Word/PDF, proposer
+          de démarrer un 2ᵉ bilan pour le même patient (cas typique screening
+          MoCA → bilan langagier approfondi). */}
+      {chainShown && crbo && (
+        <div
+          className="fixed inset-0 z-40 bg-black/50 flex items-center justify-center p-4"
+          onClick={() => setChainShown(false)}
+          role="dialog"
+          aria-modal="true"
+        >
+          <div
+            onClick={(e) => e.stopPropagation()}
+            className="w-full max-w-md bg-white rounded-xl shadow-xl p-5"
+          >
+            <h3 className="text-base font-bold text-gray-900 mb-2">
+              CRBO téléchargé
+            </h3>
+            <p className="text-sm text-gray-700 mb-4 leading-relaxed">
+              Le bilan <strong>{crbo.test_utilise || 'actuel'}</strong> pour{' '}
+              <strong>{crbo.patient_prenom} {crbo.patient_nom}</strong> est enregistré.
+              Voulez-vous démarrer un 2ᵉ bilan pour ce patient (cas typique : screening → bilan approfondi) ?
+            </p>
+            <div className="flex items-center justify-end gap-2">
+              <button
+                onClick={() => {
+                  setChainShown(false)
+                  router.push('/dashboard')
+                }}
+                className="px-3 py-2 rounded-lg text-sm text-gray-700 hover:bg-gray-100"
+              >
+                Non, retour au dashboard
+              </button>
+              <button
+                onClick={() => {
+                  setChainShown(false)
+                  // Recherche/auto-création patient gérée par /nouveau-crbo via ?patient=id
+                  // si un patient_id est connu (rare ici car on quitte la preview avant).
+                  router.push('/dashboard/nouveau-crbo')
+                }}
+                className="inline-flex items-center gap-1.5 px-4 py-2 rounded-lg bg-primary-600 hover:bg-primary-700 text-white text-sm font-medium"
+              >
+                Oui, nouveau bilan
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   )
 }
