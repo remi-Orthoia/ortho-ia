@@ -779,58 +779,87 @@ export async function generateCRBOWord(payload: WordExportPayload): Promise<Blob
 
   if (hasStructure && isMocaOnly) {
     // ============ Rendu MoCA dédié ============
-    // Tableau 3 colonnes : Épreuve | Score | Commentaire.
-    // - Lignes principales : un domaine cognitif (Visuospatial / Mémoire…)
-    //   avec son score total (X/Y) et son commentaire clinique éditable.
-    // - Sous-lignes indentées : sous-items (alternance, cube, horloge…) avec
-    //   leur sous-score (X/Y) — sans commentaire (le commentaire reste au
-    //   niveau du domaine pour éviter de fragmenter la lecture).
+    // UN MINI-TABLEAU PAR ÉPREUVE (Visuospatial / Mémoire / …), identique au
+    // rendu de la page de prévisualisation (resultats/page.tsx). Chaque mini
+    // tableau contient :
+    //   - une ligne d'en-tête : nom de l'épreuve + score total /Y
+    //   - une ligne par sous-item (alternance, cube, horloge contour, …) avec
+    //     son sous-score (X/Y)
+    //   - le commentaire clinique éditable est rendu en paragraphe sous le
+    //     tableau (lisibilité supérieure à une cellule longue qui se fait
+    //     écraser en hauteur sur les ligne sub-items).
     // Aucune coloration "Préservé / Fragilisé / Déficitaire" — la MoCA est
     // un screening, pas un test interprété en zones percentiles.
-    // Un bandeau Total /30 + sévérité officielle suit le tableau.
+    // Un bandeau Total /30 + sévérité officielle suit l'ensemble des mini-
+    // tableaux (calcul agrégé sur toutes les épreuves).
 
     const allEpreuves = orderedDomains.flatMap(d => d.epreuves)
-    const mocaCols = dxaCols([35, 15, 50])
-    const mocaRows = [
-      new TableRow({ children: [
-        createCell('Épreuve',     { bold: true, dxa: mocaCols[0], shading: 'E8F5E9' }),
-        createCell('Score',       { bold: true, dxa: mocaCols[1], shading: 'E8F5E9', alignment: AlignmentType.CENTER }),
-        createCell('Commentaire', { bold: true, dxa: mocaCols[2], shading: 'E8F5E9' }),
-      ]}),
-    ]
+    const epreuveCols = dxaCols([70, 30])
     let totalObtenu = 0
     let totalMax = 0
+
     for (const e of allEpreuves) {
       const parsed = parseScoreFraction(e.score)
       if (parsed) {
         totalObtenu += parsed.score
         totalMax += parsed.max
       }
-      // Ligne principale = domaine MoCA
       const scoreCell = parsed ? `${parsed.score}/${parsed.max}` : e.score
-      mocaRows.push(new TableRow({ children: [
-        createCell(e.nom, { dxa: mocaCols[0], bold: true }),
-        createCell(scoreCell, { dxa: mocaCols[1], alignment: AlignmentType.CENTER, bold: true }),
-        createCell(e.commentaire || '', { dxa: mocaCols[2] }),
-      ]}))
-      // Sous-lignes : décomposition par sous-item, indentée par "  • " devant
-      // le nom. Pas de commentaire sur les sous-rows pour ne pas alourdir.
+
+      // Mini-tableau de cette épreuve : en-tête (nom + score) + une ligne par
+      // sous-item. Toutes les cellules d'en-tête sont teintées E8F5E9 pour
+      // matcher la palette MoCA (vert clair).
+      const epreuveRows = [
+        new TableRow({ children: [
+          createCell(e.nom,   { bold: true, dxa: epreuveCols[0], shading: 'E8F5E9' }),
+          createCell(scoreCell, { bold: true, dxa: epreuveCols[1], shading: 'E8F5E9', alignment: AlignmentType.CENTER }),
+        ]}),
+      ]
       for (const se of e.sous_epreuves ?? []) {
-        mocaRows.push(new TableRow({ children: [
-          createCell(`    • ${se.nom}`, { dxa: mocaCols[0] }),
-          createCell(se.score, { dxa: mocaCols[1], alignment: AlignmentType.CENTER }),
-          createCell('', { dxa: mocaCols[2] }),
+        epreuveRows.push(new TableRow({ children: [
+          createCell(`• ${se.nom}`, { dxa: epreuveCols[0] }),
+          createCell(se.score,      { dxa: epreuveCols[1], alignment: AlignmentType.CENTER }),
         ]}))
       }
+
+      children.push(
+        new Table({
+          width: { size: TOTAL_DXA, type: WidthType.DXA },
+          columnWidths: epreuveCols,
+          rows: epreuveRows,
+        }),
+      )
+
+      // Commentaire clinique : rendu en paragraphes sous le tableau pour qu'il
+      // respire (il contient deux paragraphes — clinique + "En clair :" pour
+      // le patient — voir prompt MoCA). On parse les marqueurs **gras** en
+      // alternance de TextRun, et on coupe sur les lignes vides pour séparer
+      // les deux paragraphes.
+      const commentaire = (e.commentaire || '').trim()
+      if (commentaire) {
+        const paragraphs = commentaire.split(/\n\s*\n/)
+        paragraphs.forEach((para, pIdx) => {
+          const text = para.trim()
+          if (!text) return
+          const parts = text.split(/(\*\*[^*]+\*\*)/g).filter((p) => p.length > 0)
+          const runs = parts.map((p) =>
+            p.startsWith('**') && p.endsWith('**')
+              ? new TextRun({ text: p.slice(2, -2), bold: true, size: FONT_SIZE_NORMAL, font: FONT })
+              : new TextRun({ text: p, size: FONT_SIZE_NORMAL, font: FONT }),
+          )
+          children.push(new Paragraph({
+            alignment: AlignmentType.BOTH,
+            children: runs,
+            spacing: {
+              before: pIdx === 0 ? 80 : 40,
+              after: pIdx === paragraphs.length - 1 ? 200 : 60,
+            },
+          }))
+        })
+      } else {
+        children.push(new Paragraph({ children: [new TextRun({ text: '' })], spacing: { after: 160 } }))
+      }
     }
-    children.push(
-      new Table({
-        width: { size: TOTAL_DXA, type: WidthType.DXA },
-        columnWidths: mocaCols,
-        rows: mocaRows,
-      }),
-      new Paragraph({ children: [new TextRun({ text: '' })] }),
-    )
 
     // Bandeau TOTAL — utilise le total parsé des épreuves, normalisé à /30.
     // Si l'IA a saisi un total cohérent (totalMax === 30) on l'utilise tel

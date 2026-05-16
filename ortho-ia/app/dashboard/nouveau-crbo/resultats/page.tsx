@@ -767,9 +767,9 @@ export default function ResultatsPage() {
                             <textarea
                               value={mocaEpreuveComments[e.nom] || ''}
                               onChange={(ev) => setMocaEpreuveComments(prev => ({ ...prev, [e.nom]: ev.target.value }))}
-                              rows={2}
-                              placeholder="Commentaire clinique pour ce domaine (préservation, fragilité, type d'erreur…)"
-                              className="w-full px-2 py-1.5 border border-gray-300 dark:border-surface-dark-muted rounded-md focus:outline-none focus:ring-2 focus:ring-emerald-400 text-xs leading-relaxed dark:bg-surface-dark resize-none"
+                              rows={5}
+                              placeholder={"Commentaire clinique pour ce domaine.\nUne ligne vide puis « **En clair :** … » pour la version patient (langage simple)."}
+                              className="w-full px-2 py-1.5 border border-gray-300 dark:border-surface-dark-muted rounded-md focus:outline-none focus:ring-2 focus:ring-emerald-400 text-xs leading-relaxed dark:bg-surface-dark resize-y"
                             />
                           </td>
                         </tr>

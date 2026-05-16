@@ -62,11 +62,9 @@ export const moca: TestModule = {
 
 ⚠️ **Pour la MoCA, AUCUNE étiquette "Excellent / Fragilité / Difficulté sévère" n'est utilisée** — ces zones percentile-based n'ont aucun sens pour un screening cognitif /30.
 
-Dans le \`commentaire\` de chaque domaine, décris en prose :
-- ce que le patient a fait correctement (en premier),
-- les sous-items qui ont posé difficulté (avec type d'erreur si pertinent),
-- l'implication fonctionnelle concrète au quotidien,
-- toujours en termes de "fragilité" / "performance abaissée" / "domaine préservé" — JAMAIS "performance déficitaire / pathologique".
+Dans le \`commentaire\` de chaque domaine, décris en prose, en DEUX paragraphes (voir détail plus bas, section "Pré-remplissage OBLIGATOIRE du commentaire") :
+- **Paragraphe clinique** : ce que le patient a fait correctement (en premier), les sous-items qui ont posé difficulté (avec type d'erreur si pertinent), l'implication fonctionnelle concrète au quotidien. Toujours en termes de "fragilité" / "performance abaissée" / "domaine préservé" — JAMAIS "performance déficitaire / pathologique".
+- **Paragraphe "En clair :"** : la même observation reformulée en langage courant pour le patient et son entourage (vocabulaire du quotidien, aucun jargon, ton bienveillant et factuel — ni minimisant ni alarmant).
 
 Aucune valeur numérique de pourcentage, aucune étiquette colorée : le tableau MoCA affiche uniquement Épreuve / Score / Commentaire.
 
@@ -142,14 +140,31 @@ Le CRBO d'un screening MoCA suit la structure standard mais avec un contenu adap
    - En l'absence d'observation, distribue les pertes sur l'item statistiquement le plus difficile (horloge avant alternance, fluence avant répétitions, "velours" avant "rouge" en mémoire, etc.).
    - Si tu n'es pas sûr, mets "?/1" et signale dans le commentaire que la décomposition n'a pas pu être inférée.
 
-   **Pré-remplissage OBLIGATOIRE du \`commentaire\` de chaque épreuve** (ce commentaire sera affiché dans la colonne « Commentaire » du tableau Word et exposé à l'orthophoniste pour validation/édition sur la page de revue). Le commentaire DOIT :
-   - faire 2 à 4 lignes (≈ 30-80 mots),
+   **Pré-remplissage OBLIGATOIRE du \`commentaire\` de chaque épreuve** (ce commentaire sera affiché dans la colonne « Commentaire » du tableau Word et exposé à l'orthophoniste pour validation/édition sur la page de revue).
+
+   **Structure attendue du commentaire — DEUX paragraphes séparés par une ligne vide** :
+
+   1. **Paragraphe 1 — Lecture clinique** (1-2 lignes, ton professionnel) : décrit ce qui a été observé en termes cliniques (préservation, fragilité, type d'erreur). Sert au médecin destinataire et au dossier médical.
+
+   2. **Paragraphe 2 — Pour le patient et son entourage** (1-2 lignes, langage courant, AUCUN jargon) : reformule la même observation avec des mots simples du quotidien, comme si on expliquait à un proche ce que le test cherche à mesurer et ce qui s'est passé. Objectif d'acculturation : aider le patient à comprendre sans dramatiser. Préfixer ce paragraphe par **« En clair : »** (en gras dans le markdown : \`**En clair :**\`).
+
+   **Exemples** :
+   - Horloge (score 1/3) :
+     - Paragraphe 1 : "Horloge : contour et chiffres préservés ; aiguilles positionnées à 10h11 au lieu de 11h10, suggérant une fragilité de la représentation mentale du temps."
+     - Paragraphe 2 : "**En clair :** dessiner une horloge à une heure précise demande de bien se représenter l'heure dans sa tête. Madame X a tracé le cadran correctement mais a placé les aiguilles à l'envers — un petit accroc utile à noter pour la suite."
+   - Mémoire (score 2/5, bénéfice à l'indice) :
+     - Paragraphe 1 : "Rappel libre faible (2/5) avec nette amélioration sous indiçage catégoriel (gain de 3 points), profil compatible avec une difficulté de récupération plutôt que d'encodage."
+     - Paragraphe 2 : "**En clair :** lorsqu'on demande à Madame X de retrouver les mots seule, elle bloque ; mais dès qu'on lui donne un petit coup de pouce (« un sentiment, une fleur… »), elle les retrouve. Cela suggère que l'information est bien enregistrée mais difficile à aller rechercher toute seule."
+
+   **Règles communes aux deux paragraphes** :
    - mentionner D'ABORD ce qui est préservé (si applicable),
-   - intégrer le DÉTAIL des sous-items (ex. "Horloge : contour, chiffres et alternance préservés ; aiguilles inversées (10h55 au lieu de 11h10) suggérant une fragilité de la représentation mentale du temps."),
-   - reformuler en termes FONCTIONNELS (impact concret au quotidien) si une fragilité est observée,
-   - JAMAIS de pourcentage, JAMAIS d'étiquette colorée, JAMAIS de spéculation étiologique (Alzheimer, MCI, démence…).
-   Si toute l'épreuve est préservée (score = max), écrire une phrase courte type : "L'ensemble des sous-items est réussi, performance préservée sur ce domaine."
-   Si tu n'as aucune observation pour étayer (score total fourni sans détail), écris quand même une phrase reflétant le score : "Score abaissé sur ce domaine (X/Y). Les sous-items en difficulté n'ont pas été précisés à la passation ; à explorer plus finement en bilan neuropsychologique."
+   - intégrer le DÉTAIL des sous-items dans le paragraphe 1,
+   - JAMAIS de pourcentage, JAMAIS d'étiquette colorée, JAMAIS de spéculation étiologique (Alzheimer, MCI, démence…),
+   - JAMAIS de mots alarmants (« déclin », « détérioration », « dégénérescence »).
+
+   **Si toute l'épreuve est préservée** (score = max) : un seul paragraphe court suffit, type "L'ensemble des sous-items est réussi, performance préservée sur ce domaine." suivi de "**En clair :** tout est en place sur cette compétence, rien à signaler."
+
+   **Si aucune observation n'a été précisée** (score total fourni sans détail) : "Score abaissé sur ce domaine (X/Y). Les sous-items en difficulté n'ont pas été précisés à la passation ; à explorer plus finement en bilan neuropsychologique." suivi de "**En clair :** le score est plus bas qu'attendu sur cette compétence. Il faudra y revenir lors d'un examen plus approfondi pour comprendre précisément ce qui pose souci."
 
 3. **Synthèse / Hypothèse de diagnostic** :
    - En MoCA, le bloc de synthèse s'intitule **"Hypothèse de diagnostic"** (PAS "Diagnostic"). La MoCA est un screening : elle ne pose JAMAIS un diagnostic ferme, elle ouvre des hypothèses à confirmer en bilan neuropsychologique.
