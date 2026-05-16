@@ -17,6 +17,7 @@ import { betl } from './betl'
 import { predimem } from './predimem'
 import { predifex } from './predifex'
 import { becd } from './becd'
+import { bia } from './bia'
 
 export const TEST_REGISTRY: Record<string, TestModule> = {
   'Exalang 3-6': exalang36,
@@ -37,6 +38,7 @@ export const TEST_REGISTRY: Record<string, TestModule> = {
   'PREDIMEM': predimem,
   'PrediFex': predifex,
   'BECD': becd,
+  'BIA': bia,
 }
 
 export function getTestModule(nom: string): TestModule | null {
