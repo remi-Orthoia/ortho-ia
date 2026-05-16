@@ -173,6 +173,7 @@ export const TESTS_OPTIONS = [
   'Exalang 5-8',
   'Exalang 8-11',
   'Exalang 11-15',
+  'Exalang Lyfac',
   'EVALO 2-6',
   'ELO',
   'BALE',

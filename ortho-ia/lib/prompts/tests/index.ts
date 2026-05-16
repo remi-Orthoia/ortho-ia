@@ -19,6 +19,7 @@ import { predifex } from './predifex'
 import { becd } from './becd'
 import { bia } from './bia'
 import { predilac } from './predilac'
+import { exalangLyfac } from './exalang-lyfac'
 
 export const TEST_REGISTRY: Record<string, TestModule> = {
   'Exalang 3-6': exalang36,
@@ -41,6 +42,7 @@ export const TEST_REGISTRY: Record<string, TestModule> = {
   'BECD': becd,
   'BIA': bia,
   'PrediLac': predilac,
+  'Exalang Lyfac': exalangLyfac,
 }
 
 export function getTestModule(nom: string): TestModule | null {
