@@ -21,6 +21,7 @@ import PredimemScoresInput from '@/components/forms/PredimemScoresInput'
 import ExamathScoresInput from '@/components/forms/ExamathScoresInput'
 import Evaleo615ScoresInput from '@/components/forms/Evaleo615ScoresInput'
 import Exalang58ScoresInput from '@/components/forms/Exalang58ScoresInput'
+import Exalang36ScoresInput from '@/components/forms/Exalang36ScoresInput'
 import { useToast } from '@/components/Toast'
 import { useFocusMode } from '@/components/FocusMode'
 import { playPrintAnimation } from '@/components/PrintAnimation'
@@ -2262,6 +2263,24 @@ Astuce : tapez /fatigue, /anxiete, /encouragements… pour réutiliser vos formu
                   </div>
                 )}
                 <Exalang58ScoresInput
+                  notes={formData.comportement_seance || ''}
+                  onNotesChange={(v) => setFormData(prev => ({ ...prev, comportement_seance: v }))}
+                  onResultatsChange={(v) => setFormData(prev => ({ ...prev, resultats_manuels: v }))}
+                  onError={(msg) => setError(msg)}
+                />
+              </div>
+            ) : formData.test_utilise.length === 1 && formData.test_utilise[0] === 'Exalang 3-6' ? (
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-3">
+                  Résultats Exalang 3-6 *
+                </label>
+                {error && (
+                  <div className="mb-3 p-3 bg-red-50 border border-red-200 rounded-lg flex items-center gap-2 text-red-700 text-sm">
+                    <AlertCircle size={16} />
+                    {error}
+                  </div>
+                )}
+                <Exalang36ScoresInput
                   notes={formData.comportement_seance || ''}
                   onNotesChange={(v) => setFormData(prev => ({ ...prev, comportement_seance: v }))}
                   onResultatsChange={(v) => setFormData(prev => ({ ...prev, resultats_manuels: v }))}
