@@ -17,6 +17,7 @@ import ShareCRBOButton from '@/components/ShareCRBOButton'
 import MicButton from '@/components/MicButton'
 import MocaScoresInput from '@/components/forms/MocaScoresInput'
 import BetlScoresInput from '@/components/forms/BetlScoresInput'
+import PredimemScoresInput from '@/components/forms/PredimemScoresInput'
 import { useToast } from '@/components/Toast'
 import { useFocusMode } from '@/components/FocusMode'
 import { playPrintAnimation } from '@/components/PrintAnimation'
@@ -2190,6 +2191,24 @@ Astuce : tapez /fatigue, /anxiete, /encouragements… pour réutiliser vos formu
                     if (m < 0 || (m === 0 && bilan.getDate() < birth.getDate())) years--
                     return years
                   })()}
+                />
+              </div>
+            ) : formData.test_utilise.length === 1 && formData.test_utilise[0] === 'PREDIMEM' ? (
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-3">
+                  Résultats PREDIMEM *
+                </label>
+                {error && (
+                  <div className="mb-3 p-3 bg-red-50 border border-red-200 rounded-lg flex items-center gap-2 text-red-700 text-sm">
+                    <AlertCircle size={16} />
+                    {error}
+                  </div>
+                )}
+                <PredimemScoresInput
+                  notes={formData.comportement_seance || ''}
+                  onNotesChange={(v) => setFormData(prev => ({ ...prev, comportement_seance: v }))}
+                  onResultatsChange={(v) => setFormData(prev => ({ ...prev, resultats_manuels: v }))}
+                  onError={(msg) => setError(msg)}
                 />
               </div>
             ) : (

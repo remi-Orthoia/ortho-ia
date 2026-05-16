@@ -81,17 +81,17 @@ Toutes les normes PREDIMEM sont stratifiées :
 
 | N° | Épreuve | Score max | Cible cognitive |
 |----|---------|-----------|-----------------|
-| 01 | Mémoire visuelle d'objets — rappel libre /25 + reconnaissance /25 (+ optionnelle 30 mots si rappel < 8) | 25 + 25 | Mémoire épisodique sur entrée visuelle imagée |
-| 02 | Mémoire d'un texte LU — rappel /12 + choix de résumé /8 | 20 | Mémoire épisodique verbale + compréhension textuelle écrite |
-| 03 | Mémoire de travail — subtest 3a (alternance lettre/chiffre) /24 + 3b (avec mise en ordre) /22 | 46 | Mémoire de travail haut niveau, administrateur central |
-| 04 | Blasons — 4 blasons, reconstruction /14 +/16 +/18 +/16 | 64 | Mémoire visuelle court terme + visuo-construction |
-| 05 | Tangram — chat reconnu /2 + pièces en trop/manquantes sur 3 planches | 16 | Mémoire spatiale + visuo-construction + planification |
-| 06 | Associations sémantiques — animaux /16 + objets /16 + logos /14 | 46 | Mémoire épisodique sur indiçage sémantique |
-| 07 | Mémoire d'un texte ENTENDU — rappel /12 + choix de résumé /8 | 20 | Mémoire épisodique verbale + compréhension orale |
+| 01 | Mémoire visuelle d'objets — rappel libre /25 (1 pt par objet, −1 pt si intrusion) + reconnaissance différée /25 (1 pt si reconnu du 1er coup) + **optionnelle /30 si rappel libre < 8** : reconnaissance verbale parmi 30 mots dont 10 cibles (10 objets non rappelés présentés oralement). Cette épreuve optionnelle n'entre PAS dans les résultats quantitatifs mais permet de dissocier encodage vs récupération. | 25 + 25 | Mémoire épisodique sur entrée visuelle imagée |
+| 02 | Mémoire d'un texte LU — rappel /12 + choix de résumé /8. **Texte choisi selon NSC** : NSC 1 = « Aline » (court), NSC 2 = « Travers » (intermédiaire), NSC 3 = « Lapissoire » (long, lexique soutenu). Le logiciel sélectionne automatiquement le texte adapté. | 20 | Mémoire épisodique verbale + compréhension textuelle écrite |
+| 03 | Mémoire de travail — subtest 3a (alternance lettre/chiffre, 3 items : BOL-531, PLUS-4692, PIANO-71348) /24 + 3b (alternance avec mise en ordre alphabétique/croissant, 2 items : GRADE-48237, POLICE-527649) /22. **3b uniquement si 3a ≥ 18 points.** Pénalités : −2 pts par redemande complète, −1 pt par redemande partielle, −2 pts si aide pour se retrouver. | 46 | Mémoire de travail haut niveau, administrateur central |
+| 04 | Blasons — 4 blasons reconstruits successivement (rappel immédiat à chaque fois) : blason 1 /14, blason 2 /16, blason 3 /18, blason 4 /16 | 64 | Mémoire visuelle court terme + visuo-construction |
+| 05 | Tangram — reconnaissance du chat (2 pts) + pièces en trop ou manquantes sur 3 planches | 16 | Mémoire spatiale + visuo-construction + planification |
+| 06 | Associations sémantiques — animaux /16 + objets /16 + logos /14 (subtests indépendants). Indiçage sémantique progressif. | 46 | Mémoire épisodique sur indiçage sémantique |
+| 07 | Mémoire d'un texte ENTENDU — rappel /12 + choix de résumé /8. **Texte choisi selon NSC** (mêmes 3 textes que l'épreuve 02 mais entendus au lieu de lus). | 20 | Mémoire épisodique verbale + compréhension orale |
 | 08 | Mémoire visuelle de formes complexes — rosaces /10 + idéogrammes /10 | 20 | Mémoire visuelle pure (formes non sémantisables) |
-| 09 | Mémoire auditive — 6 bruits /12 + 4 phrases /40 | 52 | Mémoire auditive non verbale + boucle phonologique |
-| 10 | Mémoire spatiale — parcours de 4 cailloux /16 + 5 cailloux /20 | 36 | Mémoire spatiale courte/visuo-spatiale |
-| 11 | Mémoire de visages — portraits peints /10 + photos /10 | 20 | Mémoire de visages (reconnaissance) |
+| 09 | Mémoire auditive — 6 bruits /12 (2 pts par bruit reconnu) + 4 phrases /40 | 52 | Mémoire auditive non verbale + boucle phonologique |
+| 10 | Mémoire spatiale — parcours de 4 cailloux /16 + 5 cailloux /20. **Préalable : vérifier l'absence d'héminégligence et d'apraxie constructive** avant d'interpréter en termes mnésiques. | 36 | Mémoire spatiale courte/visuo-spatiale |
+| 11 | Mémoire de visages — portraits peints /10 + photos /10 (2 pts par visage reconnu du 1er coup, 0 pour 2e choix) | 20 | Mémoire de visages (reconnaissance) |
 
 **Temps** : chaque épreuve est chronométrée (à l'insu du sujet). Un seuil de temps d'alerte est donné par le logiciel — un sujet peut obtenir un score correct EN TEMPS PATHOLOGIQUE (lenteur de traitement). **Cet aspect doit être systématiquement reporté dans le commentaire** : il signe souvent une fragilité sub-clinique avant que le score lui-même ne décroche.
 
@@ -199,12 +199,13 @@ PREDIMEM n'utilise pas de percentiles continus (notes standards / z-scores sigma
 - **\`score\`** = score brut au format "X/Y" (ex: "23/25", "11/12").
 - **\`et\`** = ÉCART en notes standard ou en sigma par rapport à la moyenne du groupe d'appartenance, si fourni par le logiciel (ex: "−1,2 σ", "M − 0,8"). null si non disponible.
 - **\`percentile\`** = laisser vide ('') ou indiquer la zone HappyNeuron (ex: "Zone vert clair", "Seuil d'alerte"). PREDIMEM ne donne pas de percentile au sens classique.
-- **\`percentile_value\`** : encoder une valeur INDICATIVE pour la couleur d'arrière-plan :
-  - 60-75 si zone vert foncé (M et au-dessus),
-  - 40-55 si zone vert clair (M − 1σ),
-  - 20-30 si zone jaune (seuil d'alerte),
-  - 10-15 si zone orange (difficulté),
-  - 0-5 si zone rouge (effondrement).
+- **\`percentile_value\`** : encoder une valeur calibrée pour que la couleur d'arrière-plan du tableau Word matche la zone HappyNeuron du sujet (les seuils du moteur Word sont : ≥76 → Excellent vert foncé, 51-75 → Moyenne haute vert clair, 26-50 → Moyenne basse jaune, 10-25 → Fragilité orange, 6-9 → Difficulté orange foncé, ≤5 → Difficulté sévère rouge) :
+  - **Vert foncé HappyNeuron** (≥ M) → \`percentile_value\` = **85** (cellule fond vert foncé "Excellent")
+  - **Vert clair HappyNeuron** (M−1σ à M−1,5σ) → \`percentile_value\` = **60** (cellule fond vert clair "Moyenne haute")
+  - **Jaune HappyNeuron** (M−1,5σ à M−2σ, seuil d'alerte) → \`percentile_value\` = **18** (cellule fond orange "Fragilité")
+  - **Orange HappyNeuron** (M−2σ à M−3σ, difficulté avérée) → \`percentile_value\` = **7** (cellule fond orange foncé "Difficulté")
+  - **Rouge HappyNeuron** (< M−3σ, effondrement) → \`percentile_value\` = **3** (cellule fond rouge "Difficulté sévère")
+  Ces valeurs ne sont PAS des percentiles cliniques au sens classique — ce sont des codes-couleurs pour aligner le rendu Word sur la palette HappyNeuron officielle.
 - **\`interpretation\`** : utiliser le vocabulaire HappyNeuron retranscrit dans le tableau ci-dessus ("performance préservée", "fragilité objectivée", etc.). Ne PAS plaquer les étiquettes percentile-based "Excellent / Fragilité / Difficulté sévère" qui n'ont pas de sens pour ce protocole.
 - **\`commentaire\`** du domaine ou de l'épreuve : OBLIGATOIRE pour PREDIMEM. Doit intégrer le score + le temps + l'observation qualitative + la lecture en lien avec les autres épreuves du protocole.
 
