@@ -543,12 +543,37 @@ export default function ResultatsPage() {
       }
 
       // Son "success" — la synthèse vient d'aboutir, l'ortho a son brouillon.
-      // Joué AVANT le download (qui peut prendre 1-2s pour générer le canvas)
-      // pour confirmer immédiatement que la partie IA est terminée.
       playSuccessSound()
 
-      // ============ Téléchargement Word ============
-      // Animation 3D flip pour ponctuer l'arrivée du document (1500ms).
+      // ============ Redirection vers la page de prévisualisation ============
+      // L'orthophoniste relit/édite/régénère sur /preview/[id] avant de
+      // télécharger Word/PDF. Le statut kanban est promu a_rediger → a_relire
+      // dès l'ouverture de la preview (cf. preview/[id]/page.tsx).
+      //
+      // Le téléchargement Word direct depuis cette page (resultats) n'est PLUS
+      // déclenché ici — l'ortho doit confirmer/éditer sur la preview puis
+      // déclencher elle-même le téléchargement. C'est intentionnel : sans cette
+      // étape de relecture, le Word généré par l'IA partait souvent en l'état
+      // avec des formulations imparfaites.
+      //
+      // Le compteur CRBO + l'idempotence d'INSERT restent côté resultats (déjà
+      // posés ci-dessus) — c'est l'acte de GÉNÉRATION qui consomme un quota,
+      // pas le téléchargement. Le chaînage de bilan se fera depuis le dashboard
+      // après que l'ortho ait téléchargé / fermé la preview.
+      sessionStorage.removeItem(HANDOFF_KEY)
+      if (insertedCrboId) {
+        try {
+          sessionStorage.setItem('orthoia.feedback-pending', insertedCrboId)
+        } catch {}
+        // Animation flip "vers la prévisualisation" — courte, juste pour signaler la transition
+        playPrintAnimation(800)
+        router.push(`/dashboard/nouveau-crbo/preview/${insertedCrboId}`)
+        return
+      }
+
+      // Si l'INSERT a échoué (insertedCrboId null), fallback : on télécharge
+      // directement le Word depuis l'état mémoire pour que l'ortho ne perde
+      // pas son travail.
       playPrintAnimation(1500)
       await downloadCRBOWord({
         formData: fd,
@@ -556,38 +581,8 @@ export default function ResultatsPage() {
         previousStructure: fd.bilan_precedent_structure ?? null,
         previousBilanDate: fd.bilan_precedent_date,
       })
-      playSwoosh() // "swoosh" type imprimante quand le Word descend
-
-      // ============ Promotion kanban : a_rediger → a_relire ============
-      // Une fois le Word téléchargé, le CRBO entre dans la phase "à relire"
-      // par l'ortho. La promotion vers "termine" reste manuelle (drag kanban).
-      if (insertedCrboId) {
-        const { error: statusErr } = await supabase
-          .from('crbos')
-          .update({ statut: 'a_relire' })
-          .eq('id', insertedCrboId)
-          .eq('user_id', user.id)
-        if (statusErr) {
-          console.warn('Promotion statut a_relire échouée (best-effort):', statusErr)
-        }
-      }
-
-      // Nettoyage handoff + signale au dashboard d'afficher le bandeau de
-      // feedback sur ce CRBO (capture immédiate post-download).
+      playSwoosh()
       sessionStorage.removeItem(HANDOFF_KEY)
-      if (insertedCrboId) {
-        try {
-          sessionStorage.setItem('orthoia.feedback-pending', insertedCrboId)
-        } catch {}
-      }
-
-      // Ouvre la modale de chaînage : propose de démarrer un 2ᵉ bilan pour
-      // le même patient (cas typique screening MoCA → BETL approfondi). Si
-      // l'ortho répond "Non", on bascule sur le dashboard comme avant.
-      const firstTestArr = Array.isArray(fd.test_utilise) ? fd.test_utilise : [fd.test_utilise || '']
-      const firstTest = firstTestArr.filter(Boolean).join(', ') || 'ce bilan'
-      const patientLabel = [fd.patient_prenom, fd.patient_nom].filter(Boolean).join(' ').trim() || 'ce patient'
-      setChainSuggestion({ patientId: patientId || null, patientLabel, firstTest })
     } catch (err: any) {
       setError(err?.message || 'Erreur inattendue lors de la génération.')
     } finally {
