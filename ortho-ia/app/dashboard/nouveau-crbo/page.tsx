@@ -668,6 +668,54 @@ function NouveauCRBOContent() {
     setFormData(prev => ({ ...prev, [name]: value }))
   }
 
+  /** Normalise un nom de médecin pour comparaison : minuscules, accents
+   *  retirés, espaces compactés, préfixes "Dr"/"Docteur" ignorés. Évite
+   *  qu'"Dr. Bernard" ne matche pas "Docteur Bernard" dans la banque. */
+  const normalizeMedecinName = (s: string) =>
+    s
+      .toLowerCase()
+      .normalize('NFD').replace(/[̀-ͯ]/g, '')
+      .replace(/\b(dr\.?|docteur)\b/g, '')
+      .replace(/\s+/g, ' ')
+      .trim()
+
+  /** Saisie du nom de médecin avec auto-lien vers la banque : si le nom tapé
+   *  correspond à un médecin enregistré (match exact sur "prénom nom" ou sur
+   *  le nom seul), on pré-remplit automatiquement le téléphone et on marque
+   *  la fiche comme sélectionnée. L'utilisateur peut toujours réécrire le
+   *  téléphone manuellement après — on ne le réécrase pas si la nouvelle
+   *  saisie ne matche plus aucun médecin (évite de perdre une saisie en
+   *  cours). */
+  const handleMedecinNomChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const value = e.target.value
+    const norm = normalizeMedecinName(value)
+    if (!norm) {
+      setSelectedMedecinId('')
+      setFormData(prev => ({ ...prev, medecin_nom: value }))
+      return
+    }
+    const match = medecins.find(m => {
+      const full = normalizeMedecinName(`${m.prenom ? m.prenom + ' ' : ''}${m.nom}`)
+      const nomOnly = normalizeMedecinName(m.nom)
+      return full === norm || nomOnly === norm
+    })
+    if (match) {
+      const fullName = `${match.prenom ? match.prenom + ' ' : ''}${match.nom}`.trim()
+      setSelectedMedecinId(match.id)
+      setFormData(prev => ({
+        ...prev,
+        medecin_nom: fullName,
+        medecin_tel: match.telephone || prev.medecin_tel,
+      }))
+    } else {
+      // Pas de match : on garde la saisie libre et on dé-sélectionne la
+      // fiche carnet pour éviter une incohérence visuelle (carnet vert
+      // alors que le nom ne correspond plus).
+      if (selectedMedecinId) setSelectedMedecinId('')
+      setFormData(prev => ({ ...prev, medecin_nom: value }))
+    }
+  }
+
   // Sauvegarde un nouveau médecin dans la banque, le sélectionne, et pré-remplit
   // le formulaire CRBO avec son nom + téléphone.
   const handleSaveNewMedecin = async () => {
@@ -808,6 +856,11 @@ function NouveauCRBOContent() {
     if (currentStep < TOTAL_STEPS) {
       setCurrentStep(prev => prev + 1)
       playDing() // micro-feedback satisfaisant à chaque étape franchie
+      // Sinon la page reste au niveau du bouton "Continuer" (en bas) — on
+      // ramène l'utilisateur en haut pour qu'il voie le titre de la nouvelle étape.
+      if (typeof window !== 'undefined') {
+        window.scrollTo({ top: 0, behavior: 'smooth' })
+      }
     }
   }
 
@@ -829,6 +882,54 @@ function NouveauCRBOContent() {
   const prevStep = () => {
     if (currentStep > 1) {
       setCurrentStep(prev => prev - 1)
+      if (typeof window !== 'undefined') {
+        window.scrollTo({ top: 0, behavior: 'smooth' })
+      }
+    }
+  }
+
+  /**
+   * Réinitialise complètement le formulaire pour démarrer un nouveau dossier.
+   * Utilisé par le bouton "Changer" du bandeau patient (étape 1 → patient
+   * vierge, anamnèse vide, tests décochés, médecin réinitialisé). On
+   * conserve l'en-tête orthophoniste (ortho_nom/adresse/…) car il vient
+   * du profil et ne change pas d'un dossier à l'autre.
+   */
+  const handleResetFormForNewPatient = () => {
+    try { localStorage.removeItem(DRAFT_KEY) } catch {}
+    setSelectedPatientId('')
+    setSelectedMedecinId('')
+    setShowNewPatientForm(false)
+    setShowNewMedecinForm(false)
+    setMedecinSearch('')
+    setPreviousBilanFilename(null)
+    setPrefillBanner('')
+    setNotice('')
+    setError('')
+    setFormData(prev => ({
+      ...prev,
+      patient_prenom: '',
+      patient_nom: '',
+      patient_ddn: '',
+      patient_classe: '',
+      bilan_date: new Date().toISOString().split('T')[0],
+      bilan_type: 'initial',
+      medecin_nom: '',
+      medecin_tel: '',
+      motif: '',
+      anamnese: '',
+      elements_stables: '',
+      evolution_notes: '',
+      bilan_precedent_structure: null,
+      test_utilise: [],
+      resultats_manuels: '',
+      notes_analyse: '',
+      resultats_pdf: undefined,
+      audio_file: undefined,
+    }))
+    setCurrentStep(1)
+    if (typeof window !== 'undefined') {
+      window.scrollTo({ top: 0, behavior: 'smooth' })
     }
   }
 
@@ -1147,8 +1248,9 @@ function NouveauCRBOContent() {
           </div>
           <button
             type="button"
-            onClick={() => setCurrentStep(1)}
+            onClick={handleResetFormForNewPatient}
             className="text-xs font-medium text-green-700 hover:text-green-900 underline decoration-dotted whitespace-nowrap"
+            title="Vide le formulaire et redémarre à l'étape 1 pour saisir un nouveau dossier"
           >
             Changer
           </button>
@@ -1542,11 +1644,32 @@ function NouveauCRBOContent() {
                   type="text"
                   name="medecin_nom"
                   value={formData.medecin_nom}
-                  onChange={handleChange}
+                  onChange={handleMedecinNomChange}
                   required
+                  list="medecin-nom-suggestions"
+                  autoComplete="off"
                   className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-green-500"
                   placeholder="Docteur Bernard"
                 />
+                {/* Datalist : suggestions natives navigateur tirées de la
+                    banque médecins. Quand l'utilisateur en sélectionne une
+                    (ou tape le nom complet à la main), handleMedecinNomChange
+                    détecte le match et auto-remplit le téléphone. */}
+                <datalist id="medecin-nom-suggestions">
+                  {medecins.map((m) => {
+                    const full = `${m.prenom ? m.prenom + ' ' : ''}${m.nom}`.trim()
+                    return (
+                      <option key={m.id} value={full}>
+                        {[m.specialite, m.ville, m.telephone].filter(Boolean).join(' · ')}
+                      </option>
+                    )
+                  })}
+                </datalist>
+                {selectedMedecinId && (
+                  <p className="mt-1 text-xs text-green-700">
+                    ✓ Lié au médecin enregistré — téléphone pré-rempli depuis le carnet
+                  </p>
+                )}
               </div>
               <div>
                 <label className="block text-sm font-medium text-gray-700 mb-1">Téléphone médecin</label>
