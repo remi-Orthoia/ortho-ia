@@ -410,7 +410,7 @@ export default function Exalang36ScoresInput({ notes, onNotesChange, onResultats
             <ul className="list-disc list-inside space-y-0.5">
               <li><strong>Pas de diagnostic de TDL définitif avant 5 ans</strong> — préférer « retard simple » avec réévaluation à 6 mois.</li>
               <li><strong>Bilan ORL impératif</strong> à cet âge (otites séro-muqueuses fréquentes).</li>
-              <li>Multiples composantes Déficitaire + premiers mots tardifs (> 24 mois) + phrases tardives (> 36 mois) → orientation CRTLA.</li>
+              <li>Multiples composantes Déficitaire + premiers mots tardifs (au-delà de 24 mois) + phrases tardives (au-delà de 36 mois) → orientation CRTLA.</li>
               <li>Langage oral déficitaire + interaction / pragmatique atteintes (pointage, attention conjointe) → orientation CRA ou pédopsychiatrie pour suspicion TSA.</li>
               <li>Répétition de logatomes très sensible — marqueur précoce de fragilité phonologique / dyslexie future.</li>
               <li>Coordination PMI, crèche, école maternelle, orthoptie systématique.</li>
