@@ -1,5 +1,6 @@
 import { getTestModule } from './tests'
 import { getKnowledgeForTest } from './knowledge-base'
+import { buildKnowledgeContext } from './knowledge'
 
 const SYSTEM_BASE = `# IDENTITÉ
 
@@ -689,5 +690,11 @@ synthèse : "Le screening MoCA a été complété par [bilans approfondis] pour
 préciser le profil sur les domaines [X, Y]."`
     : ''
 
-  return `${SYSTEM_BASE}\n\n---\n\n# RÉFÉRENTIEL DES TESTS UTILISÉS\n\n${referentielSections}${multiTestBlock}${phaseSuffix}${formatSuffix}${knowledgeBlock}`
+  // Knowledge base contextuelle (style + DSM-5 + arbres décisionnels + effets
+  // lecture/orthographe) — sélection automatique selon les tests et la phase.
+  // En extract, on n'injecte que les arbres + effets (pour la classification
+  // domains[]) ; en synthesize, on ajoute le style + DSM-5.
+  const clinicalKnowledge = buildKnowledgeContext(tests, null, phase)
+
+  return `${SYSTEM_BASE}\n\n---\n\n# RÉFÉRENTIEL DES TESTS UTILISÉS\n\n${referentielSections}${multiTestBlock}${phaseSuffix}${formatSuffix}${knowledgeBlock}${clinicalKnowledge}`
 }
