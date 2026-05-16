@@ -27,6 +27,7 @@ import BecdScoresInput from '@/components/forms/BecdScoresInput'
 import BiaScoresInput from '@/components/forms/BiaScoresInput'
 import PrediLacScoresInput from '@/components/forms/PrediLacScoresInput'
 import ExalangLyfacScoresInput from '@/components/forms/ExalangLyfacScoresInput'
+import { TESTS_WITH_SPECIFIC_FORM, getComplementarySuggestions } from '@/lib/test-pairings'
 import { useToast } from '@/components/Toast'
 import { useFocusMode } from '@/components/FocusMode'
 import { playPrintAnimation } from '@/components/PrintAnimation'
@@ -168,6 +169,25 @@ function NouveauCRBOContent() {
   })
   const [savingMedecin, setSavingMedecin] = useState(false)
   const [profileChecked, setProfileChecked] = useState(false)
+
+  /**
+   * Agrégation multi-tests : chaque formulaire spécifique écrit dans son
+   * propre slot (clé = nom du test). Un useEffect concatène tous les slots
+   * dans formData.resultats_manuels, séparés par des délimiteurs clairs
+   * "=== <Test> ===" pour que Claude organise un CRBO par test.
+   *
+   * Mode mono-test : un seul slot, la chaîne est directement reportée dans
+   * resultats_manuels (pas de délimiteur supplémentaire — déjà géré dans
+   * chaque composant via son propre en-tête "=== MoCA — Screening ===").
+   *
+   * Mode multi-test : plusieurs slots, concaténés dans l'ordre où l'ortho
+   * a coché les tests.
+   *
+   * Tests sans formulaire spécifique : la saisie passe par le textarea
+   * générique qui écrit directement dans resultats_manuels via setFormData
+   * → on remet alors perTestResults à vide pour éviter d'écraser.
+   */
+  const [perTestResults, setPerTestResults] = useState<Record<string, string>>({})
 
   const [formData, setFormData] = useState<CRBOFormData>({
     ortho_nom: '',
@@ -771,13 +791,52 @@ function NouveauCRBOContent() {
   }
 
   const handleTestChange = (test: string) => {
+    const wasSelected = formData.test_utilise.includes(test)
     setFormData(prev => ({
       ...prev,
       test_utilise: prev.test_utilise.includes(test)
         ? prev.test_utilise.filter(t => t !== test)
         : [...prev.test_utilise, test]
     }))
+    // Si on désélectionne un test qui avait un formulaire spécifique, on
+    // vide son slot pour éviter de réinjecter ses résultats dans le CRBO.
+    if (wasSelected && TESTS_WITH_SPECIFIC_FORM.has(test)) {
+      setPerTestResults(prev => {
+        const next = { ...prev }
+        delete next[test]
+        return next
+      })
+    }
   }
+
+  /** Met à jour le slot d'un test spécifique avec sa string normalisée. */
+  const handleTestSlotChange = (testName: string, normalized: string) => {
+    setPerTestResults(prev => {
+      // Si la valeur est inchangée, ne pas re-render — évite des boucles.
+      if (prev[testName] === normalized) return prev
+      return { ...prev, [testName]: normalized }
+    })
+  }
+
+  /** Agrégation perTestResults → resultats_manuels.
+   *  Concatène uniquement les slots non vides des tests SÉLECTIONNÉS, dans
+   *  l'ordre de cochage. En mono-test, équivalent au comportement actuel ;
+   *  en multi-test, produit un bloc par test (chaque slot a déjà son
+   *  en-tête "=== <Test> ==="). */
+  useEffect(() => {
+    const selectedWithForm = formData.test_utilise.filter(t => TESTS_WITH_SPECIFIC_FORM.has(t))
+    if (selectedWithForm.length === 0) return
+    const slots = selectedWithForm
+      .map(t => (perTestResults[t] || '').trim())
+      .filter(s => s.length > 0)
+    if (slots.length === 0) {
+      // Aucun slot rempli — ne pas écraser un textarea générique éventuel.
+      return
+    }
+    const aggregated = slots.join('\n\n')
+    setFormData(prev => prev.resultats_manuels === aggregated ? prev : { ...prev, resultats_manuels: aggregated })
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [perTestResults, formData.test_utilise.join(',')])
 
   const handleFileUpload = async (e: React.ChangeEvent<HTMLInputElement>, type: 'pdf' | 'audio') => {
     const file = e.target.files?.[0]
@@ -2153,236 +2212,189 @@ Astuce : tapez /fatigue, /anxiete, /encouragements… pour réutiliser vos formu
               </div>
             </div>
 
-            {/* MoCA — saisie structurée. Quand le seul test sélectionné est la MoCA,
-                on remplace le textarea + import PDF (un screening 10 min se saisit
-                directement, pas par PDF) par une grille des 7 sous-scores avec
-                calcul automatique du total et badge sévérité. */}
-            {formData.test_utilise.length === 1 && formData.test_utilise[0] === 'MoCA' ? (
-              <div>
-                <label className="block text-sm font-medium text-gray-700 mb-3">
-                  Résultats MoCA *
-                </label>
-                {error && (
-                  <div className="mb-3 p-3 bg-red-50 border border-red-200 rounded-lg flex items-center gap-2 text-red-700 text-sm">
-                    <AlertCircle size={16} />
-                    {error}
+            {/* Bandeau "Ajouter un bilan complémentaire" — proposé si l'ortho
+                a sélectionné UN seul test pour l'instant et que ce test a des
+                compléments cliniquement pertinents (ex. MoCA → BETL/PREDIMEM/
+                PrediFex/BECD ; Examath → Exalang du même âge ; etc.).
+                L'ortho reste libre d'ignorer les suggestions ou de cocher
+                d'autres tests via la grille standard plus haut. */}
+            {(() => {
+              if (formData.test_utilise.length !== 1) return null
+              const rootTest = formData.test_utilise[0]
+              const { tests: suggestions, rationale } = getComplementarySuggestions(rootTest, formData.test_utilise)
+              if (suggestions.length === 0) return null
+              return (
+                <div className="mb-2 rounded-lg border border-blue-200 bg-blue-50 p-3">
+                  <p className="text-xs font-semibold text-blue-900 mb-1 flex items-center gap-1.5">
+                    💡 Ajouter un bilan complémentaire au CRBO ?
+                  </p>
+                  <p className="text-[11px] text-blue-700 mb-2 leading-relaxed">{rationale}</p>
+                  <div className="flex flex-wrap gap-1.5">
+                    {suggestions.map(t => (
+                      <button
+                        key={t}
+                        type="button"
+                        onClick={() => handleTestChange(t)}
+                        className="inline-flex items-center gap-1 px-2.5 py-1 rounded text-xs font-medium bg-white border border-blue-300 text-blue-800 hover:bg-blue-100 transition"
+                      >
+                        + {t}
+                      </button>
+                    ))}
                   </div>
-                )}
-                <MocaScoresInput
-                  notes={formData.comportement_seance || ''}
-                  onNotesChange={(v) => setFormData(prev => ({ ...prev, comportement_seance: v }))}
-                  onResultatsChange={(v) => setFormData(prev => ({ ...prev, resultats_manuels: v }))}
-                  onError={(msg) => setError(msg)}
-                />
-              </div>
-            ) : formData.test_utilise.length === 1 && formData.test_utilise[0] === 'BETL' ? (
-              <div>
-                <label className="block text-sm font-medium text-gray-700 mb-3">
-                  Résultats BETL *
-                </label>
-                {error && (
-                  <div className="mb-3 p-3 bg-red-50 border border-red-200 rounded-lg flex items-center gap-2 text-red-700 text-sm">
-                    <AlertCircle size={16} />
-                    {error}
-                  </div>
-                )}
-                <BetlScoresInput
-                  notes={formData.comportement_seance || ''}
-                  onNotesChange={(v) => setFormData(prev => ({ ...prev, comportement_seance: v }))}
-                  onResultatsChange={(v) => setFormData(prev => ({ ...prev, resultats_manuels: v }))}
-                  onError={(msg) => setError(msg)}
-                  ageEstime={(() => {
-                    if (!formData.patient_ddn) return undefined
-                    const birth = new Date(formData.patient_ddn)
-                    const bilan = new Date(formData.bilan_date)
-                    let years = bilan.getFullYear() - birth.getFullYear()
-                    const m = bilan.getMonth() - birth.getMonth()
-                    if (m < 0 || (m === 0 && bilan.getDate() < birth.getDate())) years--
-                    return years
-                  })()}
-                />
-              </div>
-            ) : formData.test_utilise.length === 1 && formData.test_utilise[0] === 'PREDIMEM' ? (
-              <div>
-                <label className="block text-sm font-medium text-gray-700 mb-3">
-                  Résultats PREDIMEM *
-                </label>
-                {error && (
-                  <div className="mb-3 p-3 bg-red-50 border border-red-200 rounded-lg flex items-center gap-2 text-red-700 text-sm">
-                    <AlertCircle size={16} />
-                    {error}
-                  </div>
-                )}
-                <PredimemScoresInput
-                  notes={formData.comportement_seance || ''}
-                  onNotesChange={(v) => setFormData(prev => ({ ...prev, comportement_seance: v }))}
-                  onResultatsChange={(v) => setFormData(prev => ({ ...prev, resultats_manuels: v }))}
-                  onError={(msg) => setError(msg)}
-                />
-              </div>
-            ) : formData.test_utilise.length === 1 && formData.test_utilise[0] === 'Examath' ? (
-              <div>
-                <label className="block text-sm font-medium text-gray-700 mb-3">
-                  Résultats Examath 8-15 *
-                </label>
-                {error && (
-                  <div className="mb-3 p-3 bg-red-50 border border-red-200 rounded-lg flex items-center gap-2 text-red-700 text-sm">
-                    <AlertCircle size={16} />
-                    {error}
-                  </div>
-                )}
-                <ExamathScoresInput
-                  notes={formData.comportement_seance || ''}
-                  onNotesChange={(v) => setFormData(prev => ({ ...prev, comportement_seance: v }))}
-                  onResultatsChange={(v) => setFormData(prev => ({ ...prev, resultats_manuels: v }))}
-                  onError={(msg) => setError(msg)}
-                />
-              </div>
-            ) : formData.test_utilise.length === 1 && formData.test_utilise[0] === 'EVALEO 6-15' ? (
-              <div>
-                <label className="block text-sm font-medium text-gray-700 mb-3">
-                  Résultats EVALEO 6-15 *
-                </label>
-                {error && (
-                  <div className="mb-3 p-3 bg-red-50 border border-red-200 rounded-lg flex items-center gap-2 text-red-700 text-sm">
-                    <AlertCircle size={16} />
-                    {error}
-                  </div>
-                )}
-                <Evaleo615ScoresInput
-                  notes={formData.comportement_seance || ''}
-                  onNotesChange={(v) => setFormData(prev => ({ ...prev, comportement_seance: v }))}
-                  onResultatsChange={(v) => setFormData(prev => ({ ...prev, resultats_manuels: v }))}
-                  onError={(msg) => setError(msg)}
-                />
-              </div>
-            ) : formData.test_utilise.length === 1 && formData.test_utilise[0] === 'Exalang 5-8' ? (
-              <div>
-                <label className="block text-sm font-medium text-gray-700 mb-3">
-                  Résultats Exalang 5-8 *
-                </label>
-                {error && (
-                  <div className="mb-3 p-3 bg-red-50 border border-red-200 rounded-lg flex items-center gap-2 text-red-700 text-sm">
-                    <AlertCircle size={16} />
-                    {error}
-                  </div>
-                )}
-                <Exalang58ScoresInput
-                  notes={formData.comportement_seance || ''}
-                  onNotesChange={(v) => setFormData(prev => ({ ...prev, comportement_seance: v }))}
-                  onResultatsChange={(v) => setFormData(prev => ({ ...prev, resultats_manuels: v }))}
-                  onError={(msg) => setError(msg)}
-                />
-              </div>
-            ) : formData.test_utilise.length === 1 && formData.test_utilise[0] === 'Exalang 3-6' ? (
-              <div>
-                <label className="block text-sm font-medium text-gray-700 mb-3">
-                  Résultats Exalang 3-6 *
-                </label>
-                {error && (
-                  <div className="mb-3 p-3 bg-red-50 border border-red-200 rounded-lg flex items-center gap-2 text-red-700 text-sm">
-                    <AlertCircle size={16} />
-                    {error}
-                  </div>
-                )}
-                <Exalang36ScoresInput
-                  notes={formData.comportement_seance || ''}
-                  onNotesChange={(v) => setFormData(prev => ({ ...prev, comportement_seance: v }))}
-                  onResultatsChange={(v) => setFormData(prev => ({ ...prev, resultats_manuels: v }))}
-                  onError={(msg) => setError(msg)}
-                />
-              </div>
-            ) : formData.test_utilise.length === 1 && formData.test_utilise[0] === 'PrediFex' ? (
-              <div>
-                <label className="block text-sm font-medium text-gray-700 mb-3">
-                  Résultats PrediFex *
-                </label>
-                {error && (
-                  <div className="mb-3 p-3 bg-red-50 border border-red-200 rounded-lg flex items-center gap-2 text-red-700 text-sm">
-                    <AlertCircle size={16} />
-                    {error}
-                  </div>
-                )}
-                <PrediFexScoresInput
-                  notes={formData.comportement_seance || ''}
-                  onNotesChange={(v) => setFormData(prev => ({ ...prev, comportement_seance: v }))}
-                  onResultatsChange={(v) => setFormData(prev => ({ ...prev, resultats_manuels: v }))}
-                  onError={(msg) => setError(msg)}
-                />
-              </div>
-            ) : formData.test_utilise.length === 1 && formData.test_utilise[0] === 'BECD' ? (
-              <div>
-                <label className="block text-sm font-medium text-gray-700 mb-3">
-                  Résultats BECD *
-                </label>
-                {error && (
-                  <div className="mb-3 p-3 bg-red-50 border border-red-200 rounded-lg flex items-center gap-2 text-red-700 text-sm">
-                    <AlertCircle size={16} />
-                    {error}
-                  </div>
-                )}
-                <BecdScoresInput
-                  notes={formData.comportement_seance || ''}
-                  onNotesChange={(v) => setFormData(prev => ({ ...prev, comportement_seance: v }))}
-                  onResultatsChange={(v) => setFormData(prev => ({ ...prev, resultats_manuels: v }))}
-                  onError={(msg) => setError(msg)}
-                />
-              </div>
-            ) : formData.test_utilise.length === 1 && formData.test_utilise[0] === 'BIA' ? (
-              <div>
-                <label className="block text-sm font-medium text-gray-700 mb-3">
-                  Résultats BIA *
-                </label>
-                {error && (
-                  <div className="mb-3 p-3 bg-red-50 border border-red-200 rounded-lg flex items-center gap-2 text-red-700 text-sm">
-                    <AlertCircle size={16} />
-                    {error}
-                  </div>
-                )}
-                <BiaScoresInput
-                  notes={formData.comportement_seance || ''}
-                  onNotesChange={(v) => setFormData(prev => ({ ...prev, comportement_seance: v }))}
-                  onResultatsChange={(v) => setFormData(prev => ({ ...prev, resultats_manuels: v }))}
-                  onError={(msg) => setError(msg)}
-                />
-              </div>
-            ) : formData.test_utilise.length === 1 && formData.test_utilise[0] === 'PrediLac' ? (
-              <div>
-                <label className="block text-sm font-medium text-gray-700 mb-3">
-                  Résultats PrediLac *
-                </label>
-                {error && (
-                  <div className="mb-3 p-3 bg-red-50 border border-red-200 rounded-lg flex items-center gap-2 text-red-700 text-sm">
-                    <AlertCircle size={16} />
-                    {error}
-                  </div>
-                )}
-                <PrediLacScoresInput
-                  notes={formData.comportement_seance || ''}
-                  onNotesChange={(v) => setFormData(prev => ({ ...prev, comportement_seance: v }))}
-                  onResultatsChange={(v) => setFormData(prev => ({ ...prev, resultats_manuels: v }))}
-                  onError={(msg) => setError(msg)}
-                />
-              </div>
-            ) : formData.test_utilise.length === 1 && formData.test_utilise[0] === 'Exalang Lyfac' ? (
-              <div>
-                <label className="block text-sm font-medium text-gray-700 mb-3">
-                  Résultats Exalang Lyfac *
-                </label>
-                {error && (
-                  <div className="mb-3 p-3 bg-red-50 border border-red-200 rounded-lg flex items-center gap-2 text-red-700 text-sm">
-                    <AlertCircle size={16} />
-                    {error}
-                  </div>
-                )}
-                <ExalangLyfacScoresInput
-                  notes={formData.comportement_seance || ''}
-                  onNotesChange={(v) => setFormData(prev => ({ ...prev, comportement_seance: v }))}
-                  onResultatsChange={(v) => setFormData(prev => ({ ...prev, resultats_manuels: v }))}
-                  onError={(msg) => setError(msg)}
-                />
-              </div>
-            ) : (
+                </div>
+              )
+            })()}
+
+            {/* Multi-tests : rendu de TOUS les formulaires spécifiques des tests
+                sélectionnés. Chaque formulaire écrit dans son propre slot via
+                handleTestSlotChange ; le useEffect agrège les slots dans
+                formData.resultats_manuels (1 bloc par test, séparés par
+                délimiteurs "=== <Test> ===" déjà inclus par chaque composant).
+                Si l'ortho a aussi coché des tests SANS formulaire spécifique
+                (ex. EVALO 2-6, ELO, BALE…), le textarea générique reste
+                disponible juste en dessous pour saisir ces résultats à la main. */}
+            {(() => {
+              const selectedWithForm = formData.test_utilise.filter(t => TESTS_WITH_SPECIFIC_FORM.has(t))
+              if (selectedWithForm.length === 0) return null
+              // Évite les remontées de "notes" depuis chaque sous-form qui
+              // écraseraient celles du précédent : on partage un seul champ
+              // comportement_seance pour toute la session.
+              const sharedNotesProps = {
+                notes: formData.comportement_seance || '',
+                onNotesChange: (v: string) => setFormData(prev => ({ ...prev, comportement_seance: v })),
+                onError: (msg: string) => setError(msg),
+              }
+              const isMulti = selectedWithForm.length > 1
+              return (
+                <div className="space-y-4">
+                  {isMulti && (
+                    <div className="rounded-lg border border-emerald-200 bg-emerald-50 p-3 text-xs text-emerald-900 leading-relaxed">
+                      <strong>Mode chaînage activé</strong> — {selectedWithForm.length} bilans dans le même CRBO. Chaque test
+                      aura ses propres résultats + conclusion qualitative (1-2 paragraphes), puis une synthèse globale.
+                    </div>
+                  )}
+                  {error && (
+                    <div className="p-3 bg-red-50 border border-red-200 rounded-lg flex items-center gap-2 text-red-700 text-sm">
+                      <AlertCircle size={16} />
+                      {error}
+                    </div>
+                  )}
+                  {selectedWithForm.map(test => (
+                    <div key={test} className="rounded-lg border border-gray-200 bg-white overflow-hidden">
+                      <div className="px-4 py-2 border-b border-gray-200 bg-gray-50 flex items-center justify-between">
+                        <h3 className="text-sm font-semibold text-gray-900">Résultats {test} *</h3>
+                        {isMulti && (
+                          <button
+                            type="button"
+                            onClick={() => handleTestChange(test)}
+                            className="text-xs text-gray-500 hover:text-red-600 transition"
+                          >
+                            Retirer ce test
+                          </button>
+                        )}
+                      </div>
+                      <div className="p-4">
+                        {test === 'MoCA' && (
+                          <MocaScoresInput
+                            {...sharedNotesProps}
+                            onResultatsChange={(v) => handleTestSlotChange('MoCA', v)}
+                          />
+                        )}
+                        {test === 'BETL' && (
+                          <BetlScoresInput
+                            {...sharedNotesProps}
+                            onResultatsChange={(v) => handleTestSlotChange('BETL', v)}
+                            ageEstime={(() => {
+                              if (!formData.patient_ddn) return undefined
+                              const birth = new Date(formData.patient_ddn)
+                              const bilan = new Date(formData.bilan_date)
+                              let years = bilan.getFullYear() - birth.getFullYear()
+                              const m = bilan.getMonth() - birth.getMonth()
+                              if (m < 0 || (m === 0 && bilan.getDate() < birth.getDate())) years--
+                              return years
+                            })()}
+                          />
+                        )}
+                        {test === 'PREDIMEM' && (
+                          <PredimemScoresInput
+                            {...sharedNotesProps}
+                            onResultatsChange={(v) => handleTestSlotChange('PREDIMEM', v)}
+                          />
+                        )}
+                        {test === 'Examath' && (
+                          <ExamathScoresInput
+                            {...sharedNotesProps}
+                            onResultatsChange={(v) => handleTestSlotChange('Examath', v)}
+                          />
+                        )}
+                        {test === 'EVALEO 6-15' && (
+                          <Evaleo615ScoresInput
+                            {...sharedNotesProps}
+                            onResultatsChange={(v) => handleTestSlotChange('EVALEO 6-15', v)}
+                          />
+                        )}
+                        {test === 'Exalang 5-8' && (
+                          <Exalang58ScoresInput
+                            {...sharedNotesProps}
+                            onResultatsChange={(v) => handleTestSlotChange('Exalang 5-8', v)}
+                          />
+                        )}
+                        {test === 'Exalang 3-6' && (
+                          <Exalang36ScoresInput
+                            {...sharedNotesProps}
+                            onResultatsChange={(v) => handleTestSlotChange('Exalang 3-6', v)}
+                          />
+                        )}
+                        {test === 'PrediFex' && (
+                          <PrediFexScoresInput
+                            {...sharedNotesProps}
+                            onResultatsChange={(v) => handleTestSlotChange('PrediFex', v)}
+                          />
+                        )}
+                        {test === 'BECD' && (
+                          <BecdScoresInput
+                            {...sharedNotesProps}
+                            onResultatsChange={(v) => handleTestSlotChange('BECD', v)}
+                          />
+                        )}
+                        {test === 'BIA' && (
+                          <BiaScoresInput
+                            {...sharedNotesProps}
+                            onResultatsChange={(v) => handleTestSlotChange('BIA', v)}
+                          />
+                        )}
+                        {test === 'PrediLac' && (
+                          <PrediLacScoresInput
+                            {...sharedNotesProps}
+                            onResultatsChange={(v) => handleTestSlotChange('PrediLac', v)}
+                          />
+                        )}
+                        {test === 'Exalang Lyfac' && (
+                          <ExalangLyfacScoresInput
+                            {...sharedNotesProps}
+                            onResultatsChange={(v) => handleTestSlotChange('Exalang Lyfac', v)}
+                          />
+                        )}
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              )
+            })()}
+
+            {/* Textarea générique — affiché UNIQUEMENT si :
+                - aucun test sélectionné, OU
+                - au moins un test sélectionné SANS formulaire spécifique
+                  (ex. EVALO 2-6, ELO, BALE, BILO, BELEC, N-EEL, OMF, Autre).
+                En mode multi-test, l'agrégation des forms écrit déjà dans
+                resultats_manuels — ce textarea sert pour les COMPLÉMENTS hors
+                des tests structurés. */}
+            {(() => {
+              const selectedWithForm = formData.test_utilise.filter(t => TESTS_WITH_SPECIFIC_FORM.has(t))
+              const selectedWithoutForm = formData.test_utilise.filter(t => !TESTS_WITH_SPECIFIC_FORM.has(t))
+              const showGeneric = selectedWithForm.length === 0 || selectedWithoutForm.length > 0
+              if (!showGeneric) return null
+              return (
               <div>
                 <label className="block text-sm font-medium text-gray-700 mb-1">
                   Résultats (scores) *
@@ -2452,16 +2464,21 @@ Lecture de mots (score) : 15/100, É-T : -6.62, P5
                   </p>
                 )}
 
-                {/* Hint si MoCA est mélangé avec d'autres tests */}
-                {formData.test_utilise.includes('MoCA') && formData.test_utilise.length > 1 && (
-                  <div className="mt-3 p-3 rounded-lg border border-amber-200 bg-amber-50 text-xs text-amber-800">
-                    <strong>MoCA + autre(s) test(s) sélectionné(s)</strong> : la saisie structurée MoCA
-                    est disponible uniquement quand la MoCA est le seul test choisi. Vous pouvez ici
-                    saisir les scores MoCA librement ligne par ligne (ex : « Mémoire : 3/5 »).
-                  </div>
-                )}
+                {/* Compléments hors tests structurés : on liste les tests
+                    sélectionnés qui n'ont PAS de formulaire spécifique pour
+                    rappeler à l'ortho lesquels doivent être saisis ici. */}
+                {(() => {
+                  const sansForm = formData.test_utilise.filter(t => !TESTS_WITH_SPECIFIC_FORM.has(t))
+                  if (sansForm.length === 0) return null
+                  return (
+                    <div className="mt-3 p-3 rounded-lg border border-gray-200 bg-gray-50 text-xs text-gray-700">
+                      <strong>Saisir ici les résultats pour :</strong> {sansForm.join(', ')}.
+                    </div>
+                  )
+                })()}
               </div>
-            )}
+              )
+            })()}
 
             {/* Comportement en séance — observations structurées */}
             <div className="bg-indigo-50 border border-indigo-200 rounded-xl p-4 space-y-3">

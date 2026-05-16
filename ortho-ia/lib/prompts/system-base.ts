@@ -582,5 +582,112 @@ export function buildSystemPrompt(
     })
     .join('\n\n---\n\n')
 
-  return `${SYSTEM_BASE}\n\n---\n\n# RÉFÉRENTIEL DES TESTS UTILISÉS\n\n${referentielSections}${phaseSuffix}${formatSuffix}${knowledgeBlock}`
+  // Instructions spécifiques chaînage multi-tests : quand l'ortho a coché
+  // 2+ tests, on demande à Claude de structurer le CRBO en BLOCS par test
+  // (résultats + 1-2 paragraphes de conclusion qualitative PAR test) puis
+  // une synthèse globale en aval. Cas typique : MoCA + BETL + PREDIMEM
+  // dans un même CRBO senior.
+  const multiTestBlock = activeModules.length >= 2
+    ? `
+
+---
+
+# 🔗 MODE CHAÎNAGE — ${activeModules.length} BILANS DANS UN MÊME CRBO
+
+L'orthophoniste a sélectionné PLUSIEURS bilans dans le même CRBO :
+${activeModules.map((m, i) => `  ${i + 1}. **${m.nom}** (${m.auteurs}, ${m.editeur} ${m.annee})`).join('\n')}
+
+C'est une pratique clinique courante : par exemple un screening MoCA suivi d'un
+bilan langagier BETL et d'un bilan mnésique PREDIMEM pour un patient adulte/
+senior présentant une plainte cognitive complexe. **Le CRBO final doit refléter
+chaque bilan distinctement** pour respecter la rigueur méthodologique de chaque
+test.
+
+## RÈGLES DE STRUCTURATION CRBO MULTI-TEST
+
+### 1. Domaines (\`domains[]\` du JSON)
+Tu DOIS organiser \`domains[]\` de telle sorte que **chaque test ait ses
+propres domaines distincts**. Préfixe ou groupe les domaines par test :
+- Si chaque test a sa propre nomenclature de groupes (A.1 Langage oral, A.2
+  Métaphonologie pour Exalang ; "MoCA — Profil cognitif" pour MoCA ; "Module 1
+  — Expression orale" pour BIA…), conserve-la verbatim.
+- Ne mélange JAMAIS les épreuves d'un test avec celles d'un autre dans un même
+  \`domains[i]\`. Chaque domaine appartient à UN SEUL test.
+- L'ordre des \`domains[]\` suit l'ordre de sélection des tests par l'ortho
+  (premier test d'abord, puis le suivant, etc.).
+
+### 2. Commentaires de domaine (\`domain_commentaires[]\`)
+Chaque domaine garde son commentaire qualitatif court (cf. règles du format
+choisi). En multi-test, **ne PAS écrire de synthèse globale dans ces
+commentaires** — la synthèse cross-tests va dans \`diagnostic\` et
+\`difficultes_identifiees\`.
+
+### 3. Conclusion qualitative PAR TEST (1-2 paragraphes courts)
+**Nouveau en multi-test** : dans la rédaction (textes longs comme
+\`diagnostic\` ou les commentaires de domaines), tu inclus pour CHAQUE TEST un
+bloc de conclusion qualitative **court (1-2 paragraphes maxi, pas 3-4)** qui
+résume :
+- Ce que le test apporte (ex. "Le MoCA met en évidence X et Y." / "Le BETL
+  confirme une atteinte langagière de type Z." / "Le PREDIMEM précise un
+  profil mnésique de récupération préservée mais d'encodage fragile.").
+- L'articulation avec les autres tests si pertinent (ex. "Ces résultats sont
+  cohérents avec le profil MoCA déjà observé.").
+
+Formellement, en mode CHAÎNAGE, le \`diagnostic\` final s'organise ainsi :
+\`\`\`
+**Synthèse par test**
+
+**[Nom Test 1]** — 1 à 2 paragraphes courts récapitulant les résultats clés
+et leur interprétation propre au test.
+
+**[Nom Test 2]** — idem.
+
+**[Nom Test 3]** — idem.
+
+**Hypothèse de diagnostic globale** — 1 paragraphe court qui CROISE les
+résultats des tests et formule l'hypothèse clinique en synthèse (en respectant
+les règles de formulation diagnostique habituelles : modalisation, pas de
+diagnostic étiologique pour les screenings, etc.).
+\`\`\`
+
+### 4. Recommandations (\`recommandations\`)
+La phrase unique imposée pour le format Complet reste valable, MAIS elle doit
+prendre en compte l'ENSEMBLE des tests passés (pas seulement le premier). Si
+les tests convergent vers une orientation (ex. consultation mémoire +
+neurologie), une seule phrase peut couvrir l'orientation transversale.
+
+### 5. Axes thérapeutiques (\`axes_therapeutiques\`)
+Max 4 axes — peuvent couvrir plusieurs tests si le profil le justifie. NE PAS
+multiplier 4 axes × N tests : la rigueur clinique impose une priorisation.
+
+### 6. PAP / aménagements (\`pap_suggestions\`)
+Idem — max 6 aménagements pertinents pour le profil global, pas par test.
+
+### 7. \`points_forts\` et \`difficultes_identifiees\`
+Ces sections deviennent **transversales** en multi-test : tu y synthétises
+les points forts ET les difficultés observés à TRAVERS les tests, dans un
+texte fluide qui n'énumère pas test par test (sinon redondance avec la
+synthèse du \`diagnostic\`).
+
+### 8. \`reasoning_clinical\` (Pourquoi cette conclusion ?)
+- \`indices_retenus\` : 2-4 indices qui peuvent venir de tests différents.
+- \`dissociations\` : croisements inter-tests si pertinents (ex. "MoCA en zone
+  jaune isolée alors que PREDIMEM préservé → fragilité globale légère sans
+  atteinte mnésique spécifique").
+- \`sous_type\` : peut combiner plusieurs sous-profils si multi-tests le
+  justifie.
+
+## RÈGLES DE LECTURE DES RÉSULTATS BRUTS
+
+Les résultats que l'ortho a saisis sont délimités par test avec des en-têtes
+\`=== <NomTest> ===\`. Respecte STRICTEMENT ces frontières — ne déplace pas
+une épreuve d'un test à un autre sous prétexte qu'elle "ressemble".
+
+⚠️ Si l'un des tests sélectionnés est un SCREENING (MoCA) et les autres sont
+des bilans APPROFONDIS (BETL, PREDIMEM…), tu signales explicitement dans la
+synthèse : "Le screening MoCA a été complété par [bilans approfondis] pour
+préciser le profil sur les domaines [X, Y]."`
+    : ''
+
+  return `${SYSTEM_BASE}\n\n---\n\n# RÉFÉRENTIEL DES TESTS UTILISÉS\n\n${referentielSections}${multiTestBlock}${phaseSuffix}${formatSuffix}${knowledgeBlock}`
 }
