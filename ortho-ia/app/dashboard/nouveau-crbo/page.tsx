@@ -23,6 +23,7 @@ import Evaleo615ScoresInput from '@/components/forms/Evaleo615ScoresInput'
 import Exalang58ScoresInput from '@/components/forms/Exalang58ScoresInput'
 import Exalang36ScoresInput from '@/components/forms/Exalang36ScoresInput'
 import PrediFexScoresInput from '@/components/forms/PrediFexScoresInput'
+import BecdScoresInput from '@/components/forms/BecdScoresInput'
 import { useToast } from '@/components/Toast'
 import { useFocusMode } from '@/components/FocusMode'
 import { playPrintAnimation } from '@/components/PrintAnimation'
@@ -2300,6 +2301,24 @@ Astuce : tapez /fatigue, /anxiete, /encouragements… pour réutiliser vos formu
                   </div>
                 )}
                 <PrediFexScoresInput
+                  notes={formData.comportement_seance || ''}
+                  onNotesChange={(v) => setFormData(prev => ({ ...prev, comportement_seance: v }))}
+                  onResultatsChange={(v) => setFormData(prev => ({ ...prev, resultats_manuels: v }))}
+                  onError={(msg) => setError(msg)}
+                />
+              </div>
+            ) : formData.test_utilise.length === 1 && formData.test_utilise[0] === 'BECD' ? (
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-3">
+                  Résultats BECD *
+                </label>
+                {error && (
+                  <div className="mb-3 p-3 bg-red-50 border border-red-200 rounded-lg flex items-center gap-2 text-red-700 text-sm">
+                    <AlertCircle size={16} />
+                    {error}
+                  </div>
+                )}
+                <BecdScoresInput
                   notes={formData.comportement_seance || ''}
                   onNotesChange={(v) => setFormData(prev => ({ ...prev, comportement_seance: v }))}
                   onResultatsChange={(v) => setFormData(prev => ({ ...prev, resultats_manuels: v }))}

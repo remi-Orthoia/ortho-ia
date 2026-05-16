@@ -183,6 +183,7 @@ export const TESTS_OPTIONS = [
   'BETL',
   'PREDIMEM',
   'PrediFex',
+  'BECD',
   'Examath',
   'OMF / Déglutition',
   'Autre'
