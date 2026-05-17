@@ -1,6 +1,11 @@
 import { getTestModule } from './tests'
 import { getKnowledgeForTest } from './knowledge-base'
 import { buildKnowledgeContext } from './knowledge'
+import {
+  LECTURE_MOTS, LECTURE_NON_MOTS, REPETITION_LOGATOMES,
+  DICTEE_MOTS, DENOMINATION_IMAGES, METAPHONOLOGIE_ITEMS,
+  type TestVocabularyList,
+} from '@/lib/test-vocabulary'
 
 const SYSTEM_BASE = `# IDENTITÉ
 
@@ -730,5 +735,55 @@ préciser le profil sur les domaines [X, Y]."`
   // domains[]) ; en synthesize, on ajoute le style + DSM-5.
   const clinicalKnowledge = buildKnowledgeContext(tests, null, phase)
 
-  return `${SYSTEM_BASE}\n\n---\n\n# RÉFÉRENTIEL DES TESTS UTILISÉS\n\n${referentielSections}${multiTestBlock}${phaseSuffix}${formatSuffix}${knowledgeBlock}${clinicalKnowledge}`
+  // Vocabulaire des items de test (extrait des cahiers de passation officiels)
+  // — permet à l'IA de reconnaître/corriger un mot d'item de test cité dans
+  // les notes user, même si la transcription Whisper ou la saisie clavier
+  // a légèrement déformé le mot (ex: "pan" tapé alors que c'est "paon",
+  // un homophone très fréquent dans Exalang).
+  const vocabHint = buildTestVocabularyHint(tests)
+
+  return `${SYSTEM_BASE}\n\n---\n\n# RÉFÉRENTIEL DES TESTS UTILISÉS\n\n${referentielSections}${multiTestBlock}${phaseSuffix}${formatSuffix}${knowledgeBlock}${clinicalKnowledge}${vocabHint}`
+}
+
+/**
+ * Construit un bloc d'instruction qui injecte le vocabulaire des items
+ * pertinents pour les tests sélectionnés. Ne charge QUE les listes
+ * correspondant aux tests cochés par l'ortho (pour limiter les tokens).
+ */
+function buildTestVocabularyHint(tests: string[]): string {
+  const testKey = (s: string) =>
+    s.toLowerCase().replace(/\s+/g, '_').replace(/[^a-z0-9_]/g, '')
+  const wantedKeys = new Set(tests.map(testKey))
+  const wantedKeysArr = Array.from(wantedKeys)
+  const matchesTest = (vocabTestKey: string) => {
+    if (wantedKeys.has(vocabTestKey)) return true
+    // Match plus lâche : 'exalang_8_11' couvre 'Exalang 8-11', 'evaleo_cp' couvre 'EVALEO 6-15', etc.
+    const stem = vocabTestKey.split('_')[0]
+    for (const wk of wantedKeysArr) {
+      if (wk.startsWith(stem) || (stem === 'evaleo' && wk.startsWith('evaleo'))) return true
+    }
+    return false
+  }
+  const buckets: Array<{ label: string; lists: TestVocabularyList[] }> = [
+    { label: 'Lecture de mots', lists: LECTURE_MOTS.filter(l => matchesTest(l.test)) },
+    { label: 'Lecture de non-mots / pseudomots / logatomes', lists: LECTURE_NON_MOTS.filter(l => matchesTest(l.test)) },
+    { label: 'Répétition de logatomes', lists: REPETITION_LOGATOMES.filter(l => matchesTest(l.test)) },
+    { label: 'Dictée de mots', lists: DICTEE_MOTS.filter(l => matchesTest(l.test)) },
+    { label: "Dénomination d'images", lists: DENOMINATION_IMAGES.filter(l => matchesTest(l.test)) },
+    { label: 'Métaphonologie (items support)', lists: METAPHONOLOGIE_ITEMS.filter(l => matchesTest(l.test)) },
+  ].filter(b => b.lists.length > 0)
+  if (buckets.length === 0) return ''
+  const lines = buckets.map(b => {
+    const itemsFlat = b.lists.flatMap(l => l.items).slice(0, 80) // borne tokens
+    return `- **${b.label}** : ${itemsFlat.join(', ')}.`
+  }).join('\n')
+  return `\n\n---\n\n# 📚 VOCABULAIRE DES ITEMS DE TEST (extraits des cahiers de passation officiels)
+
+L'orthophoniste cite parfois dans ses notes (typées ou dictées vocalement) des mots qui sont des **items précis du test**. Ces mots sont fréquemment mal retranscrits par Whisper ou tapés avec une faute (homophones type "paon" → "pan", logatomes inventés type "spictoleur" → "spic toleur"…).
+
+🚨 **RÈGLE** : si tu reconnais qu'un mot dans les notes user fait référence à un item de test ci-dessous, utilise dans le CRBO la **graphie canonique exacte** (telle que listée ici), pas la version déformée.
+
+${lines}
+
+Exemple : si l'ortho a écrit "Léa a lu 'pan' à la place du mot cible", et que le test est Exalang 8-11 (item canonique "paon"), tu écris dans le CRBO "Léa a lu 'pan' à la place de 'paon'" (pas "pan" tel quel).`
 }

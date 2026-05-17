@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server'
 import OpenAI from 'openai'
 import { createServerSupabaseClient } from '@/lib/supabase-server'
+import { WHISPER_PROMPT_CONTEXT } from '@/lib/test-vocabulary'
 
 // Whisper accepte jusqu'à 25Mo. Pour de l'audio webm/mp3, ça représente
 // ~30 minutes de dictée — suffisant pour une anamnèse complète.
@@ -95,13 +96,11 @@ export async function POST(request: NextRequest) {
       // Le `prompt` oriente le décodeur vers le bon vocabulaire ET réduit
       // drastiquement les hallucinations de générique YouTube ("sous-titres
       // réalisés par la communauté d'Amara.org", "merci d'avoir regardé"...).
-      // On lui donne un mini-contexte orthophonie + les termes courants.
-      prompt:
-        "Transcription d'une dictée d'orthophoniste pour un compte rendu de bilan orthophonique (CRBO). " +
-        "Vocabulaire : anamnèse, bilan, motif de consultation, langage oral, langage écrit, phonologie, " +
-        "lexique, syntaxe, conscience phonologique, mémoire de travail, dyslexie, dysorthographie, dysphasie, " +
-        "Exalang, EVALO, écart-type, percentile, déficitaire, pathologique, normé. " +
-        "Patient, médecin prescripteur, école, classe, CP, CE1, CE2, CM1, CM2, maternelle.",
+      // Contenu généré depuis lib/test-vocabulary.ts — inclut les vrais items
+      // des cahiers de passation (logatomes, homophones type "paon", mots
+      // irréguliers type "femme/automne/monsieur") pour que Whisper les
+      // reconnaisse même quand l'ortho les cite dans sa dictée.
+      prompt: WHISPER_PROMPT_CONTEXT,
       response_format: 'text',
     })
 
