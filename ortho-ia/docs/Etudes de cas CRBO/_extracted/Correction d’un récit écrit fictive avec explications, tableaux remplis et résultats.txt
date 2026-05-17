@@ -1,0 +1,280 @@
+      Correction d'un récit écrit fictive avec explications, tableaux remplis et résultats
+                                           (L Launay M Cartier)
+
+Nous vous proposons différentes étapes pour soulager votre cotation et le temps pour l'effectuer :
+1.Retranscrire exactement comme le sujet a écrit sur un document word et l'imprimer
+2. Sur la plateforme dans microstructure (tableau), faire un copier-coller de chaque phrase. Une phrase
+par ligne de manière à la voir en entier.
+3. Pour que le comptage des mots soit correct, mettre les / sur la plateforme (voir livret pour
+précisions) :
+Alor c/ es l'histoire d'une famille qui a un chien.
+Les parent von faire des course toute la journée.
+Les 3 enfant reste seule et jous tencilman.
+Tout/ a/ cou, il se rende conte, tousse, que leurs chien et parti.
+Il le cherche sur la terace.
+Il voyent que le chien a fait un trous dans le griage pour ce sové au park.
+Il vont demendé a le gardin du jardain si il l/ a pas vue leure chien.
+Il a vu persone.
+Et pui le petit ce fait arosé par un garson qui est maichan
+Il est tous mouyé
+Du/ cou, la fille en/maine sont petit frér ce chengé.
+Pandent ce temp, le grand garson se cache sous une voiture
+il reparte mes il trouve leur chien sur la térasse avec une belle chiene.
+La fille prévin son grand fraire pour qu/ il rentre.
+Les parent rentre jus/ tau moment ou l/ éné arive
+Et voila
+ on trouve 157 mots (indiqué dans les résultats du 1er tableau)
+
+4. coter la macrostructure (avec texte papier sous les yeux) : voir tableau ci-dessous
+5. Coter les inférences ( en gras dans le texte précédent) dont éléments mentaux et évaluations + les
+erreurs d'interprétation ( souligné dans le texte précédent) : avoir les images sous les yeux pour s'assurer
+qu'on ne le sait pas sur l'image.
+Remarques et commentaires :
+
+         Il ne parle pas du chien et de la terrasse dans l'introduction/l'exposition (avant l'élément
+         perturbateur) donc pas de point.
+          Il y a bien 2 éléments perturbateurs : on a bien l'idée que « le chien n'est plus là » et que
+
+             « quelqu'un s'en est aperçu ».
+          Pour la cotation des inférences, soit vous écrivez chaque inférence dans un encadré, soit vous
+
+             les notez sur papier, les compter et écrivez le nombre total (10 dans ce récit) dans un encadré.
+          Idem pour les erreurs d'identification
+6. Ecouter l'enregistrement pour repérer ce qui est d'ordre linguistique ou orthographique (avec un
+feutre de couleur). Noter sur le texte papier sous les mots ce que l'enfant a dit à l'oral (enregistrement).
+En effet, en microstructure, on ne cotera que les éléments adaptés sans prendre en compte les erreurs
+orthographiques. Faire comme si c'est de l'oral. Les erreurs linguistiques en vert seront reportées dans le
+tableau erreurs et n'apparaitront pas dans le tableau microstructure.
+Alor ces l'histoire d'une famille qui a un chien.
+Les parent von faire des course toute la journée.
+Les 3 enfant reste seule et jous tencilman (tranquillement).
+Toutacou, il se rende conte, tousse, que leurs chien et parti.
+Il le cherche sur la terace (terrasse).
+Il voyent (voye) que le chien a fait un trous dans le griage (grillage) pour ce sové au park.
+Il vont demendé a le gardin (gardien) du jardain si il (si il) n' la pas vue leure chien.
+Il n' a vu persone.
+Et pui le petit ce fait arosé par un garson qui est maichan
+Il est tous (tout) mouyé (mouillé)
+Ducou, la fille en maine sont petit frér ce chengé.
+Pandent ce temp, le grand garson se cache sous une voiture
+il reparte mes il trouve leur chien sur la térasse avec une belle chiene (chienne).
+La fille prévin (prévient) son grand fraire pour quil rentre.
+Les parent rentre justau moment ou léné arive
+Et voila
+
+7. coter la microstructure : on vous conseille de coter colonne par colonne pour moins se perdre et
+    faire des erreurs. La correction se fera par énoncés.
+
+Enoncés                   cotation                       Explications et commentaires
+
+Alor ces l'histoire d'une 1FV(a)                         « c'est » est un présentatif qui
+                                                         introduit une pseudo-relative
+famille qui a un chien.   1 présentatif                  « qui ». Ne pas compter le « est » en
+                                                         verbe, ni le « qui » en pronom relatif
+Les parent von faire des 1 FV (vont)                     et proposition subordonnée relative
+                                                         « Famille» est le référent (1ère fois
+course toute la journée.  1 coréférent lexical           que l'on parle des 2 parents et des 3
+                                                         enfants) donc « parents » est un
+                          1 marqueur temporel (toute la  coréférent lexical de « famille »
+
+                          journée)
+es 3 enfant reste seule et         2 FV (reste et jous)                     « famille» est le référent (1ère fois
+jous tencilman                     1 coréférent lexical 1 adverbe           que l'on parle des 2 parents et des 3
+                                   (tranquillement)                         enfants) donc « enfants » est un
+                                                                            coréférent lexical de « famille »
+Toutacou, il se rende conte,       2 FV (rende, est parti)
+tousse, que leurs chien et         1 coréférent pronom sujet (il)           « voye » n'est pas compté car FV
+parti.                             1 coréférent complément (se)             erronée tableau d'erreurs
+                                   1 coréférent autre pronom (tousse)
+Il le cherche sur la terace        1 coréférent adj possessif (leur)        3 erreurs (à le, si il, et oublie de la n')
+                                   1 complétive conjonctive (que ...)       « jardin » est un coréférent de
+Il voyent que le chien a fait un   1 marqueur temporels (tout à coup)       « parc »
+trous dans le griage pour ce
+sové au park.                      1 FV (cherche)                           1 erreur (n' oublié)
+                                   1 coréférent pronom sujet (il)
+Il vont demendé a le gardin        1 coréférent complément (le)             « Famille» est le référent (1ère fois
+du jardain si il n' la pas vue                                              que l'on parle des 2 parents et des 3
+leure chien.                       1 FV (a)                                 enfants) donc « petit » est un
+                                   1 coréférent pronom sujet (il)           coréférent lexical de « famille »
+Il n' a vu persone.                1 coréférent complément (se)
+                                   1 complétive conjonctive (que ...)
+Et pui le petit ce fait arosé par  1 connecteur logique de but (pour)
+un garson qui est maichan
+                                   2 FV (vont, a vu)
+                                   2 coréférents pronom sujet (il)
+                                   1 coréférent complément (l')
+                                   1 coréférent adj possessif (leur)
+                                   1 coréférent lexical (jardin)
+                                   1 complétive interrogative (si ...)
+
+                                   1 FV (a)
+                                   1 coréférent pronom sujet (il)
+                                   1 coréférent autres (personne)
+
+                                   2 FV (fait, est)
+                                   1 coréférent complément (se)
+                                   1 coréférent lexical (petit)
+                                   1 coréférent pronom relatif (qui)
+                                   1 relative (qui)
+                                   1 marqueur temporels (et puis)
+
+Il est tous mouyé                  1 FV (est)                               « se changer » a un autre sujet (petit
+Ducou, la fille en maine sont      1 coréférent pronom sujet(il)            frère) que celui de la phrase (fille)
+petit frér ce chengé.              1 adverbe (tout)
+
+Pandent ce temp, le grand          1 FV (emmène)
+garson se cache sous une           1 coréférent adj possessif (son)
+voiture.                           1 coréférent complément (se)
+                                   2 coréférents lexicaux (la fille, petit
+                                   frère)
+                                   1 complétive infinitive (se changer)
+                                   1 connecteur logique de conséquence
+                                   (du coup)
+
+                                   1 FV (cache)
+                                   1 coréférent complément (se)
+                                   1 coréférent lexical (grand garçon)
+                                   1 marqueur temporels (pendant ce
+                                   temps)
+il reparte mes il trouve leur  2 FV (reparte, trouve)
+chien sur la térasse avec une  2 coréférents sujet (il)
+belle chiene.                  1 coréférent adj possessif (leur)
+La fille prévin son grand      1 connecteur logique d'opposition
+fraire pour quil rentre        (mais)
+
+Les parent rentre justau       2 FV (prévient, rentre)
+moment ou léné arive           1 coréférent sujet (il)
+                               1 coréférents adj possessif (son)
+Et voila                       2 coréférents lexicaux (fille, grand
+                               frère)
+                               1 sub circonstancielle de but (pour
+                               que)
+                               1 connecteur logique de but (pour
+                               que)
+
+                               2 FV (rentre, arrive)
+                               2 coréférents lexicaux (parents, ainé)
+                               1 subordonnée circonstancielle de
+                               temps (au moment où)
+                               2 marqueurs temporels (au moment
+                               où, juste)
+                               1 adverbe (juste)
+    8. En même temps que de remplir le tableau microstructure, écrire dans 5 colonnes les coréférents
+        syntaxiques, les coréférents lexicaux, les connecteurs logiques et les marqueurs temporels
+        DISTINCTS et les erreurs linguistiques.
+
+Coréférents       Coréférents             Connecteurs      Marqueurs          Erreurs
+syntaxiques       lexicaux                logiques         temporels          linguistiques
+
+Il/ils, Se, Qui,  parents, 3 enfants      Pour, du coup,   Toute la journée,  Voye
+Leur, tous, Son,  Petit, fille, le petit  mais, pour que                      2 oublis de n'
+Le, personne      frère ; son grand                        tout à coup, et    Si il
+                  frère, le grand                                             A le
+                  garçon, jardin, ,                        puis, pendant ce
+                  l'ainé
+                                                           temps,     au
+
+                                                           moment où
+
+    8             9                           4                    5              5
+
+    9. Compter les erreurs linguistiques en microstructure et reporter le nombre n'importe où dans le
+        menu déroulant du tableau ERREUR dans microstructure. L'analyse qualitative du tableau n'est pas
+        indispensable et peut se faire dans un 2è temps.
+
+    10. compter le nombre de mots différents de chacune des 4 colonnes et reporter leur nombre dans
+        l'onglet DIVERSITE
+
+    11. coter l'orthographe dans des colonnes sur votre document papier puis inscrire le nombre total sur
+        la plateforme (liste des mots fonctions ci-dessous)
+
+Segm Mots fonctions Homophones F verbale F nom. et pron. F adj. Ortho lexicale ONPP (0, 1, 2)
+
+15  13            13                      18           10             2       38              8
+
+Voici comment on peut noter dans le tableau pour plus de rapidité et de risque d'erreurs :
+Mots fonctions
+
+             le la les des un une
+             je tu il elle on nous vous ils elles
+            ma ta sa mon ton son mes tes ses nos vos notre votre leur leurs lui
+             se me te
+             ce cet cette ces
+            de du au(x)
+             et en si pour sur en ne que à qui ou ni
+
+Voici le détail
+
+Enoncés                           cotation                          Explications et commentaires
+Alor ces l'histoire d'une         1 OL (alor)
+famille qui a un chien.           2 segm (c'est)                    Il n'y a pas d'homophone dans
+                                  1 MF (ce)                         « toutacou »
+Les parent von faire des          1 FV (est)                        « leur » étant un adjectif possessif, il
+course toute la journée.          1 homophone (ces/c'est)           s'agit d'une erreur de flexion
+                                  2 FN                              adjectivale (pas de MF)
+                                  1 FV                              « il » étant un pronom, il s'agit d'une
+                                                                    erreur de flexion pronominale (pas
+Les 3 enfant reste seule et       1 OL                              de MF)
+jous tencilman                    1 FN                              1 ONPP car oubli d'accent
+                                  1 FA (seule)
+Toutacou, il se rende conte,      2 FV                              « voye » est également une erreur
+tousse, que leurs chien et        2 ONPP (tranquillement)           d'orthographe
+parti.                            3 Segm (tout à coup)
+                                  1 MF (à)
+                                  4 OL (tout, coup, conte, tousse)
+                                  1 FNP (il)
+                                  1 FA (leurs)
+                                  2 FV (est,rende)
+                                  3 homophones (conte, tousse, et)
+
+Il le cherche sur la terace       1 OL
+                                  1 FNP (il
+Il voyent que le chien a fait un  1 FV (cherchent)
+trous dans le griage pour ce      1 ONPP (terace)
+sové au park.                     1 MF (ce)
+                                  4 OL (trous, sové, park, griage)
+Il vont demendé a le gardin       1 FNP (il)
+du jardain si il n' la pas vue    2 FV (voyent, sové)
+leure chien.                      1 homophone (ce)
+                                  1 ONPP
+                                  2 segm (l'a)
+                                  3 MF (l'n, leure, a)
+                                  3 OL
+Il n' a vu persone.                1 FNP (il)
+                                   3 FV (a, demandé, vue)
+                                   1 ONPP
+                                   2 homophones (la, a)
+                                   1 OL
+
+Et pui le petit ce fait arosé par  1 MF (ce)
+un garson qui est maichan          4 OL
+                                   1 FV
+Il est tous mouyé                  1 homophone (ce)
+                                   2 OL
+Ducou, la fille en maine sont      1 ONPP
+petit frér ce chengé.              1 homophone (tous)
+                                   3 segm (du coup, emmène))
+Pandent ce temp, le grand          3 MF (du, son, ce)
+garson se cache sous une           4 OL (coup, emmène, frère, changer)
+voiture.                           1 FV (chengé)
+                                   2 homophones (sont, ce)
+                                   3 OL
+
+il reparte mes il trouve leur      3 OL
+chien sur la térasse avec une      2 FNP (il)
+belle chiene.                      2 FV (reparte, trouve)
+                                   1 ONPP (chiene)
+La fille prévin son grand          1 homophone (mes)
+fraire pour quil rentre            2 segm (quil)
+                                   2 MF (que il)
+Les parent rentre justau           2 OL
+moment ou léné arive               1 FV
+                                   1 ONPP
+Et voila                           4 segm (juste au, l'ainé )
+                                   2 MF (au, l')
+                                   4 OL (juste, ainé, arrive, où)
+                                   1 FNP (parent)
+                                   1 FV (rentre)
+                                   1 homophone (où)
+                                   1 OL
+

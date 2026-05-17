@@ -1,0 +1,1046 @@
+                            CABINET D'ORTHOPHONIE
+                                 Anne Frouard
+                                      rue
+                                     ville
+                                     tél
+
+
+                                        Compte-rendu de bilan orthophonique de 
+                                                                           XYZ 
+                                                              Né le XX/03/2007
+                                                                (11 ans 5 mois)
+
+Renseignements administratifs :
+  * Assuré : XX affilié à la MGEN (N° SS)
+  * Date du bilan : XX/08/2018
+  * Date de la prescription : XX
+  * Médecin prescripteur : Dr Y (33 1 ...)
+  * Adresse : ...
+  * Niveau scolaire : XYZ entre en 6ème à la rentrée.
+
+Motif : La demande émane de l'établissement scolaire en raison de nombreuses erreurs remarquées par ses professeurs en classe. XYZ commet de nombreuses fautes à la fois en écrivant en français et en russe.
+
+Je rencontre XYZ et sa sœur aînée pour un bilan de la communication et du langage écrit.
+Anamnèse
+  * XYZ est le 3ème enfant...
+  * 
+Domaines explorés :
+  * La lecture : vitesse et correction de l'identification des mots, utilisation des deux voies, stratégies mises en place, compréhension (mots, phrases, paragraphes)
+  * L'écriture : orthographe phonologique, lexicale, morphoflexionnelle, linguistique et dérivationnelle, vitesse, maîtrise du geste graphique
+  * Hypothèses explicatives :
+   + Hypothèse d'un trouble du langage oral : pragmatique, lexique (production et compréhension de mots), morphosyntaxe
+   + Hypothèse d'un trouble phonologique : métaphonologie, répétition de pseudomots, mémoire à court terme auditivo-verbale (répétition de chiffres endroit / envers)
+   + Hypothèse d'un trouble visuo-attentionnel : empan visuo-attentionnel, gnosies visuelles, contrôle de l'inhibition (effet Stroop)
+Batterie utilisée :
+EVALEO 6-15 : Evaluation du Langage Ecrit et du Langage Oral 6 -15 ans : Launay, Maeder, Roustit, Touzin, Ortho Edition, 2018.
+
+Pour toutes les épreuves de ce bilan, les scores du patient sont situés dans 7 classes :
+  1. Classe 1 = centiles inférieurs à 7, zone dite << pathologique >>
+  2. Classe 2 = centiles 7 à 20, zone << de fragilité >> 
+  3. Classe 3 = centiles 21 à 38, zone << norme faible >>
+  4. Classe 4 = centiles 39 à 62, zone << norme médiane >> 
+  5. Classe 5 = centiles 63 à 80, zone << norme supérieure >>
+  6. Classe 6 = centiles 81 à 93, zone << supérieure >>
+  7. Classe 7 = centiles supérieurs à 93, zone << très supérieure >>
+De la classe 3 à la classe 7, les résultats du sujet correspondent à son niveau scolaire, voire dépassent le niveau moyen de ses pairs.
+Nous utiliserons l'étalonnage CM2 pour XYZ.
+
+Bilan de la communication et du langage écrit
+  Au niveau de la lecture 
+   *    Lecture de mots : sert à tester la lecture de mots consistants et inconsistants en faisant varier la longueur et la fréquence
+
+                                     Score
+                                  Note Brute
+                                       1
+                                       2
+                                       3
+                                       4
+                                       5
+                                       6
+                                       7
+Effet consistance
+                                       1
+                                       
+                                       
+                                       
+                                       X
+                                       
+                                       
+                                       
+Effet longueur score
+                                       0
+                                       
+                                       
+                                       
+                                       
+                                       
+                                       X
+                                       
+Effet fréquence
+                                       3
+                                       X
+                                       
+                                       
+                                       
+                                       
+                                       
+                                       
+Effet longueur temps
+                                       5
+                                       
+                                       
+                                       X
+                                       
+                                       
+                                       
+                                       
+Score total
+                                      38
+                                       
+                                       X
+                                       
+                                       
+                                       
+                                       
+                                       
+Temps total
+                                      65
+                                       
+                                       
+                                       
+                                       X
+                                       
+                                       
+                                       
+L'identification de mots est fragile : XYZ se situe dans la classe 2 pour l'ensemble des listes de mots (avec un score situé en classe 1 pour la série 2), pour un temps normal : le déchiffrage est donc imprécis.
+On observe différents effets :
+   + Effet fréquence : classe 1 : les mots rares sont moins bien lus que les mots fréquents, ce qui semble normal, mais la différence est trop importante par rapport à ce qui est attendu pour la classe d'âge du sujet : le lexique orthographique est insuffisamment constitué, ce qui perturbe la voie lexicale.
+   + Effet consistance : classe 4 : on ne note pas de différence entre les mots consistants et inconsistants. La transparence du mot n'a pas réellement d'impact sur l'efficacité du déchiffrage, ce qui signifie que XYZ n'utilise pas spécifiquement sa voie d'assemblage (sinon il régulariserait).
+   + Effet longueur : score : classe 6, temps : classe 3 : La longueur des mots importe peu pour XYZ au niveau de l'efficacité. En revanche, elle le ralentit un peu. Ce phénomène a tendance à tendance à nous faire penser que XYZ utilise davantage la voie d'adressage que la voie d'assemblage même si celle-ci est restreinte.
+   *    Lecture de pseudomots : sert à tester la lecture de mots nouveaux.
+
+                                     Score
+                                  Note Brute
+                                       1
+                                       2
+                                       3
+                                       4
+                                       5
+                                       6
+                                       7
+Effet lexicalité Différence score
+                                       3
+                                       
+                                       
+                                       
+                                       
+                                       
+                                       X
+                                       
+Effet lexicalité Différence temps
+                                       7
+                                       
+                                       
+                                       X
+                                       
+                                       
+                                       
+                                       
+Score
+                                      18
+                                       
+                                       X
+                                       
+                                       
+                                       
+                                       
+                                       
+Temps
+                                      38
+                                       
+                                       
+                                       
+                                       
+                                       
+                                       X
+                                       
+XYZ se situe dans la classe 2 au niveau du score avec de nombreuses erreurs de déchiffrage pour un temps plutôt rapide (classe 6).
+   + L'effet lexicalité score : classe 6 : les mots sont beaucoup mieux lus que les pseudomots : la voie phonologique est peu efficiente 
+   + L'effet lexicalité-temps : classe 3 : cela montre que XYZ lit les mots comme des mots nouveaux donc que sa voie lexicale est peu performante même s'il l'utilise plus fréquemment.
+
+  *  Lecture de texte : sert à tester l'identification des mots à travers un texte signifiant ou non signifiant
+ Lecture de texte non signifiant :			        	Lecture de texte signifiant :
+                                     Score
+                                  Note Brute
+                                       1
+                                       2
+                                       3
+                                       4
+                                       5
+                                       6
+                                       7
+Indice dégradation
+                                      28
+                                       X
+                                       
+                                       
+                                       
+                                       
+                                       
+                                       
+Score mots correctement lus
+                                      138
+                                       X
+                                       
+                                       
+                                       
+                                       
+                                       
+                                       
+Score nombre mots lus
+                                      154
+                                       
+                                       X
+                                       
+                                       
+                                       
+                                       
+                                       
+% corrects/lus
+                                      90
+                                       X
+                                       
+                                       
+                                       
+                                       
+                                       
+                                       
+
+                                     Score
+                                  Note Brute
+                                       1
+                                       2
+                                       3
+                                       4
+                                       5
+                                       6
+                                       7
+Indice dégradation
+                                      20
+                                       
+                                       
+                                       X
+                                       
+                                       
+                                       
+                                       
+Score mots correctement lus
+                                      169
+                                       
+                                       X
+                                       
+                                       
+                                       
+                                       
+                                       
+Score nombre mots lus
+                                      181
+                                       
+                                       X
+                                       
+                                       
+                                       
+                                       
+                                       
+% corrects/lus
+                                      93
+                                       
+                                       X
+                                       
+                                       
+                                       
+                                       
+                                       
+
+     o     Non signifiant :
+XYZ déchiffre lentement (154 mots lus en 2 minutes : classe 2) et commet un nombre d'erreurs très important (138 mots correctement lus, ce qui le situe en classe 1 ; 90 % des mots sont bien lus, ce qui le situe également en classe 1). Au total, son niveau de lecture correspond à un niveau de CE2.
+     o     Signifiant :
+XYZ déchiffre un peu plus rapidement (181 mots lus en 2 minutes : classe 2) et les erreurs sont encore une fois nombreuses (169 mots correctement lus, ce qui le situe en classe 2 ; 93 % des mots sont bien lus, ce qui correspond à la classe 2).
+On note remarque une fatigabilité plus importante lorsque le texte n'est pas signifiant (indice de dégradation situé en classe 1) par rapport au texte signifiant (indice de dégradation situé en classe 3). Ainsi XYZ peut maintenir son déchiffrage laborieux lorsqu'il est porté par le sens du texte. La compréhension aide manifestement au déchiffrage.
+
+Si l'on compare les résultats obtenus par XYZ aux épreuves de lecture de mots et de pseudomots à ceux obtenus par les sujets correspondant à son niveau de leximétrie (CE2), on remarque que la lecture de pseudomots se situe alors en classe 3 tandis que la lecture de mots reste troublée (classe 2).
+  *  Compréhension écrite de phrases : sert à tester la compréhension morphosyntaxique écrite
+ 
+                                     Score
+                                  Note Brute
+                                       1
+                                       2
+                                       3
+                                       4
+                                       5
+                                       
+                                       6
+                                       7
+Score
+                                      21
+                                       
+                                       
+                                       
+                                       X
+                                       
+                                       
+                                       
+                                       
+Temps
+                                      276
+                                       
+                                       
+                                       
+                                       
+                                       X
+                                       
+                                       
+                                       
+XYZ obtient un score conforme à sa tranche d'âge avec un temps également correct. La compensation par le sens est efficace et rapide.
+  Au niveau de l'écriture : 
+  *  Copie de texte : sert au diagnostic d'une dysgraphie linguistique
+   
+                                     Score
+                                  Note Brute
+                                       1
+                                       2
+                                       3
+                                       4
+                                       5
+                                       6
+                                       7
+Empan copie
+                                      3.7
+                                       X
+                                       
+                                       
+                                       
+                                       
+                                       
+                                       
+Nb lettres écrites
+                                      170
+                                       
+                                       
+                                       X
+                                       
+                                       
+                                       
+                                       
+Taux erreurs
+                                       3
+                                       
+                                       X
+                                       
+                                       
+                                       
+                                       
+                                       
+Nb lettres correctement écrites
+                                      168
+                                       
+                                       
+                                       X
+                                       
+                                       
+                                       
+                                       
+XYZ obtient un empan de copie de 3,7 ce qui le situe en classe 1 pour sa tranche d'âge. Le nombre de levers de tête est plus important que ses pairs et la fenêtre de copie est plus réduite. L'activité est couteuse d'un point de vue cognitif. Le nombre de lettres écrites est relativement correct pour son âge (170 lettres, ce qui le situe en classe 3) mais XYZ commet un nombre important d'erreurs de copies (classe 2).
+XYZ est droitier, la tenue du stylo est correcte. Il se secoue néanmoins plusieurs fois la main durant l'épreuve, on remarque des signes de crispation. L'écriture est très irrégulière (ligne horizontale pas forcément respectée, ratures nombreuses, lettres mal formées), ce qui rend ses productions parfois peu lisibles.
+
+  *  Dictée de pseudomots : sert à tester la compétence phonologique à travers la transcription de pseudomots
+   
+                                     Score
+                                  Note Brute
+                                       1
+                                       2
+                                       3
+                                       4
+                                       5
+                                       6
+                                       7
+ONPP
+                                       5
+                                       
+                                       X
+                                       
+                                       
+                                       
+                                       
+                                       
+Score corrects
+                                       4
+                                       
+                                       X
+                                       
+                                       
+                                       
+                                       
+                                       
+Temps
+                                      97
+                                       
+                                       
+                                       
+                                       X
+                                       
+                                       
+                                       
+
+
+
+
+
+
+
+XYZ se situe dans la classe 2 pour la transcription de pseudomots avec 5 erreurs non phonologiquement plausibles. Seuls, 4 pseudomots peuvent être transcrits de façon phonétique. La conversion phonographique n'est donc pas totalement efficace.
+
+  *  Dictée de mots : sert à tester la richesse du lexique orthographique en transcription
+                                     Score
+                                  Note Brute
+                                       1
+                                       2
+                                       3
+                                       4
+                                       5
+                                       6
+                                       7
+ODM
+                                       5
+                                       X
+                                       
+                                       
+                                       
+                                       
+                                       
+                                       
+ODNM
+                                       7
+                                       X
+                                       
+                                       
+                                       
+                                       
+                                       
+                                       
+OL
+                                      17
+                                       X
+                                       
+                                       
+                                       
+                                       
+                                       
+                                       
+ONPP
+                                       2
+                                       
+                                       
+                                       
+                                       X
+                                       
+                                       
+                                       
+Score corrects
+                                       1
+                                       X
+                                       
+                                       
+                                       
+                                       
+                                       
+                                       
+Temps
+                                      175
+                                       
+                                       
+                                       X
+                                       
+                                       
+                                       
+                                       
+Indices orthographiques
+                                      21
+                                       X
+                                       
+                                       
+                                       
+                                       
+                                       
+                                       
+
+
+
+
+
+
+
+
+
+
+
+
+
+XYZ ne parvient à transcrire qu'un seul mot correct sur la liste de 18 items (classe 1) pour un temps relativement correct (classe 3). Le nombre d'erreurs non phonologiquement plausibles situe XYZ en classe 4 (1 seule erreur).
+XYZ se situe en revanche en classe 1 pour le score d'orthographe lexicale (17 erreurs commises), ce qui témoigne d'un stock orthographique particulièrement réduit. A l'intérieur de ce stock, on relève 5 erreurs ODM (erreurs sur des parties du mots dérivables morphologiquement) et 7 erreurs ODNM (erreurs sur des parties du mot non dérivables morphologiquement), ce qui le situe en classe 1 pour ces deux scores. Ainsi, XYZ est peu sensible à la morphologie dérivationnelle.
+Le nombre d'indices orthographiques est très faible (21) et situe à nouveau XYZ en classe 1. Il indique que XYZ n'a mémorisé que peu d'éléments orthographiques, même partiels, sur le mot. 
+  *  Dictée de phrases : sert à tester l'orthographe phonétique lexicale (morphologique dérivationnelle, flexionnelle et linguistique)
+                                     Score
+                                  Note Brute
+                                       1
+                                       2
+                                       3
+                                       4
+                                       5
+                                       6
+                                       7
+Flexions Adjectivales
+                                       6
+                                       X
+                                       
+                                       
+                                       
+                                       
+                                       
+                                       
+Mots Fonction
+                                       4
+                                       
+                                       X
+                                       
+                                       
+                                       
+                                       
+                                       
+Flexions Nominales et Pronominales
+                                       8
+                                       X
+                                       
+                                       
+                                       
+                                       
+                                       
+                                       
+Flexions Verbales
+                                       7
+                                       X
+                                       
+                                       
+                                       
+                                       
+                                       
+                                       
+Mots omis/substitués
+                                       0
+                                       
+                                       
+                                       
+                                       
+                                       
+                                       
+                                       X
+Orthographe Dérivable Morphologiquement
+                                       9
+                                       X
+                                       
+                                       
+                                       
+                                       
+                                       
+                                       
+Orthographe Non Dérivable Morphologiquement
+                                       7
+                                       X
+                                       
+                                       
+                                       
+                                       
+                                       
+                                       
+Orthographe Lexicale
+                                      21
+                                       X
+                                       
+                                       
+                                       
+                                       
+                                       
+                                       
+Orthographe Non Plausible Phonologiquement
+                                      10
+                                       X
+                                       
+                                       
+                                       
+                                       
+                                       
+                                       
+Score corrects
+                                      53
+                                       
+                                       X
+                                       
+                                       
+                                       
+                                       
+                                       
+Erreurs de segmentation
+                                       3
+                                       
+                                       X
+                                       
+                                       
+                                       
+                                       
+                                       
+Temps
+                                      492
+                                       
+                                       
+                                       X
+                                       
+                                       
+                                       
+                                       
+   
+
+    La conversion phonographique pose encore problème à XYZ qui commet 10 erreurs, ce qui le situe dans la classe 1. On note encore une confusion entre F/V (sourde/ sonore) et des oublis de sons.
+    La segmentation pose problème avec 3 erreurs (boîte en fer écrit << boite enver >>), ce qui le situe en classe 2.
+    L'orthographe d'usage est très déficitaire avec 21 erreurs, ce qui situe XYZ en classe 1. XYZ ne s'appuie pas sur la morphologie dérivationnelle (classe 1 tant pour les mots dérivables que les mots non dérivables). On peut donc constater un stock lexical orthographique très réduit et des erreurs portant sur les mots fonctions très fréquents (ex : car écrit << quarre >>).
+    L'orthographe grammaticale est également troublée chez XYZ qui ne peut effectuer que peu d'accords. Nous relevons de très nombreuses erreurs de flexions (verbales, nominales, pronominales, adjectivales). On relève surtout :
+ Des erreurs concernant les participes passés
+ Des erreurs concernant l'accord des verbes (mode, temps, personne)
+ Des erreurs concernant les accords (noms, adjectifs, pronoms) en genre et en nombre
+Le temps mis pour écrire ces phrases est plutôt correct, ce qui tend à prouver que XYZ utilise préférentiellement la voie d'adressage même si celle-ci est peu efficace.
+
+  *  Décision orthographique : sert à tester la morphologie flexionnelle et l'orthographe linguistique homophones dans une tâche de décision orthographique
+                                     Score
+                                  Note Brute
+                                       1
+                                       2
+                                       3
+                                       4
+                                       5
+                                       6
+                                       7
+% erreurs de flexions
+                                      45
+                                       
+                                       X
+                                       
+                                       
+                                       
+                                       
+                                       
+% erreurs linguistiques
+                                      40
+                                       X
+                                       
+                                       
+                                       
+                                       
+                                       
+                                       
+Score corrects
+                                      12
+                                       
+                                       X
+                                       
+                                       
+                                       
+                                       
+                                       
+Les scores sont encore une fois chutés dans cette épreuve de décision orthographique. On peut donc penser que ce n'est pas le geste graphique qui empêche XYZ de choisir les bonnes flexions mais une méconnaissance des règles (les homophones sont plus atteints que les accords).
+  Hypothèses explicatives : 
+   >    Existe-t-il un trouble du langage oral ? 
+  *  Pragmatique : sert à évaluer les capacités pragmatiques aussi bien en compréhension qu'en expression
+Nous n'avons pas fait passer d'épreuve spécifique à XYZ car c'est un jeune homme qui se situe bien dans la communication. Son comportement est parfaitement adapté à la situation et il est décrit comme un jeune garçon ne présentant pas de problème de communication ou de socialisation.
+  *  Dénomination Lexique : sert à tester le lexique en production (évaluer le stock lexical actif) et tester concomitamment la phonologie
+                                     Score
+                                  Note Brute
+                                       1
+                                       2
+                                       3
+                                       4
+                                       5
+                                       6
+                                       7
+Gain Lex
+                                    41.6667
+                                       X
+                                       
+                                       
+                                       
+                                       
+                                       
+                                       
+Total Lex
+                                      62
+                                       X
+                                       
+                                       
+                                       
+                                       
+                                       
+                                       
+Total temps
+                                      340
+                                       X
+                                       
+                                       
+                                       
+                                       
+                                       
+                                       
+XYZ présente des difficultés pour trouver le mot qui correspond à l'image proposée (score classe 1) et le temps pour accéder au mot est très important (classe 1 également). A plusieurs reprises, il disait avoir le mot en russe mais pas en français. L'ébauche phonémique aide peu pour aller rechercher le mot.
+En spontané, on remarque parfois des conduites d'approche et des latences pour trouver le mot exact.
+  *  Désignation d'images : sert à tester le lexique en compréhension (évaluer le stock lexical passif) 
+                                     Score
+                                  Note Brute
+                                       1
+                                       2
+                                       3
+                                       4
+                                       5
+                                       6
+                                       7
+Score
+                                      158
+                                       
+                                       
+                                       
+                                       X
+                                       
+                                       
+                                       
+XYZ obtient un score conforme à sa tranche d'âge pour la désignation d'image. On peut donc conclure que le score chuté à l'épreuve précédente s'explique par un trouble d'accès au lexique et non par une réduction lexicale.
+  *  Production de morphosyntaxe : sert à identifier d'éventuels troubles se situant au niveau de la morphosyntaxe
+XYZ s'exprime correctement à l'oral et nous n'avons pas remarqué d'erreur de morphosyntaxe en spontané. Il ne nous a donc pas semblé nécessaire de lui administrer une épreuve spécifique dans ce domaine. 
+
+  *  Compréhension de morphosyntaxe : sert à tester la compréhension morphosyntaxique orale 
+XYZ comprend bien les consignes données durant tout le bilan ainsi que les questions posées lors de l'anamnèse. Lors de l'épreuve proposée, son niveau de compréhension écrite était bon, ce qui fait conclure à l'absence de trouble de la compréhension orale.
+
+XYZ présente donc un trouble d'accès au lexique isolé, sans autre trouble du langage.
+
+   >    Existe-t-il un trouble phonologique ? 
+  *  Dénomination Phonologie : sert à tester la phonologie à partir de mots présentés sous forme d'images
+Aucun mot trouvé par XYZ durant cette épreuve n'est altéré.
+Sa parole spontanée est d'ailleurs totalement intelligible durant tout le bilan.
+
+
+  *  Répétition de chiffres endroit envers : Sert à tester la mémoire à court terme verbale et la mémoire de travail verbale.
+                                     Score
+                                  Note Brute
+                                       1
+                                       2
+                                       3
+                                       4
+                                       5
+                                       6
+                                       7
+Empan endroit
+                                       5
+                                       
+                                       
+                                       X
+                                       
+                                       
+                                       
+                                       
+Empan envers
+                                       3
+                                       
+                                       
+                                       X
+                                       
+                                       
+                                       
+                                       
+Score endroit
+                                       9
+                                       
+                                       
+                                       
+                                       X
+                                       
+                                       
+                                       
+Score envers
+                                       4
+                                       
+                                       
+                                       X
+                                       
+                                       
+                                       
+                                       
+XYZ obtient des scores conformes à sa tranche d'âge. Son empan à l'endroit est de 5 et à l'envers de 3.
+  *  Répétition de pseudomots : Sert à évaluer les compétences de production phonologique.
+                                     Score
+                                  Note Brute
+                                       1
+                                       2
+                                       3
+                                       4
+                                       5
+                                       6
+                                       7
+Score
+                                      16
+                                       
+                                       
+                                       
+                                       X
+                                       
+                                       
+                                       
+La répétition de pseudomots est correcte.
+  *  Métaphonologie : Sert à tester les compétences métaphonologiques 
+                                     Score
+                                  Note Brute
+                                       1
+                                       2
+                                       3
+                                       4
+                                       5
+                                       6
+                                       7
+Contrepèteries
+                                       3
+                                       
+                                       
+                                       X
+                                       
+                                       
+                                       
+                                       
+Suppression
+                                      13
+                                       
+                                       
+                                       X
+                                       
+                                       
+                                       
+                                       
+Temps total
+                                      162
+                                       
+                                       
+                                       X
+                                       
+                                       
+                                       
+                                       
+Temps contrepèteries
+                                      75
+                                       
+                                       
+                                       X
+                                       
+                                       
+                                       
+                                       
+Temps suppression
+                                      87
+                                       
+                                       
+                                       X
+                                       
+                                       
+                                       
+                                       
+Les scores obtenus par XYZ aux épreuves de métaphonologie (contrepèteries et suppression du phonème initial) ainsi que les temps de réponse se situent dans la classe 3 (normale faible) pour son âge.
+
+XYZ ne présente pas de trouble phonologique, même si, nous le verrons par la suite, les scores, bien qu'étant dans la normale, se situe un peu en-dessous des scores obtenus au niveau visuel.
+
+
+  > Existe-t-il un trouble visuo-attentionnel ? 
+  *  Gnosies visuelles de figures : Sert à vérifier les capacités de traitement des informations visuelles par un test de discrimination de stimuli non linguistiques chargés sémantiquement ou non formes géométriques et objets de la vie quotidienne.
+                                     Score
+                                  Note Brute
+                                       1
+                                       2
+                                       3
+                                       4
+                                       5
+                                       6
+                                       7
+Score
+                                       4
+                                       
+                                       
+                                       
+                                       
+                                       
+                                       
+                                       X
+Temps
+                                      77
+                                       
+                                       
+                                       
+                                       X
+                                       
+                                       
+                                       
+XYZ est très performant dans cette épreuve et le temps mis pour la réaliser est conforme à son âge.
+  *  Empan visuo-attentionnel : Sert à mesurer l'empan visuo-attentionnel
+
+                                     Score
+                                  Note Brute
+                                       1
+                                       2
+                                       3
+                                       4
+                                       5
+                                       6
+                                       7
+Seuil moyen identification chiffres
+                                      37
+                                       
+                                       
+                                       
+                                       X
+                                       
+                                       
+                                       
+Empan VA moyen
+                                     4.25
+                                       
+                                       
+                                       
+                                       
+                                       
+                                       X
+                                       
+Score total report
+                                      85
+                                       
+                                       
+                                       
+                                       
+                                       X
+                                       
+                                       
+RC séquences complètes
+                                       7
+                                       
+                                       
+                                       
+                                       
+                                       X
+                                       
+                                       
+Le seuil d'identification des chiffres est conforme à la tranche d'âge de XYZ (classe 4). Le score obtenu à cette épreuve visuo-attentionnelle se situe dans la classe 6 avec un empan de 4,25 items, ce qui est excellent pour sa tranche d'âge. XYZ repère davantage le 4ème item que le 5ème (qui est habituellement mieux réussi que le 4ème).
+Lorsqu'on observe le score de séquences complètes, on peut conclure à une bonne efficacité de la mémoire visuelle.
+Il est surprenant de comparer l'empan visuo-attentionnel de 4,25 items (classe 6) et l'empan de copie situé de 3,6 lettres (classe 1) ce qui met en avant la charge cognitive du geste graphique.
+  *  Effet Stroop : Sert à tester les capacités d'inhibition.
+                                     Score
+                                  Note Brute
+                                       1
+                                       2
+                                       3
+                                       4
+                                       5
+                                       6
+                                       7
+Score 1
+                                      45
+                                       
+                                       
+                                       
+                                       
+                                       
+                                       
+                                       X
+Score 2
+                                      45
+                                       
+                                       
+                                       
+                                       
+                                       
+                                       
+                                       X
+Score 3
+                                      45
+                                       
+                                       
+                                       
+                                       
+                                       
+                                       
+                                       X
+Score 4
+                                      44
+                                       
+                                       
+                                       X
+                                       
+                                       
+                                       
+                                       
+Temps 1
+                                      35
+                                       
+                                       
+                                       X
+                                       
+                                       
+                                       
+                                       
+Temps 2
+                                      37
+                                       
+                                       
+                                       X
+                                       
+                                       
+                                       
+                                       
+Temps 3
+                                      41
+                                       
+                                       
+                                       
+                                       X
+                                       
+                                       
+                                       
+Temps 4
+                                      69
+                                       X
+                                       
+                                       
+                                       
+                                       
+                                       
+                                       
+XYZ est très performant pour sa tranche d'âge dans les 3 premières planches. Il dénomme parfaitement les couleurs des carrés ou des fruits présentés. Le temps est un peu important (Classe 3) car XYZ s'auto-corrige très fréquemment ou hésite (ce qu'on peut rattacher au trouble d'accès au lexique constatés lors de l'épreuve de dénomination). Lorsque les fruits sont présentés dans des couleurs éloignées, XYZ est toujours aussi performant. En revanche, lorsque les couleurs sont attribuées aux mauvais objets, on observe alors des difficultés d'inhibition et un temps très important (Classe 1) car XYZ s'auto-corrige en permanence. Ce jeune garçon montre des signes de fatigabilité très importants à la suite de cette épreuve.
+
+Diagnostic orthophonique
+On peut donc conclure à un trouble spécifique du langage écrit caractérisé par :
+           + Un trouble d'identification des mots écrits (dyslexie mixte) : XYZ utilise préférentiellement sa voie d'adressage à sa voie d'assemblage mais celle-ci est peu précise car le stock orthographique est réduit. La vitesse de lecture est globalement ralentie. On remarque que la compréhension n'est pas touchée
+           + Une dysorthographie massive mixte avec une atteinte linguistique (erreurs phonétiques, de segmentation et portant sur les mots fonction) mais également lexicale (avec une absence de sensibilité aux règles morphologiques et un stock orthographique très restreint). L'orthographe grammaticale est également atteinte.
+           + Une dysgraphie : lenteur et erreurs fréquentes de copie avec des levers de tête trop fréquents et une importante fatigabilité.
+On constate un trouble d'accès au lexique présent également à l'oral. Le lien entre signifié et signifiant semble poser problème (latence, conduite d'approche) et l'accès aux représentations sémantique et phonologique semble couteux.
+Projet thérapeutique
+  *  Il semble important de mettre en place des adaptations scolaires pour permettre à XYZ de suivre sa scolarité dans des conditions prenant en compte ce trouble spécifique du langage écrit (besoin d'un temps supplémentaire pour pouvoir se relire, utilisation d'un ordinateur...). Un Plan d'Accompagnement Personnalisé semble tout indiqué.
+  * Une prise en charge orthophonique doit également se mettre en place (30 AMO 12,1). Nous avons pris contact avec une collègue francophone qui travaille près de chez XYZ afin d'assurer cette rééducation. L'objectif est d'accompagner ce jeune homme à développer ses stratégies de compensation et à en mettre en place de nouvelles. 
+   Il serait souhaitable de travailler en priorité sur :
+     oo L'accès aux représentations sémantiques et lexicales (exercice d'évocation, de fluence sémantique ou phonologique)
+     oo Un travail autour de l'écriture porteuse de sens
+     oo Le renforcement du lexique orthographique
+     oo Un travail autour de la morphologie (flexionnelle, dérivationnelle)
+Examens complémentaires
+Plusieurs examens nous semblent nécessaires :
+  *  Un bilan phoniatrique : XYZ et sa famille ne s'en plaignent pas mais ce jeune homme présente une dysphonie importante qu'il conviendrait de soigner
+  * Un bilan neuropsychologique : celui-ci est généralement demandé lors de la mise en place d'un PAP. Mais certains éléments du bilan nous font suspecter un discret trouble attentionnel (comme le défaut d'inhibition lors de la fin de l'épreuve du Stroop) mais également une efficience intellectuelle supérieure (qui expliquerait alors la capacité de XYZ à compenser, ainsi que la réussite aux épreuves dites phonologiques).
+  * Eventuellement, un bilan psychomoteur. En effet, la dysgraphie observée et la différence de performance entre l'empan de copie et l'empan visuo-attentionnel pourraient évoquer une surcharge cognitive liée au geste graphique, voire un trouble de la coordination.
+D'un point de vue orthophonique enfin, il serait souhaitable de poursuivre les investigations durant les premières rencontres. En effet, compte tenu du retour de XYZ à (très loin !), il n'était pas possible de revoir ce jeune garçon pour approfondir ce bilan. Des épreuves de fluence ainsi que de morphologie semblent particulièrement indiquées dans le cas de XYZ.

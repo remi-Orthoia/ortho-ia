@@ -1,0 +1,83 @@
+Correction d'une dictée fictive CE2 avec explications, tableaux remplis et résultats (L
+Launay M Cartier, 2023)
+
+    Nos ne retouvon plu largan.
+    Des ome vone vandre un nordinater.
+    Le gardin choissira des peau blan pour le fleriste.
+    De pi iller les avion voles au dans le siail.
+    Loin de caje le lion piêtine des feille jone
+
+RQ : on ne notera pas les erreurs d'homophone puisqu'elles ne sont pas étalonnées, l'analyse reste
+qualitative. Vous pouvez les coter dans un 2e temps pour limiter les erreurs sur les autres colonnes.
+
+productions  cotation                Explications et commentaires
+Nos*         MF 1ONPP                On ne le considère pas comme une substitution
+                                     car il est proche du mot cible. En cas de doute
+retouvon     1FV 1OL 1ODNM 1ONPP     demandez à l'enfant ce qu'on lui a demandé
+Plu          1OL                     d'écrire.
+Largan**     L' = 1SEG 1 MF
+             Argan = 1SEG 1OL 1ODNM  2SEG car 2 unités linguistiques mal segmentées (l'
+ome          1ODM 1ONPP              et argent)
+vone         1 FNP 1OL
+             1FV 2ONPP               1ONPP pour le son cible ON manquant et
+Vandre                               1ONPP pour l'ajout d'un son (car 3 phonèmes
+nordinater   1OL                     transcrits au lieu de 2 attendus dans la cible)
+             1SEG 1OL 1ODNM 1 ODM
+Gardin       2 ONPP                  On ne considère que 2 erreurs phonétiques ( EU et
+choissira                            R manquants) car le N supplémentaire dans la
+Peau         1OL 1ODM 1ONPP          phrase à l'oral n'affecte pas la phonologie. S'il avait
+blan         1OL 1 ONPP              écrit « un zordinateur » on aurait considéré
+pour         1FNP 1OL 1ODNM 1ODM     1ONPP, 1OL, 1ODNM
+Fleriste     1 FA 1 OL 1 ODM
+De pi**      1 substitution          A la place de -chez- On ne peut pas coter ailleurs
+iller                                puisqu'on ne sait comment il l'aurait écrit.
+             1 OL 1 ODNM
+             1 SEG 1 OL 1ODNM 1ODM   Comme ER est lu dans la cible /ère/ on ne peut
+             1ONPP                   pas pénaliser l'enfant sur cette orthographe
+             1 OL                    irrégulière qui est correcte. Cette particularité
+                                     concernera la transcription des mots irréguliers.
+                                     Par exemple : monsieu, feme, choral = 1OL et 0
+                                     ONPP
+Avion    1FNP             ce mot est lu : /siaj/ donc 2 phonèmes cibles sont
+voles    1FV              erronés /è/ et //l/
+Au       1OL 1ODNM 1 ODM  On ne peut pas coter ailleurs puisqu'on ne sait
+Siail    1OL 2 ONPP       comment il l'aurait écrit.
+
+Sa       Omission         Les modifications des sens d'accent ne sont pas
+                          considérées comme erreur (ni OL, ni ONPP)
+Caje     1OL
+Piêtine  Aucune erreur
+
+feille   FNP 1ONPP
+jone     1FA 1OL
+
+    * on considère comme substitution : un mot remplacé par un autre mot différent que celui dicté, autre qu'un
+    homophone ou qui ne découle pas d'une erreur phonétique - Ex : sac / cartable = substitution ; de / des = ONPP
+    + MF), mettre une croix dans la colonne « substitution de mot ». Cela décoche toutes les croix positionnées
+    ailleurs. Tout comme les omissions, ces substitutions reflètent un déficit de la mémoire de travail : l'enfant
+    modifie la phrase dictée.
+
+    ** : 1 SEGM par unité mal segmentée. Toute segmentation entraine une erreur ailleurs (OL, MF, FV). On ne peut
+    pas savoir si l'enfant ne connait pas l'orthographe du mot (OL, MF, FV) et/ou ne comprend pas ce qu'il lit (SEGM).
+
+      Dans la dictée de phrases, une ONPP peut être attribuée à autre chose qu'à une OL. Cela peut être pour un MF
+ou une FV. Donc lorsqu'on coche ONPP, cela ne coche pas automatiquement OL comme pour les dictées de mots.
+
+On considère que le MOT-FONCTION est erroné s'il est mal écrit. Si cela concerne sa flexion, on cochera FNP. Exemple
+: si « ils » est écrit « il », ne pas cocher la colonne mot fonction, c'est une erreur de flexion pronominale ; mais si « il »
+est écrit « île », cocher la colonne mot fonction.
+
+POUR RAPPEL :
+ONPP :
+
+         · comptez le nombre de phonèmes cibles erronés.
+         · Tout phonème surnuméraire est considéré comme une erreur (par ex : tarte écrit trarte)
+         · Les erreurs portant sur les graphies contextuelles sont considérées comme des ONPP . Elles seraient lues
+
+              ainsi par des personnes qui respectent les conversions graphème ­ phonème. Si ce score d'ONPP s'avère
+              pathologique, c'est à l'orthophoniste d'interpréter, dans un 2e temps et avec les étalonnages si elles sont
+              imputables à : des erreurs phonologiques, des erreurs de graphies contextuelles, des oublis d'accents,
+              voire des erreurs attentionnelles (oublis de voyelles par ex).
+
+La partie ODNM (en rouge) porte sur les lettres qui ne sont pas écrites dans ODM (en bleu)
+

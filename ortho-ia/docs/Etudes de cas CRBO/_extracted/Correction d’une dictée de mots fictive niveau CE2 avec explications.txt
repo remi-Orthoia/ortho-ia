@@ -1,0 +1,47 @@
+Correction d'une dictée de mots fictive niveau CE2 avec explications, tableaux remplis et
+résultats (L Launay M Cartier)
+
+   Voici les productions fictives d'une dictée de mots niveau CE2 avec tous les types
+   d'erreurs complexes que l'on peut rencontrer: Asanblage ; charquté ; Do ; clinice ;
+   Sairpant ; Cascade ; Filme ; Touriste ; Fouie ; Lie ; Misérable ; Ortografe ; Parque ; Produi ;
+   Esplorater ; Sere ; Tecste ; aside
+
+            Mot               Cotation                               justifications
+Asanblage**      1OL 1ODNM 1ODM 1ONPP    On considère que l'oubli du 2e S provient du préfixe A qui
+                                         précédé d'un S induit un doublement de consonne et non
+Charquté**       1OL 1ODNM 1 ODM 1ONPP   de la racine qui écrite seule aurait été écrite avec un S
+Do               1OL 1ODM                On considère qu'il lit / charcuté/ (comme piqure).
+Clinice*         1OL 1ONPP
+Sairpant**       1OL 1ODNM               La cible contient 3 phonèmes dont un erroné  1ONPP
+Filme            1OL                     Comme il se lit /li/ il manque le son /EU/final
+Fouie            1OL 1ONPP
+lie              1OL ONPP                Il y a 3 erreurs phonétiques : oubli du K (ex) et absence du
+Ortografe**      1OL 1ODNM 1ODM          EU ­ R transformés en ER(é). Le tout coté 2ONPP
+parque           1OL                     Pas d'ONPP : le E ne se lit pas è car il n'est pas devant 2
+Produi           1OL 1ODM                consonnes
+Esplorater***    1OL 1ODNM 1 ODM 2 ONPP
+
+sere             1OL
+
+tecste           1OL
+Aside*           1 OL
+
+On accepte toute production avec une flexion nominale (jeux, médecins) à condition de demander au sujet le
+sens de cette flexion (« pourquoi mets-tu un « s » ?), s'il répond que c'est au pluriel , coter juste sinon coter faux).
+
+En cas de MOT NON PRODUIT, mettre une croix dans la colonne « mot non produit », Cela met automatiquement
+une croix dans OL, ODNM et ODM (si la case n'est pas grisée) et le score maximum en ONPP (c'est-à-dire 2).
+
+*Les erreurs portant sur les graphies contextuelles sont considérées comme des ONPP . Elles seraient lues ainsi
+par des personnes qui respectent les conversions graphème ­ phonème. Si ce score d'ONPP s'avère
+pathologique, c'est à l'orthophoniste d'interpréter, dans un 2e temps et avec les étalonnages si elles sont
+imputables à : des erreurs phonologiques, des erreurs de graphies contextuelles, des oublis d'accents, voire des
+erreurs attentionnelles (oublis de voyelles par ex).
+
+** la partie ODNM porte sur les lettres qui ne sont pas écrites dans ODM
+
+*** pour les ONPP : comptez le nombre de phonèmes cibles erronés. Tout phonème surnuméraire est considéré
+comme une erreur (par ex : tarte écrit trarte)
+
+ET n'oubliez pas de coter les indices orthographiques : voir ci-dessous
+

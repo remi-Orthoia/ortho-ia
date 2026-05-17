@@ -1,0 +1,56 @@
+Cas clinique : Maxime fin CP, dysphasie
+
+                            Phrase cible                                         Phrase répétée                    Phrases    Erreurs  Nbre mots
+                                                                                                                      MS        MS        bien
+Ils promènent leurs chevaux.                                                   I promènent les chevaux
+La fille marche vers sa maison.                                               La fille va à la maison              correctes            répétés
+Le campeur part de la montagne.                                           Le campeur part à la montagne
+Le cheval saute avant de courir.                                         Le cheval saute avant i court             0/1 1/3  (4)
+Elle sort après avoir mis sa montre.                                       I sort après met sa montre
+Les vieux attendent à l'arrêt du bus.                                         Les vieux attendent le bus           0/1        2/3  (6)
+Les filles se couchent et elles s'endorment.                                 les filles couchent et è dort
+Le monsieur achète un chapeau et le met.                            le monsieur achète un chapeau il met           0/1        1/3  (6)
+Le chien qui regarde le chat a un collier.                      Le chien regarde le chat, le chat a un collier
+L'enfant montre le garçon qui porte la fille.                                 l'enfant porte la fille              0/1        2/4  (6)
+Le garçon que montre la fille a un cartable.                        le garçon montre la fille ... un cartable
+La dame connaît le garçon que la fille porte.                      La dame connaît le garçon, la fille porte       0/1        3/5  (7)
+A condition que le feu soit vert, la voiture avance.                       Le feu vert la voiture roule
+Le garçon joue avec ses frères, s'ils lui laissent un ballon.  le garçon joue avec ses frères, i laisse le ballon  0/1        3/5  (8)
+Il ne prend le train que s'il y a de la neige.                         Il prend le train si y a de la neige
+                                                                                                                   0/1        3/5  (8)
+
+                                                                                                                   0/1        1/4  (8)
+
+                                                                                                                   0/1        1/5  (9)
+
+                                                                                                                   0/1        2/4  (9)
+
+                                                                                                                   0/1        2/5  (9)
+
+                                                                                                                   0/1        1/6  (9)
+
+                                                                                                                   0/1        4/6 (10)
+
+                                                                                                                   0/1        3/7 (12)
+
+                                                                                                                   0/1 3/10 (13)
+
+Total Répétition phrases complexes MS correctes CP-3ème : 0/15                                                                32/75
+                                       Total erreurs phrases complexes MS :
+
+Empan de mots (nbre mots de la phrase la plus longue, correctement répétée) : 0
+
+Le total erreurs MS est le total des erreurs réalisées sur les mots en gras.
+Les mots en gras omis sont comptés en erreur MS et tous les mots omis sont décomptés dans le total
+de mots.
+Si l'enfant dit « i » pour il, le mot est compté juste, mais s'il dit « i » pour elle, le mot est compté faux,
+s'il dit « è » pour elle, le mot est compté juste.
+Les erreurs phonologiques ne sont pas prises en compte : le total de mots bien répétés ne tient pas
+compte des erreurs phonologiques
+Ex : s'il dit Elle sort après avoir mis sa monte (au lieu de montre) compter un point pour « monte »
+Colonne phrases MS correctes : Si tous les éléments MS (en gras) sont bien répétés, même si
+quelques éléments lexicaux sont modifiés, compter 1 point
+Ex : Ils emmènent leurs chevaux au lieu de Ils promènent leurs chevaux : 1 point
+
+Aucune phrase parfaitement répétée, impossible de calculer l'empan de mots.
+

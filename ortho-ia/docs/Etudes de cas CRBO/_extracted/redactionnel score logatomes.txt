@@ -1,0 +1,42 @@
+Score « logatome » / empan logatome / score logatome syllabes et épreuves Répétition
+
+En complément de l'épreuve Répétition de pseudomots ou de l'épreuve répétition de mots complexes
+qui sont cotées en + ou ­ (qu'il y ait une ou plusieurs erreurs, la notation est la même : l'item est
+compté faux), l'apport d'une épreuve de Répétition de logatomes, telle qu'elle a été conçue dans
+EVALEO, est d'avoir des informations sur les capacités de mémoire auditivo-verbale à court terme mais
+aussi sur ses capacités de co-articulation, de discrimination phonologique dans une chaîne verbale, de
+perception auditive sérielle de l'ordre des phonèmes dans une suite de syllabes.
+L'empan et le score « logatomes » renseignent sur la mémoire auditivo-verbale à court terme. Ils
+mobilisent aussi des capacités de MCT sérielle phonologique du sujet. Le score empan permet de
+déterminer le nombre de syllabes maximal que le sujet est capable de mémoriser et de reproduire
+(score empan) et le score logatomes permet de savoir le nombre de logatomes complets qu'il est
+capable de reproduire.
+Le score « logatome syllabes » permet d'avoir une idée du nombre de syllabes mémorisées, même si
+le logatome n'est pas entièrement bien répété (rôle de la MCT phonologique). Il permet d'avoir une
+idée des capacités de discrimination auditive et de co-articulation du sujet dans une structure
+comportant plusieurs syllabes enchaînées. Le score « logatome syllabes » permet donc de voir à quel
+point, en dépit d'un empan faible ou d'un nombre de logatomes faible, le sujet parvient ou pas à
+répéter les syllabes d'une structure co-articulée.
+Il existe des différences entre les épreuves :
+
+    · Dans l'épreuve de répétition de mots complexes, le sujet peut faire appel à ses représentations
+         sémantiques et phonologiques stockées en mémoire à long terme (s'il connaît les mots), mais
+         pas dans l'épreuve de répétition de logatomes.
+
+    · Dans l'épreuve de répétition de pseudomots, dans la mesure où les pseudomots présentent
+         des ressemblances avec des mots existants, il est possible que le sujet fasse aussi appel à ses
+         représentations sémantiques et phonologiques pour des parties de pseudomots.
+
+    · Dans l'épreuve de répétition de chiffres, les éléments de l'item sont prononcés séparément et
+         liés à une représentation sémantique et phonologique (Cf. travaux de Majerus) alors que dans
+         l'épreuve de répétition de logatomes, les syllabes sont, d'une part, intégrées dans une
+         structure (aucune syllabe n'est prononcée séparément) et d'autre part, il n'y a pas de sens ni
+         de rapprochement possible avec des mots.
+
+L'épreuve de répétition de logatomes permet aussi en comparant les scores logatomes par syllabes
+CVC et CCV d'identifier des difficultés de co-articulation, et/ou des difficultés de repérage auditif de
+l'ordre des phonèmes (ordre sériel des phonèmes) qui sont souvent plus problématiques dans les
+séries CCV.
+
+                                                                              Mars 2020
+

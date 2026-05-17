@@ -1,0 +1,153 @@
+L' « effet » est la mesure de la différence de lecture (en score et en temps) en fonction des
+caractéristiques propres aux mots (rares Vs fréquents, mots longs Vs mots courts,
+consistants Vs non consistants, mots Vs pseudomots).
+
+Les effets calculés portent sur la longueur (score et temps), la lexicalité (score et temps, la
+consistance (score) et la fréquence (score).
+
+La sensibilité aux effets est interprétée comme le signe d'un développement insuffisant de
+l'une ou l'autre des procédures1.
+
+Pour « longueur », « consistance » et « fréquence », si l'effet est celui attendu (au-delà de la
+classe 3 incluse), cela signifie que la différence est développementalement normale pour le
+niveau de classe considéré.
+
+     Pour « fréquence », si l'effet est trop important (tranche 1, voire tranche 2), cela montre
+         que les mots rares sont beaucoup moins bien lus que les mots fréquents par rapport à ce
+         qui est attendu pour la classe d'âge du sujet. On peut l'interpréter comme la conséquence
+         d'un lexique orthographique insuffisamment constitué qui perturbe la voie lexicale. Les
+         étalonnages nous montrent que dans le développement typique, l'effet de fréquence
+         s'atténue avec l'âge après le CE2 (automatisation de l'identification des mots) et qu'il
+         devient négligeable au collège.
+
+     Pour « consistance »2, si l'effet est trop important (tranche 1, voire tranche 2), cela
+         montre que les mots inconsistants sont beaucoup moins bien lus que les mots consistants
+         par rapport à ce qui est attendu pour la classe d'âge du sujet. Le sujet est sensible à
+         l'opacité du mot (lit mieux les mots transparents qu'opaques). Cela montre que le sujet
+         n'a pas ces mots inconsistants dans son lexique orthographique et ne peut pleinement
+         utiliser sa voie lexicale. La méconnaissance de certains digraphes et trigraphes
+         inconsistants peut empêcher la lecture correcte de ces mots inconsistants (analyser les
+         types d'erreurs) et donc ne peut pas par l'utilisation de sa voie phonologique.
+
+     Pour « longueur »,
+             o si l'effet « score » est trop important (tranche 1, voire tranche 2), cela montre que
+                  les mots longs sont beaucoup moins bien lus que les mots courts par rapport à ce
+                  qui est attendu pour la classe d'âge du sujet. Le sujet réussit mieux à lire des mots
+                  courts que longs. Ceci montre qu'il ne passe pas par la voie lexicale qui permet de
+                  lire correctement les mots quelle que soit leur longueur. Il passe probablement
+
+1 Il est bon de rappeler que le modèle à 2 voies a été élaboré pour comprendre le fonctionnement face à l'identification des mots écrits
+chez des lecteurs experts et n'explique pas son fonctionnement face à des lecteurs en développement. La littérature actuelle montre que
+les deux voies ne sont pas si indépendantes. La conversion graphèmes-phonèmes comme elle est proposée dans le modèle n'est effective
+que les premiers mois de l'apprentissage et rapidement on va se constituer un système comprenant des régularités graphotactiques que
+l'on active pour lire tout mot nouveau mot ou pseudomot. Donc l'interprétation binaire que l'on fait en disant que si la lecture des
+pseudomots est déficitaire = voie phono déficitaire est à nuancer. En effet, on peut échouer face à un pseudomot à cause d'un lexique
+orthographique faible qui a affaibli les connaissances sur les régularités graphotactiques et donc cela freine la lecture de mots nouveaux et
+pseudomots (Fayol, 2017, Zoubrinetsky, 2015). De la même manière si les mots inconsistants sont déficitaires = voie lexicale déficitaire est
+à nuancer. En effet, on peut échouer la lecture de mots inconsistants à cause d'une voie phonologique déficitaire car il nous faut forcément
+être passé par cette voie pour emmagasiner notre lexique orthographique donc toute voie phonologique déficitaire engendre un lexique
+orthographique faible (Share, 1999). Il faut penser le modèle à 2 voies comme un système où les deux voies interagissent.
+
+2 Il n'y a pas de liste pure avec des mots irréguliers. Il s'agit de mots + ou - consistants qui permet de tester la voie lexicale.
+La consistance est « le caractère plus ou moins stable des relations entre des unités phonologiques et orthographiques ».
+En langue française, la consistance des relations orthographe-phonème (le sens de la lecture du mot) est égale à 95% tandis
+que a consistance des relations phonème-orthographe (le sens de la production du mot) est égale à 52,7%. Dans la
+littérature, les auteurs concluent que « les items inconsistants sont produits plus lentement et génèrent plus d'erreurs que
+les items consistants.». Donc, les mots irréguliers sont forcément des mots inconsistants (lynx) et un mot inconsistant peut
+être régulier (escalier).
+                  par la voie phonologique qui est couteuse d'où un risque d'erreur plus important
+                  face à des mots longs.
+             o si l'effet « temps » est trop important (tranche 1, voire tranche 2), cela montre
+                  que les mots longs sont lus beaucoup plus lentement que les mots courts par
+                  rapport à ce qui est attendu pour la classe d'âge du sujet. Ceci montre qu'il ne
+                  passe pas par la voie lexicale qui permet de lire aussi rapidement les mots quelle
+                  que soit leur longueur. Il passe probablement par la voie phonologique qui est
+                  sensible à la longueur du mot. Les étalonnages nous montrent que dans le
+                  développement typique, l'effet de longueur-temps s'atténue avec l'âge surtout à
+                  partir du CE2, âge où l'automatisation apparait.
+
+     Pour « lexicalité », si l'effet est celui « attendu », cela signifie que la différence est
+         développementalement normale pour le niveau de classe considéré. Pour «lexicalité »,
+         l'effet peut s'avérer trop important ou pas assez important compte tenu de l'âge du sujet.
+         Il est calculé pour le score comme pour le temps.
+             o Pour « lexicalité-score» (mots-pseudomots), si l'effet est trop important, cela
+                  montre que les mots sont beaucoup mieux lus que les pseudomots par rapport à
+                  ce qui est attendu pour la classe d'âge du sujet. Ceci montre une difficulté à lire
+                  des pseudomots donc une voie phonologique peu efficiente avec notamment
+                  pour, conséquence une recherche de sens face aux mots à partir d'indices
+                  phonologiques ou visuels.
+             o Si pour « lexicalité-score », l'effet n'est « pas assez important », cela montre qu'il y
+                  a trop peu de différence ou performance inversée (pseudomots mieux lus que
+                  mots) entre la lecture des mots et des pseudomots par rapport à ce qui est
+                  attendu pour la classe d'âge du sujet. Ceci peut signifier qu'il lit les mots comme
+                  des mots nouveaux donc que sa voie lexicale est perturbée.
+             o Pour « lexicalité-temps», si l'effet est « trop important ». Cela montre que les
+                  mots sont beaucoup plus rapidement lus que les pseudomots par rapport à ce qui
+                  est attendu pour la classe d'âge du sujet. Ceci montre une difficulté à lire des mots
+                  nouveaux rapidement ce qui montre une voie phonologique peu efficiente.
+             o Si pour « lexicalité-temps », l'effet n'est pas assez important, cela montre qu'il y a
+                  trop peu de différence entre les temps pour lire des mots que des pseudomots
+                  par rapport à ce qui est attendu pour la classe d'âge du sujet. Ceci peut signifier
+                  qu'il lit les mots comme des mots nouveaux donc que sa voie lexicale est
+                  perturbée.
+
+Voici des exemples :
+
+SUJET 1 : Thibault en 5ème :
+
+    · EVALOUETTE : 103 mots lus correctement en 2' ce qui le situe en deçà du percentile 7**
+         et équivaut à un niveau développemental de CE1 1er trimestre.
+         Il obtient un score en précision de 88,8% de mots correctement lus (en deçà du
+         percentile 7).
+    · LA MOUETTE : 145 mots lus correctement en 2' ce qui le situe en deçà du percentile 7**
+         et équivaut à un niveau développemental de CE1 3ème trimestre. Il y a un gain de deux
+         trimestres par rapport au texte non signifiant.
+        Il obtient un score en précision de 90,6% de mots correctement lus (en deçà du
+        percentile 7**)
+
+     Son niveau d'identification de mots est faible pour un âge réel de 5ème. Il est à la fois lent
+         et imprécis. Il est aidé par le sens du texte puisqu'il est meilleur face à un texte signifiant.
+
+    · LECTURE DE MOTS et PSEUDOMOTS ISOLES
+        - Mots liste 1 + liste 2 : 38/44 (centile 7-20) en 78,8'' (en deçà du centile 7).
+
+        - Pseudomots : 14/24 (en deçà du centile 7) en 61,9'' (en deçà du centile 7).
+
+        Les 2 voies sont perturbées tant en précision qu'en temps.
+
+        On note, un effet de fréquence trop important, un effet de consistance normal, un
+        effet de longueur normal en score mais pas en temps et un effet de lexicalité attendu
+        en score comme en temps.
+
+     La complexité du mot ne le gêne pas (pas d'effet de consistance). Par contre, il est freiné
+         face aux mots rares qu'il soit consistants ou non. Face à ces mots qu'il ne connait pas, il
+         essaye de les lire par la voie phonologique (effet de longueur en temps) mais la longueur
+         importe peu pour lire précisément les mots (pas d'effet de longueur-score). Donc soit il
+         connait le mot, soit il ne le connait pas et dans ce cas, il passe par la voie phonologique ce
+         qui engendre une lenteur.
+
+Sujet n°2 : Maiwenn, CM2
+
+EVALOUETTE : 81 mots lus correctement en 2' ce qui la situe dans la tranche 1 (centile
+inférieur à 7) ** et qui correspond à un âge développemental de CE1 1er trimestre.
+
+LA MOUETTE : 103 mots lus correctement en 2' ce qui la situe dans la tranche 1 (centile
+inférieur à 7) ** et qui correspond à un âge développemental de CE1 1er trimestre. On ne
+voit pas de compensation face à un texte signifiant.
+
+LECTURE DE MOTS et PSEUDOMOTS ISOLES (
+
+Mots liste 1+ liste 2 : 38/44 (centile 7-20) en 89'' (centile 7-20)
+
+Lecture de pseudomots : 17/22 (centile inférieur à 7) en 58'''' (centile 7-20).
+
+On note surtout une voie phonologique perturbée et une voie lexicale fragilisée.
+
+ON note un effet de consistance et de fréquence attendu pour son âge : sa voie lexicale
+semble fonctionner. Nous notons un effet de longueur trop important pour le temps ce qui
+montre que face à certains mots qu'elle ne connait pas, elle passe par la voie phonologique
+et s'avère particulièrement lente face aux mots longs. Ceci rejoint l'effet de lexicalité trop
+important en termes de score qui montre une difficulté particulière à lire des pseudomots.
+L'effet de lexicalité en temps est attendu pour son âge alors qu'il est trop important pour le
+score. Cela peut signifier une maitrise de la procédure phonologique.
+

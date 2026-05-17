@@ -1,0 +1,22 @@
+Empan visuo-attentionnel et seuil d'identification
+
+Quelques éléments d'interprétation clinique
+
+Le trouble de l'empan visuo-attentionnel se caractérise par des anomalies dans la répartition
+simultanée de l'attention sur les différentes lettres/chiffres d'un même stimulus visuel. Ainsi, le sujet
+qui présente ce type de trouble traite un nombre moins important d'éléments que ses pairs lors
+d'une fixation. Donc, en lecture, il traitera moins de lettres au cours d'une fixation. Un trouble de
+l'empan visuo-attentionnel perturbera la correspondance graphème-phonème de digraphes et/ou
+trigraphes, la mémorisation du lexique orthographique et la génération de régularités
+graphotactiques.
+Si le score à l'épreuve préliminaire de seuil de chiffres est dans la norme et un score pathologique de
+l'empan visuo-attentionnel et/ou au moins une des positions pathologiques, cela suggère la présence
+d'un trouble visuo-attentionnel.
+Si le score à l'épreuve préliminaire de seuil de chiffres est pathologique, alors que l'épreuve de
+l'empan visuo-attentionnel est dans la norme (empan et toutes les positions), cela permet d'écarter
+un trouble visuo-attentionnel et suggère une fragilité attentionnelle.
+Si le score à l'épreuve préliminaire de seuil de chiffres est pathologique et que l'épreuve de l'empan
+visuo-attentionnel l'est aussi, il est impossible d'interpréter les résultats : est-ce un trouble déficitaire
+de l'attention (recueillir les éléments du DSM-5) qui affecte les 2 épreuves ou y a-t-il en plus un
+trouble visuo-attentionnel ?
+

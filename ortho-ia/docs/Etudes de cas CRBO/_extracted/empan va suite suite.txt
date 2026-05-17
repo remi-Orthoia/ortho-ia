@@ -1,0 +1,53 @@
+En d'autres mots, concernant le contenu du document concernant l'Empan visuo-attentionnel : Lors de
+notre expérimentation, il a été procédé à une étude de corrélation entre les résultats d'EVADYS de
+Sylviane Valdois et l'épreuve adaptée telle que proposée dans EVALEO. Ces travaux ont permis, d'une
+part de valider la corrélation des résultats entre les deux études, en permettant de ne garder,
+notamment, que le report global sans avoir à administrer le report partiel (très corrélé au report global
+lors de l'étude EVALEO).
+
+Nous avons naturellement retenu le subtest du Seuil d'identification comme l'avait conçu Sylviane. Or,
+lors des travaux de validation, il n'a été retrouvé qu'une très faible corrélation entre Seuil
+d'identification et Report global que pour quelques classes d'âge1. Nous avons noté, par ailleurs, que de
+nombreux sujets, ayant un Seuil d'identification haut, réussissaient parfaitement au Report global. Ce
+qui parait cohérent avec une quasi absence de corrélation révélé entre ces deux subtests lors de notre
+étude. L'idée développée dans EVADYS, concernant ce Seuil d'identification, étant d'écarter d'une
+possible interprétation de leurs résultats aux subtests des Reports les sujets ayant un seuil haut, nous
+ne pouvions donc objectiver, à la vue de nos résultats, ce lien de cause à effet entre échec au Seuil et
+difficulté de prise en compte des résultats au Report global. D'autant plus que dans ses travaux,
+Sylviane Valdois n'a jamais pu indiquer ou identifier quel était le seuil minimum indispensable à une
+perception fonctionnelle visuo-attentionnelle. Pour rappel, la norme dans le subtest Seuil
+d'identification évolue autour de 50 millisecondes, alors que la présentation de chaque item du Report
+global se fait à une vitesse constante de 200 millisecondes, nettement supérieure, donc, à celle du Seuil
+d'identification.
+
+Bien que les résultats à ce premier subtest ne soient pas significatifs, nous l'avons cependant conservé,
+considérant qu'ayant été présenté lors des passations pour la phase de validation, il faisait partie
+intégrale de la forme de présentation de l'épreuve. Nous le considérons alors davantage comme une
+phase d'entraînement à la passation de l'épreuve.
+
+C'est ce qui nous a conduit à dissocier l'analyse des deux subtests en proposant ces trois situations,
+sachant que cette épreuve comme beaucoup d'épreuves est sensible aux difficultés attentionnelles, et
+qu'il est indispensable de bien vérifier que l'attention focalisée de l'enfant est possible (que le regard du
+patient fixe bien la croix), et reste bien mobilisée tout au long de l'épreuve :
+
+    - Si le score à l'épreuve préliminaire de seuil de chiffres est dans la norme et un score
+         pathologique de l'empan visuo-attentionnel et/ou au moins une des positions pathologiques,
+         cela suggère la présence d'un trouble visuo-attentionnel.
+
+    - Si le score à l'épreuve préliminaire de seuil de chiffres est pathologique, alors que l'épreuve de
+         l'empan visuo-attentionnel est dans la norme (empan et toutes les positions), cela permet
+         d'écarter un trouble visuo-attentionnel.
+
+    - Si le score à l'épreuve préliminaire de seuil de chiffres est pathologique et que l'épreuve de
+         l'empan visuo-attentionnel l'est aussi, il est impossible d'interpréter les résultats : est-ce parce
+         que le Seuil d'identification est trop haut que le sujet échoue l'épreuve de Report global, ou est-
+         ce lié à une autre difficulté ?
+
+1 C'est ce qui est noté dans le texte du Livret de l'utilisateur : « Dans la recherche que nous avons menée
+avant la version définitive de l'épreuve d'empan visuo-attentionnel dans l'EVALEO, les résultats de notre
+population témoin nous permettent d'observer une corrélation entre le seuil d'identification d'un item et
+la taille de l'empan visuo-attentionnel.
+Cependant, cette seule corrélation ne semble pas suffisante pour évoquer l'existence d'une relation de
+cause à effet entre les deux épreuves. ». Observation d'une corrélation, mais comme indiqué dans la
+suite du texte : corrélation très faible et seulement que pour quelques classes.
+

@@ -1,0 +1,169 @@
+                            CABINET D'ORTHOPHONIE
+                                 Anne Frouard
+                                      rue
+                                     ville
+                                     Tél.
+
+
+                                        Compte-rendu de bilan orthophonique de 
+                                                                        XYZ XYZ
+                                                               Née le /09/1994
+                                                                       (23 ans)
+Renseignements administratifs :
+  * Assurée : XYZ XYZ affiliée à la CPAM (N°SS)
+  * Date du bilan : XX/08/2018
+  * Date de la prescription : XX/XX/2018
+  * Médecin prescripteur : Dr XX (xx)
+  * Adresse : XX
+  * Profession : auxiliaire de vie en maison de retraite
+   
+Motif : La demande émane de la patiente elle-même. Elle a décidé de préparer un concours de police pour devenir Adjoint de Sécurité et souhaite être accompagnée en orthophonie pour compenser ses troubles spécifiques du langage écrit, diagnostiqués depuis le primaire.
+
+Je rencontre XYZ pour un bilan de la communication et du langage écrit.
+Anamnèse
+  * XYZ a été suivie durant tout son primaire en orthophonie en raison d'une dyslexie / dysorthographie qu'elle décrit comme très importante. Le dernier bilan a été réalisé le /2017 avec une de mes collègues qui pose le diagnostic de dyslexie / dysorthographie phonologique. Une prise en charge a eu lieu durant les derniers mois.
+  * Au niveau médical, on ne note pas de trouble particulier. La vue et l'audition ont été contrôlées.
+  * Le parcours scolaire a été difficile avec un passage en SEGPA au collège et l'arrêt de sa scolarité en 1ère année de CAP. XYZ a un parcours professionnel varié. Elle souhaite passer le concours de police en octobre 2018.
+  * Les troubles du langage écrit l'ont toujours mise en difficulté. Aujourd'hui encore, l'écrit la stresse et il est compliqué pour la patiente de formuler ses idées à l'écrit, mais également à l'oral. Elle n'aime pas lire et déchiffre difficilement. La compréhension de l'écrit est difficile. Lorsqu'elle écrit, elle dit faire beaucoup de fautes d'orthographe.
+  * Dans les antécédents familiaux, il est à noter que ...
+  * On note des difficultés au niveau du sommeil (réveils nocturnes). XYZ indique qu'elle est très anxieuse, qu'elle se vexe vite. Aucune prise en charge autre qu'orthophonique n'a été mise en place.
+Domaines explorés : 
+  * La lecture : vitesse et correction de l'identification des mots, utilisation des deux voies, stratégies mises en place
+  * L'écriture : orthographe phonologique, lexicale, morphoflexionnelle, linguistique et dérivationnelle, vitesse ; maîtrise du geste graphique
+  * Hypothèses explicatives :
+   + Hypothèse d'un trouble du langage oral : pragmatique, lexique (production et compréhension de mots) 
+   + Hypothèse d'un trouble phonologique : métaphonologie, répétition de pseudomots, mémoire à court terme auditivo-verbale (Répétition de chiffres endroit / envers)
+   + Hypothèse d'un trouble visuo-attentionnel : Empan visuo-attentionnel, contrôle de l'inhibition (Effet Stroop)
+Batterie utilisée :
+EVALEO 6-15 : Evaluation du Langage Ecrit et du Langage Oral 6 -15 ans : Launay, Maeder, Roustit, Touzin, Ortho Edition, 2018.
+
+Cette batterie est utilisée pour une population de 6 à 15 ans. Néanmoins, compte tenu du parcours scolaire de la patiente, nous utiliserons l'étalonnage 15 ans, qui correspond à un niveau d'acquisition du langage écrit de fin de collège.
+
+Pour toutes les épreuves de ce bilan, les scores du patient sont situés dans 7 classes :
+  1. Classe 1 = centiles inférieurs à 7, zone dite << pathologique >>
+  2. Classe 2 = centiles 7 à 20, zone << de fragilité >> 
+  3. Classe 3 = centiles 21 à 38, zone << norme faible >>
+  4. Classe 4 = centiles 39 à 62, zone << norme médiane >> 
+  5. Classe 5 = centiles 63 à 80, zone << norme supérieure >>
+  6. Classe 6 = centiles 81 à 93, zone << supérieure >>
+  7. Classe 7 = centiles supérieurs à 93, zone << très supérieure >>
+De la classe 3 à la classe 7, les résultats du sujet correspondent à son niveau scolaire, voire dépassent le niveau moyen de ses pairs.
+Langage écrit
+Au niveau de la lecture : 
+Conversion grapho-phonémique : dénommer rapidement la valeur phonique de chaque graphème : 
+ Score total de 26 : classe 1
+ Temps total de 86 secondes : classe 1
+On observe une méconnaissance de la valeur phonique des lettres K,Y et même P et F pour lesquelles elle peut dire le nom de la lettre mais pas le bruit qu'elle fait. De même certains groupes ne sont pas reconnus (ex. : ai / oin)
+Lecture de mots : tester la lecture de mots consistants et inconsistants en faisant varier la longueur et la fréquence
+ Score total de 39 : classe 1
+ Temps total de 92 s :  classe 1
+Le déchiffrage est donc à la fois lent et imprécis.
+On observe différents effets :
+   + Effet fréquence : classe 1 : les mots rares sont beaucoup moins bien lus que les mots fréquents par rapport à ce qui est attendu pour la classe d'âge du sujet : le lexique orthographique est insuffisamment constitué, ce qui perturbe la voie lexicale.
+   + Effet consistance : classe 7 : on ne note pas de différence entre les mots consistants et inconsistants. En effet, les mots échoués ne sont pas forcément ceux possédant des lettres muettes mais plutôt des digraphes et trigraphes non maîtrisés par la patiente (ex. cueillette) 
+   + Effet longueur : score : classe 6, temps classe 1 : La longueur importe peu sur la réussite du déchiffrage. En revanche, la différence de temps mise pour lire ces deux listes suggère que XYZ passe par la voie phonologique et non par la voie d'adressage et que cette voie n'est pas automatisée.
+Lecture de pseudomots : tester la lecture de mots nouveaux
+ Score de 20 : classe 4 
+ Temps de 70 s : classe 1
+   + L'effet lexicalité temps : classe 7 La voie d'adressage est plus rapide que la voie d'assemblage 
+   + L'effet lexicalité-score : classe 2 : les pseudomots sont mieux lus que les mots. 
+Ces effets montrent que XYZ lit les mots avec sa voie d'assemblage (qui est défaillante) et que la voie d'adressage est restreinte.
+Lecture de texte : tester l'identification des mots à travers un texte non signifiant ou signifiant
+     oo     non signifiant :
+ 178 mots lus en 2 minutes : classe 1
+ 161 mots correctement lus : classe 1
+ 90 % des mots sont bien lus : classe 1 
+Au total, son niveau de lecture correspond à un niveau de CE2.
+     oo     signifiant :
+ 227 mots lus en 2 minutes : classe 1 
+ 210 mots correctement lus : classe 1 
+ 93 % des mots sont bien lus : classe 1
+
+La lecture est lente et laborieuse, on observe de très nombreuses erreurs. Le sens n'améliore pas vraiment la qualité du déchiffrage et n'impacte pas l'indice de dégradation. XYZ a une lecture laborieuse mais elle est endurante.
+Si l'on compare les résultats obtenus par la patiente aux épreuves de lecture de graphies / mots / pseudomots à ceux obtenus par les sujets correspondant à son niveau de leximétrie (CE2), on remarque que ceux-ci restent dans la classe 1 et 2 pour l'ensemble. On peut donc en conclure qu'il s'agit d'une dyslexie touchant les deux voies de lecture.
+Au niveau de l'écriture :
+L'écriture étant une tâche coûteuse et anxiogène pour la patiente, nous avons fait le choix de ne lui administrer qu'une seule épreuve. XYZ est gauchère.
+Dictée de phrases : tester l'orthographe phonétique lexicale morphologique dérivationnelle morphologie flexionnelle et linguistique
+  oo Atteinte linguistique : 
+     * 4 erreurs non phonétiquement plausibles : classe 1
+     * 8 erreurs de segmentation : classe 1
+     * 2 erreurs portant sur les mots-fonction : classe 3
+     * 3 mots omis : classe 1
+  oo Atteinte de l'orthographe lexicale :
+     * 13 erreurs d'orthographe lexicale : classe 1
+A l'intérieur de ce score, on peut observer :
+     * 4 erreurs portant sur la partie non dérivable (racine du mot) : classe 1
+     * 7 erreurs portant sur la partie dérivable (affixe / suffixe) : classe 1
+  oo Atteinte des règles morphologiques :
+     * 6 erreurs portant sur les flexions des adjectivales : classe 1
+     * 8 erreurs portant sur les flexions nominales et pronominales : classe 1
+     * 15 erreurs portant sur les flexions verbales : classe 1
+Au total : 43 erreurs orthographiques : classe 1 et temps situé en classe 3.
+
+On observe donc une dysorthographie massive mixte.
+Hypothèses explicatives : 
+  
+   >    Existe-t-il un trouble du langage oral ? 
+Pragmatique : sert à évaluer les capacités pragmatiques aussi bien en compréhension qu'en expression
+Nous n'avons pas fait passer d'épreuve spécifique à XYZ car elle se situe bien dans la communication. Son comportement est adapté à la situation et au testeur.
+Dénomination lexique : sert à tester le lexique en production (évaluer le stock lexical actif)
+  oo Score de 70 : classe 3
+  oo Temps pour dénommer : classe 3 
+  oo Gain avec ébauche phonémique : classe 4
+Désignation d'images : sert à tester le lexique en compréhension (évaluer le stock lexical passif) 
+  oo Score de 144 : classe 4
+On ne note pas de réduction du stock lexical. On ne relève pas d'erreur morphosyntaxique à l'oral.
+
+   >    Existe-t-il un trouble phonologique ? 
+Dénomination Phonologie : sert à tester la phonologie à partir de mots présentés sous forme d'images
+  oo Score de 94 : classe 3
+La répétition est efficace pour répéter correctement le seul mot de la liste déformé. On ne remarque pas d'altération en spontané.
+Répétition de chiffres endroit envers : Sert à tester la mémoire à court terme verbale et la mémoire de travail verbale.
+
+  oo Mémoire à l'endroit : score de 5 : classe 1 ; empan de 3 : classe 1
+  oo Mémoire à l'envers : score de 3 : classe 2 ; empan de 3 : classe 2 
+Il y a donc une atteinte de la boucle auditivo-phonatoire.
+Répétition de pseudomots : Sert à évaluer les compétences de production phonologique.
+  oo Score de 7 : classe 1. 
+
+Métaphonologie : Sert à tester les compétences métaphonologiques 
+  oo Score contrepèteries : classe 1 
+  oo Score suppression du phonème initial : classe 1
+  oo Temps de réponse : classe 2
+
+XYZ présente un trouble phonologique massif qui explique donc l'atteinte de la voie d'assemblage au niveau du langage écrit.
+
+  > Existe-t-il un trouble visuo-attentionnel ? 
+Empan visuo-attentionnel : Sert à mesurer l'empan visuo-attentionnel
+  oo Seuil d'identification des chiffres : 41,5 ms : classe 3
+  oo Empan visuo-attentionnel de 3,8 items : classe 3
+  oo Score total report : 76 : classe 2
+  oo Score de séquences complètes : 5 : classe 3
+
+
+
+
+L'attention est davantage portée sur les chiffres des extrémités mais XYZ repère peu les items situés au centre de la séquence.
+
+
+Effet Stroop : Sert à tester les capacités d'inhibition.
+  oo Scores des 4 planches : classe 7
+  oo Temps pour les planches 1 et 2 : classe 2
+  oo Temps pour la planche 3 et 4 : classes 3 et 4
+Il est surprenant d'observer de tels temps d'exécution (inverses à ceux observés en cas de trouble attentionnels). On peut s'interroger sur l'accès au lexique qui ralentit la patiente sur les deux 1ères planches. En revanche, elle devient plus performante pour les planches qui nécessitent davantage d'attention. Il est fort probable que la patiente soit très entraînée à contrôler en permanence son attention. 
+On remarque néanmoins des signes d'agacement et d'anxiété (agitation motrice, jambe qui bat sous la table, gribouillis dans le coin de la feuille...) qui nous semblent plus être les signes de l'impact des troubles que leur origine.
+Diagnostic orthophonique
+On peut donc conclure à un trouble spécifique du langage écrit caractérisé par :
+           + Un trouble d'identification des mots écrits (dyslexie mixte) : XYZ utilise encore souvent sa voie d'assemblage mais celle-ci est très atteinte. Elle utilise également la voie d'adressage mais celle-ci est peu précise car le stock orthographique est extrêmement faible. La vitesse de lecture est globalement ralentie et très peu fonctionnelle.
+           + Une dysorthographie massive mixte avec des atteintes linguistique, lexicale et grammaticale 
+Les troubles du langage écrit sont engendrés par trouble phonologique massif. Il sera important d'explorer davantage l'aspect visuel.
+Projet thérapeutique
+  + Il semble important de mettre en place des aménagements pour permettre à XYZ de passer son concours dans des conditions tenant compte de ses troubles (temps supplémentaire, accès à un répertoire orthographique...).
+  + Une prise en charge orthophonique doit également se mettre en place. Nous proposons à XYZ une séance individuelle hebdomadaire (30 AMO 10,1) afin de : 
+     oo augmenter la vitesse de lecture (lecture flash, fluence...)
+     oo renforcer le stock lexical (champ lexicaux en lien avec le concours)
+     oo travailler la morphologie (flexionnelle, dérivationnelle).
+     oo travailler autour de l'écrit porteur de sens
+Examen complémentaire
+Un examen orthoptique neurovisuel pourrait être proposé afin de comprendre pourquoi XYZ ne perçoit pas bien l'élément central de la séquence et l'aider, le cas échéant, à porter son attention visuelle sur l'ensemble du mot.
+

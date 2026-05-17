@@ -1,0 +1,277 @@
+ IDENTITE                                                                                                              FICHE ANAMNESE
+
+Nom                                        Prénom
+
+Sexe                    Date de naissance             Age cible                                                Classe
+
+Lieu de scolarisation    Rural              Urbain      Place dans la fratrie
+                         ZEP                Hors ZEP
+
+Profession du père                                      Profession de la mère
+Catégorie INSEE ­ père                                  Catégorie INSEE - mère
+
+ Agriculteurs exploitants                                                                          Agriculteurs exploitants
+ Artisans                                                                                          Artisans
+ Commerçants et assimilés                                                                          Commerçants et assimilés
+ Chefs d'entreprise de 10 salariés ou plus                                                         Chefs d'entreprise de 10 salariés ou plus
+ Professions libérales et assimilés                                                                Professions libérales et assimilés
+ Cadres de la fonction publique, professions intellectuelles et artistiques                        Cadres de la fonction publique, professions intellectuelles et artistiques
+ Cadres d'entreprise                                                                               Cadres d'entreprise
+ Professions intermédiaires de l'enseignement, de la santé, de la fonction publique et assimilés   Professions intermédiaires de l'enseignement, de la santé, de la fonction publique et assimilés
+ Professions intermédiaires administratives et commerciales des entreprises                        Professions intermédiaires administratives et commerciales des entreprises
+ Techniciens                                                                                       Techniciens
+ Contremaîtres, agents de maîtrise                                                                 Contremaîtres, agents de maîtrise
+ Employés de la fonction publique                                                                  Employés de la fonction publique
+ Employés administratifs d'entreprise                                                              Employés administratifs d'entreprise
+ Employés de commerce                                                                              Employés de commerce
+ Personnels des services directs aux particuliers                                                  Personnels des services directs aux particuliers
+ Ouvriers qualifiés                                                                                Ouvriers qualifiés
+ Ouvriers non qualifiés                                                                            Ouvriers non qualifiés
+ Ouvriers agricoles                                                                                Ouvriers agricoles
+ Anciens agriculteurs exploitants                                                                  Anciens agriculteurs exploitants
+ Anciens artisans, commerçants, chefs d'entreprise                                                 Anciens artisans, commerçants, chefs d'entreprise
+ Anciens cadres et professions intermédiaires                                                      Anciens cadres et professions intermédiaires
+ Anciens employés et ouvriers                                                                      Anciens employés et ouvriers
+ Chômeurs n'ayant jamais travaillé                                                                 Chômeurs n'ayant jamais travaillé
+ Inactifs divers (autres que retraités)                                                            Inactifs divers (autres que retraités)
+
+Niveau d'études du père :      sans qualification  CAP                                             BEP-Brevet   BAC     Etudes supérieures
+Niveau d'études de la mère :   sans qualification  CAP                                             BEP-Brevet   BAC     Etudes supérieures
+
+                                                                                                                                                                                                    1
+ ANTECEDENTS                                                  Commentaires
+
+1 : Antécédents familiaux 
+
+  Handicap / syndrome génétique
+  Troubles spécifiques du langage et/ou des apprentissages
+  Troubles envahissants du développement
+  Problématique familiale psychopathologique
+
+2 : Antécédents personnels 
+
+                                                              Commentaires
+
+ Handicap           sensoriel  moteur    mental
+ Syndrome génétique
+
+ Troubles envahissant du développement
+ Infirmité motrice cérébrale
+
+3 : Antécédents médicaux 
+
+                                                              Commentaires
+
+ Grossesse          simple  multiple
+
+ Souffrance foetale           Nbre semaines :
+ Prématurité
+
+ Poids de naissance           Poids en grammes :
+
+ Souffrance néonatale
+
+ Affections générales (maladies)
+ Affections ORL
+
+ Épilepsie
+
+ Autres affections neurologiques (AVC, tumeurs...)
+ Traumatisme crânien
+
+ Hospitalisations                                   Motifs :
+
+4 : Prises en charge 
+
+Prise en charge par une structure pluridisciplinaire           CAMSP  CMP  CMPP  SESSAD  autre
+
+Autres prises en charge  psychothérapie  psychomotricité  kinésithérapie  ergothérapie  orthoptie  autre
+
+                                                                                                          2
+ DEVELOPPEMENT
+
+1 : Aptitudes sensorielles                                                                      Vision
+                                          Audition
+                                                     oui  non           Intégrité sensorielle                  oui  non
+ Intégrité sensorielle                              
+ Otites séreuses                                                        Suivi orthoptique                     
+ Aérateurs trans tympaniques
+                                                     prothèse  implant  Circonstances de survenue du déficit
+ Circonstances de survenue du déficit
+                                                                        Nature du déficit                      lunettes   lentilles
+ Nature du déficit                                                      Appareillage
+ Appareillage                                                           Date de l'appareillage
+ Date de l'appareillage
+
+2 : Aspects morphologiques                                                                      Commentaires
+
+  Dysmorphose faciale
+  Fente  labio /  palato /  vélaire
+  Insuffisance vélaire
+  Dysmorphose dento alvéolaire
+  Autre
+
+3 : Développement psychomoteur et psychosocial
+
+                                                                                                Commentaires
+
+ Motricité ­ station assise                         Mois :
+ Motricité ­ marche                                 Mois :
+
+ Autonomie ­ alimentation                           Mois :
+ Autonomie ­ toilette                               Mois :
+ Autonomie ­ habillage                              Mois :
+
+ Contrôle sphinctérien       Diurne                 Mois :
+
+                             Nocturne Mois :
+
+ Trouble de l'alimentation
+
+ Habitudes de succion  doigt  tétine  autre
+
+ Trouble du sommeil
+
+ Mise en place du jeu de faire semblant             Mois :
+
+                                                                                                                                     3
+4 : Développement du langage                                                                 Commentaires
+
+  Babillage                              Mois :
+  Geste de pointer                       Mois :
+  Papa / maman                           Mois :
+  Premier mot autre                      Mois :
+  Masse critique de 50 mots              Mois :
+  Juxtaposition de 2 mots                Mois :
+  Phrase à 3 éléments dont un verbe      Mois :
+  Emploi du « je »                       Mois :
+
+ Langue maternelle                       Langue(s) :                         peu appropriées  bien appropriées
+ Autre(s) langue(s) parlées à la maison                      inappropriées
+ Stimulations linguistiques
+
+5 : Socialisation / scolarisation
+
+ Première socialisation                          Mois :               assistante maternelle    Commentaires    crèche   autre
+ Premier lieu d'accueil                                                                       halte garderie
+ Entrée à l'école                                Mois :
+ Maintien                                               Classe(s) :
+ Redoublement                                           Classe(s) :
+ Orientation enseignement spécialisé
+                                         Type(s) de classe(s) :
+
+6 : Apprentissages
+
+ Difficultés en lecture et orthographe
+ Difficultés en mathématiques
+ Difficultés dans les autres matières
+ Difficultés dans les devoirs
+ Autres commentaires :
+
+7 : Aménagements
+
+ PPRE
+ PAP
+ PPS
+ AESH (ex AVS)
+ Ordinateur
+ Autre aide matérielle
+
+                                                                                                                               4
+8 : Comportement
+  En classe :
+  Avec ses camarades :
+  A la maison :
+  Difficultés particulières dans le comportement (anxiété, colère, repli...) :
+9 : Latéralisation  non latéralisé(e)  droite  gauche  ambidextre
+
+                                                                                                                                                                                                                             5
+ PLAINTE
+
+Développement du langage écrit
+
+Lecture
+
+    Bute sur des mots
+    Est lent pour lire
+    Lecture peu fluide
+    Présence de confusions
+    Difficulté pour lire à voix haute
+    Ne comprend pas ce qu'il lit
+    Comprend si on lit pour lui
+    Rapport à lecture :
+    Autres commentaires :
+
+Orthographe
+
+    Ne respecte pas les sons quand il écrit (omissions, substitutions, inversions, ajouts)
+    Les erreurs portent sur l'orthographe lexicale
+    Les erreurs portent sur l'orthographe grammaticale (accords, conjugaisons, homophones, etc.)
+    Les erreurs portent la mauvaise segmentation des mots
+    Moment de repérage des difficultés :
+    Autres commentaires :
+
+Graphisme
+
+    Fatigabilité
+    Douleurs
+    Description du graphisme et autres commentaires :
+
+                                                                                                                                                                                                                             6
+Développement du langage oral
+    Gêne actuelle :
+    Ne comprend pas toujours ce qu'on lui dit
+    Déforme des mots
+    Difficultés d'évocation, cherche ses mots
+    Erreurs sur la structure syntaxique
+    Difficulté à raconter un évènement
+    On ne comprend pas toujours ce qu'il dit
+    Niveau de langage à l'entrée en PSM :
+    Autres commentaires :
+
+                                                                                                                                                                                                                             7
+ COMORBIDITES                                   WPPSI 
+                                                Quotient intellectuel verbal QIV
+1 : Comorbidités                                Quotient intellectuel performance QIP
+                                                Quotient Vitesse de traitement
+    Trouble du comportement                     Note composite de langage
+    Trouble de la relation                      Quotient intellectuel total
+    Maladresses
+    Agitation                                   Résultats constatés
+    Trouble de l'attention
+    Impulsivité
+    Trouble de la cognition mathématique
+    Autres commentaires :
+
+2 : Diagnostics posés
+
+    Trouble TDAH
+    Trouble développemental de la coordination
+    Trouble du spectre de l'autisme
+    Autres :
+
+3 : Efficience intellectuelle
+
+Date de la dernière évaluation :
+
+ WISC 
+ Indice de raisonnement perceptif IRP
+ Indice de compréhension verbale ICV
+ Indice de vitesse de traitement IVT
+ Indice de mémoire de travail IMT :
+ Efficience intellectuelle totale
+
+ Autre(s) outil(s) 
+
+                                                                                       8
+ INCITATION A CONSULTATION
+
+ Médecin  médecin traitant      pédiatre   neuropédiatre   pédopsychiatre  PMI   santé scolaire   institution
+ Enseignant
+ Psychologue
+ Autre professionnel de santé
+ Entourage familial
+ Parents
+
+                                                                                                               9
+

@@ -1,0 +1,80 @@
+L'une des questions les plus difficiles à trancher a été celle du lien entre le seuil d'identification de
+chiffre et la taille de l'empan. En effet, même si la littérature décrit une corrélation entre le seuil
+d'identification et la taille de l'empan, la nature de ce lien n'est pas précisée.
+
+Il est admis dans la littérature (Bosse et coll., 2009a ; Valdois et coll., 2014) qu'un temps
+d'identification trop long constituerait un biais à la mesure de l'empan visuo-attentionnel. La
+réduction de la taille de l'empan visuo attentionnel pourrait en effet être induite par un trouble de
+l'identification des lettres ou par une identification trop lente de chaque lettre composant la
+séquence.
+
+Ainsi, pour un sujet donné, lorsque le seuil d'identification d'une lettre est inférieur à celui de la
+majorité des sujets contrôles du même âge, le diagnostic d'un trouble de l'empan visuo-attentionnel
+devrait être nuancé.
+
+Dans EVADYS qui a inspiré notre épreuve, l'épreuve de seuil de lettre est une épreuve contrôle. Elle
+permet de s'assurer de la capacité du sujet à identifier une lettre présentée brièvement.
+
+Dans cette épreuve, une consonne sélectionnée parmi dix (B P T F L M D S R H) est présentée au
+centre de l'écran pendant 33, 50, 67, 84 ou 101 ms. Chacun de ces cinq temps d'affichage est utilisé
+une fois pour chaque lettre, soit dix fois. L'ordre de présentation des lettres est aléatoire. L'enfant
+doit fixer un point qui s'affiche au centre de l'écran, puis la lettre est présentée, et immédiatement
+suivie d'un masque qui s'affiche pendant 150 ms. L'utilisation d'un masque permet d'outrepasser le
+principe de rémanence rétinienne afin de s'assurer que le traitement de l'item soit bien limité à son
+seul temps d'affichage. Dès la disparition du masque, l'enfant doit dénommer la lettre qu'il pense
+avoir vue. La tâche comporte dix essais de pré-test, suivis de cinquante présentations.
+
+À la fin des cinquante présentations, le seuil d'identification est déterminé. Il s'agit du temps
+d'affichage minimal parmi les cinq valeurs possibles pour lequel le sujet obtient au moins 80 % de
+bonnes réponses.
+
+Dans la batterie EVADYS, dès lors que le seuil d'identification du sujet est supérieur à celui de la
+moyenne de la population témoin, la feuille de résultats comporte la mention suivante : « Le seuil du
+patient est supérieur à celui des sujets de sa tranche d'âge, ce qui traduit des difficultés dès
+l'identification des lettres isolées. Les difficultés observées sur les épreuves de report, si elles existent,
+peuvent dès lors être la conséquence de ce trouble sans atteinte de l'empan visuo-attentionnel ». Ce
+message, qui vient nuancer la valeur des résultats de l'épreuve s'affiche pour plus de la moitié de la
+population que nous avons interrogée. Cela diminue largement l'utilité de l'épreuve, puisque le
+diagnostic d'un trouble de l'empan ne peut être posé avec certitude pour la majorité des sujets.
+
+Pour l'EVALEO, afin de déterminer le seuil moyen d'identification d'un item unique, la tâche repose
+sur une procédure adaptative du type « one up, one down ». Lors de la première présentation, le
+chiffre s'affiche pendant 100 ms, puis le temps de présentation est régulé en fonction de l'exactitude
+de la réponse du sujet. Ainsi, lorsque l'item est correctement dénommé, le temps de présentation de
+l'item suivant est réduit (de 30 ms pour les cinq premières présentations, puis de 10 ms) ; au
+contraire, lorsque la réponse est incorrecte, le temps de présentation de l'item suivant est augmenté
+de 10 ms. Pour des raisons techniques relatives à l'outil informatique, le temps de présentation ne
+descend jamais en dessous de 30 ms, même si la réponse du sujet est juste.
+
+Une fois la tâche terminée, le seuil moyen d'identification est déterminé en effectuant la moyenne
+arithmétique des huit derniers temps de présentation enregistrés. Si le seuil du patient est trop
+élevé, c'est-à-dire, s'il met trop de temps à identifier un item unique, le diagnostic d'un trouble de
+l'empan visuo-attentionnel devra être nuancé. Le score bas à l'épreuve de report pourrait en effet
+être induit par une difficulté à traiter rapidement les lettres et non dû à un trouble de l'empan visuo-
+attentionnel à proprement parler
+
+Dans la recherche que nous avons menée avant la version définitive de l'épreuve d'empan visuo-
+attentionnel dans l'EVALEO, les résultats de notre population témoin nous permettent d'observer
+une corrélation entre le seuil d'identification d'un item et la taille de l'empan visuo-attentionnel.
+Cependant, cette seule corrélation ne semble pas suffisante pour évoquer l'existence d'une relation
+de cause à effet entre les deux épreuves.
+
+Nous avons tenté de vérifier, dans une pré-étude, s'il existe un lien de cause à effet entre la tâche de
+seuil d'identification et la tâche de report, qui justifierait de ne pas interpréter le score d'empan
+visuo-attentionnel lorsque le seuil d'identification est trop élevé. Pour ce faire, nous avons tenté de
+déterminer une valeur de seuil d'identification à partir de laquelle les résultats de la tâche de report
+risquaient d'être influencés.
+
+En fixant cette valeur à + 1 écart-type de la distribution des seuils d'identification, nous avons
+observé un léger effet de la valeur du seuil sur la taille de l'empan pour les CP et les CM2. Aucun effet
+du seuil n'a cependant été observé sur les performances à la tâche d'empan pour les CE2. Ces
+résultats partiels et peu tranchés ne nous semblent pas suffisants pour justifier le fait de nuancer le
+diagnostic de trouble de l'empan lorsque le seuil d'identification est trop élevé.
+
+Toutefois, nous avons laissé cette mesure dans l'épreuve définitive, pour permettre de vérifier que
+l'enfant a les compétences minimales pour passer cette épreuve, qu'il est capable d'identifier une
+lettre isolée, qu'il s'habitue à la modalité d'évaluation. Mais également pour permettre d'autres
+études ultérieures qui pourraient analyser le lien entre le seuil d'identification et l'empan et
+déterminer un seuil plancher d'identification qui pourrait rendre inutilisable la mesure du report
+global.
+
