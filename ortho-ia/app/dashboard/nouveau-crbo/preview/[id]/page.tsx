@@ -793,7 +793,7 @@ export default function CRBOPreviewPage() {
   // dans la colonne contenu).
   const navSections = [
     { id: 'sec-anamnese',  label: 'Anamnèse',  icon: <BookOpen size={14} /> },
-    { id: 'sec-motif',     label: 'Motif',     icon: <FileText size={14} /> },
+    // Section "Motif" retirée de la nav et du rendu (demande Laurie 2026-05)
     ...structure.domains.map((d, i) => ({
       id: `sec-domain-${i}`,
       label: d.nom,
@@ -897,17 +897,10 @@ export default function CRBOPreviewPage() {
             placeholder="Cliquez pour ajouter l'anamnèse rédigée…"
           />
 
-          <SectionEditor
-            id="sec-motif"
-            title="Motif de consultation"
-            icon={<FileText size={16} />}
-            fieldPath="motif_reformule"
-            initialValue={structure.motif_reformule || ''}
-            onSave={handleSave}
-            onRegenerate={(cur) => openRegen('motif_reformule', 'Motif de consultation', 'motif_reformule', cur)}
-            placeholder="Reformulation clinique du motif…"
-            multiline={false}
-          />
+          {/* Section "Motif de consultation" supprimée du rendu CRBO
+              (demande Laurie 2026-05). Le motif reste saisi dans le
+              formulaire d'entrée et reste utile à l'IA pour l'anamnèse,
+              mais n'apparaît plus en section dédiée dans le document final. */}
 
           {/* Bilan par domaine */}
           {structure.domains.length > 0 && (

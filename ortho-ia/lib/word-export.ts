@@ -531,33 +531,15 @@ export async function generateCRBOWord(payload: WordExportPayload): Promise<Blob
     )
   }
 
-  // ===== MOTIF =====
-  // Si le LLM a reformulé le motif (champ structuré motif_reformule), on l'utilise
-  // en priorité — sinon on retombe sur les notes brutes du formulaire (legacy).
-  const motifText = (hasStructure && structure!.motif_reformule?.trim())
-    ? structure!.motif_reformule.trim()
-    : (formData.motif || '')
-  // Edit-set précalculé pour appliquer le shading bleu pâle. Construit
-  // une seule fois ici car utilisé dans 3+ sections (motif, anamnèse, domaines).
+  // ===== MOTIF DE CONSULTATION — SUPPRIMÉ (demande Laurie 2026-05) =====
+  // La section "Motif de consultation" / "Objet du bilan" n'est plus
+  // rendue dans le CRBO Word/PDF. Le motif reste saisi dans le formulaire
+  // et reste utile à l'IA pour informer l'anamnèse rédigée et le
+  // diagnostic — mais il n'apparaît plus en section dédiée.
+  // Le champ structuré motif_reformule reste produit par la phase 1
+  // (extract) et stocké, pour rétro-compat et pour intégration future
+  // éventuelle dans l'anamnèse.
   const editedSetEarly = new Set(structure?.edited_fields ?? [])
-  const motifEdited = editedSetEarly.has('motif_reformule')
-  if (motifText) {
-    children.push(
-      new Paragraph({
-        children: [new TextRun({
-          text: isSynthetique ? 'Objet du bilan' : 'Motif de consultation',
-          size: FONT_SIZE_NORMAL, font: FONT, color: COLOR_GREEN, bold: true,
-        })],
-        spacing: { before: 200 },
-      }),
-      new Paragraph({
-        alignment: AlignmentType.BOTH,
-        shading: motifEdited ? { type: ShadingType.CLEAR, fill: 'EFF6FF', color: 'auto' } : undefined,
-        children: [new TextRun({ text: motifText, size: FONT_SIZE_NORMAL, font: FONT })],
-        spacing: { after: 200 },
-      }),
-    )
-  }
 
   // ===== TESTS =====
   children.push(
