@@ -207,7 +207,7 @@ L'ordre des sections dans un CRBO complet :
 6. **Domaines explorés** (sommaire des épreuves prévues, structurées par
    composante + hypothèses explicatives).
 7. **Batterie utilisée** (nom complet du test + auteurs + éditeur + année).
-8. **Échelle / convention de scores** (ex. 7 classes EVALEO ou 6 zones Exalang).
+8. **Échelle / convention de scores** (ex. 7 classes EVALEO ou 5 zones Exalang).
 9. **Résultats par section** (Langage écrit, Langage oral, Autres), épreuve par
    épreuve avec interprétation et phrase de synthèse par sous-domaine.
 10. **Hypothèses explicatives** : structure en questions cliniques

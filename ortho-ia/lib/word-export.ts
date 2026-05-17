@@ -45,27 +45,25 @@ export type { ZonePerformance } from './chart'
 
 // --------------------- Palette cohérente seuils cliniques ---------------------
 //
-// Grille 6 zones alignée sur l'étalonnage Happy Scribe :
-//  - P > 75            → Excellent résultat                (vert foncé)
-//  - P51 à P75         → Résultat dans la moyenne haute    (vert clair)
-//  - P26 à P50         → Résultat dans la moyenne basse    (jaune)
-//  - P10 à P25 (Q1)    → Zone de fragilité                 (orange clair)
-//  - P6 à P9           → Zone de difficulté                (orange foncé)
-//  - P ≤ 5             → Zone de difficulté sévère         (marron)
+// Grille 5 zones alignée sur les seuils officiels Exalang (manuel Exalang 11-15
+// Lenfant/Thibault/Helloin 2009, p. 65-67, section « Seuils de pathologie ») :
+//  - P ≥ 75            → Moyenne haute       (vert foncé, > Q3, bonne réussite)
+//  - P26 à P74         → Moyenne             (vert clair, centre NS 3-4)
+//  - P10 à P25 (Q1)    → Zone de fragilité   (jaune, "zone à surveiller" Exalang)
+//  - P5 à P9           → Difficulté          (orange, seuil pathologique consensuel P10)
+//  - P < 5             → Difficulté sévère   (rouge, seuil strict -1,65 σ)
 //
-// Note : Q1 (P25) reste en zone de fragilité (pas en moyenne basse) — règle
-// clinique Laurie déjà appliquée par l'extraction. min=26 pour la moyenne basse.
+// Note : Q1 (P25) = "Zone de fragilité" — c'est la "zone à surveiller" du
+// manuel Exalang. Le seuil consensuel des cliniciens pour pathologie est P10.
 
-// Labels COURTS imposés par Laurie pour la colonne Interprétation des
-// 6 labels imposés par Laurie (grille révisée 2026-05). Plus de "Excellent" —
-// la zone haute commence à "Moyenne haute" qui couvre toute la moitié haute
-// (≥ P51). La nomenclature courte est utilisée partout (tableaux + légende +
-// chip UI). Pas de version "longue" (les libellés sont déjà des libellés
-// finaux, pas des sous-titres).
+// Labels COURTS imposés par Laurie pour la colonne Interprétation. Refonte
+// 2026-05-bis (Exalang) : 5 zones, plus de "Moyenne basse" — la zone P10-25
+// est désormais reconnue comme "Zone de fragilité" conformément aux manuels.
+// La nomenclature courte est utilisée partout (tableaux + légende + chip UI).
+// Pas de version "longue" (les libellés sont déjà des libellés finaux).
 export type SeuilLabel =
   | 'Moyenne haute'
   | 'Moyenne'
-  | 'Moyenne basse'
   | 'Zone de fragilité'
   | 'Difficulté'
   | 'Difficulté sévère'
@@ -86,24 +84,31 @@ export type SeuilClinique = {
   range: string
 }
 
-// Palette imposée Laurie (fonds cellules + couleurs texte si fond foncé) :
-//   Moyenne haute      → #2E7D32 fond vert foncé,    texte blanc (P ≥ 51, couvre > P75 et P51-P75)
-//   Moyenne            → #66BB6A fond vert clair                  (P26-50)
-//   Moyenne basse      → #FBC02D fond jaune                       (P10-25, inclut Q1 = P25)
-//   Zone de fragilité  → #FB8C00 fond orange                      (P5-9)
-//   Difficulté         → #E65100 fond orange foncé,  texte blanc  (P2-4)
-//   Difficulté sévère  → #D32F2F fond rouge vif,     texte blanc  (< P2)
+// Palette imposée Laurie — grille alignée sur les seuils officiels Exalang
+// (manuels Exalang 5-8, 11-15, Lyfac — Thibault / Helloin / Lenfant / Motus 2009-2011).
+//
+// Source : Manuel Exalang 11-15, section « Seuils de pathologie » (p. 65-67) :
+//   - Seuil de pathologie en percentile = P10 (consensuel clinicien)
+//   - Seuil strict de pathologie en É-T = -1,65 σ (≈ P5)
+//   - Zone à surveiller = P10-P25
+//   - Note Standard 1 (NS 1) = < P6,7 = pathologique
+//
+// Mapping Variante B (refonte 2026-05-bis Exalang) :
+//   Moyenne haute      → #2E7D32 fond vert foncé,    texte blanc (P ≥ 75, > Q3)
+//   Moyenne            → #66BB6A fond vert clair                  (P26-74, centre normal NS 3-4)
+//   Zone de fragilité  → #FBC02D fond jaune                       (P10-25, "zone à surveiller" Exalang)
+//   Difficulté         → #FB8C00 fond orange                      (P5-9, "seuil consensuel pathologique" P10)
+//   Difficulté sévère  → #D32F2F fond rouge vif,     texte blanc  (< P5, "seuil strict -1,65 σ")
 //
 // Pour les tableaux Word, on utilise les `shading` (cellule) + `textColor`
 // (texte). Pour le graphique chart, voir chart.ts qui a sa propre palette
 // pastel pour les bandes de fond.
 export const SEUILS: SeuilClinique[] = [
-  { label: 'Moyenne haute',      longLabel: 'Moyenne haute',     min: 51, shading: '2E7D32', css: '#1B5E20', textColor: 'FFFFFF', range: 'P ≥ 51' },
-  { label: 'Moyenne',            longLabel: 'Moyenne',           min: 26, shading: '66BB6A', css: '#2E7D32', range: 'P26-50' },
-  { label: 'Moyenne basse',      longLabel: 'Moyenne basse',     min: 10, shading: 'FBC02D', css: '#F57F17', range: 'P10-25' },
-  { label: 'Zone de fragilité',  longLabel: 'Zone de fragilité', min: 5,  shading: 'FB8C00', css: '#E65100', range: 'P5-9' },
-  { label: 'Difficulté',         longLabel: 'Difficulté',        min: 2,  shading: 'E65100', css: '#BF360C', textColor: 'FFFFFF', range: 'P2-4' },
-  { label: 'Difficulté sévère',  longLabel: 'Difficulté sévère', min: 0,  shading: 'D32F2F', css: '#B71C1C', textColor: 'FFFFFF', range: '< P2' },
+  { label: 'Moyenne haute',      longLabel: 'Moyenne haute',     min: 75, shading: '2E7D32', css: '#1B5E20', textColor: 'FFFFFF', range: 'P ≥ 75' },
+  { label: 'Moyenne',            longLabel: 'Moyenne',           min: 26, shading: '66BB6A', css: '#2E7D32', range: 'P26-74' },
+  { label: 'Zone de fragilité',  longLabel: 'Zone de fragilité', min: 10, shading: 'FBC02D', css: '#F57F17', range: 'P10-25' },
+  { label: 'Difficulté',         longLabel: 'Difficulté',        min: 5,  shading: 'FB8C00', css: '#E65100', range: 'P5-9' },
+  { label: 'Difficulté sévère',  longLabel: 'Difficulté sévère', min: 0,  shading: 'D32F2F', css: '#B71C1C', textColor: 'FFFFFF', range: '< P5' },
 ]
 
 export function seuilFor(value: number): SeuilClinique {
@@ -113,22 +118,23 @@ export function seuilFor(value: number): SeuilClinique {
 
 /**
  * Mappe les anciens labels d'interprétation (CRBO legacy en DB) vers les
- * nouveaux labels de la grille 6 zones révisée (2026-05). Utilisé au rendu
- * pour assurer la cohérence avec la couleur dérivée de percentile_value.
+ * labels de la grille actuelle (Variante B, refonte 2026-05-bis alignée
+ * sur les seuils officiels Exalang). Utilisé au rendu pour assurer la
+ * cohérence avec la couleur dérivée de `percentile_value`.
  *
- * **Refonte 2026-05** : la grille a été déplacée d'un cran "vers le haut" :
- *   - L'ancienne zone "Excellent" (P>75) fusionnée dans "Moyenne haute".
- *   - L'ancienne "Moyenne basse" (P26-50) est devenue "Moyenne".
- *   - L'ancienne "Fragilité" (P10-25) est devenue "Moyenne basse".
- *   - L'ancienne "Difficulté" (P6-9) est devenue "Zone de fragilité".
- *   - L'ancienne "Difficulté sévère" (P≤5) éclatée en "Difficulté" (P2-4)
- *     et "Difficulté sévère" (<P2).
+ * **Refonte 2026-05-bis (Exalang officiel)** :
+ *   - "Moyenne basse" supprimée (la zone P10-25 est désormais "Zone de
+ *     fragilité" — alignée sur la "zone à surveiller" du manuel Exalang 11-15).
+ *   - "Moyenne haute" passe de P ≥ 51 à P ≥ 75 (alignée sur Q3).
+ *   - "Moyenne" couvre désormais P26-74 (NS 3-4 centrale).
+ *   - "Zone de fragilité" passe de P5-9 à P10-25 (zone à surveiller).
+ *   - "Difficulté" passe de P2-4 à P5-9 (seuil consensuel P10 = pathologique).
+ *   - "Difficulté sévère" passe de < P2 à < P5 (seuil strict -1,65 σ).
  *
  * Pour les CRBO legacy dont l'interpretation stockée date d'avant la refonte,
- * on remappe à la SÉMANTIQUE actuelle (PAS au label littéral) pour ne pas
- * fausser la couleur du Word. La source de vérité reste `percentile_value` :
- * le Word rendu via `seuilFor(percentile_value)` recalcule toujours la
- * couleur correcte depuis la valeur numérique.
+ * on remappe à la SÉMANTIQUE actuelle. La source de vérité reste
+ * `percentile_value` : le Word rendu via `seuilFor(percentile_value)`
+ * recalcule toujours la couleur correcte depuis la valeur numérique.
  */
 export function normalizeInterpretation(stored: string | undefined): SeuilLabel | undefined {
   if (!stored) return undefined
@@ -137,24 +143,25 @@ export function normalizeInterpretation(stored: string | undefined): SeuilLabel 
     case 'Normal':
     case 'Dans la norme': return 'Moyenne'         // P>25 par défaut
     case 'Limite basse':
-    case 'Fragile': return 'Moyenne basse'         // ancien P10-25
-    case 'Déficitaire': return 'Zone de fragilité' // ancien P6-9
+    case 'Fragile': return 'Zone de fragilité'     // P10-25 = zone à surveiller (Exalang)
+    case 'Déficitaire': return 'Difficulté'        // P5-9 = seuil pathologique consensuel
     case 'Pathologique': return 'Difficulté sévère'
     // Anciens labels longs (CRBO récents avant refonte 2026-05)
     case 'Excellent résultat':
-    case 'Excellent': return 'Moyenne haute'       // Excellent fusionné dans Moyenne haute
+    case 'Excellent': return 'Moyenne haute'
     case 'Résultat dans la moyenne haute':
-    case 'Moyenne haute (legacy P51-75)': return 'Moyenne haute'
+    case 'Moyenne haute (legacy P51-75)': return 'Moyenne'      // P51-74 est désormais "Moyenne"
     case 'Résultat dans la moyenne basse':
-    case 'Moyenne basse (legacy P26-50)': return 'Moyenne' // ancienne "Moyenne basse" = nouvelle "Moyenne"
+    case 'Moyenne basse (legacy P26-50)': return 'Moyenne'      // P26-50 reste "Moyenne"
+    case 'Moyenne basse':                                       // ancien P10-25 (refonte 2026-05)
+      return 'Zone de fragilité'                                // désormais "à surveiller" Exalang
     case 'Zone de difficulté':
-    case 'Fragilité': return 'Moyenne basse'       // ancienne Fragilité (P10-25) = nouvelle Moyenne basse
+    case 'Fragilité': return 'Zone de fragilité'
     case 'Zone de difficulté sévère':
       return 'Difficulté sévère'
     // Labels courts officiels (passthrough — déjà au nouveau format)
     case 'Moyenne haute':
     case 'Moyenne':
-    case 'Moyenne basse':
     case 'Zone de fragilité':
     case 'Difficulté':
     case 'Difficulté sévère':
@@ -339,7 +346,7 @@ export async function generateCRBOWord(payload: WordExportPayload): Promise<Blob
 
   /**
    * Couleur d'interprétation par domaine MoCA : palette 3 zones sur le ratio
-   * score/max — différente des SEUILS percentiles (qui sont une grille 6 zones).
+   * score/max — différente des SEUILS percentiles (qui sont une grille 5 zones).
    *   ≥ 80% → préservé (vert)
    *   50-79% → fragilisé (orange)
    *   < 50%  → déficitaire (rouge)
@@ -795,7 +802,7 @@ export async function generateCRBOWord(payload: WordExportPayload): Promise<Blob
   // MoCA : pas de légende colorée. Le tableau MoCA est dépouillé (Épreuve /
   // Score / Commentaire), aucune zone d'interprétation type Excellent /
   // Fragilité / Difficulté — incohérent pour un screening cognitif /30.
-  // Autres tests : 6 zones percentiles (SEUILS).
+  // Autres tests : 5 zones percentiles (SEUILS, alignées Exalang).
   if (isMocaOnly) {
     children.push(
       new Paragraph({

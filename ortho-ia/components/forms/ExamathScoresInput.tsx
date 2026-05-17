@@ -36,9 +36,9 @@ interface Props {
 /** Identifiant stable d'une épreuve. Format : `m{module}_{slug}`. */
 type EpreuveKey = string
 
-/** Percentile officiel HappyNeuron + zone correspondante au seuil de pathologie
- *  P10 de l'éditeur (la palette CRBO existante utilise 6 zones — on reste
- *  cohérent avec elle pour la couleur). */
+/** Percentile officiel HappyNeuron + zone correspondante. La palette CRBO
+ *  ortho.ia utilise 5 zones alignées sur les seuils officiels Exalang
+ *  (manuel Exalang 11-15 p. 65-67). */
 type PercentileKey =
   | '' | 'p_sup_95' | 'p_90_95' | 'p_75_90' | 'p_50_75' | 'p_25_50' | 'p_10_25' | 'p_5_10' | 'p_inf_5'
 
@@ -48,18 +48,18 @@ const PERCENTILE_OPTIONS: Array<{
   /** Valeur indicative à injecter dans le CRBO (percentile_value). */
   value: number
   /** Zone CRBO ortho.ia correspondante. */
-  zone: 'excellent' | 'moyenne_haute' | 'moyenne_basse' | 'fragilite' | 'difficulte' | 'difficulte_severe'
+  zone: 'moyenne_haute' | 'moyenne' | 'fragilite' | 'difficulte' | 'difficulte_severe'
   chip: string
   text: string
 }> = [
-  { key: 'p_sup_95', label: '> P95',     value: 97, zone: 'excellent',         chip: 'bg-emerald-600', text: 'text-white' },
-  { key: 'p_90_95',  label: 'P90 — P95', value: 92, zone: 'excellent',         chip: 'bg-emerald-500', text: 'text-white' },
-  { key: 'p_75_90',  label: 'P75 — P90', value: 80, zone: 'moyenne_haute',     chip: 'bg-emerald-400', text: 'text-emerald-900' },
-  { key: 'p_50_75',  label: 'P50 — P75', value: 60, zone: 'moyenne_haute',     chip: 'bg-emerald-300', text: 'text-emerald-900' },
-  { key: 'p_25_50',  label: 'P25 — P50', value: 35, zone: 'moyenne_basse',     chip: 'bg-yellow-300',  text: 'text-yellow-900' },
-  { key: 'p_10_25',  label: 'P10 — P25', value: 18, zone: 'fragilite',         chip: 'bg-orange-400',  text: 'text-white' },
-  { key: 'p_5_10',   label: 'P5 — P10',  value: 7,  zone: 'difficulte',        chip: 'bg-red-500',     text: 'text-white' },
-  { key: 'p_inf_5',  label: '< P5',      value: 3,  zone: 'difficulte_severe', chip: 'bg-red-700',     text: 'text-white' },
+  { key: 'p_sup_95', label: '> P95',     value: 97, zone: 'moyenne_haute',     chip: 'bg-emerald-600', text: 'text-white' },
+  { key: 'p_90_95',  label: 'P90 — P95', value: 92, zone: 'moyenne_haute',     chip: 'bg-emerald-500', text: 'text-white' },
+  { key: 'p_75_90',  label: 'P75 — P90', value: 80, zone: 'moyenne_haute',     chip: 'bg-emerald-400', text: 'text-white' },
+  { key: 'p_50_75',  label: 'P50 — P75', value: 60, zone: 'moyenne',           chip: 'bg-emerald-300', text: 'text-emerald-900' },
+  { key: 'p_25_50',  label: 'P25 — P50', value: 35, zone: 'moyenne',           chip: 'bg-emerald-200', text: 'text-emerald-900' },
+  { key: 'p_10_25',  label: 'P10 — P25', value: 18, zone: 'fragilite',         chip: 'bg-yellow-300',  text: 'text-yellow-900' },
+  { key: 'p_5_10',   label: 'P5 — P10',  value: 7,  zone: 'difficulte',        chip: 'bg-orange-400',  text: 'text-white' },
+  { key: 'p_inf_5',  label: '< P5',      value: 3,  zone: 'difficulte_severe', chip: 'bg-red-600',     text: 'text-white' },
 ]
 
 interface Subtest {
@@ -383,10 +383,9 @@ function percentileLabel(k: PercentileKey): string {
 function zoneLabel(k: PercentileKey): string {
   const z = PERCENTILE_OPTIONS.find(o => o.key === k)?.zone
   switch (z) {
-    case 'excellent': return 'Excellent'
     case 'moyenne_haute': return 'Moyenne haute'
-    case 'moyenne_basse': return 'Moyenne basse'
-    case 'fragilite': return 'Fragilité'
+    case 'moyenne': return 'Moyenne'
+    case 'fragilite': return 'Zone de fragilité'
     case 'difficulte': return 'Difficulté'
     case 'difficulte_severe': return 'Difficulté sévère'
     default: return ''
@@ -450,7 +449,7 @@ export default function ExamathScoresInput({ notes, onNotesChange, onResultatsCh
 
   /** Compteur par zone (pour le bandeau de synthèse). */
   const zoneCounts = useMemo(() => {
-    const c = { excellent: 0, moyenne_haute: 0, moyenne_basse: 0, fragilite: 0, difficulte: 0, difficulte_severe: 0 }
+    const c = { moyenne_haute: 0, moyenne: 0, fragilite: 0, difficulte: 0, difficulte_severe: 0 }
     const bump = (k: PercentileKey) => {
       const z = PERCENTILE_OPTIONS.find(o => o.key === k)?.zone
       if (z) c[z]++
@@ -514,14 +513,13 @@ export default function ExamathScoresInput({ notes, onNotesChange, onResultatsCh
       lines.push('')
     }
     // Synthèse zones
-    const total = zoneCounts.excellent + zoneCounts.moyenne_haute + zoneCounts.moyenne_basse + zoneCounts.fragilite + zoneCounts.difficulte + zoneCounts.difficulte_severe
+    const total = zoneCounts.moyenne_haute + zoneCounts.moyenne + zoneCounts.fragilite + zoneCounts.difficulte + zoneCounts.difficulte_severe
     if (total > 0) {
       lines.push('--- Synthèse zones percentiles ---')
-      lines.push(`Excellent (≥ P90) : ${zoneCounts.excellent}`)
-      lines.push(`Moyenne haute (P50-P90) : ${zoneCounts.moyenne_haute}`)
-      lines.push(`Moyenne basse (P25-P50) : ${zoneCounts.moyenne_basse}`)
-      lines.push(`Fragilité (P10-P25) : ${zoneCounts.fragilite}`)
-      lines.push(`Difficulté (P5-P10) : ${zoneCounts.difficulte}`)
+      lines.push(`Moyenne haute (P ≥ 75) : ${zoneCounts.moyenne_haute}`)
+      lines.push(`Moyenne (P26-74) : ${zoneCounts.moyenne}`)
+      lines.push(`Zone de fragilité (P10-25) : ${zoneCounts.fragilite}`)
+      lines.push(`Difficulté (P5-9) : ${zoneCounts.difficulte}`)
       lines.push(`Difficulté sévère (< P5) : ${zoneCounts.difficulte_severe}`)
     }
     onResultatsChange(lines.join('\n'))
@@ -611,11 +609,11 @@ export default function ExamathScoresInput({ notes, onNotesChange, onResultatsCh
             Répartition par zone — {totalSaisies}/{MODULES.reduce((acc, m) => acc + m.epreuves.length, 0)} épreuves saisies
           </p>
           <div className="flex flex-wrap gap-1.5">
-            {(['excellent', 'moyenne_haute', 'moyenne_basse', 'fragilite', 'difficulte', 'difficulte_severe'] as const).map(z => {
+            {(['moyenne_haute', 'moyenne', 'fragilite', 'difficulte', 'difficulte_severe'] as const).map(z => {
               const n = zoneCounts[z]
               if (n === 0) return null
-              const label = { excellent: 'Excellent', moyenne_haute: 'Moyenne haute', moyenne_basse: 'Moyenne basse', fragilite: 'Fragilité', difficulte: 'Difficulté', difficulte_severe: 'Difficulté sévère' }[z]
-              const chip = { excellent: 'bg-emerald-600 text-white', moyenne_haute: 'bg-emerald-400 text-white', moyenne_basse: 'bg-yellow-300 text-yellow-900', fragilite: 'bg-orange-400 text-white', difficulte: 'bg-red-500 text-white', difficulte_severe: 'bg-red-700 text-white' }[z]
+              const label = { moyenne_haute: 'Moyenne haute', moyenne: 'Moyenne', fragilite: 'Zone de fragilité', difficulte: 'Difficulté', difficulte_severe: 'Difficulté sévère' }[z]
+              const chip = { moyenne_haute: 'bg-emerald-600 text-white', moyenne: 'bg-emerald-300 text-emerald-900', fragilite: 'bg-yellow-300 text-yellow-900', difficulte: 'bg-orange-400 text-white', difficulte_severe: 'bg-red-600 text-white' }[z]
               return (
                 <span key={z} className={`inline-flex items-center gap-1 px-2 py-0.5 rounded text-xs font-medium ${chip}`}>
                   <span className="font-bold">{n}</span>

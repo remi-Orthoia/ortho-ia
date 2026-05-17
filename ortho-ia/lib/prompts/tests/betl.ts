@@ -227,7 +227,7 @@ La BETL n'utilise pas directement de percentiles. Pour l'intégrer dans la struc
 - **\`et\`** = null (la BETL n'utilise pas l'écart-type comme indicateur principal)
 - **\`percentile_value\`** : si le résultat est étiqueté **Normal (N)** dans le logiciel BETL → encoder 60-75 selon la proximité au seuil ; si étiqueté **Pathologique (P)** → encoder selon la profondeur de l'atteinte : 5 si score < 50% du score-seuil (atteinte sévère), 15 si proche du seuil (fragilité installée).
 - **\`percentile\`** : laisser vide ('') ou indiquer "P5 seuil franchi" / "Normal" — la BETL parle de seuils, pas de percentiles continus.
-- **\`interpretation\`** : utiliser le vocabulaire des 6 zones ortho.ia (Excellent / Moyenne haute / Moyenne basse / Fragilité / Difficulté / Difficulté sévère) en cohérence avec percentile_value.
+- **\`interpretation\`** : utiliser le vocabulaire des 5 zones ortho.ia (Moyenne haute / Moyenne / Zone de fragilité / Difficulté / Difficulté sévère) en cohérence avec percentile_value.
 
 ⚠️ **Toujours dissocier score et temps** dans le commentaire de domaine : un patient peut avoir un score "Normal" mais un temps "Pathologique" — cas typique du **manque du mot sub-clinique** (le mot finit par être produit, mais après un délai pathologique). Mentionner systématiquement les temps-seuils dépassés en plus des scores-seuils.
 

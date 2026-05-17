@@ -45,7 +45,7 @@ export const EXTRACT_PREVIOUS_TOOL: Anthropic.Tool = {
           "Résultats groupés par domaine. Pour chaque domaine, lister les " +
           "épreuves avec leur score et percentile. Si le percentile n'est pas " +
           "fourni explicitement mais l'É-T oui, ne PAS recalculer — laisser " +
-          "percentile_value=null. Respecter la grille 6 zones d'interprétation.",
+          "percentile_value=null. Respecter la grille 5 zones d'interprétation (alignée Exalang).",
         items: {
           type: 'object',
           required: ['nom', 'epreuves'],
@@ -80,12 +80,13 @@ export const EXTRACT_PREVIOUS_TOOL: Anthropic.Tool = {
                   },
                   interpretation: {
                     type: 'string',
-                    enum: ['Excellent', 'Moyenne haute', 'Moyenne basse', 'Fragilité', 'Difficulté', 'Difficulté sévère'],
+                    enum: ['Moyenne haute', 'Moyenne', 'Zone de fragilité', 'Difficulté', 'Difficulté sévère'],
                     description:
-                      "Grille 6 zones (étalonnage Happy Scribe) : 'Excellent' " +
-                      "(P>75), 'Moyenne haute' (P51-75), 'Moyenne basse' (P26-50), " +
-                      "'Fragilité' (P10-25 — Q1 inclus !), 'Difficulté' (P6-9), " +
-                      "'Difficulté sévère' (P≤5).",
+                      "Grille 5 zones alignée sur les seuils officiels Exalang " +
+                      "(manuel Exalang 11-15 p. 65-67) : 'Moyenne haute' (P ≥ 75), " +
+                      "'Moyenne' (P26-74), 'Zone de fragilité' (P10-25, Q1 inclus — " +
+                      "« zone à surveiller »), 'Difficulté' (P5-9, seuil pathologique " +
+                      "consensuel P10), 'Difficulté sévère' (< P5, seuil strict -1,65 σ).",
                   },
                 },
               },
@@ -130,11 +131,11 @@ Cette extraction nourrit la **synthèse comparative** d'un bilan de renouvelleme
 4. 🚨 **Sous-épreuves SÉPARÉES** : si une épreuve a plusieurs modalités (score, temps, ratio, erreurs, mots lus, note pondérée…), retourne une entrée DISTINCTE pour chacune avec son nom complet ("Lecture de mots — score", "Lecture de mots — temps", "Lecture de mots — ratio", "Lecture de mots — erreurs"). Ne JAMAIS fusionner.
 5. Pour chaque épreuve : nom complet (avec la sous-modalité), score brut, écart-type si présent, percentile (Q1/Med/Q3/Pxx).
 6. **Conversion quartiles** (HappyNeuron / Exalang) :
-   - Q1 → percentile_value = 25, interpretation = "Fragilité" (PAS "Moyenne basse" !)
-   - Med / Q2 → 50 / "Moyenne basse"
+   - Q1 → percentile_value = 25, interpretation = "Zone de fragilité" (« zone à surveiller » Exalang)
+   - Med / Q2 → 50 / "Moyenne"
    - Q3 → 75 / "Moyenne haute"
    - Pxx → la valeur exacte
-7. **Ne JAMAIS recalculer un percentile depuis un É-T**. Si le document ne donne que l'É-T sans percentile, marque \`percentile_value: null\` et laisse \`interpretation: "Moyenne basse"\` (valeur prudente par défaut).
+7. **Ne JAMAIS recalculer un percentile depuis un É-T**. Si le document ne donne que l'É-T sans percentile, marque \`percentile_value: null\` et laisse \`interpretation: "Moyenne"\` (valeur prudente par défaut).
 8. **Préserver la hiérarchie des groupes** : si le document affiche un en-tête A.1/A.2/B.1/B.2/C.1, reporte ce code dans \`domains[].nom\` (ex: "A.1 Langage oral"). Ne mélange pas les groupes.
 9. Diagnostic : repère "Diagnostic", "Conclusion clinique", "Trouble identifié". Garde la formulation exacte. Si le document est une feuille de résultats brute sans diagnostic, laisse \`diagnostic: ''\`.
 10. Aménagements : extrais ceux mentionnés ("temps majoré", "tolérance orthographique", etc.) — pas d'invention. Tableau vide si absent.
@@ -159,7 +160,7 @@ Cette extraction nourrit la **synthèse comparative** d'un bilan de renouvelleme
 2. 🚨 **Toutes les épreuves** présentes dans le document, quelle que soit la longueur. Pour un Exalang 8-11 complet, attends-toi à 25-40 entrées (sous-modalités incluses).
 3. 🚨 **Sous-épreuves SÉPARÉES** : "Lecture de mots — score", "Lecture de mots — temps", "Lecture de mots — ratio", "Lecture de mots — erreurs" sont 4 entrées distinctes. Ne JAMAIS fusionner.
 4. **Préserver la hiérarchie des groupes** A.1 / A.2 / B.1 / B.2 / C.1 dans \`domains[].nom\`.
-5. **Q1 = P25 = "Fragilité"** (pas "Moyenne basse"). Med = P50. Q3 = P75.
+5. **Q1 = P25 = "Zone de fragilité"** (« zone à surveiller » Exalang). Med = P50 = "Moyenne". Q3 = P75 = limite "Moyenne haute".
 6. **Ne JAMAIS convertir É-T → percentile**. Si percentile manquant, \`percentile_value: null\`.
 7. Diagnostic et aménagements : prendre la formulation littérale du document. Vide si absent.
 

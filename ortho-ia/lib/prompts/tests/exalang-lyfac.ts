@@ -67,13 +67,12 @@ export const exalangLyfac: TestModule = {
 - Quartiles HappyNeuron : **Q1 → P25, Med → P50, Q3 → P75**. Ne JAMAIS recalculer depuis l'É-T.
 - Valeurs explicites (P5, P10, P90, P95) à utiliser telles quelles.
 
-#### SEUILS CLINIQUES (cohérents avec Exalang 8-11 / 11-15)
-- P ≥ 76 : Excellent
-- P51-75 : Moyenne haute
-- P26-50 : Moyenne basse (NORMAL)
-- P10-25 : Fragilité
-- P6-9 : Difficulté
-- P ≤ 5 : Difficulté sévère
+#### SEUILS CLINIQUES (alignés sur les seuils officiels Exalang — manuel 11-15 p. 65-67)
+- P ≥ 75 : Moyenne haute (> Q3)
+- P26-74 : Moyenne (centre normal NS 3-4)
+- P10-25 : Zone de fragilité (zone à surveiller Exalang, Q1 inclus)
+- P5-9   : Difficulté (seuil pathologique consensuel P10)
+- P < 5  : Difficulté sévère (seuil strict -1,65 σ)
 
 ---
 

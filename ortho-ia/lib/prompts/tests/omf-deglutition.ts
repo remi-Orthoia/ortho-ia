@@ -37,11 +37,10 @@ export const omfDeglutition: TestModule = {
 
 - Pas de conversion Q1/Med/Q3 — les résultats sont descriptifs.
 - Dans la structure JSON, utilise \`percentile: "N/A"\` et \`percentile_value: 50\` par défaut.
-- Champ \`interpretation\` :
-  - "Excellent" : fonction parfaitement adaptée (rare en consultation).
-  - "Moyenne haute" : adaptée avec discrètes particularités.
-  - "Moyenne basse" : adaptée mais inconstante.
-  - "Fragilité" : dysfonction modérée intermittente.
+- Champ \`interpretation\` (grille 5 zones alignée Exalang) :
+  - "Moyenne haute" : fonction adaptée avec discrètes particularités.
+  - "Moyenne" : fonction globalement adaptée mais inconstante.
+  - "Zone de fragilité" : dysfonction modérée intermittente.
   - "Difficulté" : dysfonction installée, reproductible, retentissement réel.
   - "Difficulté sévère" : dysphagie / ventilation buccale permanente / retentissement majeur.
 

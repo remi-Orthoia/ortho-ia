@@ -29,15 +29,16 @@ const EPREUVE_SCHEMA = {
     },
     interpretation: {
       type: 'string' as const,
-      enum: ['Moyenne haute', 'Moyenne', 'Moyenne basse', 'Zone de fragilité', 'Difficulté', 'Difficulté sévère'],
+      enum: ['Moyenne haute', 'Moyenne', 'Zone de fragilité', 'Difficulté', 'Difficulté sévère'],
       description:
-        "Interprétation clinique COURTE — grille révisée 2026-05 imposée Laurie : " +
-        "'Moyenne haute' pour P ≥ 51 (couvre > P75 et P51-75, plus de 'Excellent') ; " +
-        "'Moyenne' pour P26-P50 ; " +
-        "'Moyenne basse' pour P10-P25 (Q1 = P25 inclus, plus en Fragilité) ; " +
-        "'Zone de fragilité' pour P5-P9 ; " +
-        "'Difficulté' pour P2-P4 ; " +
-        "'Difficulté sévère' pour < P2.",
+        "Interprétation clinique COURTE — grille 5 zones alignée sur les seuils officiels Exalang " +
+        "(manuel Exalang 11-15 Lenfant/Thibault/Helloin 2009, p. 65-67 : seuil pathologique consensuel = P10, " +
+        "zone à surveiller = P10-P25, seuil strict = -1,65 σ ≈ P5) : " +
+        "'Moyenne haute' pour P ≥ 75 (> Q3) ; " +
+        "'Moyenne' pour P26-P74 (centre normal NS 3-4) ; " +
+        "'Zone de fragilité' pour P10-P25 (zone à surveiller Exalang, Q1 = P25 inclus) ; " +
+        "'Difficulté' pour P5-P9 (seuil pathologique consensuel P10) ; " +
+        "'Difficulté sévère' pour < P5 (seuil strict -1,65 σ).",
     },
     sous_epreuves: {
       type: 'array' as const,

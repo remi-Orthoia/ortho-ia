@@ -6,7 +6,7 @@
  * Structure :
  *   - profils_exalang / profils_examath : règles diagnostiques par profil
  *   - style_laurie : capture du style de rédaction validé (Laurie Berrio)
- *   - seuils : grille 6 zones officielle (étalonnage Happy Scribe)
+ *   - seuils : grille 5 zones officielle (alignée Exalang)
  *   - marqueurs : indices cliniques transverses (compensation / alerte)
  *
  * Le contenu est destiné à être enrichi au fur et à mesure que Laurie /
@@ -28,10 +28,9 @@ export const KNOWLEDGE_BASE = {
     dyslexie_phonologique: {
       criteres: 'P≤10 lecture non-mots (voie d\'assemblage atteinte) + lecture mots dans la norme ou proche',
       severite: {
-        legere: 'P10-16',
-        moderee: 'P5-9',
-        severe: 'P2-4',
-        tres_severe: '<P2',
+        legere: 'P10-25',     // Zone de fragilité (zone à surveiller Exalang)
+        moderee: 'P5-9',      // Difficulté (seuil consensuel P10)
+        severe: '<P5',        // Difficulté sévère (seuil strict -1,65 σ)
       },
       formulation_diagnostic:
         'trouble spécifique des apprentissages en langage écrit (communément appelé dyslexie-dysorthographie), forme [sévérité], à prédominance phonologique',
@@ -46,10 +45,9 @@ export const KNOWLEDGE_BASE = {
     dyslexie_adressage: {
       criteres: 'P≤10 lecture mots irréguliers + P≥25 lecture non-mots (voie d\'assemblage préservée)',
       severite: {
-        legere: 'P10-16',
-        moderee: 'P5-9',
-        severe: 'P2-4',
-        tres_severe: '<P2',
+        legere: 'P10-25',     // Zone de fragilité (zone à surveiller Exalang)
+        moderee: 'P5-9',      // Difficulté (seuil consensuel P10)
+        severe: '<P5',        // Difficulté sévère (seuil strict -1,65 σ)
       },
       formulation_diagnostic:
         'trouble spécifique des apprentissages en langage écrit, forme [sévérité], touchant principalement la voie d\'adressage',
@@ -63,10 +61,9 @@ export const KNOWLEDGE_BASE = {
     dyslexie_mixte: {
       criteres: 'P≤10 lecture mots ET P≤10 lecture non-mots — les deux voies atteintes',
       severite: {
-        legere: 'P10-16',
-        moderee: 'P5-9',
-        severe: 'P2-4',
-        tres_severe: '<P2',
+        legere: 'P10-25',     // Zone de fragilité (zone à surveiller Exalang)
+        moderee: 'P5-9',      // Difficulté (seuil consensuel P10)
+        severe: '<P5',        // Difficulté sévère (seuil strict -1,65 σ)
       },
       formulation_diagnostic:
         'trouble spécifique des apprentissages en langage écrit (communément appelé dyslexie-dysorthographie), forme [sévérité], touchant les deux voies de lecture',
@@ -86,10 +83,9 @@ export const KNOWLEDGE_BASE = {
       criteres:
         'Déficits en langage oral (compréhension + expression) + P≤10 sur plusieurs épreuves orales — sans déficit cognitif global ni cause sensorielle',
       severite: {
-        legere: 'P10-16',
-        moderee: 'P5-9',
-        severe: 'P2-4',
-        tres_severe: '<P2',
+        legere: 'P10-25',     // Zone de fragilité (zone à surveiller Exalang)
+        moderee: 'P5-9',      // Difficulté (seuil consensuel P10)
+        severe: '<P5',        // Difficulté sévère (seuil strict -1,65 σ)
       },
       formulation_diagnostic:
         'trouble développemental du langage (TDL), de sévérité [légère / modérée / sévère]',
@@ -113,10 +109,9 @@ export const KNOWLEDGE_BASE = {
       criteres:
         'P≤10 sur épreuves numériques fondamentales (dénombrement, subitizing, ligne numérique, comparaison de grandeurs)',
       severite: {
-        legere: 'P10-16',
-        moderee: 'P5-9',
-        severe: 'P2-4',
-        tres_severe: '<P2',
+        legere: 'P10-25',     // Zone de fragilité (zone à surveiller Exalang)
+        moderee: 'P5-9',      // Difficulté (seuil consensuel P10)
+        severe: '<P5',        // Difficulté sévère (seuil strict -1,65 σ)
       },
       formulation_diagnostic:
         'trouble spécifique des apprentissages en mathématiques (communément appelé dyscalculie), de sévérité [légère / modérée / sévère]',
@@ -197,15 +192,17 @@ export const KNOWLEDGE_BASE = {
   },
 
   // ══════════════════════════════════════
-  // SEUILS CLINIQUES OFFICIELS (grille 6 zones — étalonnage Happy Scribe)
+  // SEUILS CLINIQUES OFFICIELS (grille 5 zones — alignée Exalang)
+  // Source : manuel Exalang 11-15 (Lenfant/Thibault/Helloin 2009, p. 65-67) —
+  //   seuil de pathologie consensuel = P10 ; zone à surveiller = P10-P25 ;
+  //   seuil strict = -1,65 σ ≈ P5.
   // ══════════════════════════════════════
   seuils: {
-    excellent: { min: 76, label: 'Excellent' },
-    moyenne_haute: { min: 51, max: 75, label: 'Moyenne haute' },
-    moyenne_basse: { min: 26, max: 50, label: 'Moyenne basse' },
-    fragile: { min: 10, max: 25, label: 'Fragilité' },
-    deficitaire: { min: 6, max: 9, label: 'Difficulté' },
-    tres_deficitaire: { max: 5, label: 'Difficulté sévère', couleur: '#7A1F1F' },
+    moyenne_haute: { min: 75, label: 'Moyenne haute' },           // P ≥ 75 (> Q3)
+    moyenne: { min: 26, max: 74, label: 'Moyenne' },              // P26-74 (centre NS 3-4)
+    fragile: { min: 10, max: 25, label: 'Zone de fragilité' },    // P10-25 ("à surveiller" Exalang)
+    deficitaire: { min: 5, max: 9, label: 'Difficulté' },         // P5-9 (seuil consensuel P10)
+    tres_deficitaire: { max: 4, label: 'Difficulté sévère', couleur: '#7A1F1F' }, // < P5 (-1,65 σ)
   },
 
   // ══════════════════════════════════════
@@ -219,7 +216,7 @@ export const KNOWLEDGE_BASE = {
       'stratégie d\'évitement compensatrice (relecture, vérification)',
     ],
     signaux_alerte: [
-      'P<2 sur plusieurs épreuves d\'un même domaine',
+      'P<5 sur plusieurs épreuves d\'un même domaine',
       'dissociation score/temps marquée',
       'déficits croisés oral + écrit',
       'régression par rapport à un bilan antérieur',

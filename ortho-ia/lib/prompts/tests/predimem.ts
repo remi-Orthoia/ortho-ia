@@ -199,11 +199,11 @@ PREDIMEM n'utilise pas de percentiles continus (notes standards / z-scores sigma
 - **\`score\`** = score brut au format "X/Y" (ex: "23/25", "11/12").
 - **\`et\`** = ÉCART en notes standard ou en sigma par rapport à la moyenne du groupe d'appartenance, si fourni par le logiciel (ex: "−1,2 σ", "M − 0,8"). null si non disponible.
 - **\`percentile\`** = laisser vide ('') ou indiquer la zone HappyNeuron (ex: "Zone vert clair", "Seuil d'alerte"). PREDIMEM ne donne pas de percentile au sens classique.
-- **\`percentile_value\`** : encoder une valeur calibrée pour que la couleur d'arrière-plan du tableau Word matche la zone HappyNeuron du sujet (les seuils du moteur Word sont : ≥76 → Excellent vert foncé, 51-75 → Moyenne haute vert clair, 26-50 → Moyenne basse jaune, 10-25 → Fragilité orange, 6-9 → Difficulté orange foncé, ≤5 → Difficulté sévère rouge) :
-  - **Vert foncé HappyNeuron** (≥ M) → \`percentile_value\` = **85** (cellule fond vert foncé "Excellent")
-  - **Vert clair HappyNeuron** (M−1σ à M−1,5σ) → \`percentile_value\` = **60** (cellule fond vert clair "Moyenne haute")
-  - **Jaune HappyNeuron** (M−1,5σ à M−2σ, seuil d'alerte) → \`percentile_value\` = **18** (cellule fond orange "Fragilité")
-  - **Orange HappyNeuron** (M−2σ à M−3σ, difficulté avérée) → \`percentile_value\` = **7** (cellule fond orange foncé "Difficulté")
+- **\`percentile_value\`** : encoder une valeur calibrée pour que la couleur d'arrière-plan du tableau Word matche la zone HappyNeuron du sujet (les seuils du moteur Word sont alignés Exalang : ≥75 → Moyenne haute vert foncé, 26-74 → Moyenne vert clair, 10-25 → Zone de fragilité jaune, 5-9 → Difficulté orange, <5 → Difficulté sévère rouge) :
+  - **Vert foncé HappyNeuron** (≥ M) → \`percentile_value\` = **85** (cellule fond vert foncé "Moyenne haute")
+  - **Vert clair HappyNeuron** (M−1σ à M−1,5σ) → \`percentile_value\` = **50** (cellule fond vert clair "Moyenne")
+  - **Jaune HappyNeuron** (M−1,5σ à M−2σ, seuil d'alerte) → \`percentile_value\` = **18** (cellule fond jaune "Zone de fragilité")
+  - **Orange HappyNeuron** (M−2σ à M−3σ, difficulté avérée) → \`percentile_value\` = **7** (cellule fond orange "Difficulté")
   - **Rouge HappyNeuron** (< M−3σ, effondrement) → \`percentile_value\` = **3** (cellule fond rouge "Difficulté sévère")
   Ces valeurs ne sont PAS des percentiles cliniques au sens classique — ce sont des codes-couleurs pour aligner le rendu Word sur la palette HappyNeuron officielle.
 - **\`interpretation\`** : utiliser le vocabulaire HappyNeuron retranscrit dans le tableau ci-dessus ("performance préservée", "fragilité objectivée", etc.). Ne PAS plaquer les étiquettes percentile-based "Excellent / Fragilité / Difficulté sévère" qui n'ont pas de sens pour ce protocole.

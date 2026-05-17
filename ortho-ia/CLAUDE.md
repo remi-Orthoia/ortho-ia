@@ -54,28 +54,32 @@ NEXT_PUBLIC_SUPABASE_ANON_KEY
 
 ## ⚠️ Règles métier CRITIQUES
 
-### Percentiles Exalang (NE JAMAIS RECALCULER)
+### Conversion notation Exalang (NE JAMAIS RECALCULER)
 ```
-Q1 = P25 (Normal, pas déficitaire !)
+Q1 = P25
 Med = P50
 Q3 = P75
 P5/P10/P90/P95 = valeur exacte
 ```
+La bande affichée par Exalang correspond à la borne supérieure : "Q1" = [P10, P25[ ; "Med" = [P25, P50[ ; etc. (manuel Exalang 5-8 p. 12).
 
-### Seuils cliniques (étalonnage Happy Scribe — grille 6 zones)
+### Seuils cliniques (grille 5 zones — alignée sur les seuils officiels Exalang)
+Source : Manuel Exalang 11-15 (Lenfant/Thibault/Helloin 2009, p. 65-67) — section « Seuils de pathologie ».
 ```
-P > 75             → Excellent
-P51-P75            → Moyenne haute
-P26-P50            → Moyenne basse
-P10-P25 (Q1 incl.) → Fragilité
-P6-P9              → Difficulté
-P ≤ 5              → Difficulté sévère
+P ≥ 75             → Moyenne haute       (> Q3, bonne réussite)
+P26-P74            → Moyenne             (NS 3-4 centrale, normal)
+P10-P25 (Q1 incl.) → Zone de fragilité   (« zone à surveiller » manuel)
+P5-P9              → Difficulté          (seuil pathologique consensuel P10)
+P < 5              → Difficulté sévère   (seuil strict -1,65 σ)
 ```
+
+Citation : « Pour les résultats affichés en percentiles, nous retiendrons le seuil de pathologie couramment admis et utilisé par les cliniciens du percentile 10. Une attention particulière pourra cependant être portée aux résultats se situant en dessous du percentile 25, considérée comme une zone à surveiller. »
 
 ### Erreur classique à éviter
-PDF: "Boucle phonologique: É-T -1.53, Percentiles: Q1"
-- ✅ Q1 = P25 → Fragilité
-- ❌ Calculer P3 depuis É-T → Difficulté sévère (FAUX)
+PDF : "Boucle phonologique : É-T -1.53, Percentiles : Q1"
+- ✅ Q1 = P25 → Zone de fragilité (zone à surveiller Exalang)
+- ❌ Calculer depuis É-T → Difficulté sévère (FAUX — ne jamais recalculer)
+- ❌ "Moyenne basse" (label supprimé depuis l'alignement Exalang)
 
 ## Fonctionnalités implémentées
 - [x] Auth (login/register/forgot)

@@ -148,13 +148,12 @@ Les normes sont stratifiées par classe. Le cahier de passation comporte des ép
 
 - Résultats en **percentiles** (1 à 99) OU **notes standardisées** selon les épreuves.
 - Cotation informatisée disponible : recopier le percentile/zone affiché par le logiciel.
-- **Seuils cliniques utilisés en CRBO ortho.ia** :
-  - P ≥ 76 : Excellent
-  - P51–75 : Moyenne haute
-  - P26–50 : Moyenne basse (NORMAL — ne pas mettre dans la zone fragilité)
-  - P10–25 : Fragilité
-  - P6–9   : Difficulté
-  - P ≤ 5  : Difficulté sévère
+- **Seuils cliniques utilisés en CRBO ortho.ia** (alignés Exalang officiel) :
+  - P ≥ 75 : Moyenne haute (> Q3, bonne réussite)
+  - P26–74 : Moyenne (centre normal NS 3-4)
+  - P10–25 : Zone de fragilité (zone à surveiller, Q1 inclus)
+  - P5–9   : Difficulté (seuil pathologique consensuel P10)
+  - P < 5  : Difficulté sévère (seuil strict -1,65 σ)
 
 ⚠️ Comme pour Exalang, ne JAMAIS recalculer un percentile depuis l'écart-type.
 Q1 = P25 = NORMAL, jamais déficitaire.
