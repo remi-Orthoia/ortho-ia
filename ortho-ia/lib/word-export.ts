@@ -57,19 +57,24 @@ export type { ZonePerformance } from './chart'
 // clinique Laurie déjà appliquée par l'extraction. min=26 pour la moyenne basse.
 
 // Labels COURTS imposés par Laurie pour la colonne Interprétation des
-// tableaux. La légende affiche la version longue ("Excellent résultat",
-// "Résultat dans la moyenne haute") via SEUIL_LONG_LABELS ci-dessous.
+// 6 labels imposés par Laurie (grille révisée 2026-05). Plus de "Excellent" —
+// la zone haute commence à "Moyenne haute" qui couvre toute la moitié haute
+// (≥ P51). La nomenclature courte est utilisée partout (tableaux + légende +
+// chip UI). Pas de version "longue" (les libellés sont déjà des libellés
+// finaux, pas des sous-titres).
 export type SeuilLabel =
-  | 'Excellent'
   | 'Moyenne haute'
+  | 'Moyenne'
   | 'Moyenne basse'
-  | 'Fragilité'
+  | 'Zone de fragilité'
   | 'Difficulté'
   | 'Difficulté sévère'
 
 export type SeuilClinique = {
   label: SeuilLabel
-  /** Label long affiché dans la légende du Word. */
+  /** Label long affiché dans la légende du Word. Identique à `label` depuis
+   *  la refonte 2026-05 — conservé pour rétro-compatibilité avec le code
+   *  qui le consomme (UI legend, chart). */
   longLabel: string
   min: number
   /** Hex sans # — fond cellule docx + UI chip background. */
@@ -82,23 +87,23 @@ export type SeuilClinique = {
 }
 
 // Palette imposée Laurie (fonds cellules + couleurs texte si fond foncé) :
-//   Excellent          → #2E7D32 fond vert foncé,    texte blanc
-//   Moyenne haute      → #66BB6A fond vert clair
-//   Moyenne basse      → #FBC02D fond jaune
-//   Fragilité          → #FB8C00 fond orange
-//   Difficulté         → #E65100 fond orange foncé,  texte blanc
-//   Difficulté sévère  → #D32F2F fond rouge vif,     texte blanc
+//   Moyenne haute      → #2E7D32 fond vert foncé,    texte blanc (P ≥ 51, couvre > P75 et P51-P75)
+//   Moyenne            → #66BB6A fond vert clair                  (P26-50)
+//   Moyenne basse      → #FBC02D fond jaune                       (P10-25, inclut Q1 = P25)
+//   Zone de fragilité  → #FB8C00 fond orange                      (P5-9)
+//   Difficulté         → #E65100 fond orange foncé,  texte blanc  (P2-4)
+//   Difficulté sévère  → #D32F2F fond rouge vif,     texte blanc  (< P2)
 //
 // Pour les tableaux Word, on utilise les `shading` (cellule) + `textColor`
 // (texte). Pour le graphique chart, voir chart.ts qui a sa propre palette
 // pastel pour les bandes de fond.
 export const SEUILS: SeuilClinique[] = [
-  { label: 'Excellent',          longLabel: 'Excellent résultat',              min: 76, shading: '2E7D32', css: '#1B5E20', textColor: 'FFFFFF', range: 'P > 75' },
-  { label: 'Moyenne haute',      longLabel: 'Résultat dans la moyenne haute',  min: 51, shading: '66BB6A', css: '#2E7D32', range: 'P51-75' },
-  { label: 'Moyenne basse',      longLabel: 'Résultat dans la moyenne basse',  min: 26, shading: 'FBC02D', css: '#F57F17', range: 'P26-50' },
-  { label: 'Fragilité',          longLabel: 'Zone de fragilité',               min: 10, shading: 'FB8C00', css: '#E65100', range: 'P10-25' },
-  { label: 'Difficulté',         longLabel: 'Zone de difficulté',              min: 6,  shading: 'E65100', css: '#BF360C', textColor: 'FFFFFF', range: 'P6-9' },
-  { label: 'Difficulté sévère',  longLabel: 'Zone de difficulté sévère',       min: 0,  shading: 'D32F2F', css: '#B71C1C', textColor: 'FFFFFF', range: 'P ≤ 5' },
+  { label: 'Moyenne haute',      longLabel: 'Moyenne haute',     min: 51, shading: '2E7D32', css: '#1B5E20', textColor: 'FFFFFF', range: 'P ≥ 51' },
+  { label: 'Moyenne',            longLabel: 'Moyenne',           min: 26, shading: '66BB6A', css: '#2E7D32', range: 'P26-50' },
+  { label: 'Moyenne basse',      longLabel: 'Moyenne basse',     min: 10, shading: 'FBC02D', css: '#F57F17', range: 'P10-25' },
+  { label: 'Zone de fragilité',  longLabel: 'Zone de fragilité', min: 5,  shading: 'FB8C00', css: '#E65100', range: 'P5-9' },
+  { label: 'Difficulté',         longLabel: 'Difficulté',        min: 2,  shading: 'E65100', css: '#BF360C', textColor: 'FFFFFF', range: 'P2-4' },
+  { label: 'Difficulté sévère',  longLabel: 'Difficulté sévère', min: 0,  shading: 'D32F2F', css: '#B71C1C', textColor: 'FFFFFF', range: '< P2' },
 ]
 
 export function seuilFor(value: number): SeuilClinique {
@@ -108,36 +113,49 @@ export function seuilFor(value: number): SeuilClinique {
 
 /**
  * Mappe les anciens labels d'interprétation (CRBO legacy en DB) vers les
- * nouveaux labels de la grille 6 zones. Utilisé au rendu pour assurer la
- * cohérence avec la couleur dérivée de percentile_value.
+ * nouveaux labels de la grille 6 zones révisée (2026-05). Utilisé au rendu
+ * pour assurer la cohérence avec la couleur dérivée de percentile_value.
  *
- * Pour les valeurs ambiguës ("Normal", "Dans la norme") qui couvraient
- * historiquement P>25, on retombe sur "Résultat dans la moyenne basse" par
- * défaut — la couleur réelle est de toute façon recalculée depuis
- * percentile_value en aval.
+ * **Refonte 2026-05** : la grille a été déplacée d'un cran "vers le haut" :
+ *   - L'ancienne zone "Excellent" (P>75) fusionnée dans "Moyenne haute".
+ *   - L'ancienne "Moyenne basse" (P26-50) est devenue "Moyenne".
+ *   - L'ancienne "Fragilité" (P10-25) est devenue "Moyenne basse".
+ *   - L'ancienne "Difficulté" (P6-9) est devenue "Zone de fragilité".
+ *   - L'ancienne "Difficulté sévère" (P≤5) éclatée en "Difficulté" (P2-4)
+ *     et "Difficulté sévère" (<P2).
+ *
+ * Pour les CRBO legacy dont l'interpretation stockée date d'avant la refonte,
+ * on remappe à la SÉMANTIQUE actuelle (PAS au label littéral) pour ne pas
+ * fausser la couleur du Word. La source de vérité reste `percentile_value` :
+ * le Word rendu via `seuilFor(percentile_value)` recalcule toujours la
+ * couleur correcte depuis la valeur numérique.
  */
 export function normalizeInterpretation(stored: string | undefined): SeuilLabel | undefined {
   if (!stored) return undefined
   switch (stored) {
-    // Legacy 4 zones → 6 zones courtes (Norm = moyenne basse par défaut)
+    // Legacy 4 zones (très anciens CRBO) — heuristique conservative :
     case 'Normal':
-    case 'Dans la norme': return 'Moyenne basse'
+    case 'Dans la norme': return 'Moyenne'         // P>25 par défaut
     case 'Limite basse':
-    case 'Fragile': return 'Fragilité'
-    case 'Déficitaire': return 'Difficulté'
+    case 'Fragile': return 'Moyenne basse'         // ancien P10-25
+    case 'Déficitaire': return 'Zone de fragilité' // ancien P6-9
     case 'Pathologique': return 'Difficulté sévère'
-    // Anciens labels longs (CRBO récents avant labels courts)
-    case 'Excellent résultat': return 'Excellent'
-    case 'Résultat dans la moyenne haute': return 'Moyenne haute'
-    case 'Résultat dans la moyenne basse': return 'Moyenne basse'
-    case 'Zone de fragilité': return 'Fragilité'
-    case 'Zone de difficulté': return 'Difficulté'
-    case 'Zone de difficulté sévère': return 'Difficulté sévère'
-    // Labels courts officiels (passthrough)
-    case 'Excellent':
+    // Anciens labels longs (CRBO récents avant refonte 2026-05)
+    case 'Excellent résultat':
+    case 'Excellent': return 'Moyenne haute'       // Excellent fusionné dans Moyenne haute
+    case 'Résultat dans la moyenne haute':
+    case 'Moyenne haute (legacy P51-75)': return 'Moyenne haute'
+    case 'Résultat dans la moyenne basse':
+    case 'Moyenne basse (legacy P26-50)': return 'Moyenne' // ancienne "Moyenne basse" = nouvelle "Moyenne"
+    case 'Zone de difficulté':
+    case 'Fragilité': return 'Moyenne basse'       // ancienne Fragilité (P10-25) = nouvelle Moyenne basse
+    case 'Zone de difficulté sévère':
+      return 'Difficulté sévère'
+    // Labels courts officiels (passthrough — déjà au nouveau format)
     case 'Moyenne haute':
+    case 'Moyenne':
     case 'Moyenne basse':
-    case 'Fragilité':
+    case 'Zone de fragilité':
     case 'Difficulté':
     case 'Difficulté sévère':
       return stored
@@ -147,6 +165,41 @@ export function normalizeInterpretation(stored: string | undefined): SeuilLabel 
 }
 export const getPercentileColor = (v: number): string => seuilFor(v).shading
 export const getPercentileCssColor = (v: number): string => seuilFor(v).css
+
+/**
+ * Formate un percentile pour affichage UI/Word/PDF (refonte 2026-05).
+ *
+ * Règle Laurie : JAMAIS de "Med.", "Q1", "Q3" affichés tels quels. Toujours
+ * convertir en notation Px (P25, P50, P75…).
+ *
+ * Priorité :
+ *  1. Si `value` numérique fourni → "Pxx" rond.
+ *  2. Sinon parse `raw` :
+ *     - "P\d+" passthrough majuscule
+ *     - "Q1" → "P25", "Q3" → "P75", "Med"/"Mediane"/"Médiane"/"M" → "P50"
+ *  3. Sinon retourne raw tel quel ou "—".
+ *
+ * À utiliser dans les composants UI qui affichent des percentiles bruts
+ * (CRBOStructuredPreview, preview page, print page).
+ */
+export function formatPercentileForDisplay(
+  raw: string | undefined | null,
+  value: number | undefined | null,
+): string {
+  if (typeof value === 'number' && !isNaN(value)) {
+    const v = Math.max(0, Math.min(100, Math.round(value)))
+    return `P${v}`
+  }
+  if (typeof raw === 'string') {
+    const trimmed = raw.trim()
+    if (/^P\d+$/i.test(trimmed)) return trimmed.toUpperCase()
+    const lower = trimmed.toLowerCase().replace(/\.$/, '')
+    if (lower === 'q1') return 'P25'
+    if (lower === 'q3') return 'P75'
+    if (lower === 'med' || lower === 'mediane' || lower === 'médiane' || lower === 'm') return 'P50'
+  }
+  return raw || '—'
+}
 
 // --------------------- Payload d'entrée ---------------------
 
@@ -216,15 +269,26 @@ export async function generateCRBOWord(payload: WordExportPayload): Promise<Blob
     return cols
   }
 
-  // Affichage centile uniformisé : on convertit Q1/Med/Q3 et toute autre forme
-  // en "Pxx" depuis la valeur numérique. Évite de se retrouver avec "Q1" dans
-  // un tableau et "P25" dans un autre — règle clinique Laurie.
+  // Affichage centile uniformisé : on convertit Q1/Med/Q3/Med. et toute
+  // autre forme en "Pxx" depuis la valeur numérique. Règle clinique Laurie
+  // (refonte 2026-05) : JAMAIS de "Med.", "Q1", "Q3" affichés tels quels
+  // dans les tableaux / preview / Word / PDF — UNIQUEMENT les valeurs Px
+  // numériques (P25, P50, P75…).
   const fmtCentile = (raw: string | undefined | null, value: number | undefined | null): string => {
     if (typeof value === 'number' && !isNaN(value)) {
       const v = Math.max(0, Math.min(100, Math.round(value)))
       return `P${v}`
     }
-    if (typeof raw === 'string' && /^P\d+$/i.test(raw.trim())) return raw.trim().toUpperCase()
+    if (typeof raw === 'string') {
+      const trimmed = raw.trim()
+      // Déjà au format Pxx → passthrough majuscule
+      if (/^P\d+$/i.test(trimmed)) return trimmed.toUpperCase()
+      // Q1/Q3/Med./Med → conversion explicite
+      const lower = trimmed.toLowerCase().replace(/\.$/, '')
+      if (lower === 'q1') return 'P25'
+      if (lower === 'q3') return 'P75'
+      if (lower === 'med' || lower === 'mediane' || lower === 'médiane' || lower === 'm') return 'P50'
+    }
     return raw || '—'
   }
 
@@ -715,10 +779,10 @@ export async function generateCRBOWord(payload: WordExportPayload): Promise<Blob
   children.push(new Paragraph({ children: [new PageBreak()] }))
 
   // ===== ANAMNÈSE — JAMAIS de notes brutes =====
-  // Surligne en bleu pâle si l'ortho a édité ce champ (cf. edited_fields).
-  // Construit la confiance : "vous avez ajouté votre touche personnelle".
-  const anamneseEdited = editedSetEarly.has('anamnese_redigee')
-
+  // Refonte 2026-05 : SUPPRESSION du surlignage bleu pâle des passages
+  // édités par l'ortho dans le Word/PDF. Le highlight bleu reste UNIQUEMENT
+  // sur la preview HTML côté client (cf. nouveau-crbo/preview/[id]/page.tsx).
+  // Le document exporté est propre, sans trace visuelle des édits.
   children.push(createSectionTitle('ANAMNÈSE'))
   const anamneseText = hasStructure && structure!.anamnese_redigee?.trim()
     ? structure!.anamnese_redigee.trim()
@@ -727,7 +791,6 @@ export async function generateCRBOWord(payload: WordExportPayload): Promise<Blob
     if (line.trim()) {
       children.push(new Paragraph({
         alignment: AlignmentType.BOTH,
-        shading: anamneseEdited ? { type: ShadingType.CLEAR, fill: 'EFF6FF', color: 'auto' } : undefined,
         children: [new TextRun({ text: line.trim(), size: FONT_SIZE_NORMAL, font: FONT })],
         spacing: { after: 100 },
       }))
@@ -1098,16 +1161,19 @@ export async function generateCRBOWord(payload: WordExportPayload): Promise<Blob
       }))
       renderRichContent(content)
     }
-    // ===== POINTS FORTS =====
-    // Champ structuré dédié (nouveau schéma Laurie). Backward-compat : si
-    // l'IA renvoie l'ancien format (H3 Markdown dans diagnostic), on tombe
-    // sur renderRichContent(diagnostic) plus bas.
-    // Synthétique : skip — la synthèse passe directement au diagnostic.
+    // ===== POINTS FORTS / DIFFICULTÉS IDENTIFIÉES — SUPPRIMÉES (refonte 2026-05) =====
+    // Ces deux sections séparées ont été retirées. Le contenu est désormais
+    // intégré dans le \`diagnostic\` via la phrase synthèse imposée :
+    // "On notera parmi les points d'appui : … Les principaux axes de
+    //  fragilité concernent …".
+    //
+    // Backward-compat : pour les CRBO LEGACY dont le diagnostic ne contient
+    // pas encore la phrase synthèse, on continue à rendre les champs s'ils
+    // existent (sinon le contenu serait perdu). Pour les CRBO récents
+    // (générés post-refonte), les deux champs valent "" et rien n'est rendu.
     if (!isSynthetique && s.points_forts?.trim()) {
       pushBlock('Points forts', s.points_forts.trim())
     }
-
-    // ===== DIFFICULTÉS IDENTIFIÉES =====
     if (!isSynthetique && s.difficultes_identifiees?.trim()) {
       pushBlock('Difficultés identifiées', s.difficultes_identifiees.trim())
     }
@@ -1170,18 +1236,20 @@ export async function generateCRBOWord(payload: WordExportPayload): Promise<Blob
       }
     }
 
-    // ===== RECOMMANDATIONS / PROJET THÉRAPEUTIQUE =====
-    // Complet : phrase unique imposée Laurie ("Une prise en charge orthophonique
-    //   est recommandée, et en parallèle la mise en place ou le renforcement
-    //   des aménagements en classe.") sous header H3 "Recommandations".
-    // Synthétique : section "PROJET THÉRAPEUTIQUE" — 2 phrases adaptées au
-    //   profil (soin orthophonique + aménagements pédagogiques), pas de bullets.
+    // ===== PROJET THÉRAPEUTIQUE (anciennement "Recommandations") =====
+    // Refonte 2026-05 : la section est désormais TOUJOURS intitulée "Projet
+    // thérapeutique" (Complet ET Synthétique), conformément à la convention
+    // Laurie. La clé JSON reste \`recommandations\` pour rétro-compat.
+    //   Complet : phrase unique imposée Laurie ("Une prise en charge
+    //     orthophonique est recommandée, et en parallèle la mise en place ou
+    //     le renforcement des aménagements en classe.") sous header H3.
+    //   Synthétique : 2 phrases adaptées au profil (soin + aménagements).
     if (s.recommandations?.trim()) {
       if (isSynthetique) {
         children.push(createSectionTitle('PROJET THÉRAPEUTIQUE'))
         renderRichContent(s.recommandations.trim())
       } else {
-        pushBlock('Recommandations', s.recommandations.trim())
+        pushBlock('Projet thérapeutique', s.recommandations.trim())
       }
     }
 
@@ -1299,36 +1367,11 @@ export async function generateCRBOWord(payload: WordExportPayload): Promise<Blob
     }),
   )
 
-  // ===== LÉGENDE PASSAGES ÉDITÉS =====
-  // Si l'ortho a édité au moins un champ (anamnèse / motif / commentaires
-  // de domaine), on ajoute une mini-légende discrète juste avant la
-  // conclusion. Surlignage bleu pâle = "passage revu/édité par l'ortho".
-  // Valorise son travail et donne un repère au médecin prescripteur lors
-  // de la lecture du Word.
-  if (hasStructure && (structure!.edited_fields ?? []).length > 0) {
-    children.push(
-      new Paragraph({
-        alignment: AlignmentType.LEFT,
-        spacing: { before: 240, after: 60 },
-        shading: { type: ShadingType.CLEAR, fill: 'EFF6FF', color: 'auto' },
-        children: [
-          new TextRun({
-            text: '  ',
-            size: 18,
-            font: FONT,
-          }),
-          new TextRun({
-            text: 'Passages relus / édités par l\'orthophoniste',
-            size: 18,
-            font: FONT,
-            italics: true,
-            color: '1E40AF',
-          }),
-          new TextRun({ text: '  ', size: 18, font: FONT }),
-        ],
-      }),
-    )
-  }
+  // ===== LÉGENDE PASSAGES ÉDITÉS — SUPPRIMÉE (refonte 2026-05) =====
+  // L'ancienne mini-légende bleue qui signalait au médecin prescripteur les
+  // passages relus/édités par l'ortho a été retirée du Word et du PDF. Le
+  // surlignage bleu reste UNIQUEMENT sur la preview HTML côté client pour
+  // que l'ortho voie ses propres édits — le document exporté est propre.
 
   // ===== CONCLUSION (mention médico-légale, petit italique, en bas) =====
   // Règle Laurie : c'est le SEUL endroit du Word avec de l'italique.

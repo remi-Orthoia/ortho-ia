@@ -38,7 +38,7 @@ import {
 } from 'lucide-react'
 import { createClient } from '@/lib/supabase'
 import type { CRBOStructure, CRBODomain } from '@/lib/prompts'
-import { SEUILS, seuilFor, getPercentileColor } from '@/lib/word-export'
+import { SEUILS, seuilFor, getPercentileColor, formatPercentileForDisplay } from '@/lib/word-export'
 import { applyVocabToObject } from '@/lib/vocab-perso'
 import { applyGlossaireToObject } from '@/lib/glossaire'
 
@@ -487,7 +487,7 @@ function DomainTable({ domain }: { domain: CRBODomain }) {
                 <td className="py-2 px-2 text-center font-mono text-gray-700">{e.score}</td>
                 <td className="py-2 px-2 text-center font-mono text-gray-600">{e.et ?? '—'}</td>
                 <td className="py-2 px-2 text-center font-mono" style={{ backgroundColor: '#' + color + '60' }}>
-                  {e.percentile}
+                  {formatPercentileForDisplay(e.percentile, e.percentile_value)}
                 </td>
                 <td className="py-2 pl-2 text-center">
                   <span
@@ -799,10 +799,8 @@ export default function CRBOPreviewPage() {
       label: d.nom,
       icon: <BookOpen size={14} />,
     })),
-    { id: 'sec-points-forts',    label: 'Points forts',     icon: <Check size={14} /> },
-    { id: 'sec-difficultes',     label: 'Difficultés',      icon: <AlertTriangle size={14} /> },
     { id: 'sec-diagnostic',      label: 'Diagnostic',       icon: <Sparkles size={14} /> },
-    { id: 'sec-recommandations', label: 'Recommandations',  icon: <Lightbulb size={14} /> },
+    { id: 'sec-recommandations', label: 'Projet thérapeutique', icon: <Lightbulb size={14} /> },
     { id: 'sec-axes',            label: 'Axes thérapeutiques', icon: <ListChecks size={14} /> },
     { id: 'sec-pap',             label: 'Aménagements PAP', icon: <ListChecks size={14} /> },
     { id: 'sec-conclusion',      label: 'Conclusion',       icon: <FileText size={14} /> },
@@ -955,31 +953,10 @@ export default function CRBOPreviewPage() {
             </div>
           )}
 
-          {structure.points_forts !== undefined && (
-            <SectionEditor
-              id="sec-points-forts"
-              title="Points forts"
-              icon={<Check size={16} />}
-              fieldPath="points_forts"
-              initialValue={structure.points_forts || ''}
-              onSave={handleSave}
-              onRegenerate={(cur) => openRegen('points_forts', 'Points forts', 'points_forts', cur)}
-              placeholder="Synthèse des points forts du patient (3-5 lignes)…"
-            />
-          )}
-
-          {structure.difficultes_identifiees !== undefined && (
-            <SectionEditor
-              id="sec-difficultes"
-              title="Difficultés identifiées"
-              icon={<AlertTriangle size={16} />}
-              fieldPath="difficultes_identifiees"
-              initialValue={structure.difficultes_identifiees || ''}
-              onSave={handleSave}
-              onRegenerate={(cur) => openRegen('difficultes_identifiees', 'Difficultés identifiées', 'difficultes_identifiees', cur)}
-              placeholder="Synthèse des difficultés identifiées (3-5 lignes)…"
-            />
-          )}
+          {/* Sections "Points forts" et "Difficultés identifiées" supprimées
+              (refonte 2026-05). Désormais intégrées dans le \`diagnostic\` via
+              une phrase synthétique "On notera parmi les points d'appui : …
+              Les principaux axes de fragilité concernent …". */}
 
           <SectionEditor
             id="sec-diagnostic"
@@ -994,13 +971,13 @@ export default function CRBOPreviewPage() {
 
           <SectionEditor
             id="sec-recommandations"
-            title="Recommandations"
+            title="Projet thérapeutique"
             icon={<Lightbulb size={16} />}
             fieldPath="recommandations"
             initialValue={structure.recommandations || ''}
             onSave={handleSave}
-            onRegenerate={(cur) => openRegen('recommandations', 'Recommandations', 'recommandations', cur)}
-            placeholder="Recommandations cliniques…"
+            onRegenerate={(cur) => openRegen('recommandations', 'Projet thérapeutique', 'recommandations', cur)}
+            placeholder="Projet thérapeutique…"
           />
 
           {structure.axes_therapeutiques !== undefined && (

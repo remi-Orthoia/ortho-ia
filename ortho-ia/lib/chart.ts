@@ -19,15 +19,21 @@
 
 // --------------------- Palette : zones de performance ---------------------
 //
-// 6 zones cliniques alignées sur le graphique HappyNeuron officiel.
+// 6 zones cliniques alignées sur la grille révisée Laurie (refonte 2026-05).
+// Plus de "Excellent" — la zone haute commence à "Moyenne haute" (≥ P51).
+// La nouvelle "Moyenne" (P26-50) correspond à l'ancienne "Moyenne basse".
+// L'ancienne "Fragilité" (P10-25) devient "Moyenne basse".
+// L'ancienne "Difficulté" (P6-9) devient "Zone de fragilité" et est élargie
+// à P5-9. L'ancienne "Difficulté sévère" éclate en "Difficulté" (P2-4) et
+// "Difficulté sévère" (<P2).
 
 export type ZoneLabel =
-  | 'Excellent résultat'
-  | 'Résultat dans la moyenne haute'
-  | 'Résultat dans la moyenne basse'
+  | 'Moyenne haute'
+  | 'Moyenne'
+  | 'Moyenne basse'
   | 'Zone de fragilité'
-  | 'Zone de difficulté'
-  | 'Zone de difficulté sévère'
+  | 'Difficulté'
+  | 'Difficulté sévère'
 
 export type ZonePerformance = {
   label: ZoneLabel
@@ -37,25 +43,25 @@ export type ZonePerformance = {
 
 /** Couleurs des bandes de fond du graphique (palette pastel imposée Laurie).
  *  La couleur des barres elles-mêmes est plus saturée — voir BAR_FILL_OF_VALUE.
- *  Étalonnage Happy Scribe : Fragilité P10-P25, Difficulté P6-P9, Difficulté sévère P ≤ 5. */
+ *  Refonte 2026-05 : 6 labels courts unifiés, plus de "Excellent". */
 export const ZONES: ZonePerformance[] = [
-  { label: 'Excellent résultat',                min: 76, css: '#C8E6C9' }, // vert clair
-  { label: 'Résultat dans la moyenne haute',    min: 51, css: '#DCEDC8' }, // vert très clair
-  { label: 'Résultat dans la moyenne basse',    min: 26, css: '#FFF59D' }, // jaune clair
-  { label: 'Zone de fragilité',                 min: 10, css: '#FFE0B2' }, // orange très clair (P10-P25, Q1 incl.)
-  { label: 'Zone de difficulté',                min: 6,  css: '#FFCCBC' }, // orange clair (P6-P9)
-  { label: 'Zone de difficulté sévère',         min: 0,  css: '#D7CCC8' }, // marron clair (P ≤ 5)
+  { label: 'Moyenne haute',      min: 51, css: '#C8E6C9' }, // vert pastel — couvre ≥ P51
+  { label: 'Moyenne',            min: 26, css: '#DCEDC8' }, // vert très pastel (P26-50)
+  { label: 'Moyenne basse',      min: 10, css: '#FFF59D' }, // jaune pastel (P10-25, Q1 incl.)
+  { label: 'Zone de fragilité',  min: 5,  css: '#FFE0B2' }, // orange pastel (P5-9)
+  { label: 'Difficulté',         min: 2,  css: '#FFCCBC' }, // orange clair (P2-4)
+  { label: 'Difficulté sévère',  min: 0,  css: '#D7CCC8' }, // marron clair (<P2)
 ]
 
 /** Couleur de remplissage des barres (palette saturée — même que les fonds
  *  cellules tableaux Word). Plus visible que la palette pastel des bandes. */
 const BAR_FILL_OF_VALUE = (value: number): string => {
-  if (value >= 76) return '#2E7D32' // vert foncé
-  if (value >= 51) return '#66BB6A' // vert clair
-  if (value >= 26) return '#FBC02D' // jaune (moyenne basse)
-  if (value >= 10) return '#FB8C00' // orange (fragilité P10-P25)
-  if (value >= 6)  return '#E65100' // orange foncé (difficulté P6-P9)
-  return '#D32F2F'                  // rouge vif (difficulté sévère P ≤ 5)
+  if (value >= 51) return '#2E7D32' // vert foncé (Moyenne haute, ≥ P51)
+  if (value >= 26) return '#66BB6A' // vert clair (Moyenne, P26-50)
+  if (value >= 10) return '#FBC02D' // jaune (Moyenne basse, P10-25)
+  if (value >= 5)  return '#FB8C00' // orange (Zone de fragilité, P5-9)
+  if (value >= 2)  return '#E65100' // orange foncé (Difficulté, P2-4)
+  return '#D32F2F'                  // rouge vif (Difficulté sévère, <P2)
 }
 
 export function zoneFor(value: number): ZonePerformance {

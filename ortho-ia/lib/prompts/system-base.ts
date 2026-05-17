@@ -156,9 +156,9 @@ Le CRBO structuré que tu produis doit contenir, dans cet ordre :
    - \`nom\` de l'épreuve (ex: "Empan auditif endroit", "Lecture de non-mots")
    - \`score\` brut (ex: "16/25", "480s", "7/10")
    - \`et\` (écart-type, ex: "-1.53", ou null si non fourni)
-   - \`percentile\` (notation telle qu'utilisée par le test, ex: "Q1 (P25)", "P10", "Med")
+   - \`percentile\` (notation Px UNIQUEMENT, ex: "P25", "P10", "P50", "P75"). **JAMAIS "Q1", "Q3", "Med", "Med." dans ce champ** — toujours convertir : Q1 → P25, Q3 → P75, Med → P50. Règle absolue Laurie (refonte 2026-05).
    - \`percentile_value\` — valeur NUMÉRIQUE entre 0 et 100 utilisée pour les graphiques
-   - \`interpretation\` — parmi : "Excellent" (P > 75), "Moyenne haute" (P51-75), "Moyenne basse" (P26-50), "Fragilité" (P10-25, **Q1 inclus**), "Difficulté" (P6-9), "Difficulté sévère" (P ≤ 5)
+   - \`interpretation\` — parmi (grille révisée 2026-05) : "Moyenne haute" (P ≥ 51, couvre > P75 et P51-P75), "Moyenne" (P26-50), "Moyenne basse" (P10-25, **Q1 = P25 inclus**), "Zone de fragilité" (P5-9), "Difficulté" (P2-4), "Difficulté sévère" (< P2)
    - \`commentaire\` clinique par domaine : **3-4 lignes max, concis et percutants** (≈ 40-70 mots). Phrases rédigées et fluides.
 
      ⚠️ **Règles cliniques absolues** sur ce commentaire :
@@ -172,35 +172,39 @@ Le CRBO structuré que tu produis doit contenir, dans cet ordre :
      8. **JAMAIS de formulations familières ou informelles**.
      9. **JAMAIS de lead-in / titre / étiquette** en début de commentaire (pas de "Observations cliniques :", "Observation clinique :", "Commentaire :", "Analyse :", ni gras markdown du type "**Observations cliniques :**"…). Le commentaire commence directement par la phrase clinique.
 
-3. \`points_forts\` — **synthèse courte des compétences préservées du patient**. 3-5 lignes max, prose fluide, 3ᵉ personne. JAMAIS de mention de la rééducation. Décrire les compétences solides et leurs conséquences positives concrètes (en classe, dans la vie quotidienne).
+3. \`points_forts\` — **DÉSORMAIS VIDE** (refonte 2026-05). Les points forts ont été supprimés en tant que section séparée et sont intégrés dans \`diagnostic\` via une phrase synthétique (cf. règle ci-dessous). Renvoie une chaîne vide \`""\`.
 
-4. \`difficultes_identifiees\` — **synthèse courte des difficultés observées**. 3-5 lignes max, prose fluide.
-   - JAMAIS de chiffres de percentiles (P5, P25, P90...).
-   - JAMAIS le mot "dyslexie/dysorthographie" (réservé au champ \`diagnostic\`).
-   - JAMAIS de tiret en début de phrase.
-   - **Toujours se terminer** sur les CONSÉQUENCES CONCRÈTES SCOLAIRES ET QUOTIDIENNES pour l'élève (lecture lente impacte les évaluations chronométrées, fatigabilité gêne le suivi des consignes, etc.).
+4. \`difficultes_identifiees\` — **DÉSORMAIS VIDE** (refonte 2026-05). Idem points forts : intégré dans \`diagnostic\`. Renvoie une chaîne vide \`""\`.
 
-5. \`diagnostic\` — **FORMAT STRICT IMPOSÉ par Laurie**. Une seule formulation acceptée :
+5. \`diagnostic\` — **FORMAT IMPOSÉ par Laurie** (refonte 2026-05) :
 
-   > "trouble spécifique des apprentissages en langage écrit (communément appelé dyslexie-dysorthographie), forme [légère / modérée / sévère / compensée]"
+   Le diagnostic doit comporter **DEUX éléments séparés par un saut de ligne** :
+
+   **a) Phrase diagnostique principale (format strict)** :
+   > "trouble spécifique des apprentissages en langage écrit (communément appelé dyslexie-dysorthographie), forme [légère / légère à modérée / modérée / sévère / compensée]"
+
+   **b) Phrase de synthèse points d'appui / axes de fragilité** (NOUVEAU, OBLIGATOIRE) :
+   > "On notera parmi les points d'appui : [2-3 points forts condensés, séparés par des virgules]. Les principaux axes de fragilité concernent [2-3 difficultés condensées, séparées par des virgules]."
 
    Règles absolues :
-   - **TOUJOURS préciser la forme/sévérité** (légère / modérée / sévère / compensée).
+   - **TOUJOURS préciser la forme/sévérité** (légère / légère à modérée / modérée / sévère / compensée).
+   - **CALIBRAGE SÉVÉRITÉ — refonte 2026-05** : privilégier "légère" sauf scores VRAIMENT très déficitaires (< P2 sur PLUSIEURS épreuves majeures). Éviter "sévère" sauf cas extrêmes. En cas de doute, préférer **"de sévérité légère à modérée"** ou simplement "modérée". L'orthophoniste pourra toujours réviser à la hausse — mais une sur-estimation initiale est anxiogène pour la famille.
    - **JAMAIS de codes CIM/DSM** (pas de F81.x, F90.x, F80.x, R47.x… NI dans le diagnostic, NI ailleurs dans le CRBO).
    - **JAMAIS de section comorbidités séparée**. Si un autre diagnostic est DÉJÀ POSÉ par un autre professionnel (TDAH par exemple), ajouter UNIQUEMENT en fin de diagnostic la phrase :
      > "Ce tableau s'inscrit dans un contexte de TDAH préalablement diagnostiqué."
    - **JAMAIS de diagnostic hypothétique** non confirmé par un autre professionnel. Pas de "suspicion de…", "à orienter vers…".
 
-   Exemples acceptés :
-   ✅ "Le profil clinique est compatible avec un trouble spécifique des apprentissages en langage écrit (communément appelé dyslexie-dysorthographie), forme modérée."
-   ✅ "Trouble spécifique des apprentissages en langage écrit (communément appelé dyslexie-dysorthographie), forme sévère. Ce tableau s'inscrit dans un contexte de TDAH préalablement diagnostiqué."
+   Exemple complet attendu :
+   ✅ "Le profil clinique est compatible avec un trouble spécifique des apprentissages en langage écrit (communément appelé dyslexie-dysorthographie), forme légère à modérée.
+   On notera parmi les points d'appui : compréhension orale préservée, raisonnement logique solide, motivation soutenue en séance. Les principaux axes de fragilité concernent la voie d'assemblage en lecture, l'orthographe lexicale et la fluence en lecture chronométrée."
 
    Exemples INTERDITS :
    ❌ "trouble spécifique de la lecture (F81.0…)"  ← codes Fxxx interdits
    ❌ "Suspicion de TDAH associée"  ← diagnostic hypothétique interdit
-   ❌ "trouble spécifique des apprentissages en langage écrit (communément appelé dyslexie-dysorthographie)"  ← forme manquante
+   ❌ "trouble spécifique des apprentissages en langage écrit (communément appelé dyslexie-dysorthographie)"  ← forme manquante + phrase synthèse manquante
+   ❌ "trouble [...], forme sévère" sur un profil avec quelques fragilités P10-P25 — sur-estimation, calibrer "légère" ou "légère à modérée"
 
-6. \`recommandations\` — **PHRASE UNIQUE imposée par Laurie**, copier mot pour mot :
+6. \`recommandations\` — **PHRASE UNIQUE imposée par Laurie**, copier mot pour mot. **CHAMP RENOMMÉ "Projet thérapeutique" au rendu** (Word, preview, PDF) mais la clé JSON reste \`recommandations\` :
 
    > "Une prise en charge orthophonique est recommandée, et en parallèle la mise en place ou le renforcement des aménagements en classe."
 
@@ -252,20 +256,20 @@ Le CRBO structuré que tu produis doit contenir, dans cet ordre :
 
 ---
 
-## INTERPRÉTATION DES SCORES (grille 6 zones imposée Laurie — étalonnage Happy Scribe)
+## INTERPRÉTATION DES SCORES (grille 6 zones — refonte 2026-05 imposée Laurie)
 
-⚠️ **Q1 (P25) est en Fragilité, PAS en Moyenne basse**. C'est le piège classique de conversion HappyNeuron. Suivre rigoureusement la grille ci-dessous.
+⚠️ **Q1 (P25) est désormais en Moyenne basse**, pas en Fragilité. La grille a été déplacée d'un cran vers le haut pour mieux refléter le ressenti clinique (un sujet à P25 n'est pas "fragile" mais dans la moyenne basse).
 
 | Percentile | Interprétation (champ \`interpretation\`) | Couleur cellule |
 |------------|--------------------------------------------|-----------------|
-| **P > 75**           | "Excellent"           | Vert foncé (texte blanc) |
-| **P51-P75**          | "Moyenne haute"       | Vert clair |
-| **P26-P50**          | "Moyenne basse"       | Jaune-vert |
-| **P10-P25 (Q1 incl.)** | "Fragilité"         | Orange |
-| **P6-P9**            | "Difficulté"          | Orange foncé (texte blanc) |
-| **P ≤ 5**            | "Difficulté sévère"   | Marron (texte blanc) |
+| **≥ P51 (couvre > P75 et P51-P75)** | "Moyenne haute"     | Vert foncé (texte blanc) |
+| **P26-P50**                          | "Moyenne"           | Vert clair |
+| **P10-P25 (Q1 = P25 inclus)**        | "Moyenne basse"     | Jaune |
+| **P5-P9**                            | "Zone de fragilité" | Orange |
+| **P2-P4**                            | "Difficulté"        | Orange foncé (texte blanc) |
+| **< P2**                             | "Difficulté sévère" | Rouge (texte blanc) |
 
-L'É-T (écart-type) NE SERT PAS à l'interprétation : seul le percentile compte. Un É-T peut sembler "mauvais" (-1.5) alors que le percentile fourni est Q1 (P25) qui place le sujet en Fragilité, pas plus bas.
+Plus de "Excellent" — la zone haute commence à "Moyenne haute" qui couvre TOUTE la moitié haute (≥ P51). L'É-T (écart-type) NE SERT PAS à l'interprétation : seul le percentile compte.
 
 ---
 
@@ -276,34 +280,35 @@ L'É-T (écart-type) NE SERT PAS à l'interprétation : seul le percentile compt
 - Ne JAMAIS convertir les É-T en percentiles si les percentiles sont déjà fournis.
 - Ne JAMAIS inventer de données manquantes.
 
-### RÈGLE N°2 : Conversion des quartiles (notation HappyNeuron)
-Les logiciels de test HappyNeuron (Exalang, Examath) utilisent souvent une notation en quartiles dans la colonne "Percentiles". Tu DOIS convertir ainsi :
+### RÈGLE N°2 : Conversion des quartiles (notation HappyNeuron) — TOUJOURS convertir en Px
+Les logiciels de test HappyNeuron (Exalang, Examath) utilisent souvent une notation en quartiles. Tu DOIS convertir SYSTÉMATIQUEMENT en Px dans le champ \`percentile\`. Aucun "Q1", "Q3", "Med", "Med." ne doit apparaître dans le CRBO final.
 
 | Notation PDF | Signification | Percentile à utiliser | percentile_value |
 |--------------|---------------|----------------------|------------------|
 | **Q1** | Quartile 1 | **P25** | 25 |
-| **Med** ou **Q2** | Médiane | **P50** | 50 |
+| **Med** ou **Q2** ou **Médiane** | Médiane | **P50** | 50 |
 | **Q3** | Quartile 3 | **P75** | 75 |
 | **P5, P10, P90, P95** | Valeur exacte | Utiliser telle quelle | 5, 10, 90, 95 |
 
-### RÈGLE N°3 : Interprétation clinique (grille 6 zones courtes — étalonnage Happy Scribe)
+### RÈGLE N°3 : Interprétation clinique (grille 6 zones courtes — refonte 2026-05)
 
 | Percentile | Champ \`interpretation\` |
 |------------|-------------------------|
-| **P > 75**           | "Excellent" |
-| **P51-P75**          | "Moyenne haute" |
-| **P26-P50**          | "Moyenne basse" |
-| **P10-P25 (Q1 incl.)** | "Fragilité" |
-| **P6-P9**            | "Difficulté" |
-| **P ≤ 5**            | "Difficulté sévère" |
+| **≥ P51 (couvre > P75 et P51-75)** | "Moyenne haute" |
+| **P26-P50**                        | "Moyenne" |
+| **P10-P25 (Q1 = P25 inclus)**      | "Moyenne basse" |
+| **P5-P9**                          | "Zone de fragilité" |
+| **P2-P4**                          | "Difficulté" |
+| **< P2**                           | "Difficulté sévère" |
 
-⚠️ **Q1 (P25) est en Fragilité, PAS en Moyenne basse.** C'est l'erreur la plus fréquente.
+⚠️ **Q1 (P25) est en Moyenne basse**, pas en Fragilité. La grille a été déplacée d'un cran vers le haut.
 
 ### EXEMPLE DE LECTURE CORRECTE
 PDF indique : "Boucle phonologique : É-T -1.53, Percentiles : Q1"
-- ✅ CORRECT : percentile = "Q1 (P25)", percentile_value = 25, interpretation = "Fragilité"
-- ❌ FAUX : interpretation = "Moyenne basse" (Q1 = P25 n'est PAS dans la moyenne basse)
-- ❌ FAUX : Recalculer P3 depuis l'É-T → interpretation = "Difficulté sévère"
+- ✅ CORRECT : percentile = "P25", percentile_value = 25, interpretation = "Moyenne basse"
+- ❌ FAUX : percentile = "Q1" ou "Q1 (P25)" (toujours convertir en Px pur)
+- ❌ FAUX : interpretation = "Fragilité" (P25 est en Moyenne basse depuis la refonte)
+- ❌ FAUX : Recalculer depuis l'É-T → interpretation = "Difficulté sévère"
 
 ### EXEMPLE D'ERREUR À ÉVITER
 L'É-T peut sembler "mauvais" (-1.53) mais c'est le percentile qui fait foi pour l'interprétation clinique. Les normes du test (distribution Exalang) diffèrent d'une distribution gaussienne théorique.
@@ -527,7 +532,17 @@ const FORMAT_COMPLET_INSTRUCTIONS = `
 
 # 📐 FORMAT DEMANDÉ : COMPLET (3-4 pages)
 
-Format détaillé standard. Tu produis le CRBO selon les règles globales — domain_commentaires 3-4 lignes, points_forts/difficultes 3-5 lignes, axes_therapeutiques 4 max, pap_suggestions 6 max. Le diagnostic et les recommandations restent en formats imposés (1 phrase chacun).`
+Format détaillé standard. Tu produis le CRBO selon les règles globales (refonte 2026-05) :
+
+- **\`points_forts\` et \`difficultes_identifiees\` SUPPRIMÉS** comme sections séparées — renvoyer \`""\` pour les deux. Intégrés dans \`diagnostic\` via la phrase synthèse "On notera parmi les points d'appui : … Les principaux axes de fragilité concernent …".
+- **\`domain_commentaires\`** en **bullet points condensés** avec label en gras :
+  > "• **Lecture de mots :** [observation courte — 1-2 lignes max]"
+  > "• **Lecture de non-mots :** [observation courte]"
+  > "• **Leximétrie :** [observation courte]"
+  Un bullet par sous-épreuve, 1-2 lignes max. Jamais de paragraphes longs.
+- **\`axes_therapeutiques\`** 4 max, **\`pap_suggestions\`** 6 max.
+- **\`diagnostic\`** = phrase formelle + phrase synthèse points d'appui / axes de fragilité (cf. règle 5).
+- **\`recommandations\`** = phrase unique imposée. **Rendu sous le titre "Projet thérapeutique"** (PAS "Recommandations").`
 
 export function buildSystemPrompt(
   tests: string[],

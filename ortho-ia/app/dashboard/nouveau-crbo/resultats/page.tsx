@@ -33,7 +33,7 @@ import { createClient } from '@/lib/supabase'
 import type { CRBOStructure, CRBOEpreuve, CRBODomain, ExtractedCRBO, SynthesizedCRBO } from '@/lib/prompts'
 import type { CRBOFormData } from '@/lib/types'
 import { drawHappyNeuronChart, computeChartHeight, computeChartWidth, type ChartGroup } from '@/lib/chart'
-import { downloadCRBOWord, SEUILS, getPercentileColor, seuilFor } from '@/lib/word-export'
+import { downloadCRBOWord, SEUILS, getPercentileColor, seuilFor, formatPercentileForDisplay } from '@/lib/word-export'
 import MicButton from '@/components/MicButton'
 import StreamingCRBO from '@/components/StreamingCRBO'
 import { playPrintAnimation } from '@/components/PrintAnimation'
@@ -164,7 +164,7 @@ function DomainTable({ domain }: { domain: CRBODomain }) {
                 <td className="py-2 px-2 text-center font-mono text-gray-700 dark:text-gray-300">{e.score}</td>
                 <td className="py-2 px-2 text-center font-mono text-gray-600 dark:text-gray-400">{e.et ?? '—'}</td>
                 <td className="py-2 px-2 text-center font-mono" style={{ backgroundColor: '#' + color + '60' }}>
-                  {e.percentile}
+                  {formatPercentileForDisplay(e.percentile, e.percentile_value)}
                 </td>
                 <td className="py-2 pl-2 text-center">
                   {(() => {

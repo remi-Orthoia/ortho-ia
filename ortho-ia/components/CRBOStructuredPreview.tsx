@@ -2,7 +2,7 @@
 
 import { Download, Edit, AlertTriangle, Sparkles, BookOpen, Eye, UserCheck } from 'lucide-react'
 import type { CRBOStructure } from '@/lib/prompts'
-import { SEUILS, seuilFor, getPercentileColor } from '@/lib/word-export'
+import { SEUILS, seuilFor, getPercentileColor, formatPercentileForDisplay } from '@/lib/word-export'
 import ReasoningClinicalDisplay from './ReasoningClinical'
 
 interface Props {
@@ -178,7 +178,7 @@ export default function CRBOStructuredPreview({ structure, onDownload, onEdit, o
                           <td className="py-2 px-2 text-center font-mono text-gray-700 dark:text-gray-300">{e.score}</td>
                           <td className="py-2 px-2 text-center font-mono text-gray-600 dark:text-gray-400">{e.et ?? '—'}</td>
                           <td className="py-2 px-2 text-center font-mono" style={{ backgroundColor: '#' + color + '60' }}>
-                            {e.percentile}
+                            {formatPercentileForDisplay(e.percentile, e.percentile_value)}
                           </td>
                           <td className="py-2 pl-2 text-center">
                             {(() => {
@@ -245,8 +245,8 @@ export default function CRBOStructuredPreview({ structure, onDownload, onEdit, o
         )}
       </Section>
 
-      {/* Recommandations */}
-      <Section title="Recommandations" color="primary">
+      {/* Projet thérapeutique (refonte 2026-05) */}
+      <Section title="Projet thérapeutique" color="primary">
         <RichText text={structure.recommandations} />
       </Section>
 

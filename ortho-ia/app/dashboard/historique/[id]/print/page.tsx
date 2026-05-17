@@ -20,7 +20,7 @@ import React, { useEffect, useState } from 'react'
 import { useParams, useRouter } from 'next/navigation'
 import { createClient } from '@/lib/supabase'
 import { Loader2, Printer, ArrowLeft } from 'lucide-react'
-import { seuilFor } from '@/lib/word-export'
+import { seuilFor, formatPercentileForDisplay } from '@/lib/word-export'
 import type { CRBOStructure } from '@/lib/prompts'
 
 interface CRBO {
@@ -428,7 +428,7 @@ function CRBOPrintableStructure({ structure, testUtilise }: { structure: CRBOStr
                           <td style={{ padding: '4px 8px', textAlign: 'center', border: '1px solid #BFBFBF' }}>{e.score || '—'}</td>
                           <td style={{ padding: '4px 8px', textAlign: 'center', border: '1px solid #BFBFBF' }}>{e.et || '—'}</td>
                           <td style={{ padding: '4px 8px', textAlign: 'center', border: '1px solid #BFBFBF', backgroundColor: '#' + seuil.shading, color: seuil.textColor ? '#' + seuil.textColor : '#000', fontWeight: 600 }}>
-                            {e.percentile || `P${e.percentile_value}`}
+                            {formatPercentileForDisplay(e.percentile, e.percentile_value)}
                           </td>
                           <td style={{ padding: '4px 8px', textAlign: 'center', border: '1px solid #BFBFBF', backgroundColor: '#' + seuil.shading, color: seuil.textColor ? '#' + seuil.textColor : '#000', fontWeight: 600 }}>
                             {seuil.label}
@@ -476,10 +476,10 @@ function CRBOPrintableStructure({ structure, testUtilise }: { structure: CRBOStr
         </section>
       )}
 
-      {/* Recommandations */}
+      {/* Projet thérapeutique (refonte 2026-05 — anciennement "Recommandations") */}
       {structure.recommandations && (
         <section style={{ marginBottom: 12 }}>
-          <h3 style={{ fontSize: 13, color: '#16a34a', fontWeight: 700, margin: '0 0 4px' }}>Recommandations</h3>
+          <h3 style={{ fontSize: 13, color: '#16a34a', fontWeight: 700, margin: '0 0 4px' }}>Projet thérapeutique</h3>
           <div style={{ whiteSpace: 'pre-line', fontSize: 13 }}>{structure.recommandations}</div>
         </section>
       )}

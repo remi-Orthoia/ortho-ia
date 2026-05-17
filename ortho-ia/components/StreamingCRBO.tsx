@@ -37,11 +37,12 @@ interface Props {
 // ============================================================================
 
 function buildStreamFields(isMoca: boolean) {
+  // Refonte 2026-05 : "Points forts" et "Difficultés identifiées" supprimés
+  // comme sections séparées (intégrés dans le diagnostic via phrase synthèse).
+  // "Recommandations" renommé "Projet thérapeutique" au rendu.
   return [
-    { key: 'points_forts',           label: 'Points forts' },
-    { key: 'difficultes_identifiees', label: 'Difficultés identifiées' },
     { key: 'diagnostic',             label: isMoca ? 'Hypothèse de diagnostic' : 'Diagnostic' },
-    { key: 'recommandations',        label: 'Recommandations' },
+    { key: 'recommandations',        label: 'Projet thérapeutique' },
     { key: 'conclusion',             label: 'Conclusion' },
   ] as const
 }
