@@ -1193,12 +1193,11 @@ export async function generateCRBOWord(payload: WordExportPayload): Promise<Blob
     // pas encore la phrase synthèse, on continue à rendre les champs s'ils
     // existent (sinon le contenu serait perdu). Pour les CRBO récents
     // (générés post-refonte), les deux champs valent "" et rien n'est rendu.
-    if (!isSynthetique && s.points_forts?.trim()) {
-      pushBlock('Points forts', s.points_forts.trim())
-    }
-    if (!isSynthetique && s.difficultes_identifiees?.trim()) {
-      pushBlock('Difficultés identifiées', s.difficultes_identifiees.trim())
-    }
+    // Points forts / Difficultés identifiées : SUPPRIMÉS définitivement
+    // (demande Laurie 2026-05). Ces sections ne sont plus jamais rendues —
+    // les CRBO legacy qui les contiennent en DB sont ignorés. La synthèse
+    // points d'appui / axes de fragilité est désormais intégrée dans le
+    // diagnostic via la phrase "On notera parmi les points d'appui : …".
 
     // ===== DIAGNOSTIC =====
     // Si les champs structurés points_forts/difficultes ne sont pas présents,
@@ -1258,34 +1257,30 @@ export async function generateCRBOWord(payload: WordExportPayload): Promise<Blob
       }
     }
 
-    // ===== PROJET THÉRAPEUTIQUE (anciennement "Recommandations") =====
-    // Refonte 2026-05 : la section est désormais TOUJOURS intitulée "Projet
-    // thérapeutique" (Complet ET Synthétique), conformément à la convention
-    // Laurie. La clé JSON reste \`recommandations\` pour rétro-compat.
-    //   Complet : phrase unique imposée Laurie ("Une prise en charge
-    //     orthophonique est recommandée, et en parallèle la mise en place ou
-    //     le renforcement des aménagements en classe.") sous header H3.
-    //   Synthétique : 2 phrases adaptées au profil (soin + aménagements).
-    if (s.recommandations?.trim()) {
-      if (isSynthetique) {
-        children.push(createSectionTitle('PROJET THÉRAPEUTIQUE'))
-        renderRichContent(s.recommandations.trim())
-      } else {
-        pushBlock('Projet thérapeutique', s.recommandations.trim())
-      }
-    }
+    // ===== PROJET THÉRAPEUTIQUE — SUPPRIMÉ (demande Laurie 2026-05) =====
+    // La section "Projet thérapeutique" (clé JSON `recommandations`) n'est
+    // plus rendue dans le CRBO final, ni en mode Complet ni en mode
+    // Synthétique. Le champ reste produit par l'IA pour rétro-compat
+    // (DB existante) mais ignoré au rendu.
 
     // ===== AXES THÉRAPEUTIQUES =====
-    // Nouveau champ structuré (max 4 axes, 1 ligne chacun). Backward-compat :
-    // si absent, l'ancien format embarqué dans s.recommandations est déjà
-    // rendu ci-dessus.
-    // Synthétique : skip — fusionné dans PROJET THÉRAPEUTIQUE.
-    if (!isSynthetique) {
+    // Max 4 axes, 1 ligne chacun. Précédés d'une phrase introductive
+    // (demande Laurie 2026-05) — la phrase remplace la section "Projet
+    // thérapeutique" supprimée. Affichée en Complet ET en Synthétique.
+    {
       const axes = (s.axes_therapeutiques ?? []).filter(a => a && a.trim().length > 0).slice(0, 4)
       if (axes.length > 0) {
         children.push(new Paragraph({
           children: [new TextRun({ text: 'Axes thérapeutiques', bold: true, size: FONT_SIZE_NORMAL, font: FONT, color: COLOR_GREEN })],
           spacing: { before: 240, after: 100 },
+        }))
+        children.push(new Paragraph({
+          alignment: AlignmentType.BOTH,
+          spacing: { after: 120 },
+          children: [new TextRun({
+            text: 'Au regard des éléments mis en évidence, les axes thérapeutiques privilégiés seraient les suivants :',
+            size: FONT_SIZE_NORMAL, font: FONT,
+          })],
         }))
         axes.forEach((a, i) => {
           children.push(new Paragraph({
@@ -1316,6 +1311,15 @@ export async function generateCRBOWord(payload: WordExportPayload): Promise<Blob
           bold: true, size: FONT_SIZE_NORMAL, font: FONT, color: COLOR_GREEN,
         })],
         spacing: { before: 240, after: 100 },
+      }))
+      // Phrase introductive imposée Laurie (2026-05) avant les bullets.
+      children.push(new Paragraph({
+        alignment: AlignmentType.BOTH,
+        spacing: { after: 120 },
+        children: [new TextRun({
+          text: "Des aménagements pédagogiques de ce type pourraient être mis en place pour limiter l'impact des troubles en situation scolaire.",
+          size: FONT_SIZE_NORMAL, font: FONT,
+        })],
       }))
       for (const p of paps) {
         const legacy = p.trim().match(legacyRegex)

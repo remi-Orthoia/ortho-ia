@@ -462,19 +462,8 @@ function CRBOPrintableStructure({ structure, testUtilise }: { structure: CRBOStr
         </section>
       )}
 
-      {/* Points forts / Difficultés */}
-      {structure.points_forts && (
-        <section style={{ marginBottom: 12 }}>
-          <h3 style={{ fontSize: 13, color: '#16a34a', fontWeight: 700, margin: '0 0 4px' }}>Points forts</h3>
-          <div style={{ whiteSpace: 'pre-line', fontSize: 13 }}>{structure.points_forts}</div>
-        </section>
-      )}
-      {structure.difficultes_identifiees && (
-        <section style={{ marginBottom: 12 }}>
-          <h3 style={{ fontSize: 13, color: '#16a34a', fontWeight: 700, margin: '0 0 4px' }}>Difficultés identifiées</h3>
-          <div style={{ whiteSpace: 'pre-line', fontSize: 13 }}>{structure.difficultes_identifiees}</div>
-        </section>
-      )}
+      {/* Points forts / Difficultés identifiées : SUPPRIMÉS (demande Laurie 2026-05) */}
+      {/* Projet thérapeutique : SUPPRIMÉ (demande Laurie 2026-05) */}
 
       {/* Diagnostic — sur les bilans MoCA (screening), le titre devient
           "Hypothèse de diagnostic" : la MoCA seule ne permet pas un diagnostic
@@ -489,28 +478,26 @@ function CRBOPrintableStructure({ structure, testUtilise }: { structure: CRBOStr
         </section>
       )}
 
-      {/* Projet thérapeutique (refonte 2026-05 — anciennement "Recommandations") */}
-      {structure.recommandations && (
-        <section style={{ marginBottom: 12 }}>
-          <h3 style={{ fontSize: 13, color: '#16a34a', fontWeight: 700, margin: '0 0 4px' }}>Projet thérapeutique</h3>
-          <div style={{ whiteSpace: 'pre-line', fontSize: 13 }}>{structure.recommandations}</div>
-        </section>
-      )}
-
-      {/* Axes */}
+      {/* Axes thérapeutiques — précédés d'une phrase introductive imposée Laurie. */}
       {structure.axes_therapeutiques && structure.axes_therapeutiques.length > 0 && (
         <section style={{ marginBottom: 12 }}>
           <h3 style={{ fontSize: 13, color: '#16a34a', fontWeight: 700, margin: '0 0 4px' }}>Axes thérapeutiques</h3>
+          <p style={{ fontSize: 13, margin: '0 0 6px', color: '#374151' }}>
+            Au regard des éléments mis en évidence, les axes thérapeutiques privilégiés seraient les suivants :
+          </p>
           <ol style={{ margin: 0, paddingLeft: 22, fontSize: 13 }}>
             {structure.axes_therapeutiques.map((a, i) => <li key={i} style={{ marginBottom: 2 }}>{a}</li>)}
           </ol>
         </section>
       )}
 
-      {/* PAP */}
+      {/* PAP — précédés d'une phrase introductive imposée Laurie. */}
       {structure.pap_suggestions && structure.pap_suggestions.length > 0 && (
         <section style={{ marginBottom: 12 }}>
           <h3 style={{ fontSize: 13, color: '#16a34a', fontWeight: 700, margin: '0 0 4px' }}>Aménagements scolaires conseillés</h3>
+          <p style={{ fontSize: 13, margin: '0 0 6px', color: '#374151' }}>
+            Des aménagements pédagogiques de ce type pourraient être mis en place pour limiter l&apos;impact des troubles en situation scolaire.
+          </p>
           <ul style={{ margin: 0, paddingLeft: 22, fontSize: 13 }}>
             {structure.pap_suggestions.map((p, i) => <li key={i} style={{ marginBottom: 2 }}>{p}</li>)}
           </ul>

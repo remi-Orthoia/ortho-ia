@@ -207,21 +207,16 @@ Le CRBO structuré que tu produis doit contenir, dans cet ordre :
    ❌ "trouble spécifique des apprentissages en langage écrit (communément appelé dyslexie-dysorthographie)"  ← forme manquante + phrase synthèse manquante
    ❌ "trouble [...], forme sévère" sur un profil avec quelques fragilités P10-P25 — sur-estimation, calibrer "légère" ou "légère à modérée"
 
-6. \`recommandations\` — **PHRASE UNIQUE imposée par Laurie**, copier mot pour mot. **CHAMP RENOMMÉ "Projet thérapeutique" au rendu** (Word, preview, PDF) mais la clé JSON reste \`recommandations\` :
-
-   > "Une prise en charge orthophonique est recommandée, et en parallèle la mise en place ou le renforcement des aménagements en classe."
-
-   Règles absolues :
-   - **JAMAIS de mention de réévaluation, nouveau bilan, délai, fréquence de séances**.
-   - **JAMAIS d'orientation vers d'autres professionnels** (neuropsy, ergo, orthoptiste…). Le scope orthophonique strict.
-   - **JAMAIS de paragraphe MDPH/PPS/PAP/RQTH/ALD** non demandé explicitement.
+6. \`recommandations\` — **DÉSORMAIS VIDE** (refonte 2026-05). La section "Projet thérapeutique" a été supprimée du rendu (Word, PDF, preview). Renvoie une chaîne vide \`""\`. La phrase "Une prise en charge orthophonique est recommandée…" est remplacée par la phrase introductive automatique des Axes thérapeutiques ("Au regard des éléments mis en évidence, les axes thérapeutiques privilégiés seraient les suivants :").
 
 7. \`axes_therapeutiques\` — **maximum 4 axes**. Tableau de strings, 1 ligne chacun, sans détail sur les exercices.
    - N'écris PAS "1." devant — la numérotation est ajoutée automatiquement au rendu.
+   - **N'écris PAS de phrase introductive dans le tableau** — l'intro « Au regard des éléments mis en évidence, les axes thérapeutiques privilégiés seraient les suivants : » est ajoutée automatiquement par le rendu.
    - **JAMAIS de mention d'autres professionnels**.
    - Exemples : "Renforcement de la conscience phonologique et du décodage", "Travail de l'orthographe lexicale et grammaticale", "Automatisation de la voie d'adressage", "Soutien à la compréhension de texte".
 
 8. \`pap_suggestions\` — **maximum 6 aménagements scolaires**, 1 par grande catégorie.
+   - **N'écris PAS de phrase introductive dans le tableau** — l'intro « Des aménagements pédagogiques de ce type pourraient être mis en place pour limiter l'impact des troubles en situation scolaire. » est ajoutée automatiquement par le rendu.
    - **FORMAT OBLIGATOIRE** : \`"Catégorie : description GÉNÉRALE de l'aménagement"\` — la catégorie suivie d'un espace, deux-points et un espace, puis la description. PAS de markdown \`**...**\`, PAS de tiret cadratin \`—\`. Le rendu Word met automatiquement la catégorie + ":" en gras.
    - **Catégories autorisées** : Temps, Outils numériques, Présentation des supports, Évaluations, Pédagogie, Environnement, Oral.
    - ⚠️ **Restez GÉNÉRAL** : ne nomme JAMAIS de polices spécifiques (pas de "OpenDyslexic", "Arial 14"…), ni de logiciels nominatifs (pas de "Voice Dream", "NaturalReader"…), ni de marques d'outils numériques. L'orthophoniste choisit elle-même les outils précis avec la famille.
@@ -472,33 +467,13 @@ Le diagnostic seul tient lieu de synthèse en synthétique.
 
 Format imposé inchangé (cf. règles globales — 1 phrase au format strict, JAMAIS de codes Fxxx).
 
-## \`recommandations\` → "PROJET THÉRAPEUTIQUE" — exactement 2 phrases
+## \`recommandations\` → DÉSORMAIS VIDE (refonte 2026-05)
 
-⛔ **OUBLIE la phrase unique imposée du format Complet.** En synthétique, \`recommandations\` contient EXACTEMENT 2 phrases adaptées au profil clinique de l'enfant, séparées par un saut de ligne :
+⛔ La section "Projet thérapeutique" est SUPPRIMÉE du rendu, en Complet ET en Synthétique. Renvoie une chaîne vide \`""\`. Les axes thérapeutiques et les aménagements sont rendus directement, précédés de leurs phrases introductives automatiques.
 
-1. **Phrase 1 — soin orthophonique** :
-   > "Une prise en soin orthophonique est indiquée afin de [objectifs thérapeutiques principaux selon le profil]."
-   Les objectifs sont DÉRIVÉS des difficultés observées (renforcer le décodage, automatiser la voie d'adressage, consolider l'orthographe lexicale, soutenir la compréhension écrite, travailler la conscience phonologique, etc.). Adapte aux résultats du bilan, pas de copier-coller générique.
+## \`axes_therapeutiques\` — UTILISÉ en synthétique aussi (refonte 2026-05)
 
-2. **Phrase 2 — aménagements scolaires** :
-   > "Des aménagements pédagogiques doivent être mis en place afin de limiter l'impact de [difficultés principales] en situation scolaire."
-   Cite les 1-2 difficultés les plus invalidantes en classe (lenteur de lecture, difficultés en orthographe, fatigabilité, etc.).
-
-**Règles absolues sur \`recommandations\` en synthétique** :
-- ⛔ JAMAIS de bullet points / liste / tirets dans cette section.
-- ⛔ JAMAIS de fréquence de séances, de délai, de mention de réévaluation ou de nouveau bilan.
-- ⛔ JAMAIS d'orientation vers d'autres professionnels.
-- 2 phrases EXACTEMENT, pas plus, pas moins.
-
-Exemple de \`recommandations\` synthétique attendu :
-> "Une prise en soin orthophonique est indiquée afin de renforcer le décodage, d'automatiser la voie d'adressage, et de consolider l'orthographe lexicale.
->
-> Des aménagements pédagogiques doivent être mis en place afin de limiter l'impact de la lenteur de lecture et des difficultés en orthographe en situation scolaire."
-
-## \`axes_therapeutiques\` — NON UTILISÉ en synthétique
-
-⛔ Fusionné dans le PROJET THÉRAPEUTIQUE (phrase 1 ci-dessus). Renvoie un **tableau vide** :
-- \`axes_therapeutiques\` → \`[]\`
+Tableau de 3-4 axes thérapeutiques (1 ligne chacun, sans détail sur les exercices). L'intro « Au regard des éléments mis en évidence, les axes thérapeutiques privilégiés seraient les suivants : » est ajoutée automatiquement par le rendu — ne l'écris pas dans le tableau.
 
 ## \`pap_suggestions\` — Aménagements pédagogiques proposés (style Laurie)
 
@@ -541,9 +516,9 @@ Format détaillé standard. Tu produis le CRBO selon les règles globales (refon
   > "• **Lecture de non-mots :** [observation courte]"
   > "• **Leximétrie :** [observation courte]"
   Un bullet par sous-épreuve, 1-2 lignes max. Jamais de paragraphes longs.
-- **\`axes_therapeutiques\`** 4 max, **\`pap_suggestions\`** 6 max.
+- **\`axes_therapeutiques\`** 4 max (intro automatique au rendu), **\`pap_suggestions\`** 6 max (intro automatique au rendu).
 - **\`diagnostic\`** = phrase formelle + phrase synthèse points d'appui / axes de fragilité (cf. règle 5).
-- **\`recommandations\`** = phrase unique imposée. **Rendu sous le titre "Projet thérapeutique"** (PAS "Recommandations").`
+- **\`recommandations\`** = \`""\` (section "Projet thérapeutique" supprimée du rendu, refonte 2026-05).`
 
 export function buildSystemPrompt(
   tests: string[],

@@ -257,14 +257,28 @@ export default function CRBOStructuredPreview({ structure, onDownload, onEdit, o
         )}
       </Section>
 
-      {/* Projet thérapeutique (refonte 2026-05) */}
-      <Section title="Projet thérapeutique" color="primary">
-        <RichText text={structure.recommandations} />
-      </Section>
+      {/* Projet thérapeutique : SUPPRIMÉ (demande Laurie 2026-05) */}
 
-      {/* PAP suggestions */}
+      {/* Axes thérapeutiques — précédés d'une phrase introductive imposée Laurie. */}
+      {structure.axes_therapeutiques && structure.axes_therapeutiques.filter(a => a?.trim()).length > 0 && (
+        <Section title="Axes thérapeutiques" color="primary">
+          <p className="text-gray-700 dark:text-gray-300 mb-3 text-sm">
+            Au regard des éléments mis en évidence, les axes thérapeutiques privilégiés seraient les suivants :
+          </p>
+          <ol className="space-y-2 list-decimal list-inside">
+            {structure.axes_therapeutiques.filter(a => a?.trim()).map((a, i) => (
+              <li key={i} className="text-gray-800 dark:text-gray-200">{a.trim()}</li>
+            ))}
+          </ol>
+        </Section>
+      )}
+
+      {/* PAP suggestions — précédés d'une phrase introductive imposée Laurie. */}
       {structure.pap_suggestions && structure.pap_suggestions.filter(p => p?.trim()).length > 0 && (
         <Section title="Aménagements scolaires (PAP)" color="blue">
+          <p className="text-gray-700 dark:text-gray-300 mb-3 text-sm">
+            Des aménagements pédagogiques de ce type pourraient être mis en place pour limiter l&apos;impact des troubles en situation scolaire.
+          </p>
           <ul className="space-y-2">
             {structure.pap_suggestions.filter(p => p?.trim()).map((p, i) => (
               <li key={i} className="flex items-start gap-2 text-gray-800 dark:text-gray-200">

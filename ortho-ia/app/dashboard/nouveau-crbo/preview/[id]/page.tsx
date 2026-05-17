@@ -33,7 +33,7 @@ import { useParams, useRouter } from 'next/navigation'
 import Link from 'next/link'
 import {
   ArrowLeft, Download, FileDown, Loader2, AlertCircle, Sparkles,
-  Check, Edit3, Eye, FileText, BookOpen, AlertTriangle, ListChecks, Lightbulb,
+  Check, Edit3, Eye, FileText, BookOpen, AlertTriangle, ListChecks,
   RefreshCw, X,
 } from 'lucide-react'
 import { createClient } from '@/lib/supabase'
@@ -799,11 +799,11 @@ export default function CRBOPreviewPage() {
       label: d.nom,
       icon: <BookOpen size={14} />,
     })),
-    { id: 'sec-diagnostic',      label: 'Diagnostic',       icon: <Sparkles size={14} /> },
-    { id: 'sec-recommandations', label: 'Projet thérapeutique', icon: <Lightbulb size={14} /> },
-    { id: 'sec-axes',            label: 'Axes thérapeutiques', icon: <ListChecks size={14} /> },
-    { id: 'sec-pap',             label: 'Aménagements PAP', icon: <ListChecks size={14} /> },
-    { id: 'sec-conclusion',      label: 'Conclusion',       icon: <FileText size={14} /> },
+    { id: 'sec-diagnostic',      label: 'Diagnostic',           icon: <Sparkles size={14} /> },
+    // "Projet thérapeutique" retiré (demande Laurie 2026-05)
+    { id: 'sec-axes',            label: 'Axes thérapeutiques',  icon: <ListChecks size={14} /> },
+    { id: 'sec-pap',             label: 'Aménagements PAP',     icon: <ListChecks size={14} /> },
+    { id: 'sec-conclusion',      label: 'Conclusion',           icon: <FileText size={14} /> },
   ]
 
   return (
@@ -962,16 +962,9 @@ export default function CRBOPreviewPage() {
             placeholder="Diagnostic orthophonique ou hypothèse de diagnostic…"
           />
 
-          <SectionEditor
-            id="sec-recommandations"
-            title="Projet thérapeutique"
-            icon={<Lightbulb size={16} />}
-            fieldPath="recommandations"
-            initialValue={structure.recommandations || ''}
-            onSave={handleSave}
-            onRegenerate={(cur) => openRegen('recommandations', 'Projet thérapeutique', 'recommandations', cur)}
-            placeholder="Projet thérapeutique…"
-          />
+          {/* Section "Projet thérapeutique" supprimée (demande Laurie 2026-05).
+              Le champ recommandations reste en DB pour retro-compat mais
+              n'est plus édité ni rendu dans le CRBO final. */}
 
           {structure.axes_therapeutiques !== undefined && (
             <ListEditor
