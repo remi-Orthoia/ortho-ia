@@ -503,6 +503,15 @@ export async function generateCRBOWord(payload: WordExportPayload): Promise<Blob
 
   // ===== MÉDECIN =====
   if (formData.medecin_nom || formData.medecin_tel) {
+    // Préfixe "Dr." en dur au rendu Word/PDF. Si l'ortho a déjà saisi
+    // "Dr.", "Dr" ou "Docteur" (CRBO legacy ou copie-colle), on évite
+    // le doublon. Le nouveau formulaire strip déjà ces préfixes à la
+    // saisie (cf. handleMedecinNomChange) — cette logique est ici pour
+    // les CRBO antérieurs à la refonte 2026-05.
+    const medecinRaw = (formData.medecin_nom || '').trim()
+    const medecinAffiche = medecinRaw
+      ? (/^(?:dr\.?|docteur)\s+/i.test(medecinRaw) ? medecinRaw : `Dr. ${medecinRaw}`)
+      : ''
     children.push(
       new Paragraph({ children: [new TextRun({ text: 'Médecin prescripteur', size: FONT_SIZE_NORMAL, font: FONT, color: COLOR_GREEN, bold: true })], spacing: { before: 200 } }),
       (() => {
@@ -512,7 +521,7 @@ export async function generateCRBOWord(payload: WordExportPayload): Promise<Blob
           columnWidths: cols,
           rows: [new TableRow({ children: [
             createCell('Nom :', { dxa: cols[0] }),
-            createCell(formData.medecin_nom || '', { dxa: cols[1] }),
+            createCell(medecinAffiche, { dxa: cols[1] }),
             createCell('Tél :', { dxa: cols[2] }),
             createCell(formData.medecin_tel || '', { dxa: cols[3] }),
           ]})],

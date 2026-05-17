@@ -717,7 +717,12 @@ function NouveauCRBOContent() {
    *  saisie ne matche plus aucun médecin (évite de perdre une saisie en
    *  cours). */
   const handleMedecinNomChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const value = e.target.value
+    // Strip tout préfixe "Dr.", "Dr", "Docteur" tapé/collé par l'ortho —
+    // le préfixe "Dr." est affiché en dur à gauche du champ (UI) et
+    // re-ajouté au rendu Word/PDF. La valeur stockée doit être le nom
+    // propre seul (ex. "Bernard", "Marie-Claire Vidal").
+    const stripped = e.target.value.replace(/^\s*(?:dr\.?|docteur)\s+/i, '')
+    const value = stripped
     const norm = normalizeMedecinName(value)
     if (!norm) {
       setSelectedMedecinId('')
@@ -1709,17 +1714,28 @@ function NouveauCRBOContent() {
             <div className="grid sm:grid-cols-2 gap-4">
               <div>
                 <label className="block text-sm font-medium text-gray-700 mb-1">Nom du médecin *</label>
-                <input
-                  type="text"
-                  name="medecin_nom"
-                  value={formData.medecin_nom}
-                  onChange={handleMedecinNomChange}
-                  required
-                  list="medecin-nom-suggestions"
-                  autoComplete="off"
-                  className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-green-500"
-                  placeholder="Docteur Bernard"
-                />
+                {/* Préfixe "Dr." en dur à gauche du champ (visuel uniquement).
+                    Le handler handleMedecinNomChange strip déjà tout "Dr."
+                    ou "Docteur" tapé/collé par l'ortho — la valeur stockée
+                    est juste le nom propre (ex. "Bernard"). Le préfixe est
+                    re-ajouté au rendu Word/PDF côté lib/word-export.ts via
+                    formatMedecinDisplay(). */}
+                <div className="flex w-full rounded-lg border border-gray-300 focus-within:ring-2 focus-within:ring-green-500 overflow-hidden">
+                  <span className="inline-flex items-center px-3 bg-gray-100 text-gray-600 text-sm font-medium border-r border-gray-300 select-none">
+                    Dr.
+                  </span>
+                  <input
+                    type="text"
+                    name="medecin_nom"
+                    value={formData.medecin_nom}
+                    onChange={handleMedecinNomChange}
+                    required
+                    list="medecin-nom-suggestions"
+                    autoComplete="off"
+                    className="flex-1 min-w-0 px-3 py-3 focus:outline-none"
+                    placeholder="Bernard"
+                  />
+                </div>
                 {/* Datalist : suggestions natives navigateur tirées de la
                     banque médecins. Quand l'utilisateur en sélectionne une
                     (ou tape le nom complet à la main), handleMedecinNomChange
