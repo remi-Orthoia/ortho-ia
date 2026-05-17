@@ -147,10 +147,7 @@ export const CLASSES_GROUPS = [
     label: 'Adulte',
     options: [
       'Adulte actif',
-      'Adulte au foyer',
-      'Sans emploi',
       'Retraité',
-      'Adulte',
     ] as const,
   },
   {
