@@ -130,6 +130,21 @@ function NouveauCRBOContent() {
   // sidebar + header + bouton feedback, centre la zone d'édition. L'ortho
   // entre en "écriture profonde". Désactivé dès qu'elle change d'étape.
   useFocusMode(currentStep === 3)
+
+  // Auto-scroll en haut de l'écran à chaque changement d'étape — déclenché
+  // APRÈS le re-render et APRÈS l'effet useFocusMode (qui modifie la
+  // hauteur du DOM via le toggle de la sidebar/header). On utilise un
+  // double requestAnimationFrame pour garantir que le layout est figé
+  // avant le scroll, sinon le scroll smooth peut être annulé par le
+  // reflow du focus mode (cas typique : passage de l'étape 3 à 4).
+  useEffect(() => {
+    if (typeof window === 'undefined') return
+    requestAnimationFrame(() => {
+      requestAnimationFrame(() => {
+        window.scrollTo({ top: 0, behavior: 'smooth' })
+      })
+    })
+  }, [currentStep])
   const [extracting, setExtracting] = useState(false)
   const [error, setError] = useState('')
   const [notice, setNotice] = useState('')
@@ -930,11 +945,8 @@ function NouveauCRBOContent() {
     if (currentStep < TOTAL_STEPS) {
       setCurrentStep(prev => prev + 1)
       playDing() // micro-feedback satisfaisant à chaque étape franchie
-      // Sinon la page reste au niveau du bouton "Continuer" (en bas) — on
-      // ramène l'utilisateur en haut pour qu'il voie le titre de la nouvelle étape.
-      if (typeof window !== 'undefined') {
-        window.scrollTo({ top: 0, behavior: 'smooth' })
-      }
+      // Le scroll en haut est géré par le useEffect [currentStep] plus haut
+      // (double rAF pour attendre le reflow du focus mode).
     }
   }
 
@@ -956,9 +968,7 @@ function NouveauCRBOContent() {
   const prevStep = () => {
     if (currentStep > 1) {
       setCurrentStep(prev => prev - 1)
-      if (typeof window !== 'undefined') {
-        window.scrollTo({ top: 0, behavior: 'smooth' })
-      }
+      // Le scroll en haut est géré par le useEffect [currentStep] plus haut.
     }
   }
 
@@ -1002,9 +1012,7 @@ function NouveauCRBOContent() {
       audio_file: undefined,
     }))
     setCurrentStep(1)
-    if (typeof window !== 'undefined') {
-      window.scrollTo({ top: 0, behavior: 'smooth' })
-    }
+    // Le scroll en haut est géré par le useEffect [currentStep] plus haut.
   }
 
   const handleGenerate = async () => {
