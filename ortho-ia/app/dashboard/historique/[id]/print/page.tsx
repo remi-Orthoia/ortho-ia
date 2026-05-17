@@ -444,6 +444,19 @@ function CRBOPrintableStructure({ structure, testUtilise }: { structure: CRBOStr
                   {d.commentaire}
                 </p>
               )}
+              {/* Paragraphes dédiés par épreuve "en dessous de la médiane"
+                  (P<50) — demande Laurie 2026-05 : pour chaque sous-épreuve
+                  dans le rouge, afficher son commentaire clinique. */}
+              {!isMoca && d.epreuves
+                .filter((e) => typeof e.percentile_value === 'number'
+                  && e.percentile_value < 50
+                  && e.commentaire
+                  && e.commentaire.trim().length > 0)
+                .map((e, k) => (
+                  <p key={`ep-${k}`} style={{ fontSize: 12.5, color: '#374151', margin: '6px 0 0', lineHeight: 1.55 }}>
+                    <strong>{e.nom}</strong> — {e.commentaire}
+                  </p>
+                ))}
             </div>
           ))}
         </section>

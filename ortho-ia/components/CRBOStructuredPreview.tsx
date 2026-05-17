@@ -202,6 +202,18 @@ export default function CRBOStructuredPreview({ structure, onDownload, onEdit, o
                   {domain.commentaire}
                 </p>
               )}
+              {/* Paragraphes dédiés par épreuve "en dessous de la médiane"
+                  (P<50) — demande Laurie 2026-05. */}
+              {domain.epreuves
+                .filter((e) => typeof e.percentile_value === 'number'
+                  && e.percentile_value < 50
+                  && e.commentaire
+                  && e.commentaire.trim().length > 0)
+                .map((e, k) => (
+                  <p key={`ep-${k}`} className="mt-3 text-sm text-gray-700 dark:text-gray-300 leading-relaxed">
+                    <strong>{e.nom}</strong> — {e.commentaire}
+                  </p>
+                ))}
             </div>
           ))}
         </div>

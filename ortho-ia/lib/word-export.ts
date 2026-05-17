@@ -546,7 +546,6 @@ export async function generateCRBOWord(payload: WordExportPayload): Promise<Blob
   // Le champ structuré motif_reformule reste produit par la phase 1
   // (extract) et stocké, pour rétro-compat et pour intégration future
   // éventuelle dans l'anamnèse.
-  const editedSetEarly = new Set(structure?.edited_fields ?? [])
 
   // ===== TESTS =====
   children.push(
@@ -1004,13 +1003,38 @@ export async function generateCRBOWord(payload: WordExportPayload): Promise<Blob
           .trim()
           .replace(/^\**\s*observations?\s+cliniques?\s*:\s*\**\s*/i, '')
           .trim()
-        const domainCommEdited = editedSetEarly.has(`domain_commentaire:${domain.nom}`)
         children.push(new Paragraph({
           alignment: AlignmentType.BOTH,
-          shading: domainCommEdited ? { type: ShadingType.CLEAR, fill: 'EFF6FF', color: 'auto' } : undefined,
           spacing: { after: 200 },
           children: [
             new TextRun({ text: cleaned, size: FONT_SIZE_NORMAL, font: FONT }),
+          ],
+        }))
+      }
+
+      // Paragraphes dédiés par épreuve "en dessous de la médiane" (P < 50)
+      // — demande Laurie 2026-05 : pour chaque sous-épreuve dans le rouge
+      // (P < 50), afficher un paragraphe spécifique avec le commentaire
+      // clinique de l'IA. Format : « **Nom épreuve** — commentaire ».
+      // Le commentaire est rempli par l'IA en phase d'extraction quand
+      // percentile_value < 50 (cf. system-base.ts).
+      const epreuvesFragiles = domain.epreuves.filter(
+        (e) => typeof e.percentile_value === 'number'
+          && e.percentile_value < 50
+          && e.commentaire
+          && e.commentaire.trim().length > 0,
+      )
+      for (const e of epreuvesFragiles) {
+        const epCleaned = (e.commentaire || '')
+          .trim()
+          .replace(/^\**\s*observations?\s+cliniques?\s*:\s*\**\s*/i, '')
+          .trim()
+        children.push(new Paragraph({
+          alignment: AlignmentType.BOTH,
+          spacing: { after: 160 },
+          children: [
+            new TextRun({ text: `${e.nom} — `, size: FONT_SIZE_NORMAL, font: FONT, bold: true }),
+            new TextRun({ text: epCleaned, size: FONT_SIZE_NORMAL, font: FONT }),
           ],
         }))
       }

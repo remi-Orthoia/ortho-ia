@@ -159,6 +159,9 @@ Le CRBO structuré que tu produis doit contenir, dans cet ordre :
    - \`percentile\` (notation Px UNIQUEMENT, ex: "P25", "P10", "P50", "P75"). **JAMAIS "Q1", "Q3", "Med", "Med." dans ce champ** — toujours convertir : Q1 → P25, Q3 → P75, Med → P50. Règle absolue Laurie (refonte 2026-05).
    - \`percentile_value\` — valeur NUMÉRIQUE entre 0 et 100 utilisée pour les graphiques
    - \`interpretation\` — parmi (grille 5 zones alignée Exalang officiel) : "Moyenne haute" (P ≥ 75, > Q3), "Moyenne" (P26-74, centre NS 3-4), "Zone de fragilité" (P10-25, **Q1 = P25 inclus** — zone à surveiller Exalang), "Difficulté" (P5-9, seuil pathologique consensuel P10), "Difficulté sévère" (< P5, seuil strict -1,65 σ)
+   - \`epreuves[i].commentaire\` — commentaire CLINIQUE DÉDIÉ par épreuve.
+     **OBLIGATOIRE pour chaque épreuve dont \`percentile_value < 50\`** (épreuves "en dessous de la médiane", dans le rouge). 2-3 phrases (≈ 30-50 mots) qui décrivent qualitativement la performance et son retentissement fonctionnel concret (en classe, en lecture, en compréhension, etc.). Ces paragraphes sont rendus dans le CRBO final juste après le tableau du domaine, sous la forme « **Nom épreuve** — commentaire » (un paragraphe par épreuve déficitaire). Pour les épreuves dont \`percentile_value >= 50\`, laisser \`commentaire\` vide (\`""\`) — elles sont déjà couvertes par le commentaire global du domaine.
+
    - \`commentaire\` clinique par domaine : **3-4 lignes max, concis et percutants** (≈ 40-70 mots). Phrases rédigées et fluides.
 
      ⚠️ **Règles cliniques absolues** sur ce commentaire :

@@ -58,10 +58,13 @@ const EPREUVE_SCHEMA = {
     commentaire: {
       type: 'string' as const,
       description:
-        "Commentaire clinique pour cette épreuve spécifique (3-4 lignes max). " +
-        "Utilisé pour les tests où le commentaire est par ÉPREUVE et pas par domaine — " +
-        "typiquement MoCA, où chaque domaine cognitif mérite son propre paragraphe " +
-        "clinique. Vide ('') si non applicable.",
+        "Commentaire clinique DÉDIÉ pour cette épreuve spécifique (2-3 phrases, ≈ 30-50 mots). " +
+        "**OBLIGATOIRE si percentile_value < 50** (épreuve 'dans le rouge', en dessous de la médiane) — " +
+        "le commentaire décrit qualitativement la performance et son retentissement fonctionnel concret " +
+        "(en classe, en lecture, en compréhension). Rendu dans le CRBO sous la forme " +
+        "« **Nom épreuve** — commentaire » juste après le tableau du domaine. " +
+        "Pour MoCA (scoring hiérarchique), utilisé pour chaque domaine cognitif. " +
+        "Vide ('') pour les épreuves avec percentile_value >= 50 (couvertes par le commentaire de domaine).",
     },
   },
 }
@@ -332,9 +335,12 @@ export interface CRBOEpreuve {
    */
   sous_epreuves?: { nom: string; score: string }[]
   /**
-   * Commentaire clinique par épreuve (MoCA — un commentaire par domaine
-   * cognitif). Optionnel ; pour les autres tests, le commentaire reste au
-   * niveau du domaine via CRBODomain.commentaire.
+   * Commentaire clinique DÉDIÉ par épreuve. Rempli par l'IA pour :
+   *  - chaque épreuve avec `percentile_value < 50` ("dans le rouge") —
+   *    rendu sous forme de paragraphe « **Nom épreuve** — commentaire »
+   *    juste après le tableau du domaine (Word + PDF + preview UI) ;
+   *  - chaque domaine cognitif MoCA (scoring hiérarchique).
+   * Vide pour les épreuves >= P50 (couvertes par le commentaire de domaine).
    */
   commentaire?: string
 }
