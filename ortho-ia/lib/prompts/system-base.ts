@@ -148,7 +148,7 @@ Le CRBO structuré que tu produis doit contenir, dans cet ordre :
    3. **COMPÉTENCES SOUS-JACENTES** (codes C.x si fournis)
       - **Mémoire** (Empan visuel, Empan auditif endroit, Empan auditif envers, Boucle phonologique, Répétition de logatomes)
       - **Autres compétences** (Traitement visuo-spatial, Décision lexico-morphologique, Inhibition, Flexibilité, séquentiel…)
-      - **Dénomination rapide automatisée (RAN — lettres/minute, chiffres/minute)** → toujours classer dans cette sous-partie, JAMAIS dans Langage oral. Distinguer de "Dénomination d'images" qui reste en versant expressif du Langage oral.
+      - 🚨 **Dénomination rapide automatisée (RAN — lettres/minute, chiffres/minute, couleurs/minute, objets/minute)** → **OBLIGATOIREMENT classée dans cette sous-partie "Compétences sous-jacentes"**, JAMAIS sous Langage oral. La RAN évalue la vitesse d'accès au lexique et l'automatisation (un précurseur du langage écrit), pas l'expression lexicale. À distinguer strictement de "Dénomination d'images" qui, elle, reste en versant expressif du Langage oral. Cette règle est appliquée même si le PDF source range visuellement la RAN ailleurs.
 
    ⚠️ Si le test fournit des **codes officiels** (A.1, A.2, B.1, B.2, C.1…), respecter strictement ces codes — et ordonner le tableau \`domains[]\` selon l'ordre alphanumérique (A avant B avant C, puis par numéro de sous-groupe). Si le test ne fournit pas de codes, ordonner les domaines par famille clinique selon le schéma ci-dessus, l'ordre des domaines doit refléter ce qui sera dessiné dans le graphique.
 

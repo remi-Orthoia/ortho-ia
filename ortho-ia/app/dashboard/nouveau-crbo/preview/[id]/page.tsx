@@ -39,6 +39,7 @@ import {
 import { createClient } from '@/lib/supabase'
 import type { CRBOStructure, CRBODomain } from '@/lib/prompts'
 import { SEUILS, seuilFor, getPercentileColor, formatPercentileForDisplay } from '@/lib/word-export'
+import { classifyEpreuveFamily, FAMILY_LABEL, FAMILY_ORDER, type FamilyKey } from '@/lib/chart'
 import { applyVocabToObject } from '@/lib/vocab-perso'
 import { applyGlossaireToObject } from '@/lib/glossaire'
 
@@ -216,34 +217,40 @@ function SectionEditor({
   const isEdited = value.trim() !== originalValue.trim()
   const isEmpty = !value.trim()
 
+  // Mode compact : pas de barre titre/icône (utilisé pour les commentaires par
+  // épreuve, où le nom de l'épreuve est déjà affiché au-dessus par le parent).
+  const compact = !title
+
   return (
     <section id={id} className="scroll-mt-24">
-      <div className="flex items-center justify-between gap-2 mb-2">
-        <h3 className="text-base font-bold text-primary-700 flex items-center gap-2">
-          {icon}
-          {title}
-          <EditedBadge shown={isEdited} />
-        </h3>
-        <div className="flex items-center gap-1.5">
-          {onRegenerate && (
+      {!compact && (
+        <div className="flex items-center justify-between gap-2 mb-2">
+          <h3 className="text-base font-bold text-primary-700 flex items-center gap-2">
+            {icon}
+            {title}
+            <EditedBadge shown={isEdited} />
+          </h3>
+          <div className="flex items-center gap-1.5">
+            {onRegenerate && (
+              <button
+                type="button"
+                onClick={() => onRegenerate(value)}
+                className="text-xs text-gray-500 hover:text-purple-600 inline-flex items-center gap-1 px-2 py-1 rounded hover:bg-purple-50 transition"
+                title="Régénérer cette section avec une instruction libre"
+              >
+                <RefreshCw size={12} /> Régénérer
+              </button>
+            )}
             <button
               type="button"
-              onClick={() => onRegenerate(value)}
-              className="text-xs text-gray-500 hover:text-purple-600 inline-flex items-center gap-1 px-2 py-1 rounded hover:bg-purple-50 transition"
-              title="Régénérer cette section avec une instruction libre"
+              onClick={() => editing ? (flushSave(), setEditing(false)) : setEditing(true)}
+              className="text-xs text-gray-500 hover:text-primary-600 inline-flex items-center gap-1 px-2 py-1 rounded hover:bg-gray-50"
             >
-              <RefreshCw size={12} /> Régénérer
+              {editing ? <><Eye size={12} /> Aperçu</> : <><Edit3 size={12} /> Éditer</>}
             </button>
-          )}
-          <button
-            type="button"
-            onClick={() => editing ? (flushSave(), setEditing(false)) : setEditing(true)}
-            className="text-xs text-gray-500 hover:text-primary-600 inline-flex items-center gap-1 px-2 py-1 rounded hover:bg-gray-50"
-          >
-            {editing ? <><Eye size={12} /> Aperçu</> : <><Edit3 size={12} /> Éditer</>}
-          </button>
+          </div>
         </div>
-      </div>
+      )}
 
       {editing ? (
         <textarea
@@ -924,25 +931,101 @@ export default function CRBOPreviewPage() {
                   </span>
                 ))}
               </div>
-              <div className="space-y-5">
-                {structure.domains.map((d, i) => (
-                  <div key={i} id={`sec-domain-${i}`} className="scroll-mt-24 card-modern p-4">
-                    <h3 className="font-bold text-primary-700 text-base mb-3">{d.nom}</h3>
-                    <DomainTable domain={d} />
-                    <div className="mt-3">
-                      <SectionEditor
-                        id={`sec-domain-${i}-comment`}
-                        title="Commentaire clinique"
-                        fieldPath={`domains.${i}.commentaire`}
-                        initialValue={d.commentaire || ''}
-                        onSave={handleSave}
-                        placeholder="Commentaire clinique pour ce domaine (observations, hypothèses, croisements)…"
-                        helperText="Texte affiché sous le tableau dans le Word."
-                      />
-                    </div>
+              {/* Bilan détaillé — groupé par famille (Langage oral / écrit /
+                  Compétences sous-jacentes), à l'image des sous-groupes du
+                  graphique. L'ordre des épreuves au sein de chaque domaine
+                  est conservé. Les textareas de commentaire par épreuve
+                  apparaissent sous chaque tableau de domaine (un commentaire
+                  IA pré-rempli pour les épreuves en dessous de la médiane). */}
+              {(() => {
+                // Bucket domains par famille en preservant l'ordre original.
+                const byFamily: Record<FamilyKey, Array<{ d: CRBODomain; i: number }>> = {
+                  oral: [], ecrit: [], sub: [],
+                }
+                structure.domains.forEach((d, i) => {
+                  // Classification au niveau domaine + correction RAN au niveau
+                  // épreuve : si toutes les épreuves d'un domaine sont des RAN
+                  // (rare), on le bascule en 'sub'. Sinon on garde la classification
+                  // du domaine. Les épreuves "Dénomination rapide" isolées dans
+                  // un domaine Langage oral seront repérées par classifyEpreuveFamily
+                  // au moment des commentaires par épreuve plus bas.
+                  const fams = d.epreuves.map(e => classifyEpreuveFamily(e.nom, d.nom))
+                  // Vote majoritaire (le domain entier va dans la famille la plus
+                  // représentée parmi ses épreuves).
+                  const counts: Record<FamilyKey, number> = { oral: 0, ecrit: 0, sub: 0 }
+                  for (const f of fams) counts[f]++
+                  const fam = (Object.keys(counts) as FamilyKey[])
+                    .reduce((a, b) => counts[b] > counts[a] ? b : a, 'oral' as FamilyKey)
+                  byFamily[fam].push({ d, i })
+                })
+                return (
+                  <div className="space-y-8">
+                    {FAMILY_ORDER.map(fk => byFamily[fk].length === 0 ? null : (
+                      <section key={fk} className="space-y-5">
+                        <h3 className="text-base font-bold text-gray-700 uppercase tracking-wider border-b border-gray-200 pb-2">
+                          {FAMILY_LABEL[fk]}
+                        </h3>
+                        {byFamily[fk].map(({ d, i }) => (
+                          <div key={i} id={`sec-domain-${i}`} className="scroll-mt-24 card-modern p-4">
+                            <h4 className="font-bold text-primary-700 text-base mb-3">{d.nom}</h4>
+                            <DomainTable domain={d} />
+                            <div className="mt-3">
+                              <SectionEditor
+                                id={`sec-domain-${i}-comment`}
+                                title="Commentaire clinique du domaine"
+                                fieldPath={`domains.${i}.commentaire`}
+                                initialValue={d.commentaire || ''}
+                                onSave={handleSave}
+                                placeholder="Commentaire clinique pour ce domaine (observations, hypothèses, croisements)…"
+                                helperText="Texte affiché sous le tableau dans le Word."
+                              />
+                            </div>
+
+                            {/* Commentaires par épreuve — ordre conservé, un
+                                champ par épreuve. Pré-rempli par l'IA pour les
+                                épreuves en dessous de la médiane (P<50). */}
+                            {d.epreuves.length > 0 && (
+                              <div className="mt-4 pt-4 border-t border-gray-100">
+                                <p className="text-xs font-semibold uppercase tracking-wider text-gray-500 mb-3">
+                                  Commentaires par épreuve
+                                </p>
+                                <div className="space-y-3">
+                                  {d.epreuves.map((e, j) => {
+                                    const seuil = seuilFor(e.percentile_value)
+                                    return (
+                                      <div key={j} className="rounded-lg border border-gray-100 p-3 bg-gray-50/50">
+                                        <div className="flex items-center justify-between gap-2 mb-2">
+                                          <span className="text-sm font-medium text-gray-800">{e.nom}</span>
+                                          <span
+                                            className="inline-flex items-center px-2 py-0.5 rounded text-xs font-semibold"
+                                            style={{ backgroundColor: '#' + seuil.shading, color: seuil.textColor ? '#' + seuil.textColor : '#000' }}
+                                          >
+                                            {seuil.label} ({formatPercentileForDisplay(e.percentile, e.percentile_value)})
+                                          </span>
+                                        </div>
+                                        <SectionEditor
+                                          id={`sec-domain-${i}-epreuve-${j}-comment`}
+                                          title=""
+                                          fieldPath={`domains.${i}.epreuves.${j}.commentaire`}
+                                          initialValue={e.commentaire || ''}
+                                          onSave={handleSave}
+                                          placeholder={e.percentile_value < 50
+                                            ? 'Commentaire qualitatif + retentissement fonctionnel concret…'
+                                            : '(Optionnel) Notes complémentaires sur cette épreuve…'}
+                                        />
+                                      </div>
+                                    )
+                                  })}
+                                </div>
+                              </div>
+                            )}
+                          </div>
+                        ))}
+                      </section>
+                    ))}
                   </div>
-                ))}
-              </div>
+                )
+              })()}
             </div>
           )}
 

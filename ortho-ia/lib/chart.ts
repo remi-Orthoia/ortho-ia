@@ -80,7 +80,7 @@ export const FAMILY_LABEL: Record<FamilyKey, string> = {
   sub: 'Compétences sous-jacentes',
 }
 
-const FAMILY_ORDER: FamilyKey[] = ['oral', 'ecrit', 'sub']
+export const FAMILY_ORDER: FamilyKey[] = ['oral', 'ecrit', 'sub']
 
 export function classifyFamily(domainName: string | null | undefined): FamilyKey {
   // Garde-fou : un domaine null/undefined (CRBO legacy mal formé) ne doit pas
@@ -103,6 +103,32 @@ export function classifyFamily(domainName: string | null | undefined): FamilyKey
     return 'ecrit'
   }
   return 'oral'
+}
+
+/**
+ * Classifie une épreuve dans une famille en regardant **d'abord son nom**
+ * puis le nom du domaine parent en fallback. Permet de corriger les
+ * mauvais classements de l'IA — typiquement "Dénomination rapide
+ * automatisée" qui est parfois placée par l'IA sous "Langage oral"
+ * alors qu'elle relève des compétences sous-jacentes (RAN).
+ */
+export function classifyEpreuveFamily(
+  epreuveName: string | null | undefined,
+  domainName: string | null | undefined,
+): FamilyKey {
+  const ep = (epreuveName ?? '').toLowerCase().trim()
+  // RAN / dénomination rapide → toujours sous-jacentes, quel que soit le domaine.
+  // Note : "dénomination d'images" reste en langage oral (on ne matche pas
+  // "dénomination" seul).
+  if (/d[ée]nomination\s+(?:rapide|automatis[ée]e)|\bran\b|rapid\s+automatized\s+naming/.test(ep)) {
+    return 'sub'
+  }
+  // Mémoire / empan / boucle phono / visuo / attention → sous-jacentes.
+  if (/m[ée]moire|empan|boucle\s*phon|visuo|attention|inhibition|flexibilit[ée]|s[ée]quentiel/.test(ep)) {
+    return 'sub'
+  }
+  // Sinon, fallback sur la classification au niveau du domaine.
+  return classifyFamily(domainName)
 }
 
 // --------------------- Données du chart ---------------------
