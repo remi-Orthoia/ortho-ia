@@ -221,14 +221,25 @@ Le CRBO structuré que tu produis doit contenir, dans cet ordre :
    - **Catégories autorisées** : Temps, Outils numériques, Présentation des supports, Évaluations, Pédagogie, Environnement, Oral.
    - ⚠️ **Restez GÉNÉRAL** : ne nomme JAMAIS de polices spécifiques (pas de "OpenDyslexic", "Arial 14"…), ni de logiciels nominatifs (pas de "Voice Dream", "NaturalReader"…), ni de marques d'outils numériques. L'orthophoniste choisit elle-même les outils précis avec la famille.
    - **Exemples** (formulations génériques attendues) :
-     - \`"Temps : temps majoré aux évaluations écrites"\`
+     - \`"Temps : temps majoré aux évaluations écrites, et/ou réduire la quantité de données à traiter sur le temps imparti"\`
      - \`"Outils numériques : recours à un outil numérique en classe si besoin"\`
      - \`"Présentation des supports : supports adaptés (police lisible, interligne aéré)"\`
      - \`"Évaluations : tolérance orthographique hors cours de français"\`
      - \`"Pédagogie : consignes reformulées et segmentées"\`
      - \`"Environnement : place préférentielle au calme"\`
      - \`"Oral : restitution orale autorisée si l'écrit est trop coûteux"\`
+     - \`"Valorisation : valoriser et féliciter régulièrement les efforts fournis, mettre en avant les progrès pour soutenir l'estime de soi et la motivation"\`
    - **Liste compacte priorisée** : **MAXIMUM 6 entrées** (1 par grande catégorie). Adapter au profil — ne pas systématiquement remplir les 6 si non pertinent.
+
+   - ⚠️ **Règle "Temps" — formulation imposée** : à chaque fois que tu proposes un aménagement de type "accorder plus de temps" / "temps majoré" / "tiers-temps", la description **DOIT** inclure la mention **"et/ou réduire la quantité de données à traiter sur le temps imparti"**. C'est une alternative équivalente quand le temps majoré n'est pas possible (organisation de classe, examens chronométrés…).
+     - ✅ \`"Temps : temps majoré aux évaluations écrites, et/ou réduire la quantité de données à traiter sur le temps imparti"\`
+     - ❌ \`"Temps : temps majoré aux évaluations écrites"\` (mention manquante)
+
+   - ⚠️ **Règle "Valorisation" — TOUJOURS présent** : la liste \`pap_suggestions\` **DOIT** systématiquement contenir une recommandation sur l'aspect psychologique / l'estime de soi de l'enfant. Catégorie dédiée : **"Valorisation"**. Cet aménagement vise à protéger la confiance de l'enfant face à ses difficultés.
+     - Format attendu : \`"Valorisation : [verbe à l'infinitif valoriser/féliciter/encourager] [contexte concret]"\`
+     - Exemples : \`"Valorisation : valoriser et féliciter régulièrement les efforts fournis, mettre en avant les progrès pour soutenir l'estime de soi et la motivation"\`, \`"Valorisation : encourager les prises de parole et féliciter les réussites partielles, en évitant de pointer publiquement les erreurs"\`
+     - Cet item compte dans le maximum de 6. Si tu en as déjà 6 utiles, déprioriser un autre item pour faire de la place à "Valorisation".
+
    - Ne mets jamais un aménagement sans sa catégorie suivie de " : " devant.
 
 9bis. \`reasoning_clinical\` — **OBLIGATOIRE pour toute synthèse**. Objet structuré avec :
@@ -486,14 +497,19 @@ Tableau de 3-4 axes thérapeutiques (1 ligne chacun, sans détail sur les exerci
 - ✅ 1 phrase par item, qui DÉMARRE par un verbe à l'infinitif (Accorder, Réduire, Ne pas pénaliser, Favoriser, Privilégier, Proposer, Autoriser…).
 
 **Exemples exacts attendus** (style Laurie) :
-- "Accorder du temps supplémentaire pour les tâches de lecture et de production écrite."
+- "Accorder du temps supplémentaire pour les tâches de lecture et de production écrite, et/ou réduire la quantité de données à traiter sur le temps imparti."
 - "Réduire la quantité d'écrit lorsque l'objectif évalué ne porte pas sur la copie ou l'orthographe."
 - "Ne pas pénaliser les erreurs d'orthographe lorsque l'évaluation porte sur une autre compétence."
 - "Favoriser les évaluations aménagées : temps majoré, dictée à trous, choix multiples, réponses orales."
 - "Privilégier des consignes courtes, segmentées et reformulées si besoin."
 - "Proposer une place préférentielle au calme."
+- "Valoriser et féliciter régulièrement les efforts fournis et les progrès accomplis pour soutenir l'estime de soi et la motivation."
 
 Adapter à 4-10 items selon le profil clinique. Pas de remplissage forcé.
+
+⚠️ **Règles imposées (refonte 2026-05)** :
+- À chaque mention de "temps supplémentaire", "temps majoré", "tiers-temps" : **ajouter systématiquement** "et/ou réduire la quantité de données à traiter sur le temps imparti" dans la même phrase. C'est une alternative équivalente quand le temps majoré n'est pas possible.
+- **TOUJOURS inclure UN item de valorisation psychologique** (estime de soi, valorisation/félicitation des efforts). Cet item compte dans le maximum.
 
 ## \`conclusion\`
 

@@ -198,8 +198,11 @@ export const SYNTHESIZE_TOOL: Anthropic.Tool = {
       pap_suggestions: {
         type: 'array',
         description:
-          "Maximum 6 aménagements scolaires, 1 par grande catégorie. Format OBLIGATOIRE : 'Catégorie : description concrète' (la catégorie + ' : ' + description, sans markdown ni tiret cadratin). Catégories autorisées : Temps, Évaluations, Outils numériques, Pédagogie, Environnement, Oral. " +
-          "Adapter au profil — ne pas systématiquement remplir les 6. Restez généraux : pas de polices ni logiciels nominatifs.",
+          "Maximum 6 aménagements scolaires, 1 par grande catégorie. Format OBLIGATOIRE : 'Catégorie : description concrète' (la catégorie + ' : ' + description, sans markdown ni tiret cadratin). Catégories autorisées : Temps, Évaluations, Outils numériques, Pédagogie, Environnement, Oral, Valorisation. " +
+          "Adapter au profil — ne pas systématiquement remplir les 6. Restez généraux : pas de polices ni logiciels nominatifs. " +
+          "RÈGLE TEMPS : toute mention de 'temps majoré' / 'tiers-temps' / 'temps supplémentaire' DOIT inclure dans la même phrase 'et/ou réduire la quantité de données à traiter sur le temps imparti' (alternative équivalente). " +
+          "RÈGLE VALORISATION : TOUJOURS inclure un item de catégorie 'Valorisation' sur l'estime de soi — valoriser/féliciter les efforts et les progrès pour soutenir la motivation. " +
+          "Exemples : 'Temps : temps majoré aux évaluations écrites, et/ou réduire la quantité de données à traiter sur le temps imparti', 'Valorisation : valoriser et féliciter régulièrement les efforts fournis, mettre en avant les progrès pour soutenir l'estime de soi et la motivation'.",
         items: { type: 'string' },
       },
       conclusion: {
