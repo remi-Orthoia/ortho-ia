@@ -216,9 +216,9 @@ export const SYNTHESIZE_TOOL: Anthropic.Tool = {
           resume: {
             type: 'string',
             description:
-              "Phrase de synthèse INTRODUCTIVE COURTE (1 à 3 phrases, ~30-80 mots) qui caractérise globalement l'évolution depuis le bilan précédent. " +
-              "Ex : 'Le bilan de contrôle met en évidence une évolution globalement favorable, avec une consolidation marquée sur le langage écrit et une stabilisation des compétences phonologiques. Quelques fragilités persistent en orthographe lexicale.' " +
-              "PAS de chiffres de percentile, PAS de mention de rééducation passée. Les détails ligne-par-ligne sont rendus dans les listes domaines_progres / stagnation / regression, pas dans le résumé.",
+              "UNE SEULE phrase introductive TRÈS COURTE (10-25 mots max) qui caractérise globalement l'évolution depuis le bilan précédent. " +
+              "Ex : 'Le bilan de contrôle met en évidence une évolution globalement favorable.' ou 'Évolution mitigée, avec des progrès en lecture mais une stagnation persistante en orthographe.' " +
+              "INTERDIT : plus d'une phrase, chiffres de percentile, mention de rééducation passée. Les détails ligne-par-ligne vont dans les listes domaines_progres / stagnation / regression — le résumé est juste une accroche.",
           },
           domaines_progres: {
             type: 'array',
