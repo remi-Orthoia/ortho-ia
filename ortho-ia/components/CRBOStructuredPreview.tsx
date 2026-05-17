@@ -219,27 +219,40 @@ export default function CRBOStructuredPreview({ structure, onDownload, onEdit, o
         </div>
       )}
 
-      {/* Synthèse d'évolution */}
+      {/* Synthèse d'évolution — format Laurie 2026-05 :
+          phrase introductive + 3 listes bullets (Progrès / Stagnation / Régression). */}
       {structure.synthese_evolution && (
         <Section title="Synthèse d'évolution" color="purple">
           <RichText text={structure.synthese_evolution.resume} />
-          <div className="grid sm:grid-cols-3 gap-3 text-sm">
+          <div className="mt-4 space-y-4">
             {structure.synthese_evolution.domaines_progres?.length > 0 && (
-              <div className="p-3 rounded-lg bg-green-50 dark:bg-green-900/20 border border-green-200 dark:border-green-800/40">
-                <p className="text-xs uppercase tracking-wider font-bold text-green-700 dark:text-green-400 mb-1">✓ Progrès</p>
-                <p className="text-gray-800 dark:text-gray-200">{structure.synthese_evolution.domaines_progres.join(', ')}</p>
+              <div>
+                <p className="text-xs uppercase tracking-wider font-bold text-green-700 dark:text-green-400 mb-2">✓ Progrès</p>
+                <ul className="space-y-1 list-disc list-inside text-sm text-gray-800 dark:text-gray-200">
+                  {structure.synthese_evolution.domaines_progres.filter(d => d?.trim()).map((d, i) => (
+                    <li key={i}>{d.trim()}</li>
+                  ))}
+                </ul>
               </div>
             )}
             {structure.synthese_evolution.domaines_stagnation?.length > 0 && (
-              <div className="p-3 rounded-lg bg-gray-50 dark:bg-surface-dark-muted/30 border border-gray-200 dark:border-surface-dark-muted">
-                <p className="text-xs uppercase tracking-wider font-bold text-gray-600 dark:text-gray-400 mb-1">= Stagnation</p>
-                <p className="text-gray-800 dark:text-gray-200">{structure.synthese_evolution.domaines_stagnation.join(', ')}</p>
+              <div>
+                <p className="text-xs uppercase tracking-wider font-bold text-gray-600 dark:text-gray-400 mb-2">= Stagnation</p>
+                <ul className="space-y-1 list-disc list-inside text-sm text-gray-800 dark:text-gray-200">
+                  {structure.synthese_evolution.domaines_stagnation.filter(d => d?.trim()).map((d, i) => (
+                    <li key={i}>{d.trim()}</li>
+                  ))}
+                </ul>
               </div>
             )}
             {structure.synthese_evolution.domaines_regression?.length > 0 && (
-              <div className="p-3 rounded-lg bg-red-50 dark:bg-red-900/20 border border-red-200 dark:border-red-800/40">
-                <p className="text-xs uppercase tracking-wider font-bold text-red-700 dark:text-red-400 mb-1">↓ Régression</p>
-                <p className="text-gray-800 dark:text-gray-200">{structure.synthese_evolution.domaines_regression.join(', ')}</p>
+              <div>
+                <p className="text-xs uppercase tracking-wider font-bold text-red-700 dark:text-red-400 mb-2">↓ Régression</p>
+                <ul className="space-y-1 list-disc list-inside text-sm text-gray-800 dark:text-gray-200">
+                  {structure.synthese_evolution.domaines_regression.filter(d => d?.trim()).map((d, i) => (
+                    <li key={i}>{d.trim()}</li>
+                  ))}
+                </ul>
               </div>
             )}
           </div>

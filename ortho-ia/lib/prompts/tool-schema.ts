@@ -213,10 +213,34 @@ export const SYNTHESIZE_TOOL: Anthropic.Tool = {
         type: ['object', 'null'],
         description: "Section comparative UNIQUEMENT pour les bilans de renouvellement, null pour les bilans initiaux.",
         properties: {
-          resume: { type: 'string', description: "Synthèse narrative de l'évolution depuis le dernier bilan (100-300 mots)." },
-          domaines_progres: { type: 'array', items: { type: 'string' } },
-          domaines_stagnation: { type: 'array', items: { type: 'string' } },
-          domaines_regression: { type: 'array', items: { type: 'string' } },
+          resume: {
+            type: 'string',
+            description:
+              "Phrase de synthèse INTRODUCTIVE COURTE (1 à 3 phrases, ~30-80 mots) qui caractérise globalement l'évolution depuis le bilan précédent. " +
+              "Ex : 'Le bilan de contrôle met en évidence une évolution globalement favorable, avec une consolidation marquée sur le langage écrit et une stabilisation des compétences phonologiques. Quelques fragilités persistent en orthographe lexicale.' " +
+              "PAS de chiffres de percentile, PAS de mention de rééducation passée. Les détails ligne-par-ligne sont rendus dans les listes domaines_progres / stagnation / regression, pas dans le résumé.",
+          },
+          domaines_progres: {
+            type: 'array',
+            items: { type: 'string' },
+            description:
+              "Liste de bullets COURTS (5-15 mots chacun) — un item par épreuve / domaine en progrès depuis le bilan précédent. " +
+              "Ex : 'Boucle phonologique : passage de difficulté sévère à zone de fragilité'. Vide [] si aucun progrès objectif.",
+          },
+          domaines_stagnation: {
+            type: 'array',
+            items: { type: 'string' },
+            description:
+              "Liste de bullets COURTS (5-15 mots chacun) — un item par épreuve / domaine qui stagne (même niveau d'interprétation qu'au bilan précédent). " +
+              "Ex : 'Orthographe lexicale : maintien des erreurs phonologiquement plausibles'. Vide [] si aucune stagnation à signaler.",
+          },
+          domaines_regression: {
+            type: 'array',
+            items: { type: 'string' },
+            description:
+              "Liste de bullets COURTS (5-15 mots chacun) — un item par épreuve / domaine en régression. " +
+              "Ex : 'Empan auditif : passage de moyenne à zone de fragilité'. Vide [] si aucune régression.",
+          },
         },
       },
       reasoning_clinical: {

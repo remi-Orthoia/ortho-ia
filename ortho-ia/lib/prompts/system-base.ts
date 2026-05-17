@@ -259,7 +259,8 @@ Le CRBO structuré que tu produis doit contenir, dans cet ordre :
    - Un progrès = gain de +1 É-T ou de +1 catégorie d'interprétation (ex : Difficulté → Fragilité).
    - Une régression = perte de -1 É-T ou -1 catégorie.
    - Stagnation = même niveau d'interprétation.
-   - Dans le \`resume\` (100-300 mots) : décrire l'évolution clinique sans mention de chiffres de percentile, sans mention de la rééducation passée (acquisitions consolidées, axes émergents).
+   - \`resume\` : **phrase de synthèse INTRODUCTIVE COURTE** (1 à 3 phrases, ~30-80 mots — refonte 2026-05) qui caractérise globalement l'évolution depuis le bilan précédent (ex : "Le bilan de contrôle met en évidence une évolution globalement favorable, avec une consolidation marquée sur le langage écrit et une stabilisation des compétences phonologiques. Quelques fragilités persistent en orthographe lexicale."). PAS de chiffres de percentile, PAS de mention de rééducation passée. Les détails ligne-par-ligne sont rendus dans les bullets \`domaines_progres\` / \`domaines_stagnation\` / \`domaines_regression\` ci-dessous, pas dans le résumé.
+   - \`domaines_progres\`, \`domaines_stagnation\`, \`domaines_regression\` : **listes de bullets COURTS** (1 ligne par item, formulation clinique, ≈ 5-15 mots). Chaque item nomme une épreuve / un domaine évolutif (ex : "Boucle phonologique : passage de difficulté sévère à zone de fragilité", "Lecture de mots : automatisation marquée", "Orthographe lexicale : stagnation des erreurs phonologiquement plausibles"). Les listes sont affichées en bullets dans le CRBO final — laisser vide \`[]\` si aucun item dans la catégorie.
 
 10. \`conclusion\` — phrase médico-légale standard : "Compte rendu remis en main propre à l'assuré(e) pour servir et faire valoir ce que de droit. (Copie au médecin prescripteur)."
 

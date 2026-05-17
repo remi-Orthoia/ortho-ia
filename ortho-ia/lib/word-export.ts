@@ -1222,38 +1222,36 @@ export async function generateCRBOWord(payload: WordExportPayload): Promise<Blob
     }
 
     // Synthèse d'évolution (renouvellement)
+    // Format imposé Laurie 2026-05 : phrase de synthèse introductive (resume,
+    // 1-3 phrases) puis 3 listes de bullets — Progrès / Stagnation /
+    // Régression — affichées uniquement si non vides.
     if (s.synthese_evolution) {
       children.push(new Paragraph({
         children: [new TextRun({ text: "Synthèse d'évolution", bold: true, size: FONT_SIZE_NORMAL, font: FONT, color: '6A1B9A' })],
         spacing: { before: 240, after: 80 },
       }))
       renderRichContent(s.synthese_evolution.resume)
-      if (s.synthese_evolution.domaines_progres?.length) {
+
+      const evolGroups: Array<{ label: string; items?: string[]; color: string }> = [
+        { label: 'Progrès',    items: s.synthese_evolution.domaines_progres,    color: '1B5E20' },
+        { label: 'Stagnation', items: s.synthese_evolution.domaines_stagnation, color: '616161' },
+        { label: 'Régression', items: s.synthese_evolution.domaines_regression, color: 'C62828' },
+      ]
+      for (const g of evolGroups) {
+        if (!g.items?.length) continue
         children.push(new Paragraph({
-          children: [
-            new TextRun({ text: 'Progrès : ', bold: true, size: FONT_SIZE_NORMAL, font: FONT, color: '1B5E20' }),
-            new TextRun({ text: s.synthese_evolution.domaines_progres.join(', '), size: FONT_SIZE_NORMAL, font: FONT }),
-          ],
-          spacing: { after: 40 },
+          children: [new TextRun({ text: g.label, bold: true, size: FONT_SIZE_NORMAL, font: FONT, color: g.color })],
+          spacing: { before: 140, after: 60 },
         }))
-      }
-      if (s.synthese_evolution.domaines_stagnation?.length) {
-        children.push(new Paragraph({
-          children: [
-            new TextRun({ text: 'Stagnation : ', bold: true, size: FONT_SIZE_NORMAL, font: FONT, color: '616161' }),
-            new TextRun({ text: s.synthese_evolution.domaines_stagnation.join(', '), size: FONT_SIZE_NORMAL, font: FONT }),
-          ],
-          spacing: { after: 40 },
-        }))
-      }
-      if (s.synthese_evolution.domaines_regression?.length) {
-        children.push(new Paragraph({
-          children: [
-            new TextRun({ text: 'Régression : ', bold: true, size: FONT_SIZE_NORMAL, font: FONT, color: 'C62828' }),
-            new TextRun({ text: s.synthese_evolution.domaines_regression.join(', '), size: FONT_SIZE_NORMAL, font: FONT }),
-          ],
-          spacing: { after: 40 },
-        }))
+        for (const it of g.items) {
+          if (!it || !it.trim()) continue
+          children.push(new Paragraph({
+            alignment: AlignmentType.BOTH,
+            indent: { left: 360 },
+            spacing: { after: 40 },
+            children: [new TextRun({ text: `• ${it.trim()}`, size: FONT_SIZE_NORMAL, font: FONT })],
+          }))
+        }
       }
     }
 
