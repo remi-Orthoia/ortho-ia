@@ -71,7 +71,7 @@ const ARTICLES: Article[] = [
     body: (
       <>
         <p>
-          Nouveau bouton en haut du dashboard : <em>« Démarrer en vocal »</em>. Vous cliquez,
+          Nouveau bouton en haut du tableau de bord : <em>« Démarrer en vocal »</em>. Vous cliquez,
           vous dictez une phrase naturelle, et Whisper + Claude transforment ça en formulaire
           pré-rempli (prénom, classe, motif, test).
         </p>

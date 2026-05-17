@@ -111,7 +111,7 @@ const TIPS: Tip[] = [
     text: (
       <>
         Saviez-vous que vous pouvez <strong>dicter une commande</strong> pour démarrer un bilan ?
-        Cliquez sur <em>« Démarrer en vocal »</em> en haut du dashboard et dites <em>« Nouveau bilan
+        Cliquez sur <em>« Démarrer en vocal »</em> en haut du tableau de bord et dites <em>« Nouveau bilan
         Léa CE2, motif lenteur lecture, Exalang 8-11 »</em>, le formulaire se pré-remplit tout seul.
       </>
     ),
@@ -147,7 +147,7 @@ const TIPS: Tip[] = [
     minCrbo: 5,
     text: (
       <>
-        Connectez votre <strong>agenda Google</strong> au dashboard : vos prochains RDV s&apos;affichent et un
+        Connectez votre <strong>agenda Google</strong> au tableau de bord : vos prochains RDV s&apos;affichent et un
         bouton <em>« Démarrer »</em> apparaît à côté du patient matché dans votre carnet. Un clic, le
         bilan démarre.
       </>

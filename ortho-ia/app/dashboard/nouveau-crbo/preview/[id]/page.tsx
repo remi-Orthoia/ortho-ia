@@ -783,7 +783,7 @@ export default function CRBOPreviewPage() {
           {error || 'CRBO indisponible.'}
         </div>
         <Link href="/dashboard" className="mt-4 inline-flex items-center gap-2 text-sm text-primary-600 hover:underline">
-          <ArrowLeft size={14} /> Retour au dashboard
+          <ArrowLeft size={14} /> Retour au tableau de bord
         </Link>
       </div>
     )
@@ -1146,7 +1146,7 @@ export default function CRBOPreviewPage() {
                 }}
                 className="px-3 py-2 rounded-lg text-sm text-gray-700 hover:bg-gray-100"
               >
-                Non, retour au dashboard
+                Non, retour au tableau de bord
               </button>
               <button
                 onClick={() => {

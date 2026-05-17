@@ -81,7 +81,7 @@ export function renderBetaWelcome({
 
       <hr>
 
-      <p><strong>Ce que j'attends de vous :</strong> utilisez l'outil sur vos vrais bilans de la semaine, et dès que quelque chose vous surprend, freine ou ravit, dites-le moi. Le plus simple : bouton <strong>Feedback</strong> (pilule sage en bas à droite du dashboard), ou un simple mail à <a href="mailto:remi.berrio@gmail.com">remi.berrio@gmail.com</a>.</p>
+      <p><strong>Ce que j'attends de vous :</strong> utilisez l'outil sur vos vrais bilans de la semaine, et dès que quelque chose vous surprend, freine ou ravit, dites-le moi. Le plus simple : bouton <strong>Feedback</strong> (pilule sage en bas à droite du tableau de bord), ou un simple mail à <a href="mailto:remi.berrio@gmail.com">remi.berrio@gmail.com</a>.</p>
 
       <p>Les données patient sont <strong>anonymisées avant tout traitement automatique</strong>, et protégées par Row-Level Security sur la base. Pour le détail technique : <a href="${siteUrl}/confidentialite">notre politique de confidentialité</a>.</p>
 
@@ -116,7 +116,7 @@ Vos 3 premiers mois sont offerts, sans engagement, sans carte bancaire.
 
 CE QUE J'ATTENDS DE VOUS
 Utilisez l'outil sur vos vrais bilans de la semaine, et dès que quelque chose vous surprend, freine ou ravit, dites-le moi.
-- Bouton Feedback (pilule sage en bas à droite du dashboard)
+- Bouton Feedback (pilule sage en bas à droite du tableau de bord)
 - Ou email direct : remi.berrio@gmail.com
 
 Les données patient sont anonymisées avant tout traitement automatique, et protégées par Row-Level Security sur la base.

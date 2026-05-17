@@ -17,7 +17,8 @@ const EPREUVE_SCHEMA = {
     percentile: {
       type: 'string' as const,
       description:
-        'Notation percentile telle qu\'utilisée par le test (ex: "Q1 (P25)", "P10", "Med (P50)").',
+        'Notation percentile au format Px UNIQUEMENT (ex: "P25", "P10", "P50", "P75"). ' +
+        'JAMAIS "Q1", "Q3", "Med", "Med." — toujours convertir : Q1 → P25, Q3 → P75, Med → P50.',
     },
     percentile_value: {
       type: 'number' as const,
@@ -28,12 +29,15 @@ const EPREUVE_SCHEMA = {
     },
     interpretation: {
       type: 'string' as const,
-      enum: ['Excellent', 'Moyenne haute', 'Moyenne basse', 'Fragilité', 'Difficulté', 'Difficulté sévère'],
+      enum: ['Moyenne haute', 'Moyenne', 'Moyenne basse', 'Zone de fragilité', 'Difficulté', 'Difficulté sévère'],
       description:
-        "Interprétation clinique COURTE imposée par Laurie (étalonnage Happy Scribe) : " +
-        "'Excellent' pour P > 75 ; 'Moyenne haute' pour P51-P75 ; 'Moyenne basse' pour P26-P50 ; " +
-        "'Fragilité' pour P10-P25 (Q1 inclus, **PAS** moyenne basse) ; 'Difficulté' pour P6-P9 ; " +
-        "'Difficulté sévère' pour P ≤ 5.",
+        "Interprétation clinique COURTE — grille révisée 2026-05 imposée Laurie : " +
+        "'Moyenne haute' pour P ≥ 51 (couvre > P75 et P51-75, plus de 'Excellent') ; " +
+        "'Moyenne' pour P26-P50 ; " +
+        "'Moyenne basse' pour P10-P25 (Q1 = P25 inclus, plus en Fragilité) ; " +
+        "'Zone de fragilité' pour P5-P9 ; " +
+        "'Difficulté' pour P2-P4 ; " +
+        "'Difficulté sévère' pour < P2.",
     },
     sous_epreuves: {
       type: 'array' as const,

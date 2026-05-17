@@ -39,8 +39,6 @@ type Verdict = 'N' | 'P' | ''
 interface EpreuveState {
   score: string         // /54
   temps: string         // secondes (total épreuve)
-  verdictScore: Verdict
-  verdictTemps: Verdict
   observation: string
 }
 
@@ -49,10 +47,33 @@ interface BetlState {
   nsc: NSC | ''
   epreuves: Record<EpreuveKey, EpreuveState>
   scoreOrthoVII: string         // VII a un score orthographique /54 séparé du score lexical
-  verdictOrthoVII: Verdict
   ebaucheOrale: 'efficace' | 'inefficace' | 'non-testee' | ''
   comportements: string         // analyse qualitative Annexe 1
   profilDiscours: string        // Annexe 2
+}
+
+/**
+ * Calcul automatique du verdict N/P à partir du score saisi par l'ortho et
+ * du seuil officiel (matrice Annexe 3 du manuel BETL 2015).
+ *
+ * Refonte 2026-05 : suppression des boutons manuels "Verdict logiciel" —
+ * l'app calcule désormais le verdict elle-même à partir des matrices déjà
+ * en mémoire dans EPREUVES[].seuilScoreP5 / seuilTempsP95 et de la
+ * stratification (tranche d'âge × NSC) renseignée en tête de formulaire.
+ *
+ * Règles :
+ *  - Score : valeur < seuil P5 du groupe → pathologique. ≥ seuil → normal.
+ *  - Temps : valeur > seuil P95 du groupe → pathologique. ≤ seuil → normal.
+ *  - Saisie vide ou invalide → verdict vide (pas affiché).
+ */
+function computeVerdict(rawValue: string, seuil: number, mode: 'score' | 'temps'): Verdict {
+  const trimmed = (rawValue || '').trim()
+  if (!trimmed) return ''
+  const n = parseFloat(trimmed.replace(',', '.'))
+  if (isNaN(n)) return ''
+  if (mode === 'score') return n < seuil ? 'P' : 'N'
+  // mode === 'temps' : > seuil = pathologique
+  return n > seuil ? 'P' : 'N'
 }
 
 /**
@@ -349,7 +370,7 @@ const EPREUVES: EpreuveMeta[] = [
 ]
 
 const EMPTY_EPREUVE: EpreuveState = {
-  score: '', temps: '', verdictScore: '', verdictTemps: '', observation: '',
+  score: '', temps: '', observation: '',
 }
 
 const INITIAL_STATE: BetlState = {
@@ -361,7 +382,6 @@ const INITIAL_STATE: BetlState = {
     VII: { ...EMPTY_EPREUVE }, VIII: { ...EMPTY_EPREUVE },
   },
   scoreOrthoVII: '',
-  verdictOrthoVII: '',
   ebaucheOrale: '',
   comportements: '',
   profilDiscours: '',
@@ -441,9 +461,12 @@ export default function BetlScoresInput({ notes, onNotesChange, onResultatsChang
       const tempsNum = e.temps.trim() ? parseInt(e.temps.trim(), 10) : null
       const sScore = seuilScore(meta)
       const sTemps = seuilTemps(meta)
+      // Verdicts AUTO-CALCULÉS depuis score et temps (matrices officielles)
+      const vScore = computeVerdict(score, sScore, 'score')
+      const vTemps = e.temps.trim() ? computeVerdict(e.temps, sTemps, 'temps') : ''
       const verdicts: string[] = []
-      if (e.verdictScore) verdicts.push(`Score ${e.verdictScore}`)
-      if (e.verdictTemps) verdicts.push(`Temps ${e.verdictTemps}`)
+      if (vScore) verdicts.push(`Score ${vScore}`)
+      if (vTemps) verdicts.push(`Temps ${vTemps}`)
       const verdictStr = verdicts.length > 0 ? ` — ${verdicts.join(' / ')}` : ''
       const tempsStr = tempsNum != null ? ` — Temps : ${tempsNum} s` : ''
       lines.push(
@@ -454,7 +477,8 @@ export default function BetlScoresInput({ notes, onNotesChange, onResultatsChang
       if (meta.key === 'VII' && state.scoreOrthoVII.trim()) {
         const ortho = clampScore(state.scoreOrthoVII, 54)
         const sOrtho = seuilOrthoVII()
-        const v = state.verdictOrthoVII ? ` — Score orthographique ${state.verdictOrthoVII}` : ''
+        const vOrtho = computeVerdict(state.scoreOrthoVII, sOrtho, 'score')
+        const v = vOrtho ? ` — Score orthographique ${vOrtho}` : ''
         lines.push(`  Score orthographique VII : ${ortho}/54 (seuil P5 : ${sOrtho})${v}`)
       }
       if (e.observation.trim()) {
@@ -503,20 +527,27 @@ export default function BetlScoresInput({ notes, onNotesChange, onResultatsChang
 
   // ===== Sévérité globale (synthèse) =====
   // Comptabilise le nombre d'épreuves avec verdict P pour donner un indicateur
-  // de gravité global. N'est PAS un diagnostic ; juste un repère visuel.
+  // de gravité global. Verdicts auto-calculés depuis score/temps + matrice
+  // officielle (refonte 2026-05 — plus de saisie manuelle).
+  // N'est PAS un diagnostic ; juste un repère visuel.
   const stats = useMemo(() => {
     let scoresP = 0, tempsP = 0, scoresN = 0, tempsN = 0, total = 0
     for (const meta of EPREUVES) {
       const e = state.epreuves[meta.key]
       if (!e.score.trim()) continue
       total += 1
-      if (e.verdictScore === 'P') scoresP += 1
-      else if (e.verdictScore === 'N') scoresN += 1
-      if (e.verdictTemps === 'P') tempsP += 1
-      else if (e.verdictTemps === 'N') tempsN += 1
+      const vScore = computeVerdict(e.score, seuilScore(meta), 'score')
+      if (vScore === 'P') scoresP += 1
+      else if (vScore === 'N') scoresN += 1
+      if (e.temps.trim()) {
+        const vTemps = computeVerdict(e.temps, seuilTemps(meta), 'temps')
+        if (vTemps === 'P') tempsP += 1
+        else if (vTemps === 'N') tempsN += 1
+      }
     }
     return { scoresP, tempsP, scoresN, tempsN, total }
-  }, [state.epreuves])
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [state.epreuves, state.trancheAge, state.nsc])
 
   return (
     <div className="space-y-4">
@@ -526,8 +557,9 @@ export default function BetlScoresInput({ notes, onNotesChange, onResultatsChang
         <div className="text-sm">
           <p className="font-semibold text-emerald-900">Saisie structurée BETL</p>
           <p className="text-emerald-800 text-xs mt-0.5">
-            Saisissez le score /54, le temps (en secondes) et le verdict N/P donné par le logiciel BETL pour chaque épreuve.
-            Le verdict est calculé par le logiciel à partir des seuils officiels (Annexe 3 du manuel) — c&apos;est lui qui fait foi.
+            Saisissez le score /54 et le temps (en secondes) pour chaque épreuve. Le verdict N/P est
+            calculé automatiquement à partir des seuils officiels (Annexe 3 du manuel, stratification
+            tranche d&apos;âge × NSC) — pas de saisie manuelle requise.
           </p>
         </div>
       </div>
@@ -601,7 +633,7 @@ export default function BetlScoresInput({ notes, onNotesChange, onResultatsChang
                 </div>
               </div>
 
-              {/* Score + Temps + Verdicts en grille */}
+              {/* Score + Temps en grille — verdict N/P calculé automatiquement */}
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
                 <div className="rounded-md border border-gray-200 bg-gray-50 p-2">
                   <p className="text-[11px] font-medium text-gray-600 uppercase tracking-wide mb-1">Score</p>
@@ -625,27 +657,19 @@ export default function BetlScoresInput({ notes, onNotesChange, onResultatsChang
                       }`}>{scorePct}%</span>
                     )}
                   </div>
-                  <div className="mt-2 flex items-center gap-1.5">
-                    <span className="text-[11px] text-gray-500">Verdict logiciel :</span>
-                    <button
-                      type="button"
-                      onClick={() => updateEpreuve(meta.key, 'verdictScore', e.verdictScore === 'N' ? '' : 'N')}
-                      className={`text-[11px] font-bold px-2 py-0.5 rounded border ${
-                        e.verdictScore === 'N'
-                          ? 'bg-emerald-600 text-white border-emerald-600'
-                          : 'bg-white text-gray-600 border-gray-300 hover:border-emerald-400'
-                      }`}
-                    >N</button>
-                    <button
-                      type="button"
-                      onClick={() => updateEpreuve(meta.key, 'verdictScore', e.verdictScore === 'P' ? '' : 'P')}
-                      className={`text-[11px] font-bold px-2 py-0.5 rounded border ${
-                        e.verdictScore === 'P'
-                          ? 'bg-red-600 text-white border-red-600'
-                          : 'bg-white text-gray-600 border-gray-300 hover:border-red-400'
-                      }`}
-                    >P</button>
-                  </div>
+                  {/* Verdict auto-calculé depuis le score saisi + seuil P5 officiel */}
+                  {(() => {
+                    const v = computeVerdict(e.score, seuilScoreVal, 'score')
+                    if (!v) return null
+                    return (
+                      <div className="mt-2 flex items-center gap-1.5">
+                        <span className="text-[11px] text-gray-500">Verdict (auto, matrice officielle) :</span>
+                        <span className={`text-[11px] font-bold px-2 py-0.5 rounded ${
+                          v === 'N' ? 'bg-emerald-600 text-white' : 'bg-red-600 text-white'
+                        }`}>{v}</span>
+                      </div>
+                    )
+                  })()}
                 </div>
 
                 <div className="rounded-md border border-gray-200 bg-gray-50 p-2">
@@ -662,27 +686,19 @@ export default function BetlScoresInput({ notes, onNotesChange, onResultatsChang
                     />
                     <span className="text-sm text-gray-500">s</span>
                   </div>
-                  <div className="mt-2 flex items-center gap-1.5">
-                    <span className="text-[11px] text-gray-500">Verdict logiciel :</span>
-                    <button
-                      type="button"
-                      onClick={() => updateEpreuve(meta.key, 'verdictTemps', e.verdictTemps === 'N' ? '' : 'N')}
-                      className={`text-[11px] font-bold px-2 py-0.5 rounded border ${
-                        e.verdictTemps === 'N'
-                          ? 'bg-emerald-600 text-white border-emerald-600'
-                          : 'bg-white text-gray-600 border-gray-300 hover:border-emerald-400'
-                      }`}
-                    >N</button>
-                    <button
-                      type="button"
-                      onClick={() => updateEpreuve(meta.key, 'verdictTemps', e.verdictTemps === 'P' ? '' : 'P')}
-                      className={`text-[11px] font-bold px-2 py-0.5 rounded border ${
-                        e.verdictTemps === 'P'
-                          ? 'bg-red-600 text-white border-red-600'
-                          : 'bg-white text-gray-600 border-gray-300 hover:border-red-400'
-                      }`}
-                    >P</button>
-                  </div>
+                  {/* Verdict temps auto-calculé depuis le temps saisi + seuil P95 officiel */}
+                  {(() => {
+                    const v = computeVerdict(e.temps, seuilTempsVal, 'temps')
+                    if (!v) return null
+                    return (
+                      <div className="mt-2 flex items-center gap-1.5">
+                        <span className="text-[11px] text-gray-500">Verdict (auto, matrice officielle) :</span>
+                        <span className={`text-[11px] font-bold px-2 py-0.5 rounded ${
+                          v === 'N' ? 'bg-emerald-600 text-white' : 'bg-red-600 text-white'
+                        }`}>{v}</span>
+                      </div>
+                    )
+                  })()}
                 </div>
               </div>
 
@@ -713,25 +729,19 @@ export default function BetlScoresInput({ notes, onNotesChange, onResultatsChang
                       className="w-16 px-2 py-1 border border-gray-300 rounded text-center text-sm font-mono focus:outline-none focus:ring-2 focus:ring-purple-400"
                     />
                     <span className="text-sm text-gray-500">/ 54</span>
-                    <span className="text-[11px] text-gray-500">Verdict :</span>
-                    <button
-                      type="button"
-                      onClick={() => setState(s => ({ ...s, verdictOrthoVII: s.verdictOrthoVII === 'N' ? '' : 'N' }))}
-                      className={`text-[11px] font-bold px-2 py-0.5 rounded border ${
-                        state.verdictOrthoVII === 'N'
-                          ? 'bg-emerald-600 text-white border-emerald-600'
-                          : 'bg-white text-gray-600 border-gray-300 hover:border-emerald-400'
-                      }`}
-                    >N</button>
-                    <button
-                      type="button"
-                      onClick={() => setState(s => ({ ...s, verdictOrthoVII: s.verdictOrthoVII === 'P' ? '' : 'P' }))}
-                      className={`text-[11px] font-bold px-2 py-0.5 rounded border ${
-                        state.verdictOrthoVII === 'P'
-                          ? 'bg-red-600 text-white border-red-600'
-                          : 'bg-white text-gray-600 border-gray-300 hover:border-red-400'
-                      }`}
-                    >P</button>
+                    {/* Verdict orthographique auto-calculé (matrice SEUIL_ORTHO_VII) */}
+                    {(() => {
+                      const v = computeVerdict(state.scoreOrthoVII, seuilOrthoVII(), 'score')
+                      if (!v) return null
+                      return (
+                        <>
+                          <span className="text-[11px] text-gray-500">Verdict (auto) :</span>
+                          <span className={`text-[11px] font-bold px-2 py-0.5 rounded ${
+                            v === 'N' ? 'bg-emerald-600 text-white' : 'bg-red-600 text-white'
+                          }`}>{v}</span>
+                        </>
+                      )
+                    })()}
                   </div>
                 </div>
               )}
@@ -918,10 +928,16 @@ export default function BetlScoresInput({ notes, onNotesChange, onResultatsChang
 }
 
 /**
- * Tableau récap + graphique de synthèse (SVG simple) montrant pour chaque
- * épreuve le score du patient (barre) vs le seuil P5 OFFICIEL (ligne) pour la
- * tranche d'âge × NSC sélectionnée. Couleur de la barre selon le verdict
- * logiciel saisi par l'ortho.
+ * Tableau récap synthétique BETL — UNIQUEMENT le tableau (refonte 2026-05).
+ *
+ * L'ancien graphique SVG de synthèse a été supprimé à la demande Laurie :
+ * il dupliquait l'information du tableau sans valeur ajoutée clinique.
+ * Le tableau seul suffit : 1 ligne par épreuve avec score / verdict /
+ * temps / verdict temps / seuil P5 officiel.
+ *
+ * Les verdicts N/P sont AUTO-CALCULÉS depuis les scores saisis par l'ortho
+ * et la matrice officielle Annexe 3 du manuel BETL 2015, pour la
+ * stratification tranche d'âge × NSC sélectionnée en tête de formulaire.
  */
 function BetlSummary({ state, nsc, tranche }: { state: BetlState; nsc: NSC; tranche: TrancheAge }) {
   // Préparer les données — uniquement les épreuves avec score saisi.
@@ -930,116 +946,23 @@ function BetlSummary({ state, nsc, tranche }: { state: BetlState; nsc: NSC; tran
       const e = state.epreuves[meta.key]
       if (!e.score.trim()) return null
       const score = clampScore(e.score, meta.max)
-      const seuil = meta.seuilScoreP5[tranche][nsc]
-      return { meta, e, score, seuil }
+      const seuilScore = meta.seuilScoreP5[tranche][nsc]
+      const seuilTemps = meta.seuilTempsP95[tranche][nsc]
+      const verdictScore = computeVerdict(e.score, seuilScore, 'score')
+      const verdictTemps = e.temps.trim() ? computeVerdict(e.temps, seuilTemps, 'temps') : ''
+      return { meta, e, score, seuilScore, seuilTemps, verdictScore, verdictTemps }
     })
-    .filter((r): r is { meta: EpreuveMeta; e: EpreuveState; score: number; seuil: number } => r !== null)
+    .filter((r): r is { meta: EpreuveMeta; e: EpreuveState; score: number; seuilScore: number; seuilTemps: number; verdictScore: Verdict; verdictTemps: Verdict } => r !== null)
 
   if (rows.length === 0) return null
-
-  // SVG bar chart : largeur = 100%, hauteur fixe, padding intérieur pour labels.
-  const W = 720, H = 220, PAD_X = 20, PAD_TOP = 18, PAD_BOTTOM = 50
-  const innerH = H - PAD_TOP - PAD_BOTTOM
-  const barW = (W - 2 * PAD_X) / rows.length * 0.6
-  const slot = (W - 2 * PAD_X) / rows.length
 
   return (
     <div className="rounded-lg border border-gray-200 bg-white p-4 space-y-3">
       <div className="flex items-center gap-2">
         <CheckCircle2 size={16} className="text-emerald-600" />
         <p className="text-sm font-semibold text-gray-900">
-          Synthèse — scores patient vs seuils P5 officiels (tranche {tranche} ans, NSC {nsc})
+          Tableau de synthèse — verdict N/P calculé automatiquement (tranche {tranche} ans, NSC {nsc})
         </p>
-      </div>
-
-      {/* Graphique */}
-      <div className="overflow-x-auto">
-        <svg viewBox={`0 0 ${W} ${H}`} className="w-full max-w-[760px] h-auto" role="img" aria-label="Synthèse BETL">
-          {/* Grille horizontale 0/25/50/75/100 % */}
-          {[0, 0.25, 0.5, 0.75, 1].map((p, i) => {
-            const y = PAD_TOP + innerH * (1 - p)
-            return (
-              <g key={i}>
-                <line x1={PAD_X} y1={y} x2={W - PAD_X} y2={y} stroke="#E5E7EB" strokeDasharray="3 3" />
-                <text x={4} y={y + 3} fontSize="9" fill="#9CA3AF">{Math.round(p * 100)}%</text>
-              </g>
-            )
-          })}
-
-          {/* Barres + seuils par épreuve */}
-          {rows.map((r, i) => {
-            const cx = PAD_X + i * slot + slot / 2
-            const pct = r.score / r.meta.max
-            const barH = innerH * pct
-            const barY = PAD_TOP + innerH - barH
-            const seuilPct = r.seuil / r.meta.max
-            const seuilY = PAD_TOP + innerH - innerH * seuilPct
-
-            const color =
-              r.e.verdictScore === 'P' ? '#DC2626' :
-              r.e.verdictScore === 'N' ? '#059669' :
-              '#94A3B8'
-
-            return (
-              <g key={r.meta.key}>
-                {/* Barre score */}
-                <rect
-                  x={cx - barW / 2}
-                  y={barY}
-                  width={barW}
-                  height={barH}
-                  fill={color}
-                  opacity={0.85}
-                  rx={3}
-                />
-                {/* Marqueur seuil P5 indicatif (ligne courte) */}
-                <line
-                  x1={cx - barW / 2 - 4}
-                  x2={cx + barW / 2 + 4}
-                  y1={seuilY}
-                  y2={seuilY}
-                  stroke="#1F2937"
-                  strokeWidth={2}
-                />
-                {/* Valeur score au-dessus */}
-                <text
-                  x={cx}
-                  y={barY - 4}
-                  fontSize="10"
-                  fontWeight="600"
-                  fill={color}
-                  textAnchor="middle"
-                >{r.score}/{r.meta.max}</text>
-                {/* Étiquette épreuve sous l'axe */}
-                <text
-                  x={cx}
-                  y={H - PAD_BOTTOM + 14}
-                  fontSize="10"
-                  fontWeight="600"
-                  fill="#374151"
-                  textAnchor="middle"
-                >{r.meta.key}</text>
-                <text
-                  x={cx}
-                  y={H - PAD_BOTTOM + 26}
-                  fontSize="8"
-                  fill="#9CA3AF"
-                  textAnchor="middle"
-                >seuil {r.seuil}</text>
-              </g>
-            )
-          })}
-
-          {/* Axe X */}
-          <line x1={PAD_X} y1={PAD_TOP + innerH} x2={W - PAD_X} y2={PAD_TOP + innerH} stroke="#374151" />
-        </svg>
-      </div>
-
-      <div className="flex items-center gap-4 text-[11px] text-gray-600 flex-wrap">
-        <span className="flex items-center gap-1.5"><span className="w-3 h-3 bg-emerald-600 rounded-sm" /> Score N (Normal)</span>
-        <span className="flex items-center gap-1.5"><span className="w-3 h-3 bg-red-600 rounded-sm" /> Score P (Pathologique)</span>
-        <span className="flex items-center gap-1.5"><span className="w-3 h-3 bg-slate-400 rounded-sm" /> Verdict non saisi</span>
-        <span className="flex items-center gap-1.5"><span className="inline-block w-4 h-0.5 bg-gray-800" /> Seuil P5 indicatif</span>
       </div>
 
       {/* Tableau récap */}
@@ -1061,17 +984,17 @@ function BetlSummary({ state, nsc, tranche }: { state: BetlState; nsc: NSC; tran
                 <td className="border border-gray-200 px-2 py-1.5">{r.meta.label}</td>
                 <td className="border border-gray-200 px-2 py-1.5 text-center font-mono">{r.score}/{r.meta.max}</td>
                 <td className={`border border-gray-200 px-2 py-1.5 text-center font-bold ${
-                  r.e.verdictScore === 'N' ? 'text-emerald-700 bg-emerald-50'
-                  : r.e.verdictScore === 'P' ? 'text-red-700 bg-red-50'
+                  r.verdictScore === 'N' ? 'text-emerald-700 bg-emerald-50'
+                  : r.verdictScore === 'P' ? 'text-red-700 bg-red-50'
                   : 'text-gray-400'
-                }`}>{r.e.verdictScore || '—'}</td>
+                }`}>{r.verdictScore || '—'}</td>
                 <td className="border border-gray-200 px-2 py-1.5 text-center font-mono">{r.e.temps ? `${r.e.temps} s` : '—'}</td>
                 <td className={`border border-gray-200 px-2 py-1.5 text-center font-bold ${
-                  r.e.verdictTemps === 'N' ? 'text-emerald-700 bg-emerald-50'
-                  : r.e.verdictTemps === 'P' ? 'text-red-700 bg-red-50'
+                  r.verdictTemps === 'N' ? 'text-emerald-700 bg-emerald-50'
+                  : r.verdictTemps === 'P' ? 'text-red-700 bg-red-50'
                   : 'text-gray-400'
-                }`}>{r.e.verdictTemps || '—'}</td>
-                <td className="border border-gray-200 px-2 py-1.5 text-center text-gray-500">{r.seuil}/{r.meta.max}</td>
+                }`}>{r.verdictTemps || '—'}</td>
+                <td className="border border-gray-200 px-2 py-1.5 text-center text-gray-500">{r.seuilScore}/{r.meta.max}</td>
               </tr>
             ))}
           </tbody>
@@ -1081,9 +1004,10 @@ function BetlSummary({ state, nsc, tranche }: { state: BetlState; nsc: NSC; tran
       <p className="text-[11px] text-gray-500 italic flex items-start gap-1.5">
         <AlertCircle size={11} className="shrink-0 mt-0.5" />
         <span>
-          Seuils P5 officiels du manuel BETL 2015 (Annexe 3, Tran & Godefroy) pour la stratification
-          {' '}<strong>{tranche} ans × NSC {nsc}</strong>. Le verdict N/P à saisir reste celui produit par
-          le logiciel BETL, qui peut prendre en compte des marges supplémentaires non publiées.
+          Verdict N/P calculé automatiquement à partir des scores saisis et des seuils P5 officiels
+          du manuel BETL 2015 (Annexe 3, Tran & Godefroy) pour la stratification
+          {' '}<strong>{tranche} ans × NSC {nsc}</strong>. Score &lt; seuil P5 = pathologique (P) ;
+          temps &gt; seuil P95 = pathologique (P).
         </span>
       </p>
     </div>

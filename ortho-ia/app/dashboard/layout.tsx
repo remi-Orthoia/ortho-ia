@@ -296,7 +296,7 @@ export default function DashboardLayout({ children }: DashboardLayoutProps) {
               >
                 <Menu size={20} />
               </button>
-              <Link href="/dashboard" style={{ color: 'var(--fg-3)', textDecoration: 'none' }}>Dashboard</Link>
+              <Link href="/dashboard" style={{ color: 'var(--fg-3)', textDecoration: 'none' }}>Tableau de bord</Link>
               {pathname !== '/dashboard' && (
                 <>
                   <ChevronRight size={14} style={{ color: 'var(--fg-3)' }} />
