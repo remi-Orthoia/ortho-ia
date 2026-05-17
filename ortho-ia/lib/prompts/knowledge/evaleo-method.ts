@@ -40,16 +40,17 @@ complément.
 | Classe 2 | P7 – P20 | Fragilité |
 | Classe 1 | < P7 | Pathologique |
 
-⚠️ **Mapping avec la grille SEUILS 5 zones ortho.ia** (alignée Exalang officiel) :
-- Classes 5-7 (P63+) → "Moyenne haute" (P ≥ 75 strict ; P63-74 = "Moyenne" haut)
-- Classe 4 (P39-P62) → "Moyenne"
-- Classe 3 (P21-P38) → "Moyenne" (P26+) ou "Zone de fragilité" (P21-25)
-- Classe 2 (P7-P20) → "Zone de fragilité" (P10-20) ou "Difficulté" (P7-9)
-- Classe 1 (< P7) → "Difficulté" (P5-6) ou "Difficulté sévère" (< P5)
+⚠️ **Mapping avec la grille SEUILS 6 zones ortho.ia** (Laurie refonte 2026-05-ter) :
+- Classes 6-7 (P76+) → "Excellent"
+- Classe 5 (P63-P75) → "Moyenne haute"
+- Classe 4 (P39-P62) → "Moyenne haute" (P50+) ou "Moyenne basse" (P39-49)
+- Classe 3 (P21-P38) → "Moyenne basse" (P26+) ou "Zone de fragilité" (P21-25)
+- Classe 2 (P7-P20) → "Zone de fragilité" (P11-20) ou "Difficulté" (P7-10)
+- Classe 1 (P1-P6) → "Difficulté" (P6) ou "Difficulté sévère" (P1-P5)
 
 Quand l'EVALEO indique "classe 1", préférer rester précis sur la valeur Px
 (P6 = Difficulté, P3 = Difficulté sévère) — la classe 1 EVALEO regroupe
-plusieurs gravités cliniques distinctes du point de vue Exalang.
+plusieurs gravités cliniques distinctes du point de vue clinique.
 
 ---
 

@@ -158,7 +158,7 @@ Le CRBO structuré que tu produis doit contenir, dans cet ordre :
    - \`et\` (écart-type, ex: "-1.53", ou null si non fourni)
    - \`percentile\` (notation Px UNIQUEMENT, ex: "P25", "P10", "P50", "P75"). **JAMAIS "Q1", "Q3", "Med", "Med." dans ce champ** — toujours convertir : Q1 → P25, Q3 → P75, Med → P50. Règle absolue Laurie (refonte 2026-05).
    - \`percentile_value\` — valeur NUMÉRIQUE entre 0 et 100 utilisée pour les graphiques
-   - \`interpretation\` — parmi (grille 5 zones alignée Exalang officiel) : "Moyenne haute" (P ≥ 75, > Q3), "Moyenne" (P26-74, centre NS 3-4), "Zone de fragilité" (P10-25, **Q1 = P25 inclus** — zone à surveiller Exalang), "Difficulté" (P5-9, seuil pathologique consensuel P10), "Difficulté sévère" (< P5, seuil strict -1,65 σ)
+   - \`interpretation\` — parmi (grille 6 zones imposée Laurie, refonte 2026-05-ter) : "Excellent" (P76-100), "Moyenne haute" (P50-P75, Q3 inclus), "Moyenne basse" (P26-P49), "Zone de fragilité" (P11-P25, **Q1 = P25 inclus**), "Difficulté" (P6-P10), "Difficulté sévère" (P1-P5). **Note** : Exalang n'affiche JAMAIS de bande <P5 — P5 est inclus dans Difficulté sévère.
    - \`epreuves[i].commentaire\` — commentaire CLINIQUE DÉDIÉ par épreuve.
      **OBLIGATOIRE pour chaque épreuve dont \`percentile_value < 50\`** (épreuves "en dessous de la médiane", dans le rouge). 2-3 phrases (≈ 30-50 mots) qui décrivent qualitativement la performance et son retentissement fonctionnel concret (en classe, en lecture, en compréhension, etc.). Ces paragraphes sont rendus dans le CRBO final juste après le tableau du domaine, sous la forme « **Nom épreuve** — commentaire » (un paragraphe par épreuve déficitaire). Pour les épreuves dont \`percentile_value >= 50\`, laisser \`commentaire\` vide (\`""\`) — elles sont déjà couvertes par le commentaire global du domaine.
 
@@ -266,19 +266,20 @@ Le CRBO structuré que tu produis doit contenir, dans cet ordre :
 
 ---
 
-## INTERPRÉTATION DES SCORES (grille 5 zones alignée sur les seuils officiels Exalang)
+## INTERPRÉTATION DES SCORES (grille 6 zones imposée Laurie, refonte 2026-05-ter)
 
-⚠️ **Q1 (P25) est en Zone de fragilité** — c'est exactement la "zone à surveiller" définie par le manuel Exalang 11-15 (Lenfant/Thibault/Helloin 2009, p. 67). Le seuil pathologique consensuel des cliniciens est **P10** ; le seuil strict est **-1,65 σ ≈ P5**.
+⚠️ **Q1 (P25) est en Zone de fragilité**. **Exalang n'affiche JAMAIS de bande <P5** — P5 est la valeur minimale et est incluse dans "Difficulté sévère".
 
-| Percentile | Interprétation (champ \`interpretation\`) | Couleur cellule | Référence Exalang |
-|------------|--------------------------------------------|-----------------|---------------------|
-| **P ≥ 75 (> Q3)**                | "Moyenne haute"     | Vert foncé (texte blanc) | Au-dessus de Q3, bonne réussite |
-| **P26-P74**                      | "Moyenne"           | Vert clair               | NS 3-4 centrale, normal |
-| **P10-P25 (Q1 = P25 inclus)**    | "Zone de fragilité" | Jaune                    | « zone à surveiller » manuel |
-| **P5-P9**                        | "Difficulté"        | Orange                   | seuil pathologique consensuel P10 |
-| **< P5**                         | "Difficulté sévère" | Rouge (texte blanc)      | seuil strict -1,65 σ |
+| Percentile          | Interprétation (champ \`interpretation\`) | Couleur cellule |
+|---------------------|--------------------------------------------|-----------------|
+| **P76-P100**        | "Excellent"          | Vert foncé (texte blanc) |
+| **P50-P75 (Q3 inclus)** | "Moyenne haute"  | Vert clair               |
+| **P26-P49**         | "Moyenne basse"      | Jaune                    |
+| **P11-P25 (Q1 inclus)** | "Zone de fragilité" | Orange clair          |
+| **P6-P10**          | "Difficulté"         | Orange foncé (texte blanc) |
+| **P1-P5**           | "Difficulté sévère"  | Rouge (texte blanc)      |
 
-Plus de "Moyenne basse" — la zone P10-25 est désormais reconnue comme zone de fragilité, conformément aux manuels Exalang. L'É-T (écart-type) NE SERT PAS à l'interprétation : seul le percentile compte.
+L'É-T (écart-type) NE SERT PAS à l'interprétation : seul le percentile compte.
 
 ---
 
@@ -299,23 +300,25 @@ Les logiciels de test HappyNeuron (Exalang, Examath) utilisent souvent une notat
 | **Q3** | Quartile 3 | **P75** | 75 |
 | **P5, P10, P90, P95** | Valeur exacte | Utiliser telle quelle | 5, 10, 90, 95 |
 
-### RÈGLE N°3 : Interprétation clinique (grille 5 zones alignée Exalang officiel)
+### RÈGLE N°3 : Interprétation clinique (grille 6 zones imposée Laurie, refonte 2026-05-ter)
 
-| Percentile | Champ \`interpretation\` |
-|------------|-------------------------|
-| **P ≥ 75 (> Q3)**             | "Moyenne haute" |
-| **P26-P74**                   | "Moyenne" |
-| **P10-P25 (Q1 = P25 inclus)** | "Zone de fragilité" |
-| **P5-P9**                     | "Difficulté" |
-| **< P5**                      | "Difficulté sévère" |
+| Percentile               | Champ \`interpretation\` |
+|--------------------------|-------------------------|
+| **P76-P100**             | "Excellent" |
+| **P50-P75 (Q3 inclus)**  | "Moyenne haute" |
+| **P26-P49**              | "Moyenne basse" |
+| **P11-P25 (Q1 inclus)**  | "Zone de fragilité" |
+| **P6-P10**               | "Difficulté" |
+| **P1-P5**                | "Difficulté sévère" |
 
-⚠️ **Q1 (P25) est en Zone de fragilité** — c'est la "zone à surveiller" du manuel Exalang 11-15. Le seuil pathologique consensuel est P10 ; le seuil strict est -1,65 σ ≈ P5.
+⚠️ **Exalang n'affiche JAMAIS de bande <P5** — la valeur minimale est P5 et est incluse dans "Difficulté sévère".
+⚠️ **Q1 (P25) est en Zone de fragilité**, pas en Moyenne basse.
 
 ### EXEMPLE DE LECTURE CORRECTE
 PDF indique : "Boucle phonologique : É-T -1.53, Percentiles : Q1"
 - ✅ CORRECT : percentile = "P25", percentile_value = 25, interpretation = "Zone de fragilité"
 - ❌ FAUX : percentile = "Q1" ou "Q1 (P25)" (toujours convertir en Px pur)
-- ❌ FAUX : interpretation = "Moyenne basse" (label supprimé depuis l'alignement Exalang)
+- ❌ FAUX : interpretation = "Moyenne basse" (P25 est en Zone de fragilité)
 - ❌ FAUX : Recalculer depuis l'É-T → interpretation = "Difficulté sévère"
 
 ### EXEMPLE D'ERREUR À ÉVITER
@@ -389,7 +392,7 @@ Tu utilises l'outil \`extract_crbo_data\`. Ton rôle se limite STRICTEMENT à :
 2. Reformuler le motif brut en \`motif_reformule\` (1-2 phrases).
 3. Parser les résultats des tests en \`domains[]\` :
    - Utiliser EXACTEMENT la nomenclature officielle des groupes du test (A.1, A.2, B.1…) si elle est fournie dans le référentiel.
-   - Pour chaque épreuve : nom, score, et (écart-type), percentile (notation telle que dans le PDF), percentile_value (numérique 0-100), interpretation (Moyenne haute / Moyenne / Zone de fragilité / Difficulté / Difficulté sévère selon la grille 5 zones Exalang).
+   - Pour chaque épreuve : nom, score, et (écart-type), percentile (notation telle que dans le PDF), percentile_value (numérique 0-100), interpretation (Excellent / Moyenne haute / Moyenne basse / Zone de fragilité / Difficulté / Difficulté sévère selon la grille 6 zones).
    - \`commentaire\` clinique INITIAL pour CHAQUE domaine (3-4 lignes) — c'est la suggestion qui pré-remplit la textarea de l'ortho.
 
 ⛔ **TU NE DOIS PAS** produire de diagnostic, de recommandations, de PAP, de conclusion à ce stade. Ces sections seront générées en phase 2.`
@@ -458,7 +461,7 @@ L'orthophoniste a choisi le format **Synthétique**. Ce format suit le STYLE EXA
 ## \`domain_commentaires\` — observations par domaine
 
 Adaptation à la performance du domaine :
-- **Résultats Moyenne ou Moyenne haute** → **1 SEULE phrase courte**.
+- **Résultats Moyenne basse / Moyenne haute / Excellent** → **1 SEULE phrase courte**.
   Ex : "Les performances sont préservées sur l'ensemble du domaine."
 - **Résultats fragiles ou déficitaires** (Zone de fragilité / Difficulté / Difficulté sévère) → **3-4 phrases max** : description qualitative + répercussions scolaires concrètes.
 

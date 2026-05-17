@@ -19,18 +19,19 @@
 
 // --------------------- Palette : zones de performance ---------------------
 //
-// 5 zones cliniques alignées sur les seuils officiels Exalang (manuel
-// Exalang 11-15 Lenfant/Thibault/Helloin 2009, p. 65-67, « Seuils de pathologie ») :
-//  - Moyenne haute      → P ≥ 75 (> Q3, bonne réussite)
-//  - Moyenne            → P26-74 (NS 3-4, centre normal)
-//  - Zone de fragilité  → P10-25 (« zone à surveiller » manuel)
-//  - Difficulté         → P5-9 (seuil pathologique consensuel P10)
-//  - Difficulté sévère  → < P5 (seuil strict -1,65 σ)
+// 6 zones cliniques — grille Laurie refonte 2026-05-ter :
+//  - Excellent          → P76-100 (vert foncé)
+//  - Moyenne haute      → P50-P75 (vert clair)
+//  - Moyenne basse      → P26-P49 (jaune)
+//  - Zone de fragilité  → P11-P25 (orange clair)
+//  - Difficulté         → P6-P10  (orange foncé)
+//  - Difficulté sévère  → P1-P5   (rouge — Exalang n'affiche jamais <P5)
 // La grille reprend la palette de lib/word-export.ts SEUILS (source de vérité).
 
 export type ZoneLabel =
+  | 'Excellent'
   | 'Moyenne haute'
-  | 'Moyenne'
+  | 'Moyenne basse'
   | 'Zone de fragilité'
   | 'Difficulté'
   | 'Difficulté sévère'
@@ -43,24 +44,25 @@ export type ZonePerformance = {
 
 /** Couleurs des bandes de fond du graphique (palette pastel imposée Laurie).
  *  La couleur des barres elles-mêmes est plus saturée — voir BAR_FILL_OF_VALUE.
- *  Refonte 2026-05-bis (Exalang) : 5 zones alignées sur les seuils officiels
- *  des manuels Exalang (cf. lib/word-export.ts SEUILS pour la palette source). */
+ *  Refonte 2026-05-ter : 6 zones (Excellent + Moyenne basse réintroduits). */
 export const ZONES: ZonePerformance[] = [
-  { label: 'Moyenne haute',      min: 75, css: '#C8E6C9' }, // vert pastel (P ≥ 75, > Q3)
-  { label: 'Moyenne',            min: 26, css: '#DCEDC8' }, // vert très pastel (P26-74, centre NS 3-4)
-  { label: 'Zone de fragilité',  min: 10, css: '#FFF59D' }, // jaune pastel (P10-25, "à surveiller" Exalang)
-  { label: 'Difficulté',         min: 5,  css: '#FFE0B2' }, // orange pastel (P5-9, seuil consensuel P10 pathologique)
-  { label: 'Difficulté sévère',  min: 0,  css: '#FFCCBC' }, // orange clair (<P5, -1,65 σ seuil strict Exalang)
+  { label: 'Excellent',          min: 76, css: '#C8E6C9' }, // vert pastel (P76-100)
+  { label: 'Moyenne haute',      min: 50, css: '#DCEDC8' }, // vert très pastel (P50-P75)
+  { label: 'Moyenne basse',      min: 26, css: '#FFF59D' }, // jaune pastel (P26-P49)
+  { label: 'Zone de fragilité',  min: 11, css: '#FFE0B2' }, // orange clair pastel (P11-P25)
+  { label: 'Difficulté',         min: 6,  css: '#FFCCBC' }, // orange foncé pastel (P6-P10)
+  { label: 'Difficulté sévère',  min: 0,  css: '#FFCDD2' }, // rouge pastel (P1-P5)
 ]
 
 /** Couleur de remplissage des barres (palette saturée — même que les fonds
  *  cellules tableaux Word). Plus visible que la palette pastel des bandes. */
 const BAR_FILL_OF_VALUE = (value: number): string => {
-  if (value >= 75) return '#2E7D32' // vert foncé (Moyenne haute, P ≥ 75)
-  if (value >= 26) return '#66BB6A' // vert clair (Moyenne, P26-74)
-  if (value >= 10) return '#FBC02D' // jaune (Zone de fragilité, P10-25)
-  if (value >= 5)  return '#FB8C00' // orange (Difficulté, P5-9)
-  return '#D32F2F'                  // rouge vif (Difficulté sévère, <P5)
+  if (value >= 76) return '#1B5E20' // vert foncé (Excellent, P76-100)
+  if (value >= 50) return '#2E7D32' // vert (Moyenne haute, P50-P75)
+  if (value >= 26) return '#FBC02D' // jaune (Moyenne basse, P26-P49)
+  if (value >= 11) return '#FB8C00' // orange clair (Zone de fragilité, P11-P25)
+  if (value >= 6)  return '#E65100' // orange foncé (Difficulté, P6-P10)
+  return '#D32F2F'                  // rouge vif (Difficulté sévère, P1-P5)
 }
 
 export function zoneFor(value: number): ZonePerformance {

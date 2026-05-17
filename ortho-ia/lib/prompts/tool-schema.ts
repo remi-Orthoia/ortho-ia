@@ -29,16 +29,16 @@ const EPREUVE_SCHEMA = {
     },
     interpretation: {
       type: 'string' as const,
-      enum: ['Moyenne haute', 'Moyenne', 'Zone de fragilité', 'Difficulté', 'Difficulté sévère'],
+      enum: ['Excellent', 'Moyenne haute', 'Moyenne basse', 'Zone de fragilité', 'Difficulté', 'Difficulté sévère'],
       description:
-        "Interprétation clinique COURTE — grille 5 zones alignée sur les seuils officiels Exalang " +
-        "(manuel Exalang 11-15 Lenfant/Thibault/Helloin 2009, p. 65-67 : seuil pathologique consensuel = P10, " +
-        "zone à surveiller = P10-P25, seuil strict = -1,65 σ ≈ P5) : " +
-        "'Moyenne haute' pour P ≥ 75 (> Q3) ; " +
-        "'Moyenne' pour P26-P74 (centre normal NS 3-4) ; " +
-        "'Zone de fragilité' pour P10-P25 (zone à surveiller Exalang, Q1 = P25 inclus) ; " +
-        "'Difficulté' pour P5-P9 (seuil pathologique consensuel P10) ; " +
-        "'Difficulté sévère' pour < P5 (seuil strict -1,65 σ).",
+        "Interprétation clinique COURTE — grille 6 zones imposée Laurie (refonte 2026-05-ter) : " +
+        "'Excellent' pour P76-P100 ; " +
+        "'Moyenne haute' pour P50-P75 (Q3 inclus) ; " +
+        "'Moyenne basse' pour P26-P49 ; " +
+        "'Zone de fragilité' pour P11-P25 (Q1 = P25 inclus) ; " +
+        "'Difficulté' pour P6-P10 ; " +
+        "'Difficulté sévère' pour P1-P5. " +
+        "Note : Exalang n'affiche JAMAIS de bande <P5 — P5 est inclus dans Difficulté sévère.",
     },
     sous_epreuves: {
       type: 'array' as const,

@@ -35,23 +35,24 @@ interface Props {
 type PercentileKey =
   | '' | 'p_sup_95' | 'p_90_95' | 'p_75_90' | 'p_50_75' | 'p_25_50' | 'p_10_25' | 'p_5_10' | 'p_inf_5'
 
-// Grille 5 zones alignée Exalang officiel (manuel Exalang 11-15 p. 65-67).
+// Grille 6 zones imposée Laurie (refonte 2026-05-ter).
+// Exalang n'affiche JAMAIS de bande <P5 — la bande la plus basse est P1-P5.
 const PERCENTILE_OPTIONS: Array<{
   key: Exclude<PercentileKey, ''>
   label: string
   value: number
-  zone: 'moyenne_haute' | 'moyenne' | 'fragilite' | 'difficulte' | 'difficulte_severe'
+  zone: 'excellent' | 'moyenne_haute' | 'moyenne_basse' | 'fragilite' | 'difficulte' | 'difficulte_severe'
   chip: string
   text: string
 }> = [
-  { key: 'p_sup_95', label: '> P95',     value: 97, zone: 'moyenne_haute',     chip: 'bg-emerald-600', text: 'text-white' },
-  { key: 'p_90_95',  label: 'P90 — P95', value: 92, zone: 'moyenne_haute',     chip: 'bg-emerald-500', text: 'text-white' },
-  { key: 'p_75_90',  label: 'P75 — P90', value: 80, zone: 'moyenne_haute',     chip: 'bg-emerald-400', text: 'text-white' },
-  { key: 'p_50_75',  label: 'P50 — P75', value: 60, zone: 'moyenne',           chip: 'bg-emerald-300', text: 'text-emerald-900' },
-  { key: 'p_25_50',  label: 'P25 — P50', value: 35, zone: 'moyenne',           chip: 'bg-emerald-200', text: 'text-emerald-900' },
-  { key: 'p_10_25',  label: 'P10 — P25', value: 18, zone: 'fragilite',         chip: 'bg-yellow-300',  text: 'text-yellow-900' },
-  { key: 'p_5_10',   label: 'P5 — P10',  value: 7,  zone: 'difficulte',        chip: 'bg-orange-400',  text: 'text-white' },
-  { key: 'p_inf_5',  label: '< P5',      value: 3,  zone: 'difficulte_severe', chip: 'bg-red-600',     text: 'text-white' },
+  { key: 'p_sup_95', label: '> P95',     value: 97, zone: 'excellent',         chip: 'bg-emerald-700', text: 'text-white' },
+  { key: 'p_90_95',  label: 'P90 — P95', value: 92, zone: 'excellent',         chip: 'bg-emerald-600', text: 'text-white' },
+  { key: 'p_75_90',  label: 'P75 — P90', value: 80, zone: 'excellent',         chip: 'bg-emerald-500', text: 'text-white' },
+  { key: 'p_50_75',  label: 'P50 — P75', value: 60, zone: 'moyenne_haute',     chip: 'bg-emerald-300', text: 'text-emerald-900' },
+  { key: 'p_25_50',  label: 'P25 — P50', value: 35, zone: 'moyenne_basse',     chip: 'bg-yellow-300',  text: 'text-yellow-900' },
+  { key: 'p_10_25',  label: 'P10 — P25', value: 18, zone: 'fragilite',         chip: 'bg-orange-300',  text: 'text-orange-900' },
+  { key: 'p_5_10',   label: 'P5 — P10',  value: 7,  zone: 'difficulte',        chip: 'bg-orange-500',  text: 'text-white' },
+  { key: 'p_inf_5',  label: 'P1 — P5',   value: 3,  zone: 'difficulte_severe', chip: 'bg-red-600',     text: 'text-white' },
 ]
 
 function percentileLabel(k: PercentileKey): string {
@@ -60,8 +61,9 @@ function percentileLabel(k: PercentileKey): string {
 function zoneLabel(k: PercentileKey): string {
   const z = PERCENTILE_OPTIONS.find(o => o.key === k)?.zone
   switch (z) {
+    case 'excellent': return 'Excellent'
     case 'moyenne_haute': return 'Moyenne haute'
-    case 'moyenne': return 'Moyenne'
+    case 'moyenne_basse': return 'Moyenne basse'
     case 'fragilite': return 'Zone de fragilité'
     case 'difficulte': return 'Difficulté'
     case 'difficulte_severe': return 'Difficulté sévère'
@@ -370,7 +372,7 @@ export default function Evaleo615ScoresInput({ notes, onNotesChange, onResultats
   }, [state.epreuves])
 
   const zoneCounts = useMemo(() => {
-    const c = { moyenne_haute: 0, moyenne: 0, fragilite: 0, difficulte: 0, difficulte_severe: 0 }
+    const c = { excellent: 0, moyenne_haute: 0, moyenne_basse: 0, fragilite: 0, difficulte: 0, difficulte_severe: 0 }
     for (const s of SECTIONS) for (const sd of s.subdomains) for (const e of sd.epreuves) {
       const st = state.epreuves[e.key]
       if (st.non_passee) continue
@@ -421,14 +423,15 @@ export default function Evaleo615ScoresInput({ notes, onNotesChange, onResultats
       }
     }
     // Synthèse
-    const tot = zoneCounts.moyenne_haute + zoneCounts.moyenne + zoneCounts.fragilite + zoneCounts.difficulte + zoneCounts.difficulte_severe
+    const tot = zoneCounts.excellent + zoneCounts.moyenne_haute + zoneCounts.moyenne_basse + zoneCounts.fragilite + zoneCounts.difficulte + zoneCounts.difficulte_severe
     if (tot > 0) {
       lines.push('--- Synthèse zones percentiles ---')
-      lines.push(`Moyenne haute (P ≥ 75) : ${zoneCounts.moyenne_haute}`)
-      lines.push(`Moyenne (P26-74) : ${zoneCounts.moyenne}`)
-      lines.push(`Zone de fragilité (P10-25) : ${zoneCounts.fragilite}`)
-      lines.push(`Difficulté (P5-9) : ${zoneCounts.difficulte}`)
-      lines.push(`Difficulté sévère (< P5) : ${zoneCounts.difficulte_severe}`)
+      lines.push(`Excellent (P76-100) : ${zoneCounts.excellent}`)
+      lines.push(`Moyenne haute (P50-P75) : ${zoneCounts.moyenne_haute}`)
+      lines.push(`Moyenne basse (P26-P49) : ${zoneCounts.moyenne_basse}`)
+      lines.push(`Zone de fragilité (P11-P25) : ${zoneCounts.fragilite}`)
+      lines.push(`Difficulté (P6-P10) : ${zoneCounts.difficulte}`)
+      lines.push(`Difficulté sévère (P1-P5) : ${zoneCounts.difficulte_severe}`)
     }
     onResultatsChange(lines.join('\n'))
     // eslint-disable-next-line react-hooks/exhaustive-deps
@@ -482,11 +485,11 @@ export default function Evaleo615ScoresInput({ notes, onNotesChange, onResultats
             Répartition par zone — {totalSaisies}/{totalEpreuves} épreuves saisies
           </p>
           <div className="flex flex-wrap gap-1.5">
-            {(['moyenne_haute', 'moyenne', 'fragilite', 'difficulte', 'difficulte_severe'] as const).map(z => {
+            {(['excellent', 'moyenne_haute', 'moyenne_basse', 'fragilite', 'difficulte', 'difficulte_severe'] as const).map(z => {
               const n = zoneCounts[z]
               if (n === 0) return null
-              const label = { moyenne_haute: 'Moyenne haute', moyenne: 'Moyenne', fragilite: 'Zone de fragilité', difficulte: 'Difficulté', difficulte_severe: 'Difficulté sévère' }[z]
-              const chip = { moyenne_haute: 'bg-emerald-600 text-white', moyenne: 'bg-emerald-300 text-emerald-900', fragilite: 'bg-yellow-300 text-yellow-900', difficulte: 'bg-orange-400 text-white', difficulte_severe: 'bg-red-600 text-white' }[z]
+              const label = { excellent: 'Excellent', moyenne_haute: 'Moyenne haute', moyenne_basse: 'Moyenne basse', fragilite: 'Zone de fragilité', difficulte: 'Difficulté', difficulte_severe: 'Difficulté sévère' }[z]
+              const chip = { excellent: 'bg-emerald-700 text-white', moyenne_haute: 'bg-emerald-400 text-white', moyenne_basse: 'bg-yellow-300 text-yellow-900', fragilite: 'bg-orange-300 text-orange-900', difficulte: 'bg-orange-500 text-white', difficulte_severe: 'bg-red-600 text-white' }[z]
               return (
                 <span key={z} className={`inline-flex items-center gap-1 px-2 py-0.5 rounded text-xs font-medium ${chip}`}>
                   <span className="font-bold">{n}</span>

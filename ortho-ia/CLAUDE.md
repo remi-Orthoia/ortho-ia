@@ -63,23 +63,23 @@ P5/P10/P90/P95 = valeur exacte
 ```
 La bande affichée par Exalang correspond à la borne supérieure : "Q1" = [P10, P25[ ; "Med" = [P25, P50[ ; etc. (manuel Exalang 5-8 p. 12).
 
-### Seuils cliniques (grille 5 zones — alignée sur les seuils officiels Exalang)
-Source : Manuel Exalang 11-15 (Lenfant/Thibault/Helloin 2009, p. 65-67) — section « Seuils de pathologie ».
+### Seuils cliniques (grille 6 zones imposée Laurie — refonte 2026-05-ter)
 ```
-P ≥ 75             → Moyenne haute       (> Q3, bonne réussite)
-P26-P74            → Moyenne             (NS 3-4 centrale, normal)
-P10-P25 (Q1 incl.) → Zone de fragilité   (« zone à surveiller » manuel)
-P5-P9              → Difficulté          (seuil pathologique consensuel P10)
-P < 5              → Difficulté sévère   (seuil strict -1,65 σ)
+P76-P100             → Excellent          (vert foncé)
+P50-P75 (Q3 incl.)   → Moyenne haute      (vert clair)
+P26-P49              → Moyenne basse      (jaune)
+P11-P25 (Q1 incl.)   → Zone de fragilité  (orange clair)
+P6-P10               → Difficulté         (orange foncé)
+P1-P5                → Difficulté sévère  (rouge)
 ```
 
-Citation : « Pour les résultats affichés en percentiles, nous retiendrons le seuil de pathologie couramment admis et utilisé par les cliniciens du percentile 10. Une attention particulière pourra cependant être portée aux résultats se situant en dessous du percentile 25, considérée comme une zone à surveiller. »
+⚠️ **Exalang n'affiche JAMAIS de bande <P5** — la valeur minimale est P5 et est incluse dans "Difficulté sévère". Bornes inclusives de part et d'autre (P50 ∈ Moyenne haute, P75 ∈ Moyenne haute, P76 ∈ Excellent).
 
 ### Erreur classique à éviter
 PDF : "Boucle phonologique : É-T -1.53, Percentiles : Q1"
-- ✅ Q1 = P25 → Zone de fragilité (zone à surveiller Exalang)
+- ✅ Q1 = P25 → Zone de fragilité
 - ❌ Calculer depuis É-T → Difficulté sévère (FAUX — ne jamais recalculer)
-- ❌ "Moyenne basse" (label supprimé depuis l'alignement Exalang)
+- ❌ "Moyenne basse" pour P25 (P25 est en Zone de fragilité, P26+ en Moyenne basse)
 
 ## Fonctionnalités implémentées
 - [x] Auth (login/register/forgot)
