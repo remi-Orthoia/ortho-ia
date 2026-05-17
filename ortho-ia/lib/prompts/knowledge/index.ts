@@ -35,6 +35,8 @@ export {
   STYLE_PROJET_THERAPEUTIQUE,
   STYLE_OVERALL_STRUCTURE,
 } from './style-examples'
+export { EVALEO_METHODOLOGY } from './evaleo-method'
+export { BETL_HILLIS_CARAMAZZA } from './betl-hillis-caramazza'
 
 import { DSM5_CRITERIA } from './dsm5-criteria'
 import {
@@ -50,6 +52,8 @@ import {
   STYLE_PROJET_THERAPEUTIQUE,
   STYLE_OVERALL_STRUCTURE,
 } from './style-examples'
+import { EVALEO_METHODOLOGY } from './evaleo-method'
+import { BETL_HILLIS_CARAMAZZA } from './betl-hillis-caramazza'
 
 /** Catégorisation des tests pour le sélecteur de knowledge. */
 const LANGAGE_ECRIT_TESTS = new Set([
@@ -178,7 +182,26 @@ export function buildKnowledgeContext(
     fragments.push(EFFETS_ORTHOGRAPHE)
   }
 
+  // EVALEO méthodologie : injecté si EVALEO 6-15 sélectionné. C'est le
+  // référentiel le plus complet et le plus à jour pour la rédaction du
+  // CRBO langage écrit pédiatrique (demande Laurie : "se baser sur les
+  // manuels EVALEO, très complets, en lien avec littérature actuelle").
+  // Inclut aussi structure d'écriture du CRBO + acronymes officiels +
+  // 7 classes étalonnage + diagnostic juridique formel.
+  if (includeStyle && tests.includes('EVALEO 6-15')) {
+    fragments.push(EVALEO_METHODOLOGY)
+  }
+
+  // BETL Hillis & Caramazza : injecté si BETL sélectionné. Demande Laurie :
+  // "Pour la rédaction des conclusions BETL, se baser surtout sur le schéma
+  // d'Hillis et Caramazza présents dans le manuel BETL". Inclut le modèle
+  // théorique complet + logique diagnostique en 3 étapes + patterns
+  // d'erreurs en dénomination + profils par pathologie.
+  if (tests.includes('BETL')) {
+    fragments.push(BETL_HILLIS_CARAMAZZA)
+  }
+
   if (fragments.length === 0) return ''
 
-  return `\n\n---\n\n# 📚 BASE DE CONNAISSANCE CLINIQUE\n\nLes blocs ci-dessous sont des extraits de référence pour ancrer la rédaction du CRBO sur les standards officiels et le style des orthophonistes expertes (Anne Frouard / EVALEO 6-15). Tu DOIS t'inspirer de ces extraits pour le ton, la structure, et les formulations diagnostiques — **sans copier-coller verbatim** sauf pour les formules juridiques imposées.\n\n${fragments.join('\n\n')}\n\n---`
+  return `\n\n---\n\n# 📚 BASE DE CONNAISSANCE CLINIQUE\n\nLes blocs ci-dessous sont des extraits de référence pour ancrer la rédaction du CRBO sur les standards officiels et le style des orthophonistes expertes (Anne Frouard / EVALEO 6-15) et les modèles théoriques de référence (Caramazza & Hillis pour la BETL). Tu DOIS t'inspirer de ces extraits pour le ton, la structure, et les formulations diagnostiques — **sans copier-coller verbatim** sauf pour les formules juridiques imposées.\n\n${fragments.join('\n\n')}\n\n---`
 }
