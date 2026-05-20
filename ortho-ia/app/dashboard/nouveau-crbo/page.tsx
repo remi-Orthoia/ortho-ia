@@ -1208,6 +1208,9 @@ function NouveauCRBOContent() {
                   // Toggle vers textarea brut — l'ortho peut éditer si besoin
                   setGeneratedStructure(null)
                 }}
+                previousStructure={formData.bilan_precedent_structure ?? null}
+                previousBilanDate={formData.bilan_precedent_date ?? null}
+                bilanDate={formData.bilan_date}
               />
             </>
           ) : (
@@ -1313,6 +1316,9 @@ function NouveauCRBOContent() {
                     await handleDownloadWord()
                     setShowPreviewModal(false)
                   }}
+                  previousStructure={formData.bilan_precedent_structure ?? null}
+                  previousBilanDate={formData.bilan_precedent_date ?? null}
+                  bilanDate={formData.bilan_date}
                 />
               </div>
             </div>

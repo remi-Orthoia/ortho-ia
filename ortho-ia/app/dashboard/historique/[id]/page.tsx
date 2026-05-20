@@ -78,6 +78,10 @@ export default function CRBODetailPage() {
   const router = useRouter()
   const toast = useToast()
   const [crbo, setCrbo] = useState<CRBO | null>(null)
+  // Bilan précédent (renouvellement) : chargé à part pour permettre le rendu
+  // du tableau comparatif dans CRBOStructuredPreview SANS attendre le download.
+  const [previousStructure, setPreviousStructure] = useState<any | null>(null)
+  const [previousBilanDate, setPreviousBilanDate] = useState<string | null>(null)
   const [profile, setProfile] = useState<any>(null)
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState('')
@@ -111,6 +115,19 @@ export default function CRBODetailPage() {
         setError('CRBO non trouvé')
       } else {
         setCrbo(crboRes.data)
+        // Charge le bilan précédent (renouvellement) en parallèle pour pouvoir
+        // rendre le tableau comparatif dans la preview React. Best-effort : si
+        // la ligne précédente n'existe plus ou n'a pas de structure_json, on
+        // tombe simplement sur null et le tableau ne s'affiche pas.
+        if (crboRes.data.bilan_precedent_id) {
+          const { data: prev } = await supabase
+            .from('crbos')
+            .select('structure_json, bilan_date')
+            .eq('id', crboRes.data.bilan_precedent_id)
+            .maybeSingle()
+          if (prev?.structure_json) setPreviousStructure(prev.structure_json)
+          if (prev?.bilan_date) setPreviousBilanDate(prev.bilan_date)
+        }
       }
       if (profileRes.data) setProfile(profileRes.data)
 
@@ -524,6 +541,9 @@ export default function CRBODetailPage() {
           structure={crbo.structure_json}
           onDownload={handleDownload}
           onPreview={() => setShowPreviewModal(true)}
+          previousStructure={previousStructure}
+          previousBilanDate={previousBilanDate}
+          bilanDate={crbo.bilan_date}
         />
       ) : (
         <div className="space-y-4">
@@ -579,6 +599,9 @@ export default function CRBODetailPage() {
                   await handleDownload()
                   setShowPreviewModal(false)
                 }}
+                previousStructure={previousStructure}
+                previousBilanDate={previousBilanDate}
+                bilanDate={crbo.bilan_date}
               />
             </div>
           </div>
