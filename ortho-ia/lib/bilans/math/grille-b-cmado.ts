@@ -195,8 +195,10 @@ export const GRILLE_B_CMADO: GrilleBilan = {
             {
               id: 'chaine', label: 'Chaîne num.',
               criteres: [
-                c('c1', ['cyc3-1'], '20/20'),
-                c('c2', ['cyc2-1'], '12/20'),
+                // B16:B17 merged dans le XML — "20/20" couvre Cycle III 1+2
+                c('c1', CYC3_ALL, '20/20'),
+                // B18:B19 merged — "12/20" couvre Cycle II 1+2
+                c('c2', CYC2_ALL, '12/20'),
               ],
             },
           ],
@@ -222,7 +224,8 @@ export const GRILLE_B_CMADO: GrilleBilan = {
                 c('c1', COLL_ALL, '7 ok'),
                 c('c2', ['cyc3-1'], '6 ok'),
                 c('c3', ['cyc3-2'], '5 ok'),
-                c('c4', ['cyc2-1'], '4 ok'),
+                // D18:D19 merged — "4 ok" couvre Cycle II 1+2
+                c('c4', CYC2_ALL, '4 ok'),
               ],
             },
             {
@@ -309,14 +312,14 @@ export const GRILLE_B_CMADO: GrilleBilan = {
             {
               id: 'lecture', label: 'lecture',
               criteres: [
-                c('c1', CYC3_ALL, 'décimaux / frac. grands nbres'),
+                c('c1', CYC3_ALL, 'décimaux/ frac. grands nbres'),
                 c('c2', CYC2_ALL, '3 chiffres'),
               ],
             },
             {
               id: 'ecriture', label: 'écriture',
               criteres: [
-                c('c1', CYC3_ALL, 'décimaux / frac. grands nbres'),
+                c('c1', CYC3_ALL, 'décimaux/ frac. grands nbres'),
                 c('c2', CYC2_ALL, '3 chiffres'),
               ],
             },
