@@ -14,17 +14,15 @@ import type {
 
 /**
  * Rend une SECTION de la grille B-CM/B-CMado comme tableau matrice 2D
- * SPARSE — les cellules ne sont pas systématiques, chaque test n'a de
- * critère qu'à certains niveaux (ex: "Classification jetons" a 3 critères
- * gradués à 6/7/8 ans, pas un par niveau).
+ * fidèle au PDF :
+ *   - colonne 1 : niveaux (âge ou classe)
+ *   - colonnes 2+ : tests groupés par épreuve macro (double en-tête)
+ *   - cellules : EMPTY si aucun critère, GRISÉE si non applicable, ou
+ *     critère(s) avec pastille(s) cotable(s)
+ *   - cellules FUSIONNÉES verticalement quand un critère couvre plusieurs
+ *     niveaux consécutifs (rowspan).
  *
- * Layout :
- *   - Colonne 1 : libellés des niveaux (âge ou classe)
- *   - Colonnes suivantes : tests groupés par épreuve macro (double en-tête)
- *   - Cellules : EMPTY si aucun critère, sinon critère(s) avec pastille(s)
- *
- * Seules les CELLULES de critère sont cliquables. Les niveaux et les noms
- * d'épreuves macro sont en lecture seule.
+ * Seuls les critères (cellules pleines) sont cliquables.
  */
 
 interface MatriceSectionProps {
@@ -33,6 +31,12 @@ interface MatriceSectionProps {
   interactive?: boolean
   onCellChange?: (epreuveId: string, next: EpreuveState) => void
 }
+
+type CellAction =
+  | { kind: 'criterion'; criterion: Criterion; rowspan: number }
+  | { kind: 'continue' } // cellule déjà émise par un rowspan d'au-dessus
+  | { kind: 'grise' }
+  | { kind: 'empty' }
 
 export default function MatriceSection({
   section,
@@ -46,19 +50,33 @@ export default function MatriceSection({
   )
 
   /**
-   * Index : pour chaque (epreuveId, sousEpreuveId, niveauId), liste les
-   * critères placés à ce niveau. Permet de rendre la matrice en parcourant
-   * niveau × test et en récupérant les critères du bon "groupe".
+   * Pré-calcule pour chaque (epreuveId, sousEpreuveId, niveauId) l'action de
+   * rendu. Permet de savoir s'il faut émettre un <td> (criterion / grise /
+   * empty) ou le sauter (continue, déjà absorbé par un rowspan).
    */
-  const criteresByCell = useMemo(() => {
-    const map = new Map<string, Criterion[]>()
+  const cellActions = useMemo(() => {
+    const map = new Map<string, CellAction>()
     for (const ep of section.epreuves) {
       for (const se of ep.sousEpreuves) {
+        // 1) Critères : pose un 'criterion' sur le premier niveau, 'continue'
+        //    sur les suivants pour rowspan.
         for (const cr of se.criteres) {
-          const key = `${ep.id}:${se.id}:${cr.niveauId}`
-          const arr = map.get(key) ?? []
-          arr.push(cr)
-          map.set(key, arr)
+          if (cr.niveauIds.length === 0) continue
+          const [first, ...rest] = cr.niveauIds
+          map.set(`${ep.id}:${se.id}:${first}`, {
+            kind: 'criterion',
+            criterion: cr,
+            rowspan: cr.niveauIds.length,
+          })
+          for (const niv of rest) {
+            map.set(`${ep.id}:${se.id}:${niv}`, { kind: 'continue' })
+          }
+        }
+        // 2) Niveaux grisés (seulement si pas déjà occupés par un critère).
+        for (const niv of se.niveauxGrises ?? []) {
+          if (!map.has(`${ep.id}:${se.id}:${niv}`)) {
+            map.set(`${ep.id}:${se.id}:${niv}`, { kind: 'grise' })
+          }
         }
       }
     }
@@ -113,14 +131,14 @@ export default function MatriceSection({
         <table
           style={{
             width: '100%',
-            minWidth: 110 + totalCols * 110,
+            minWidth: 100 + totalCols * 115,
             borderCollapse: 'separate',
             borderSpacing: 0,
             fontSize: 11,
           }}
         >
           <thead>
-            {/* En-tête niveau de macro-épreuve (colspan = nb tests) */}
+            {/* Ligne 1 : épreuves macro (colspan = nb sous-épreuves) */}
             <tr>
               <th
                 rowSpan={2}
@@ -145,7 +163,7 @@ export default function MatriceSection({
                 </th>
               ))}
             </tr>
-            {/* Sous-en-tête : nom de chaque test */}
+            {/* Ligne 2 : nom de chaque test */}
             <tr>
               {section.epreuves.flatMap((ep) =>
                 ep.sousEpreuves.map((se) => (
@@ -184,53 +202,62 @@ export default function MatriceSection({
                 </th>
                 {section.epreuves.flatMap((ep) =>
                   ep.sousEpreuves.map((se) => {
+                    const action = cellActions.get(`${ep.id}:${se.id}:${niv.id}`) ?? { kind: 'empty' }
+                    if (action.kind === 'continue') {
+                      // <td> absorbé par le rowspan du critère du dessus.
+                      return null
+                    }
+                    if (action.kind === 'grise') {
+                      return (
+                        <td
+                          key={`${niv.id}:${ep.id}:${se.id}`}
+                          aria-label="Cellule non applicable"
+                          style={{
+                            ...CELL_STYLE,
+                            background: GRISE_BG,
+                            opacity: 0.6,
+                          }}
+                        />
+                      )
+                    }
+                    if (action.kind === 'empty') {
+                      return (
+                        <td
+                          key={`${niv.id}:${ep.id}:${se.id}`}
+                          style={{
+                            ...CELL_STYLE,
+                            background: rIdx % 2 === 0 ? 'var(--bg-surface-1)' : 'var(--bg-surface-2)',
+                          }}
+                        >
+                          <span aria-hidden="true" style={{ display: 'inline-block', width: 4, height: 4, opacity: 0.18, background: 'var(--fg-3)', borderRadius: '50%' }} />
+                        </td>
+                      )
+                    }
+                    // action.kind === 'criterion'
+                    const cr = action.criterion
                     const state = epreuves[ep.id]
-                    const criteresAtCell = criteresByCell.get(`${ep.id}:${se.id}:${niv.id}`) ?? []
+                    const color: PastilleEtat = state?.cells[cellKey(se.id, cr.id)] ?? 'gris'
                     return (
                       <td
                         key={`${niv.id}:${ep.id}:${se.id}`}
+                        rowSpan={action.rowspan}
                         style={{
                           ...CELL_STYLE,
                           background: rIdx % 2 === 0 ? 'var(--bg-surface-1)' : 'var(--bg-surface-2)',
                         }}
                       >
-                        {criteresAtCell.length === 0 ? (
-                          // Cellule vide — pas de critère à ce niveau pour ce test.
-                          <span aria-hidden="true" style={{ display: 'inline-block', width: 6, height: 6, opacity: 0.15, background: 'var(--fg-3)', borderRadius: '50%' }} />
-                        ) : (
-                          <div style={{ display: 'flex', flexDirection: 'column', gap: 4 }}>
-                            {criteresAtCell.map((cr) => {
-                              const color: PastilleEtat = state?.cells[cellKey(se.id, cr.id)] ?? 'gris'
-                              return (
-                                <div
-                                  key={cr.id}
-                                  style={{
-                                    display: 'flex',
-                                    alignItems: 'center',
-                                    gap: 6,
-                                    padding: '2px 4px',
-                                    borderRadius: 4,
-                                  }}
-                                >
-                                  <Pastille
-                                    etat={color}
-                                    readonly={!interactive}
-                                    onClick={
-                                      interactive
-                                        ? () => handleCellClick(ep.id, se, cr)
-                                        : undefined
-                                    }
-                                    size={interactive ? 14 : 12}
-                                    ariaPrefix={`${niv.label} — ${ep.label} — ${se.label} — ${cr.label}`}
-                                  />
-                                  <span style={{ fontSize: 10, color: 'var(--fg-2)', lineHeight: 1.25, textAlign: 'left' }}>
-                                    {cr.label}
-                                  </span>
-                                </div>
-                              )
-                            })}
-                          </div>
-                        )}
+                        <div style={{ display: 'flex', alignItems: 'center', gap: 6, padding: '2px 4px' }}>
+                          <Pastille
+                            etat={color}
+                            readonly={!interactive}
+                            onClick={interactive ? () => handleCellClick(ep.id, se, cr) : undefined}
+                            size={interactive ? 14 : 12}
+                            ariaPrefix={`${niv.label} — ${ep.label} — ${se.label} — ${cr.label}`}
+                          />
+                          <span style={{ fontSize: 10, color: 'var(--fg-2)', lineHeight: 1.25, textAlign: 'left' }}>
+                            {cr.label}
+                          </span>
+                        </div>
                       </td>
                     )
                   }),
@@ -243,6 +270,12 @@ export default function MatriceSection({
     </section>
   )
 }
+
+// ============================================================================
+// Styles
+// ============================================================================
+
+const GRISE_BG = '#E5E5E5'
 
 const HEADER_NIVEAU_STYLE: React.CSSProperties = {
   position: 'sticky',
@@ -273,7 +306,7 @@ const HEADER_SOUS_EPREUVE_STYLE: React.CSSProperties = {
   fontWeight: 500,
   color: 'var(--fg-3)',
   textAlign: 'center',
-  minWidth: 110,
+  minWidth: 115,
   borderLeft: '1px solid var(--border-ds)',
   whiteSpace: 'normal',
   lineHeight: 1.2,
@@ -287,7 +320,7 @@ const CELL_NIVEAU_STYLE: React.CSSProperties = {
   textAlign: 'left',
   whiteSpace: 'nowrap',
   minWidth: 80,
-  verticalAlign: 'top',
+  verticalAlign: 'middle',
 }
 
 const CELL_STYLE: React.CSSProperties = {
@@ -295,6 +328,6 @@ const CELL_STYLE: React.CSSProperties = {
   textAlign: 'left',
   borderLeft: '1px solid var(--border-ds)',
   borderTop: '1px solid var(--border-ds)',
-  verticalAlign: 'top',
-  minWidth: 110,
+  verticalAlign: 'middle',
+  minWidth: 115,
 }

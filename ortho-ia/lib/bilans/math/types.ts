@@ -1,15 +1,15 @@
 /**
  * Types des bilans de cognition mathématique B-CM (enfant) et B-CMado (ado).
  *
- * Structure matricielle inspirée du PDF source (Elsa DALL'AGNOL, Profil-B CM) :
- *   Chaque grille contient une ou plusieurs SECTIONS, chacune étant un
- *   tableau 2D :
- *     - lignes (niveaux) = âge ou classe scolaire
- *     - colonnes = sous-épreuves (tests, groupés par épreuve macro)
- *     - cellules = critères graduels SPÉCIFIQUES à chaque test, placés au
- *       bon niveau (ex: "Classe selon 2 critères" placé à 6 ans pour le
- *       test "Classification jetons"). Le tableau est donc SPARSE — toutes
- *       les intersections (niveau × test) ne sont pas remplies.
+ * Structure matricielle :
+ *   - Chaque grille a une ou plusieurs SECTIONS, chacune un tableau 2D :
+ *     - lignes (niveaux) = âge en mois ou classe scolaire
+ *     - colonnes = tests (sous-épreuves) groupés par épreuve macro
+ *     - cellules = critères graduels PROPRES à chaque test, placés au bon
+ *       niveau. Un critère peut FUSIONNER plusieurs niveaux consécutifs
+ *       (rowspan dans le rendu HTML).
+ *   - Certaines cellules sont GRISÉES — non cotables, juste signalées
+ *     visuellement comme inapplicables à ce niveau.
  *
  * Cotation purement qualitative : vert / orange / rouge / gris.
  */
@@ -21,31 +21,34 @@ export interface Niveau {
   id: string
   /** Libellé principal (ex: "8 ans", "CM1"). */
   label: string
-  /** Sous-libellé optionnel (ex: rare ici depuis qu'on a simplifié à l'année). */
+  /** Sous-libellé optionnel (ex: "99-101 mo" pour la tranche d'âge en mois). */
   subLabel?: string
 }
 
-/** Critère graduel d'un test, placé à un niveau précis.
- *  C'est l'élément cotable — l'ortho coche le critère atteint par le patient. */
+/** Critère graduel d'un test. Cotable (pastille). */
 export interface Criterion {
   /** Identifiant stable au sein du test parent. */
   id: string
-  /** Niveau (âge ou classe) auquel ce critère est attendu. */
-  niveauId: string
-  /** Texte du critère (ex: "Classe selon 2 critères", "12/12"). */
+  /** Niveaux (lignes) que ce critère couvre — fusion verticale si plusieurs.
+   *  L'ordre doit correspondre à la séquence des niveaux dans Section.niveaux
+   *  pour permettre le rowspan correct côté UI. */
+  niveauIds: string[]
+  /** Texte du critère (ex: "isole 2 critères", "12/12"). */
   label: string
 }
 
-/** Colonne du tableau — un test individuel.
- *  Chaque test a ses critères propres gradués (3-5 typiquement). */
+/** Colonne du tableau — un test individuel. */
 export interface SousEpreuve {
   id: string
   label: string
+  /** Critères gradués de ce test. */
   criteres: Criterion[]
+  /** Niveaux à afficher en GRISÉ (non cotables, juste marqués visuellement).
+   *  Utile pour signaler "non applicable à cette classe / cet âge". */
+  niveauxGrises?: string[]
 }
 
-/** Groupe de colonnes — une "épreuve macro" qui regroupe ses tests.
- *  L'épreuve elle-même n'est PAS cotable directement ; seuls ses critères le sont. */
+/** Groupe de colonnes — une épreuve macro qui regroupe ses tests. */
 export interface Epreuve {
   id: string
   label: string
@@ -71,11 +74,8 @@ export interface GrilleBilan {
 /** État d'une épreuve : critères cotés + notes + texte IA.
  *  Les cellules sont indexées par "sousEpreuveId:criterionId". */
 export interface EpreuveState {
-  /** Pastilles par critère, clé = "sousEpreuveId:criterionId". */
   cells: Record<string, PastilleEtat>
-  /** Observations cliniques brutes saisies par l'ortho pendant la passation. */
   notes: string
-  /** Texte généré par l'IA pour cette épreuve, éditable par l'ortho. */
   iaText?: string
 }
 

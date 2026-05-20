@@ -18,7 +18,7 @@ const NIVEAU_UNIQUE: Niveau[] = [
 /** Petit helper : pour une sous-épreuve "mono", on génère 1 critère unique
  *  portant le même libellé que la sous-épreuve (placé au niveau unique). */
 function mono(label: string, id = 'global') {
-  return [{ id, niveauId: 'tous', label }]
+  return [{ id, niveauIds: ['tous'], label }]
 }
 
 export const GRILLE_B_CMADO: GrilleBilan = {

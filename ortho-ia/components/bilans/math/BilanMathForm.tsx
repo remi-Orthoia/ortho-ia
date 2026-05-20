@@ -147,12 +147,19 @@ export default function BilanMathForm({ grille }: BilanMathFormProps) {
       }
     }
     const cotees = listCotees(epreuveDef, state)
-    const cellules = cotees.map((c) => ({
-      niveau: niveauLabelById.get(c.criterion.niveauId) ?? c.criterion.niveauId,
-      test: c.sousEpreuve.label,
-      critere: c.criterion.label,
-      color: c.color,
-    }))
+    const cellules = cotees.map((c) => {
+      // Un critère peut couvrir plusieurs niveaux (rowspan). On affiche la
+      // plage en concaténant les labels des niveaux concernés.
+      const niveauxLabels = c.criterion.niveauIds.map(
+        (nid) => niveauLabelById.get(nid) ?? nid,
+      )
+      return {
+        niveau: niveauxLabels.join(' → ') || '—',
+        test: c.sousEpreuve.label,
+        critere: c.criterion.label,
+        color: c.color,
+      }
+    })
 
     const parentColor = epreuveColorFromState(epreuveDef, state)
 
