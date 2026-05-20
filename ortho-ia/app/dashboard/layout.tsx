@@ -16,6 +16,7 @@ import {
   Sparkles,
   Newspaper,
   BookText,
+  Calculator,
 } from 'lucide-react'
 import { createClient } from '@/lib/supabase'
 import FeedbackButton from '@/components/FeedbackButton'
@@ -67,6 +68,8 @@ export default function DashboardLayout({ children }: DashboardLayoutProps) {
   const navItems: SidebarItem[] = [
     { id: 'dashboard',  label: 'Tableau de bord', href: '/dashboard',                 icon: <LayoutDashboard size={18} /> },
     { id: 'new',        label: 'Nouveau CRBO',    href: '/dashboard/nouveau-crbo',    icon: <FilePlus size={18} />,        primary: true },
+    { id: 'bcm',        label: 'Bilan B-CM',      href: '/dashboard/bilan/b-cm',      icon: <Calculator size={18} /> },
+    { id: 'bcmado',     label: 'Bilan B-CMado',   href: '/dashboard/bilan/b-cmado',   icon: <Calculator size={18} /> },
     { id: 'patients',   label: 'Mes patients',    href: '/dashboard/patients',        icon: <Users size={18} /> },
     { id: 'history',    label: 'Historique',      href: '/dashboard/historique',      icon: <History size={18} /> },
     { id: 'carnet',     label: 'Carnet de session', href: '/dashboard/carnet',        icon: <BookText size={18} /> },

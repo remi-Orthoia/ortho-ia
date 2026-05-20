@@ -1,0 +1,227 @@
+import { NextRequest, NextResponse } from 'next/server'
+import Anthropic from '@anthropic-ai/sdk'
+import { createServerSupabaseClient } from '@/lib/supabase-server'
+import { buildScrubList, scrubText, rehydrate } from '@/lib/anonymizer'
+import { handleAnthropicError } from '@/lib/anthropic-error'
+import { withRetry } from '@/lib/retry'
+import {
+  SYSTEM_PROMPT_BILAN_MATH_CRBO,
+  buildBilanMathCRBOUserPrompt,
+  type BilanMathCRBOContext,
+  type DomaineInput,
+  type EpreuveInput,
+} from '@/lib/prompts/bilan-math-crbo'
+import type { PastilleEtat } from '@/lib/bilans/math/types'
+
+/**
+ * POST /api/generate-bilan-math
+ *
+ * Génère le CRBO complet d'un bilan B-CM / B-CMado.
+ * Ne sauvegarde PAS en base — le client appelle ensuite supabase.from('crbos').insert()
+ * pour garder le contrôle UI (afficher le texte, le laisser éditer, save sur demande).
+ *
+ * Anonymisation RGPD (prénom/nom patient + nom ortho → tokens) avant Claude,
+ * rehydratation au retour. Pas de DDN brute transmise — uniquement l'âge calculé.
+ *
+ * Quota mensuel vérifié côté serveur AVANT l'appel Claude (fail-fast).
+ */
+
+export const maxDuration = 300
+
+const ALLOWED_COLORS: readonly PastilleEtat[] = ['gris', 'vert', 'orange', 'rouge']
+
+function isPastilleEtat(v: unknown): v is PastilleEtat {
+  return typeof v === 'string' && (ALLOWED_COLORS as readonly string[]).includes(v)
+}
+
+function computeAge(ddnISO: string): string {
+  if (!ddnISO) return ''
+  const ddn = new Date(ddnISO)
+  if (isNaN(ddn.getTime())) return ''
+  const now = new Date()
+  let years = now.getFullYear() - ddn.getFullYear()
+  let months = now.getMonth() - ddn.getMonth()
+  if (now.getDate() < ddn.getDate()) months -= 1
+  if (months < 0) { years -= 1; months += 12 }
+  if (years <= 0) return `${Math.max(0, months)} mois`
+  return months > 0 ? `${years} ans et ${months} mois` : `${years} ans`
+}
+
+interface PayloadBody {
+  bilanType: 'b-cm' | 'b-cmado'
+  mode: 'initial' | 'renouvellement'
+  patient: {
+    prenom: string
+    nom: string
+    date_naissance: string
+    classe: string
+  }
+  domaines: Array<{
+    domaineLabel: string
+    epreuves: Array<{
+      epreuveLabel: string
+      parentColor: PastilleEtat
+      sousEpreuves: Array<{ label: string; color: PastilleEtat }>
+      direct?: PastilleEtat
+      notes: string
+      iaText: string
+    }>
+  }>
+}
+
+export async function POST(request: NextRequest) {
+  const supabase = createServerSupabaseClient()
+  const { data: { user } } = await supabase.auth.getUser()
+  if (!user) {
+    return NextResponse.json({ error: 'Authentification requise' }, { status: 401 })
+  }
+
+  // ---- Quota mensuel (free plan uniquement) ----
+  const { data: sub } = await supabase
+    .from('subscriptions')
+    .select('crbo_limit, plan, status')
+    .eq('user_id', user.id)
+    .single()
+
+  const isFreePlan = !sub || sub.plan === 'free'
+  const effectiveLimit = sub?.crbo_limit === -1 ? Infinity : (sub?.crbo_limit ?? 10)
+
+  if (isFreePlan && sub?.status !== 'canceled') {
+    const { data: monthlyCount } = await supabase.rpc(
+      'get_monthly_crbo_count',
+      { p_user_id: user.id },
+    )
+    if ((monthlyCount ?? 0) >= effectiveLimit) {
+      return NextResponse.json(
+        {
+          error: `Vous avez atteint votre limite de ${effectiveLimit} CRBOs gratuits ce mois. Passez en Pro pour continuer.`,
+        },
+        { status: 429 },
+      )
+    }
+  }
+
+  // ---- Validation payload ----
+  let body: any
+  try {
+    body = await request.json()
+  } catch {
+    return NextResponse.json({ error: 'Body JSON invalide' }, { status: 400 })
+  }
+
+  if (body?.bilanType !== 'b-cm' && body?.bilanType !== 'b-cmado') {
+    return NextResponse.json({ error: 'bilanType invalide' }, { status: 400 })
+  }
+  if (body?.mode !== 'initial' && body?.mode !== 'renouvellement') {
+    return NextResponse.json({ error: 'mode invalide' }, { status: 400 })
+  }
+  if (!Array.isArray(body?.domaines) || body.domaines.length === 0) {
+    return NextResponse.json({ error: 'domaines manquants' }, { status: 400 })
+  }
+
+  // Nettoyage / validation des domaines + épreuves (refuse les pastilles invalides).
+  const cleanDomaines: DomaineInput[] = []
+  for (const dom of body.domaines as any[]) {
+    if (typeof dom?.domaineLabel !== 'string') continue
+    const epreuves: EpreuveInput[] = []
+    if (Array.isArray(dom.epreuves)) {
+      for (const ep of dom.epreuves) {
+        if (typeof ep?.epreuveLabel !== 'string') continue
+        if (!isPastilleEtat(ep.parentColor)) continue
+        const sousEpreuves = Array.isArray(ep.sousEpreuves)
+          ? ep.sousEpreuves
+              .filter((s: any) => typeof s?.label === 'string' && isPastilleEtat(s?.color))
+              .map((s: any) => ({ label: s.label, color: s.color as PastilleEtat }))
+          : []
+        epreuves.push({
+          epreuveLabel: ep.epreuveLabel,
+          parentColor: ep.parentColor as PastilleEtat,
+          sousEpreuves,
+          direct: isPastilleEtat(ep.direct) ? ep.direct : undefined,
+          notes: typeof ep.notes === 'string' ? ep.notes : '',
+          iaText: typeof ep.iaText === 'string' ? ep.iaText : '',
+        })
+      }
+    }
+    cleanDomaines.push({ domaineLabel: dom.domaineLabel, epreuves })
+  }
+
+  // ---- Anonymisation ----
+  const { data: profile } = await supabase
+    .from('profiles')
+    .select('prenom, nom')
+    .eq('id', user.id)
+    .single()
+  const orthoNom = profile ? `${profile.prenom ?? ''} ${profile.nom ?? ''}`.trim() : ''
+
+  const patient = body.patient ?? {}
+  const scrubList = buildScrubList({
+    patient_prenom: typeof patient.prenom === 'string' ? patient.prenom : '',
+    patient_nom: typeof patient.nom === 'string' ? patient.nom : '',
+    ortho_nom: orthoNom,
+  })
+
+  const safeDomaines: DomaineInput[] = cleanDomaines.map((dom) => ({
+    domaineLabel: dom.domaineLabel,
+    epreuves: dom.epreuves.map((ep) => ({
+      ...ep,
+      notes: scrubText(ep.notes, scrubList) ?? '',
+      iaText: scrubText(ep.iaText, scrubList) ?? '',
+    })),
+  }))
+
+  // ---- Anthropic ----
+  if (!process.env.ANTHROPIC_API_KEY || process.env.ANTHROPIC_API_KEY.includes('VOTRE_CLE')) {
+    return NextResponse.json(
+      { error: 'Service de génération non configuré côté serveur.' },
+      { status: 500 },
+    )
+  }
+
+  const anthropic = new Anthropic({ apiKey: process.env.ANTHROPIC_API_KEY })
+
+  const ctx: BilanMathCRBOContext = {
+    bilanType: body.bilanType,
+    mode: body.mode,
+    patientAge: computeAge(typeof patient.date_naissance === 'string' ? patient.date_naissance : ''),
+    patientClasse: typeof patient.classe === 'string' ? patient.classe : '',
+    domaines: safeDomaines,
+  }
+  const userPrompt = buildBilanMathCRBOUserPrompt(ctx)
+
+  let safeText: string
+  try {
+    const message = await withRetry(
+      () => anthropic.messages.create({
+        model: 'claude-sonnet-4-5',
+        max_tokens: 4000,
+        temperature: 0.4,
+        system: SYSTEM_PROMPT_BILAN_MATH_CRBO,
+        messages: [{ role: 'user', content: userPrompt }],
+      }),
+      { maxAttempts: 2 },
+    )
+    const block = message.content.find(b => b.type === 'text')
+    if (!block || block.type !== 'text') {
+      return NextResponse.json({ error: 'Réponse Claude vide.' }, { status: 500 })
+    }
+    safeText = block.text.trim()
+  } catch (error) {
+    const handled = handleAnthropicError(error, 'la génération du CRBO')
+    if (handled) return handled
+    console.error('generate-bilan-math unexpected error:', error)
+    return NextResponse.json({ error: 'Erreur lors de la génération.' }, { status: 500 })
+  }
+
+  // ---- Rehydratation ----
+  const reverseMap = {
+    tokens: {
+      '__P_PRENOM__': typeof patient.prenom === 'string' ? patient.prenom : '',
+      '__P_NOM__': typeof patient.nom === 'string' ? patient.nom : '',
+      '__O_NOM__': orthoNom,
+    },
+  }
+  const text = rehydrate(safeText, reverseMap)
+
+  return NextResponse.json({ text })
+}
