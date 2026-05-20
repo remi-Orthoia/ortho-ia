@@ -1,21 +1,26 @@
 'use client'
 
 import Pastille from './Pastille'
-import { computeParentColor } from '@/lib/bilans/math/parent-color'
-import type { GrilleBilan, BilanMathDraft, PastilleEtat } from '@/lib/bilans/math/types'
+import { computeParentColor, cyclePastille } from '@/lib/bilans/math/parent-color'
+import type { GrilleBilan, BilanMathDraft, EpreuveState, PastilleEtat } from '@/lib/bilans/math/types'
 
 /**
- * Rendu READ-ONLY de la grille colorée d'un bilan math, pour insertion en
- * tête du CRBO généré (preview + historique).
+ * Rendu de la grille colorée d'un bilan math. Deux modes :
  *
- * Reprend fidèlement la structure de la grille (Domaine → Épreuve → Sous-épreuves)
- * avec les pastilles colorées d'après l'état saisi par l'ortho. Aucune
- * interaction : pas de clic, pas de notes textarea, pas de bouton IA. Juste
- * un coup d'œil rapide sur le profil de cotations.
+ *  - **Read-only** (par défaut, sans `onEpreuveChange`) : affiche les pastilles
+ *    en mode indicateur. Utilisé pour la preview CRBO + historique.
+ *  - **Interactif** (avec `onEpreuveChange`) : les pastilles deviennent
+ *    cliquables et cyclent gris → vert → orange → rouge → gris. Utilisé en
+ *    tête du formulaire pour permettre la cotation rapide sur la grille globale.
+ *
+ * Pour les épreuves multi (avec sous-épreuves), la pastille parent reste
+ * READ-ONLY même en mode interactif : c'est une couleur CALCULÉE qui ne peut
+ * pas être éditée directement. L'ortho cote les sous-épreuves individuellement.
  *
  * Utilisé dans :
- *   - BilanMathForm preview après "Générer le CRBO"
- *   - app/dashboard/historique/[id]/page.tsx (pour bilan_subtype b-cm/b-cmado)
+ *   - BilanMathForm en tête (interactif)
+ *   - BilanMathForm preview après "Générer le CRBO" (read-only)
+ *   - app/dashboard/historique/[id]/page.tsx (read-only)
  */
 
 interface BilanMathSummaryProps {
@@ -25,13 +30,22 @@ interface BilanMathSummaryProps {
   /** Si true, on affiche aussi les épreuves non cotées (gris). Par défaut false :
    *  on ne montre que les épreuves avec au moins une cotation non-gris. */
   showEmpty?: boolean
+  /** Si fourni, active le mode interactif : les pastilles deviennent cliquables
+   *  et appellent ce callback avec le nouvel état de l'épreuve. Sinon mode read-only. */
+  onEpreuveChange?: (epreuveId: string, next: EpreuveState) => void
+  /** Libellé alternatif pour le header (par défaut "{label} — Profil de cotations"). */
+  titleOverride?: string
 }
 
 export default function BilanMathSummary({
   grille,
   epreuves,
   showEmpty = false,
+  onEpreuveChange,
+  titleOverride,
 }: BilanMathSummaryProps) {
+  const interactive = typeof onEpreuveChange === 'function'
+
   /** Couleur calculée d'une épreuve (parent color depuis ses sous-épreuves
    *  OU pastille directe pour les mono-épreuves). */
   const colorOf = (epreuve: GrilleBilan['domaines'][number]['epreuves'][number]): PastilleEtat => {
@@ -42,30 +56,52 @@ export default function BilanMathSummary({
     return computeParentColor(colors)
   }
 
+  const getOrEmptyState = (epreuveId: string): EpreuveState =>
+    epreuves[epreuveId] ?? { sousEpreuves: {}, notes: '' }
+
+  const handleDirectClick = (epreuveId: string) => {
+    if (!onEpreuveChange) return
+    const state = getOrEmptyState(epreuveId)
+    onEpreuveChange(epreuveId, { ...state, direct: cyclePastille(state.direct ?? 'gris') })
+  }
+
+  const handleSousEpreuveClick = (epreuveId: string, sousEpreuveId: string) => {
+    if (!onEpreuveChange) return
+    const state = getOrEmptyState(epreuveId)
+    const current = state.sousEpreuves[sousEpreuveId] ?? 'gris'
+    onEpreuveChange(epreuveId, {
+      ...state,
+      sousEpreuves: { ...state.sousEpreuves, [sousEpreuveId]: cyclePastille(current) },
+    })
+  }
+
   return (
     <div
       style={{
         background: 'var(--bg-surface-1)',
-        border: '1px solid var(--border-ds)',
+        border: interactive ? '2px solid var(--ds-primary, #16a34a)' : '1px solid var(--border-ds)',
         borderRadius: 12,
         padding: 16,
       }}
     >
       <header style={{ marginBottom: 12 }}>
         <h3 style={{ margin: 0, fontSize: 14, fontWeight: 700, color: 'var(--fg-1)' }}>
-          {grille.label} — Profil de cotations
+          {titleOverride ?? `${grille.label} — Profil de cotations`}
         </h3>
         <p style={{ margin: '4px 0 0', fontSize: 11, color: 'var(--fg-3)' }}>
-          Grille colorée reprise fidèlement depuis la saisie. Rouge &gt; Orange &gt; Vert sur la couleur parent.
+          {interactive
+            ? 'Clique sur une pastille pour cycler gris → vert → orange → rouge → gris. Les notes par épreuve se saisissent plus bas.'
+            : 'Grille colorée reprise fidèlement depuis la saisie. Rouge > Orange > Vert sur la couleur parent.'}
         </p>
       </header>
 
       <div style={{ display: 'flex', flexDirection: 'column', gap: 14 }}>
         {grille.domaines.map(domaine => {
-          // Détermine quelles épreuves afficher : par défaut on cache les
-          // épreuves totalement non renseignées pour réduire le bruit visuel.
+          // Mode interactif : afficher TOUTES les épreuves (sinon on ne peut
+          // pas commencer à coter une épreuve vierge). En mode read-only, on
+          // cache les épreuves totalement non renseignées pour réduire le bruit.
           const epreuvesToShow = domaine.epreuves.filter(epreuve => {
-            if (showEmpty) return true
+            if (interactive || showEmpty) return true
             const parent = colorOf(epreuve)
             const state = epreuves[epreuve.id]
             const hasNotes = state?.notes && state.notes.trim().length > 0
@@ -104,11 +140,15 @@ export default function BilanMathSummary({
                         borderRadius: 6,
                       }}
                     >
+                      {/* Pastille parent : interactive uniquement pour les épreuves
+                          mono (clic = cycle direct). Pour les multi, le parent est
+                          CALCULÉ depuis les sous-épreuves, donc reste read-only. */}
                       <Pastille
                         etat={parent}
-                        readonly
-                        size={16}
-                        ariaPrefix={`${epreuve.label} (couleur globale)`}
+                        readonly={!interactive || !isMono}
+                        onClick={interactive && isMono ? () => handleDirectClick(epreuve.id) : undefined}
+                        size={isMono && interactive ? 20 : 16}
+                        ariaPrefix={isMono ? epreuve.label : `${epreuve.label} (couleur globale)`}
                       />
                       <span style={{ fontSize: 13, fontWeight: 500, color: 'var(--fg-1)', flexShrink: 0 }}>
                         {epreuve.label}
@@ -130,8 +170,9 @@ export default function BilanMathSummary({
                               >
                                 <Pastille
                                   etat={c}
-                                  readonly
-                                  size={10}
+                                  readonly={!interactive}
+                                  onClick={interactive ? () => handleSousEpreuveClick(epreuve.id, se.id) : undefined}
+                                  size={interactive ? 14 : 10}
                                   ariaPrefix={`${epreuve.label} — ${se.label}`}
                                 />
                                 {se.label}

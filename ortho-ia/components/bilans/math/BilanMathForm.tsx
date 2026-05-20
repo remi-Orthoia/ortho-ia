@@ -459,7 +459,22 @@ export default function BilanMathForm({ grille }: BilanMathFormProps) {
         <PastilleLegend />
       </div>
 
-      {/* Grille des domaines / épreuves */}
+      {/* Grille globale interactive — l'ortho peut coter directement ici
+          sans avoir à scroller jusqu'aux cartes par épreuve plus bas. Les
+          deux vues sont synchronisées sur le même état (single source of
+          truth). Les notes brutes et le bouton "Générer avec l'IA" restent
+          dans les cartes par épreuve plus bas. */}
+      <div style={{ marginBottom: 24 }}>
+        <BilanMathSummary
+          grille={grille}
+          epreuves={draft.epreuves}
+          onEpreuveChange={handleEpreuveChange}
+          titleOverride={`${grille.label} — Grille de cotation`}
+        />
+      </div>
+
+      {/* Cartes détaillées par épreuve : notes brutes + bouton IA. Les
+          pastilles ici restent cliquables, doublant la grille globale ci-dessus. */}
       {grille.domaines.map((domaine) => (
         <DomaineSection
           key={domaine.id}
