@@ -124,7 +124,8 @@ export default function SmartObjectivesPrintPage() {
         }
         @page {
           size: A4;
-          margin: 18mm 16mm 18mm 16mm;
+          /* Marges resserrees pour faire tenir la fiche sur 1 page (cible) */
+          margin: 12mm 14mm 12mm 14mm;
         }
       `}</style>
 
@@ -192,62 +193,52 @@ export default function SmartObjectivesPrintPage() {
         style={{
           maxWidth: 820,
           margin: '0 auto',
-          padding: '24px 32px 64px',
+          padding: '14px 22px 24px',
           background: 'white',
           color: '#111827',
           fontFamily: '"Bookman Old Style", Georgia, serif',
-          fontSize: 14,
-          lineHeight: 1.55,
+          fontSize: 12.5,
+          lineHeight: 1.4,
         }}
       >
         <h1
           style={{
             textAlign: 'center',
-            margin: '12px 0 8px',
-            fontSize: 22,
+            margin: '0 0 4px',
+            fontSize: 18,
             fontWeight: 700,
             color: '#2E7D32',
-            letterSpacing: 0.5,
+            letterSpacing: 0.4,
           }}
         >
           FICHE OBJECTIFS THÉRAPEUTIQUES
         </h1>
-        <p style={{ textAlign: 'center', margin: 0, fontSize: 15, fontWeight: 600 }}>
-          Patient : {patient_prenom} {patient_nom}
-        </p>
-        <p
-          style={{
-            textAlign: 'center',
-            margin: '4px 0 24px',
-            fontSize: 12,
-            color: '#6B7280',
-          }}
-        >
-          Bilan du {bilanDateFr}
+        <p style={{ textAlign: 'center', margin: '0 0 14px', fontSize: 12.5, fontWeight: 600 }}>
+          {patient_prenom} {patient_nom} — bilan du {bilanDateFr}
         </p>
 
-        <section style={{ marginBottom: 24 }}>
+        <section style={{ marginBottom: 12 }}>
           <h2
             style={{
               color: '#2E7D32',
-              fontSize: 17,
+              fontSize: 13.5,
               fontWeight: 700,
-              borderBottom: '2px solid #2E7D32',
-              paddingBottom: 4,
-              marginBottom: 16,
+              borderBottom: '1.5px solid #2E7D32',
+              paddingBottom: 2,
+              marginBottom: 8,
             }}
           >
             OBJECTIFS COURT TERME (3-4 semaines)
           </h2>
 
           {smart.objectifs.map((obj, idx) => (
-            <div className="objectif-block" key={idx} style={{ marginBottom: 22 }}>
+            <div className="objectif-block" key={idx} style={{ marginBottom: 10 }}>
               <h3
                 style={{
                   color: '#2E7D32',
-                  fontSize: 15,
+                  fontSize: 12.5,
                   fontWeight: 700,
-                  marginBottom: 8,
+                  margin: '0 0 4px',
                 }}
               >
                 Objectif {idx + 1} — {obj.domaine}
@@ -255,9 +246,9 @@ export default function SmartObjectivesPrintPage() {
               <p
                 style={{
                   background: '#E8F5E9',
-                  padding: '8px 12px',
-                  borderRadius: 6,
-                  margin: '0 0 10px',
+                  padding: '5px 8px',
+                  borderRadius: 5,
+                  margin: '0 0 4px',
                 }}
               >
                 <strong>Objectif :</strong> {obj.intitule}
@@ -266,8 +257,8 @@ export default function SmartObjectivesPrintPage() {
                 style={{
                   width: '100%',
                   borderCollapse: 'collapse',
-                  fontSize: 13,
-                  marginBottom: 8,
+                  fontSize: 11.5,
+                  marginBottom: 4,
                 }}
               >
                 <tbody>
@@ -281,25 +272,25 @@ export default function SmartObjectivesPrintPage() {
                       <td
                         style={{
                           background: '#F5F5F5',
-                          padding: '6px 10px',
+                          padding: '3px 7px',
                           border: '1px solid #BFBFBF',
                           fontWeight: 600,
-                          width: '28%',
+                          width: '26%',
                         }}
                       >
                         {label}
                       </td>
-                      <td style={{ padding: '6px 10px', border: '1px solid #BFBFBF' }}>{value}</td>
+                      <td style={{ padding: '3px 7px', border: '1px solid #BFBFBF' }}>{value}</td>
                     </tr>
                   ))}
                 </tbody>
               </table>
-              <p style={{ margin: '8px 0 4px', fontWeight: 600, color: '#2E7D32' }}>
+              <p style={{ margin: '4px 0 2px', fontWeight: 600, color: '#2E7D32', fontSize: 11.5 }}>
                 Entraînement ciblé
               </p>
-              <ul style={{ margin: 0, paddingLeft: 20 }}>
+              <ul style={{ margin: 0, paddingLeft: 18 }}>
                 {obj.entrainement.map((ex, i) => (
-                  <li key={i} style={{ marginBottom: 2 }}>
+                  <li key={i} style={{ marginBottom: 1 }}>
                     {ex}
                   </li>
                 ))}
@@ -308,37 +299,37 @@ export default function SmartObjectivesPrintPage() {
           ))}
         </section>
 
-        <section style={{ marginBottom: 24 }}>
+        <section style={{ marginBottom: 10 }}>
           <h2
             style={{
               color: '#2E7D32',
-              fontSize: 17,
+              fontSize: 13.5,
               fontWeight: 700,
-              borderBottom: '2px solid #2E7D32',
-              paddingBottom: 4,
-              marginBottom: 12,
+              borderBottom: '1.5px solid #2E7D32',
+              paddingBottom: 2,
+              marginBottom: 6,
             }}
           >
             STRATÉGIES EVIDENCE-BASED
           </h2>
-          <ul style={{ margin: 0, paddingLeft: 20 }}>
+          <ul style={{ margin: 0, paddingLeft: 18 }}>
             {smart.strategies_ebp.map((s, i) => (
-              <li key={i} style={{ marginBottom: 4 }}>
+              <li key={i} style={{ marginBottom: 2 }}>
                 {s}
               </li>
             ))}
           </ul>
         </section>
 
-        <section style={{ marginBottom: 32 }}>
+        <section style={{ marginBottom: 10 }}>
           <h2
             style={{
               color: '#2E7D32',
-              fontSize: 17,
+              fontSize: 13.5,
               fontWeight: 700,
-              borderBottom: '2px solid #2E7D32',
-              paddingBottom: 4,
-              marginBottom: 12,
+              borderBottom: '1.5px solid #2E7D32',
+              paddingBottom: 2,
+              marginBottom: 4,
             }}
           >
             SUIVI
@@ -353,10 +344,10 @@ export default function SmartObjectivesPrintPage() {
             textAlign: 'center',
             fontStyle: 'italic',
             color: '#6B7280',
-            fontSize: 11,
-            marginTop: 32,
+            fontSize: 10,
+            marginTop: 12,
             borderTop: '1px solid #E5E7EB',
-            paddingTop: 12,
+            paddingTop: 4,
           }}
         >
           Document généré par Ortho.ia — usage clinique interne

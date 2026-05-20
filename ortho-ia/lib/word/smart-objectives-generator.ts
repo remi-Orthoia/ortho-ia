@@ -30,11 +30,14 @@ export async function generateSmartObjectivesWord(input: SmartObjectivesPayloadI
     WidthType, BorderStyle, AlignmentType, ShadingType, PageOrientation,
   } = await import('docx')
 
+  // Tailles serrees pour faire tenir la fiche sur 1-2 pages A4 (cible : 1 page).
+  // Bookman Old Style etant un peu plus large que Calibri, on descend de 1pt par
+  // rapport au standard Word pour gagner ~15% de surface texte.
   const FONT = 'Bookman Old Style'
-  const FONT_SIZE_NORMAL = 22
-  const FONT_SIZE_TITLE = 32
-  const FONT_SIZE_SECTION = 26
-  const FONT_SIZE_SMALL = 18
+  const FONT_SIZE_NORMAL = 20  // 10pt
+  const FONT_SIZE_TITLE = 28   // 14pt
+  const FONT_SIZE_SECTION = 22 // 11pt
+  const FONT_SIZE_SMALL = 16   // 8pt
   const COLOR_GREEN = '2E7D32'
   const COLOR_GREEN_LIGHT = 'E8F5E9'
   const COLOR_GREY_TEXT = '707070'
@@ -94,14 +97,14 @@ export async function generateSmartObjectivesWord(input: SmartObjectivesPayloadI
       children: [
         new TextRun({ text, bold: true, size: FONT_SIZE_SECTION, font: FONT, color: COLOR_GREEN }),
       ],
-      spacing: { before: 300, after: 160 },
-      border: { bottom: { color: COLOR_GREEN, space: 20, style: BorderStyle.SINGLE, size: 12 } },
+      spacing: { before: 180, after: 80 },
+      border: { bottom: { color: COLOR_GREEN, space: 14, style: BorderStyle.SINGLE, size: 8 } },
     })
 
   const bullet = (text: string) =>
     new Paragraph({
       children: [new TextRun({ text: `• ${text}`, size: FONT_SIZE_NORMAL, font: FONT })],
-      spacing: { after: 80 },
+      spacing: { after: 40 },
     })
 
   const children: any[] = []
@@ -118,31 +121,19 @@ export async function generateSmartObjectivesWord(input: SmartObjectivesPayloadI
           color: COLOR_GREEN,
         }),
       ],
-      spacing: { before: 100, after: 120 },
+      spacing: { before: 0, after: 60 },
     }),
     new Paragraph({
       alignment: AlignmentType.CENTER,
       children: [
         new TextRun({
-          text: `Patient : ${patient_prenom} ${patient_nom}`,
+          text: `${patient_prenom} ${patient_nom} — bilan du ${bilanDateFr}`,
           size: FONT_SIZE_NORMAL,
           font: FONT,
           bold: true,
         }),
       ],
-      spacing: { after: 40 },
-    }),
-    new Paragraph({
-      alignment: AlignmentType.CENTER,
-      children: [
-        new TextRun({
-          text: `Bilan du ${bilanDateFr}`,
-          size: FONT_SIZE_SMALL,
-          font: FONT,
-          color: COLOR_GREY_TEXT,
-        }),
-      ],
-      spacing: { after: 240 },
+      spacing: { after: 120 },
     }),
   )
 
@@ -160,7 +151,7 @@ export async function generateSmartObjectivesWord(input: SmartObjectivesPayloadI
             color: COLOR_GREEN,
           }),
         ],
-        spacing: { before: 200, after: 100 },
+        spacing: { before: 120, after: 40 },
       }),
       new Paragraph({
         alignment: AlignmentType.BOTH,
@@ -169,7 +160,7 @@ export async function generateSmartObjectivesWord(input: SmartObjectivesPayloadI
           new TextRun({ text: 'Objectif : ', bold: true, size: FONT_SIZE_NORMAL, font: FONT }),
           new TextRun({ text: obj.intitule, size: FONT_SIZE_NORMAL, font: FONT }),
         ],
-        spacing: { after: 120 },
+        spacing: { after: 60 },
       }),
     )
 
@@ -218,7 +209,7 @@ export async function generateSmartObjectivesWord(input: SmartObjectivesPayloadI
             color: COLOR_GREEN,
           }),
         ],
-        spacing: { before: 160, after: 80 },
+        spacing: { before: 80, after: 40 },
       }),
     )
     for (const ex of obj.entrainement) {
@@ -243,7 +234,7 @@ export async function generateSmartObjectivesWord(input: SmartObjectivesPayloadI
         }),
         new TextRun({ text: smart.prochaine_evaluation, size: FONT_SIZE_NORMAL, font: FONT }),
       ],
-      spacing: { before: 120, after: 240 },
+      spacing: { before: 60, after: 100 },
     }),
   )
 
@@ -259,7 +250,7 @@ export async function generateSmartObjectivesWord(input: SmartObjectivesPayloadI
           color: COLOR_GREY_TEXT,
         }),
       ],
-      spacing: { before: 400 },
+      spacing: { before: 200 },
     }),
   )
 
@@ -269,7 +260,8 @@ export async function generateSmartObjectivesWord(input: SmartObjectivesPayloadI
         properties: {
           page: {
             size: { width: 11906, height: 16838, orientation: PageOrientation.PORTRAIT },
-            margin: { top: 720, right: 720, bottom: 720, left: 720 },
+            // Marges serrees pour maximiser la surface texte (0.375 in = 540 dxa).
+            margin: { top: 540, right: 540, bottom: 540, left: 540 },
           },
         },
         children,

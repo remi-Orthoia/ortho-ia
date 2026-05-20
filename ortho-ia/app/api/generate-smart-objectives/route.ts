@@ -120,21 +120,23 @@ function buildSmartPrompt(input: {
   return `Tu es un orthophoniste expert en evidence-based practice.
 À partir des résultats de bilan suivants, génère une fiche d'objectifs thérapeutiques SMART pour les 3-4 semaines à venir.
 
+OBJECTIF DE CONCISION — la fiche doit tenir sur 1 à 2 pages A4 maximum.
+
 RÈGLES IMPÉRATIVES :
 - Maximum 3 objectifs, ciblés sur les domaines les plus déficitaires (percentiles ≤ P25 en priorité)
 - Chaque objectif doit être SMART : Spécifique, Mesurable, Atteignable, Réaliste, Temporel
-- Pour chaque objectif :
-  * intitulé précis et chiffré
-  * ligne de base = score réel relevé dans le bilan (avec date)
-  * critère de maîtrise mesurable (ex: 8/10 sur 2 séances)
-  * délai 3 à 4 semaines
-  * entraînement ciblé EBP (2-4 exercices concrets)
-  * modalité de réévaluation
-- Objectifs réalistes et motivants — small wins, progression visible
-- Stratégies basées sur l'evidence : Elkonin, décodage syllabique progressif, fluence par répétition, dictée sans erreur (Cèbe & Goigoux), lecture partagée parent-enfant, méthode des alphas, etc.
-- Formulations positives et encourageantes
-- Vocabulaire accessible à l'orthophoniste ET compréhensible par les parents si la fiche est partagée
-- Pas de jargon médical lourd, pas de codes diagnostiques
+- Pour chaque objectif (LIMITES STRICTES de longueur) :
+  * intitulé : 1 phrase courte, ≤ 20 mots, chiffré
+  * ligne de base : 1 ligne, score + date entre parenthèses, ≤ 15 mots
+  * critère de maîtrise : 1 ligne, ≤ 12 mots (ex: "8/10 sur 2 séances consécutives")
+  * délai : 1 segment court (ex: "3 semaines")
+  * entraînement : EXACTEMENT 2 à 3 exercices, 1 ligne chacun, ≤ 15 mots/item
+  * réévaluation : 1 phrase, ≤ 15 mots
+- Stratégies EBP : MAX 4 stratégies, 1 ligne chacune, ≤ 12 mots. Citer nommément la méthode (Elkonin, dictée sans erreur Cèbe & Goigoux, méthode des alphas, fluence par répétition, lecture partagée parent-enfant, décodage syllabique progressif).
+- Prochaine évaluation : 1 phrase courte (mois + nom de la cible).
+- Pas de phrases d'introduction, pas de redondance, pas de répétition des consignes.
+- Formulations positives, vocabulaire accessible parents.
+- Pas de codes CIM-10 (F80…), pas de jargon non expliqué.
 
 PATIENT
 - Prénom : ${input.patient_prenom}
@@ -148,7 +150,7 @@ BILAN
 DONNÉES DU BILAN (JSON) :
 ${JSON.stringify(input.structure_json, null, 2)}
 
-Génère la fiche en appelant l'outil generate_smart_objectives.`
+Génère la fiche en appelant l'outil generate_smart_objectives. Respecte STRICTEMENT les limites de longueur — la fiche doit tenir sur 1 page idéalement, 2 max.`
 }
 
 /**
@@ -169,28 +171,31 @@ function buildSmartPromptMath(input: {
   return `Tu es un orthophoniste senior spécialisé en cognition mathématique, expert en evidence-based practice.
 À partir du bilan ${input.bilan_label} ci-dessous, génère une fiche d'objectifs thérapeutiques SMART pour les 3-4 semaines à venir.
 
-RÈGLES IMPÉRATIVES :
-- Maximum 3 objectifs, ciblés sur les épreuves en ROUGE (échec) en priorité, puis ORANGE (étayage) si moins de 3 rouges.
-- Chaque objectif doit être SMART : Spécifique, Mesurable, Atteignable, Réaliste, Temporel.
-- Pour chaque objectif :
-  * intitulé précis et chiffré (ex: "Réussir 8/10 problèmes additifs à 2 étapes")
-  * ligne de base = couleur observée au bilan + observation clinique courte (ex: "Rouge en bilan du 18 mai 2026 — échec sur les problèmes en 2 étapes")
-  * critère de maîtrise mesurable (ex: "8/10 sur 2 séances consécutives")
-  * délai 3 à 4 semaines
-  * entraînement ciblé EBP (2-4 exercices concrets) — voir EBP ci-dessous
-  * modalité de réévaluation
-- Pas de chiffres d'écart-type ni de percentile : ce bilan est qualitatif.
-- Objectifs réalistes et motivants — small wins, progression visible.
-- Formulations positives et encourageantes.
-- Vocabulaire accessible à l'orthophoniste ET compréhensible par les parents si la fiche est partagée.
-- Pas de jargon médical lourd, pas de codes diagnostiques (F81 etc.).
+OBJECTIF DE CONCISION — la fiche doit tenir sur 1 à 2 pages A4 maximum.
 
-EBP EN RÉÉDUCATION MATHÉMATIQUE (à citer nommément dans les exercices si pertinent) :
-- Sens du nombre / numérosité : approche Brissiaud (constellations, comptage-numérotage vs sens), méthode des coins, Number Sense Intervention (Jordan), TouchMath.
-- Numération entière/décimale : matériel Montessori (perles, cartes), tableau de numération, droite numérique graduée.
-- Calcul mental / faits arithmétiques : flashcards espacées (spaced retrieval), méthode des doubles, compléments à 10, dé numérique, jeux type "Math Recovery".
-- Résolution de problèmes : schémas de Vergnaud (état-transformation-comparaison), méthode Singapore (modèle en barres), reformulation, manipulation puis dessin puis symbole.
-- Compétences logiques : tri/classification de matériel concret (UNO, formes, objets), inclusion (boîtes emboîtées), conservation (manipulation puis verbalisation).
+RÈGLES IMPÉRATIVES :
+- Maximum 3 objectifs, ciblés sur les épreuves en ROUGE en priorité, puis ORANGE si moins de 3 rouges.
+- Chaque objectif doit être SMART : Spécifique, Mesurable, Atteignable, Réaliste, Temporel.
+- Pour chaque objectif (LIMITES STRICTES de longueur) :
+  * intitulé : 1 phrase chiffrée, ≤ 20 mots (ex: "Réussir 8/10 problèmes additifs à 2 étapes")
+  * ligne de base : 1 ligne, couleur + obs courte + date entre parenthèses, ≤ 15 mots
+  * critère de maîtrise : 1 ligne, ≤ 12 mots (ex: "8/10 sur 2 séances consécutives")
+  * délai : 1 segment court (ex: "3 semaines")
+  * entraînement : EXACTEMENT 2 à 3 exercices, 1 ligne chacun, ≤ 15 mots/item
+  * réévaluation : 1 phrase, ≤ 15 mots
+- Stratégies EBP : MAX 4 stratégies, 1 ligne chacune, ≤ 12 mots, méthode citée nommément.
+- Prochaine évaluation : 1 phrase courte.
+- Pas d'écart-type ni de percentile : ce bilan est qualitatif.
+- Formulations positives, vocabulaire accessible parents.
+- Pas de jargon ni codes CIM-10 (F81…).
+- Pas d'intro, pas de redondance, pas de répétition des consignes.
+
+EBP EN RÉÉDUCATION MATHÉMATIQUE (cite nommément la méthode dans les exercices) :
+- Sens du nombre : Brissiaud (comptage-numérotage vs sens), Number Sense Intervention (Jordan), TouchMath, méthode des coins.
+- Numération : Montessori (perles, cartes), tableau de numération, droite numérique graduée.
+- Calcul mental / faits arithmétiques : flashcards espacées (spaced retrieval), doubles, compléments à 10, Math Recovery.
+- Résolution de problèmes : schémas Vergnaud (état-transformation-comparaison), Singapore (modèle en barres), manipulation puis dessin puis symbole.
+- Logique : tri/classification matériel concret, inclusion (boîtes emboîtées), conservation (manipulation + verbalisation).
 - Transcodage : passage progressif analogique → oral → arabe avec étayage visuel.
 
 PATIENT
@@ -202,7 +207,7 @@ BILAN
 - Type : ${input.bilan_label}
 - Date : ${input.bilan_date_fr}
 
-SYNTHÈSE DES COTATIONS (épreuves cotées avec leur couleur globale) :
+SYNTHÈSE DES COTATIONS :
 ${input.bilan_summary}
 
 CRBO RÉDIGÉ PAR L'ORTHOPHONISTE :
@@ -210,7 +215,7 @@ CRBO RÉDIGÉ PAR L'ORTHOPHONISTE :
 ${input.crbo_text}
 """
 
-Génère la fiche en appelant l'outil generate_smart_objectives. Les objectifs doivent s'appuyer sur les épreuves rouges/oranges identifiées ci-dessus et le diagnostic du CRBO.`
+Génère la fiche en appelant l'outil generate_smart_objectives. Respecte STRICTEMENT les limites de longueur — la fiche doit tenir sur 1 page idéalement, 2 max.`
 }
 
 /** Glose clinique d'une couleur de pastille (réutilisée du module bilans math). */
