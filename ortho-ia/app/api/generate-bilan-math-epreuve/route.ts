@@ -175,7 +175,7 @@ export async function POST(request: NextRequest) {
   try {
     const message = await withRetry(
       () => anthropic.messages.create({
-        model: 'claude-sonnet-4-5',
+        model: 'claude-sonnet-4-6',
         max_tokens: 800,
         temperature: 0.4,
         system: SYSTEM_PROMPT_BILAN_MATH_EPREUVE,
