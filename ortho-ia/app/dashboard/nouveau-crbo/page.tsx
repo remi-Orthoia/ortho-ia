@@ -29,7 +29,7 @@ import BecdScoresInput from '@/components/forms/BecdScoresInput'
 import BiaScoresInput from '@/components/forms/BiaScoresInput'
 import PrediLacScoresInput from '@/components/forms/PrediLacScoresInput'
 import ExalangLyfacScoresInput from '@/components/forms/ExalangLyfacScoresInput'
-import { TESTS_WITH_SPECIFIC_FORM, getComplementarySuggestions } from '@/lib/test-pairings'
+import { TESTS_WITH_SPECIFIC_FORM, getComplementarySuggestions, TEST_FAMILIES } from '@/lib/test-pairings'
 import { useToast } from '@/components/Toast'
 import { useFocusMode } from '@/components/FocusMode'
 import { playPrintAnimation } from '@/components/PrintAnimation'
@@ -166,6 +166,10 @@ function NouveauCRBOContent() {
   const [nowTick, setNowTick] = useState(0)
   const [importingAnamnese, setImportingAnamnese] = useState(false)
   const [prefillBanner, setPrefillBanner] = useState<string>('')
+  // État des accordéons de familles de tests dans l'étape Résultats.
+  // undefined = pas de choix explicite de l'ortho → auto-open si la famille
+  // contient au moins un test coché ; true/false = choix explicite.
+  const [openFamilies, setOpenFamilies] = useState<Record<string, boolean | undefined>>({})
 
   // Upload bilan initial EXTERNE (PDF/Word rédigé en dehors d'ortho-ia).
   // Utilisé en renouvellement quand aucun CRBO interne n'est trouvé pour
@@ -2228,55 +2232,112 @@ Astuce : tapez /fatigue, /anxiete, /encouragements… pour réutiliser vos formu
                 </div>
               </div>
 
-              {/* Bilans complets */}
+              {/* Bilans complets — groupés par familles cliniques en accordéons.
+                  Chaque famille est repliée par défaut ; auto-déroule si elle contient
+                  au moins un test coché ou si l'ortho clique pour l'ouvrir. */}
               <p className="text-xs font-semibold text-gray-500 uppercase tracking-wide mb-2">
                 Bilans complets
               </p>
-              <div className="grid sm:grid-cols-2 gap-2">
-                {TESTS_OPTIONS.filter(t => !(TESTS_SCREENING_OPTIONS as readonly string[]).includes(t)).map(test => (
-                  <label
-                    key={test}
-                    className={`flex items-center gap-3 p-3 border rounded-lg cursor-pointer transition ${
-                      formData.test_utilise.includes(test)
-                        ? 'border-green-500 bg-green-50'
-                        : 'border-gray-300 hover:border-gray-400'
-                    }`}
-                  >
-                    <input
-                      type="checkbox"
-                      checked={formData.test_utilise.includes(test)}
-                      onChange={() => handleTestChange(test)}
-                      className="w-4 h-4 text-green-600 border-gray-300 rounded focus:ring-green-500"
-                    />
-                    <span className="text-sm text-gray-700">{test}</span>
-                  </label>
-                ))}
-
-                {/* Bilans de cognition mathématique — NON cochables ici car ils ont
-                    leur propre parcours dédié (cotation qualitative vert/orange/rouge,
-                    pas de percentile). Un clic navigue vers la route dédiée plutôt que
-                    d'ajouter une ligne au CRBO langage. */}
-                {[
-                  { label: 'B-CM', sub: 'enfant', href: '/dashboard/bilan/b-cm' },
-                  { label: 'B-CMado', sub: 'ado', href: '/dashboard/bilan/b-cmado' },
-                ].map(b => (
-                  <button
-                    key={b.label}
-                    type="button"
-                    onClick={() => router.push(b.href)}
-                    className="flex items-center gap-3 p-3 border border-emerald-200 hover:border-emerald-500 hover:bg-emerald-50 rounded-lg transition text-left group"
-                    title={`Parcours dédié — bilan de cognition mathématique ${b.sub}`}
-                  >
-                    <Calculator size={16} className="text-emerald-600 shrink-0" />
-                    <span className="flex-1 min-w-0">
-                      <span className="block text-sm text-gray-700 font-medium">{b.label}</span>
-                      <span className="block text-[11px] text-emerald-700">
-                        Bilan calcul {b.sub} — parcours dédié
-                      </span>
-                    </span>
-                    <ArrowUpRight size={14} className="text-gray-400 group-hover:text-emerald-600 shrink-0" />
-                  </button>
-                ))}
+              <div className="space-y-2">
+                {TEST_FAMILIES.map((family) => {
+                  // Filtre les tests de la famille à ceux qui existent dans TESTS_OPTIONS
+                  // (on ignore les noms divergents éventuels) et qui ne sont pas en screening.
+                  const familyTests = family.tests.filter(
+                    (t) =>
+                      (TESTS_OPTIONS as readonly string[]).includes(t) &&
+                      !(TESTS_SCREENING_OPTIONS as readonly string[]).includes(t),
+                  )
+                  const selectedInFamily = familyTests.filter((t) =>
+                    formData.test_utilise.includes(t),
+                  ).length
+                  // Famille "math" contient aussi les raccourcis redirect B-CM / B-CMado
+                  // qui ne sont pas dans TESTS_OPTIONS — ils élargissent visuellement la
+                  // famille même si rien n'est cochable dans TESTS_OPTIONS au-delà d'Examath.
+                  const isMathFamily = family.id === 'math'
+                  const explicit = openFamilies[family.id]
+                  const isOpen = explicit !== undefined ? explicit : selectedInFamily > 0
+                  if (familyTests.length === 0 && !isMathFamily) return null
+                  return (
+                    <div key={family.id} className="rounded-lg border border-gray-200 bg-white overflow-hidden">
+                      <button
+                        type="button"
+                        onClick={() =>
+                          setOpenFamilies((prev) => ({ ...prev, [family.id]: !isOpen }))
+                        }
+                        className="w-full px-4 py-3 flex items-center justify-between gap-3 text-left hover:bg-gray-50 transition"
+                      >
+                        <div className="flex items-center gap-3 min-w-0">
+                          <span className="text-lg shrink-0" aria-hidden="true">{family.icon}</span>
+                          <div className="min-w-0">
+                            <p className="text-sm font-semibold text-gray-900">{family.label}</p>
+                            <p className="text-xs text-gray-500 mt-0.5">{family.description}</p>
+                          </div>
+                        </div>
+                        <div className="flex items-center gap-2 shrink-0">
+                          {selectedInFamily > 0 && (
+                            <span className="px-2 py-0.5 bg-emerald-100 text-emerald-800 text-xs font-semibold rounded-full">
+                              {selectedInFamily} sélectionné{selectedInFamily > 1 ? 's' : ''}
+                            </span>
+                          )}
+                          <ChevronRight
+                            size={16}
+                            className={`text-gray-400 transition-transform ${isOpen ? 'rotate-90' : ''}`}
+                          />
+                        </div>
+                      </button>
+                      {isOpen && (
+                        <div className="border-t border-gray-100 px-4 py-3 grid sm:grid-cols-2 gap-2">
+                          {familyTests.map((test) => (
+                            <label
+                              key={test}
+                              className={`flex items-center gap-3 p-3 border rounded-lg cursor-pointer transition ${
+                                formData.test_utilise.includes(test)
+                                  ? 'border-green-500 bg-green-50'
+                                  : 'border-gray-300 hover:border-gray-400'
+                              }`}
+                            >
+                              <input
+                                type="checkbox"
+                                checked={formData.test_utilise.includes(test)}
+                                onChange={() => handleTestChange(test)}
+                                className="w-4 h-4 text-green-600 border-gray-300 rounded focus:ring-green-500"
+                              />
+                              <span className="text-sm text-gray-700">{test}</span>
+                            </label>
+                          ))}
+                          {isMathFamily && (
+                            // Raccourcis vers les parcours dédiés B-CM / B-CMado :
+                            // ils naviguent vers une route séparée (cotation qualitative,
+                            // pas de percentile) au lieu d'être cochables dans le CRBO langage.
+                            <>
+                              {[
+                                { label: 'B-CM', sub: 'enfant', href: '/dashboard/bilan/b-cm' },
+                                { label: 'B-CMado', sub: 'ado', href: '/dashboard/bilan/b-cmado' },
+                              ].map((b) => (
+                                <button
+                                  key={b.label}
+                                  type="button"
+                                  onClick={() => router.push(b.href)}
+                                  className="flex items-center gap-3 p-3 border border-emerald-200 hover:border-emerald-500 hover:bg-emerald-50 rounded-lg transition text-left group"
+                                  title={`Parcours dédié — bilan de cognition mathématique ${b.sub}`}
+                                >
+                                  <Calculator size={16} className="text-emerald-600 shrink-0" />
+                                  <span className="flex-1 min-w-0">
+                                    <span className="block text-sm text-gray-700 font-medium">{b.label}</span>
+                                    <span className="block text-[11px] text-emerald-700">
+                                      Bilan calcul {b.sub} — parcours dédié
+                                    </span>
+                                  </span>
+                                  <ArrowUpRight size={14} className="text-gray-400 group-hover:text-emerald-600 shrink-0" />
+                                </button>
+                              ))}
+                            </>
+                          )}
+                        </div>
+                      )}
+                    </div>
+                  )
+                })}
               </div>
             </div>
 

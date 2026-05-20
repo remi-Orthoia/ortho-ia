@@ -19,6 +19,71 @@
  * cliniquement pertinente, pas une contrainte.
  */
 
+/** Familles cliniques de bilans pour le regroupement UI dans /nouveau-crbo.
+ *
+ *  Groupement par DOMAINE (et non par âge) pour matcher la grille mentale
+ *  de l'orthophoniste qui choisit son test en fonction de la cible : "je veux
+ *  explorer le langage oral / le langage écrit / la cognition mathématique /
+ *  le langage adulte". Chaque test apparaît dans exactement UNE famille.
+ *
+ *  Exalang/EVALEO couvrent LO + LE mais leur usage clinique principal est
+ *  l'exploration du langage écrit (la partie LO est complémentaire) — d'où
+ *  leur placement en "Langage écrit". Pour un bilan LO pur, l'ortho prend
+ *  EVALO 2-6, ELO, BILO ou N-EEL (famille "Langage oral").
+ *
+ *  Le MoCA reste dans la section "Screening" en haut du formulaire CRBO,
+ *  hors des familles ci-dessous.
+ */
+export interface TestFamily {
+  id: string
+  /** Libellé affiché dans le header d'accordéon. */
+  label: string
+  /** Émoji pour repère visuel rapide. */
+  icon: string
+  /** Description courte (1 ligne sous le titre). */
+  description: string
+  /** Tests appartenant à cette famille — ORDRE = ordre d'affichage. */
+  tests: string[]
+}
+
+export const TEST_FAMILIES: TestFamily[] = [
+  {
+    id: 'langage_oral',
+    label: 'Langage oral',
+    icon: '🗣️',
+    description: 'TDL, retard de langage, dépistage précoce (préscolaire et primaire)',
+    tests: ['EVALO 2-6', 'Exalang 3-6', 'ELO', 'BILO', 'N-EEL'],
+  },
+  {
+    id: 'langage_ecrit',
+    label: 'Langage écrit',
+    icon: '📖',
+    description: 'Dyslexie, dysorthographie — bilans complets CP → 3e (LO + LE)',
+    tests: ['Exalang 5-8', 'Exalang 8-11', 'Exalang 11-15', 'Exalang Lyfac', 'EVALEO 6-15', 'BALE', 'BELEC'],
+  },
+  {
+    id: 'math',
+    label: 'Cognition mathématique',
+    icon: '🔢',
+    description: 'Dyscalculie — épreuves chiffrées (Examath) et qualitatives (B-CM / B-CMado)',
+    tests: ['Examath'],
+  },
+  {
+    id: 'adulte',
+    label: 'Adultes & seniors',
+    icon: '👨‍🦳',
+    description: 'Langage, aphasie, mémoire, fonctions exécutives, parole',
+    tests: ['BETL', 'BIA', 'PREDIMEM', 'PrediFex', 'PrediLac', 'BECD'],
+  },
+  {
+    id: 'autres',
+    label: 'Autres',
+    icon: '🔬',
+    description: 'OMF, déglutition, et tout test hors classification',
+    tests: ['OMF / Déglutition', 'Autre'],
+  },
+]
+
 /** Tests qui disposent d'un composant de saisie spécifique (formulaire guidé).
  *  Doit rester synchronisé avec les composants importés dans nouveau-crbo/page.tsx. */
 export const TESTS_WITH_SPECIFIC_FORM = new Set<string>([
