@@ -32,10 +32,10 @@ import { useToast } from '@/components/Toast'
 import { useFocusMode } from '@/components/FocusMode'
 import { playPrintAnimation } from '@/components/PrintAnimation'
 import { playSuccessSound, playDing, playSwoosh } from '@/lib/sounds'
-import { 
-  ChevronRight, 
-  ChevronLeft, 
-  Loader2, 
+import {
+  ChevronRight,
+  ChevronLeft,
+  Loader2,
   Upload,
   FileText,
   CheckCircle,
@@ -45,7 +45,9 @@ import {
   Sparkles,
   UserPlus,
   Users,
-  FileUp
+  FileUp,
+  Calculator,
+  ArrowUpRight
 } from 'lucide-react'
 
 interface Patient {
@@ -2232,6 +2234,32 @@ Astuce : tapez /fatigue, /anxiete, /encouragements… pour réutiliser vos formu
                     />
                     <span className="text-sm text-gray-700">{test}</span>
                   </label>
+                ))}
+
+                {/* Bilans de cognition mathématique — NON cochables ici car ils ont
+                    leur propre parcours dédié (cotation qualitative vert/orange/rouge,
+                    pas de percentile). Un clic navigue vers la route dédiée plutôt que
+                    d'ajouter une ligne au CRBO langage. */}
+                {[
+                  { label: 'B-CM', sub: 'enfant', href: '/dashboard/bilan/b-cm' },
+                  { label: 'B-CMado', sub: 'ado', href: '/dashboard/bilan/b-cmado' },
+                ].map(b => (
+                  <button
+                    key={b.label}
+                    type="button"
+                    onClick={() => router.push(b.href)}
+                    className="flex items-center gap-3 p-3 border border-emerald-200 hover:border-emerald-500 hover:bg-emerald-50 rounded-lg transition text-left group"
+                    title={`Parcours dédié — bilan de cognition mathématique ${b.sub}`}
+                  >
+                    <Calculator size={16} className="text-emerald-600 shrink-0" />
+                    <span className="flex-1 min-w-0">
+                      <span className="block text-sm text-gray-700 font-medium">{b.label}</span>
+                      <span className="block text-[11px] text-emerald-700">
+                        Bilan calcul {b.sub} — parcours dédié
+                      </span>
+                    </span>
+                    <ArrowUpRight size={14} className="text-gray-400 group-hover:text-emerald-600 shrink-0" />
+                  </button>
                 ))}
               </div>
             </div>
