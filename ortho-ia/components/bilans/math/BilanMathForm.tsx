@@ -2,13 +2,17 @@
 
 import { useEffect, useMemo, useState } from 'react'
 import { useRouter } from 'next/navigation'
-import { Loader2, Sparkles, Download, Save, X } from 'lucide-react'
-import DomaineSection from './DomaineSection'
+import { Loader2, Sparkles, Download, Save, X, MessageSquare } from 'lucide-react'
+import MatriceSection from './MatriceSection'
 import PastilleLegend from './PastilleLegend'
-import BilanMathSummary from './BilanMathSummary'
+import Pastille from './Pastille'
 import { useToast } from '@/components/Toast'
 import { createClient } from '@/lib/supabase'
-import { computeParentColor } from '@/lib/bilans/math/parent-color'
+import {
+  epreuveColorFromState,
+  countCotees,
+  listCotees,
+} from '@/lib/bilans/math/parent-color'
 import type {
   GrilleBilan,
   BilanMathDraft,
@@ -17,11 +21,17 @@ import type {
 } from '@/lib/bilans/math/types'
 
 /**
- * Formulaire complet d'un bilan B-CM / B-CMado.
+ * Formulaire complet d'un bilan B-CM / B-CMado en mode MATRICE 2D.
  *
- * Pris une `grille` (statique) en entrée, gère tout l'état local du bilan :
- * coordonnées patient, mode (initial / renouvellement), état des épreuves,
- * génération IA par épreuve, génération du CRBO complet, sauvegarde Supabase.
+ * Layout :
+ *   1. En-tête patient + mode (initial / renouvellement)
+ *   2. Pour chaque SECTION de la grille : un tableau matrice
+ *      (lignes = niveaux, colonnes = sous-épreuves groupées par épreuve macro)
+ *   3. Pour chaque épreuve cotée (au moins 1 cellule) : un bloc compact avec
+ *      notes brutes + bouton "Générer avec l'IA" + texte IA éditable
+ *   4. Bouton "Générer le CRBO" + preview du CRBO complet
+ *
+ * Persistance localStorage par grille.id avec debounce 400ms.
  */
 
 const DRAFT_KEY_PREFIX = 'ortho-ia:bilan-math-draft:'
@@ -47,19 +57,30 @@ export default function BilanMathForm({ grille }: BilanMathFormProps) {
   const [draft, setDraft] = useState<BilanMathDraft>(() => makeEmptyDraft(grille))
   const [hydrated, setHydrated] = useState(false)
   const [generatingEpreuveId, setGeneratingEpreuveId] = useState<string | null>(null)
-  // État du CRBO complet : null tant que pas généré, sinon le texte éditable.
   const [generatedCRBO, setGeneratedCRBO] = useState<string | null>(null)
   const [isGeneratingCRBO, setIsGeneratingCRBO] = useState(false)
   const [isSaving, setIsSaving] = useState(false)
 
-  // Hydratation localStorage au mount uniquement (évite SSR mismatch).
+  // ===== Hydratation localStorage =====
+  // La structure ayant changé (sousEpreuves → cells), les anciens drafts ne
+  // se rechargent pas dans le nouveau format. On vérifie la présence de `cells`
+  // pour distinguer un draft compatible d'un draft legacy.
   useEffect(() => {
     try {
       const raw = localStorage.getItem(draftKey)
       if (raw) {
         const parsed = JSON.parse(raw) as BilanMathDraft
-        if (parsed && parsed.type === grille.id) {
-          setDraft(parsed)
+        if (parsed && parsed.type === grille.id && parsed.epreuves) {
+          // Vérifie que les épreuves utilisent le nouveau format `cells`.
+          // Si oui, on hydrate ; sinon on repart à vide (le draft legacy
+          // serait incompatible avec la matrice).
+          const epreuvesNouveau: Record<string, EpreuveState> = {}
+          for (const [epreuveId, state] of Object.entries(parsed.epreuves)) {
+            if (state && typeof state === 'object' && 'cells' in state) {
+              epreuvesNouveau[epreuveId] = state as EpreuveState
+            }
+          }
+          setDraft({ ...parsed, epreuves: epreuvesNouveau })
         }
       }
     } catch {
@@ -68,20 +89,20 @@ export default function BilanMathForm({ grille }: BilanMathFormProps) {
     setHydrated(true)
   }, [draftKey, grille.id])
 
-  // Persiste à chaque changement (debounce 400ms pour éviter de spammer
-  // localStorage à chaque keystroke).
+  // Persiste à chaque changement (debounce 400ms).
   useEffect(() => {
     if (!hydrated) return
     const handle = setTimeout(() => {
       try {
         localStorage.setItem(draftKey, JSON.stringify(draft))
       } catch {
-        // Quota dépassé / navigation privée : pas de fallback ici.
+        // Quota dépassé / navigation privée : pas de fallback.
       }
     }, 400)
     return () => clearTimeout(handle)
   }, [draft, draftKey, hydrated])
 
+  // ===== Mutateurs =====
   const handleEpreuveChange = (epreuveId: string, next: EpreuveState) => {
     setDraft((prev) => ({
       ...prev,
@@ -90,56 +111,69 @@ export default function BilanMathForm({ grille }: BilanMathFormProps) {
     }))
   }
 
-  /**
-   * Appelle l'API IA pour une épreuve donnée. Assemble le payload avec :
-   *  - les sous-épreuves résolues en {label, color}
-   *  - le contexte du reste du bilan (autres épreuves non-grises)
-   * Met à jour state.iaText au retour. Toast d'erreur en cas d'échec.
-   */
-  const handleGenerateEpreuve = async (epreuveId: string) => {
-    // Résolution domaine + épreuve dans la grille.
-    let domaineLabel = ''
-    let epreuveDef: GrilleBilan['domaines'][number]['epreuves'][number] | null = null
-    for (const dom of grille.domaines) {
-      const found = dom.epreuves.find((e) => e.id === epreuveId)
-      if (found) {
-        domaineLabel = dom.label
-        epreuveDef = found
-        break
-      }
-    }
+  const handleNotesChange = (epreuveId: string, notes: string) => {
+    const current = draft.epreuves[epreuveId] ?? { cells: {}, notes: '' }
+    handleEpreuveChange(epreuveId, { ...current, notes })
+  }
+
+  const handleIaTextChange = (epreuveId: string, iaText: string) => {
+    const current = draft.epreuves[epreuveId] ?? { cells: {}, notes: '' }
+    handleEpreuveChange(epreuveId, { ...current, iaText })
+  }
+
+  // ===== Index global niveau → section pour les calculs de contexte =====
+  const allNiveauxIds = useMemo(() => {
+    const ids: string[] = []
+    for (const s of grille.sections) for (const n of s.niveaux) ids.push(n.id)
+    return ids
+  }, [grille.sections])
+
+  // ===== Génération IA par épreuve =====
+  const handleGenerateEpreuve = async (
+    epreuveId: string,
+    sectionLabel: string,
+    epreuveLabel: string,
+  ) => {
+    const epreuveDef = grille.sections
+      .flatMap((s) => s.epreuves)
+      .find((e) => e.id === epreuveId)
     if (!epreuveDef) {
       toast.error('Épreuve introuvable dans la grille.')
       return
     }
 
-    const state = draft.epreuves[epreuveId] ?? { sousEpreuves: {}, notes: '' }
-    const isMono = epreuveDef.sousEpreuves.length === 0
+    const state = draft.epreuves[epreuveId] ?? { cells: {}, notes: '' }
 
-    const sousEpreuves = isMono
-      ? []
-      : epreuveDef.sousEpreuves.map((se) => ({
-          label: se.label,
-          color: (state.sousEpreuves[se.id] ?? 'gris') as PastilleEtat,
-        }))
+    // Récupère les cellules cotées + leurs labels lisibles pour Claude.
+    const cotees = listCotees(epreuveDef, allNiveauxIds, state)
+    // Résout les libellés des niveaux (concatenated label + sublabel)
+    const niveauLabelById = new Map<string, string>()
+    for (const s of grille.sections) {
+      for (const n of s.niveaux) {
+        niveauLabelById.set(n.id, n.subLabel ? `${n.label} (${n.subLabel})` : n.label)
+      }
+    }
+    const sousEpreuveLabelById = new Map(
+      epreuveDef.sousEpreuves.map((se) => [se.id, se.label] as const),
+    )
+    const cellules = cotees.map((c) => ({
+      niveau: niveauLabelById.get(c.niveauId) ?? c.niveauId,
+      test: sousEpreuveLabelById.get(c.sousEpreuveId) ?? c.sousEpreuveId,
+      color: c.color,
+    }))
 
-    const parentColor: PastilleEtat = isMono
-      ? (state.direct ?? 'gris')
-      : computeParentColor(sousEpreuves.map((s) => s.color))
+    const parentColor = epreuveColorFromState(epreuveDef, allNiveauxIds, state)
 
-    // Contexte : autres épreuves non-grises. On évite d'inclure l'épreuve courante.
+    // Contexte : autres épreuves cotées (couleur agrégée).
     const contexteBilan: Array<{ domaineLabel: string; epreuveLabel: string; color: PastilleEtat }> = []
-    for (const dom of grille.domaines) {
-      for (const ep of dom.epreuves) {
+    for (const section of grille.sections) {
+      for (const ep of section.epreuves) {
         if (ep.id === epreuveId) continue
         const otherState = draft.epreuves[ep.id]
         if (!otherState) continue
-        const isOtherMono = ep.sousEpreuves.length === 0
-        const otherColor: PastilleEtat = isOtherMono
-          ? (otherState.direct ?? 'gris')
-          : computeParentColor(ep.sousEpreuves.map((se) => otherState.sousEpreuves[se.id] ?? 'gris'))
+        const otherColor = epreuveColorFromState(ep, allNiveauxIds, otherState)
         if (otherColor !== 'gris') {
-          contexteBilan.push({ domaineLabel: dom.label, epreuveLabel: ep.label, color: otherColor })
+          contexteBilan.push({ domaineLabel: section.label, epreuveLabel: ep.label, color: otherColor })
         }
       }
     }
@@ -154,11 +188,20 @@ export default function BilanMathForm({ grille }: BilanMathFormProps) {
           mode: draft.mode,
           patient: draft.patient,
           epreuve: {
-            domaineLabel,
-            epreuveLabel: epreuveDef.label,
+            domaineLabel: sectionLabel,
+            epreuveLabel,
             parentColor,
-            sousEpreuves,
-            direct: isMono ? state.direct : undefined,
+            // Nouveau format : liste de cellules avec niveau + test + couleur.
+            // L'API legacy attendait sousEpreuves[label, color] — la route
+            // serveur sera mise à jour pour consommer `cellules`.
+            cellules,
+            // Compat : on transmet aussi sousEpreuves (avec couleur agrégée
+            // par test, tous niveaux confondus) pour que l'ancienne route
+            // continue de fonctionner pendant la transition.
+            sousEpreuves: epreuveDef.sousEpreuves.map((se) => ({
+              label: se.label,
+              color: aggregateColorForSousEpreuve(allNiveauxIds, se.id, state),
+            })),
             notes: state.notes,
           },
           contexteBilan,
@@ -174,8 +217,8 @@ export default function BilanMathForm({ grille }: BilanMathFormProps) {
         toast.error('Réponse IA vide.')
         return
       }
-      handleEpreuveChange(epreuveId, { ...state, iaText: text })
-      toast.success(`"${epreuveDef.label}" généré.`)
+      handleIaTextChange(epreuveId, text)
+      toast.success(`"${epreuveLabel}" généré.`)
     } catch (e: any) {
       toast.error(e?.message || 'Erreur réseau.')
     } finally {
@@ -183,25 +226,21 @@ export default function BilanMathForm({ grille }: BilanMathFormProps) {
     }
   }
 
-  /** Compte des épreuves au moins partiellement renseignées. */
+  // ===== Compte d'avancement =====
   const completionCount = useMemo(() => {
     let renseignees = 0
     let total = 0
-    for (const domaine of grille.domaines) {
-      for (const epreuve of domaine.epreuves) {
+    for (const section of grille.sections) {
+      for (const epreuve of section.epreuves) {
         total += 1
         const state = draft.epreuves[epreuve.id]
         if (!state) continue
-        const hasSubScore = Object.values(state.sousEpreuves ?? {}).some(
-          (s) => s && s !== 'gris',
-        )
-        const hasDirect = state.direct && state.direct !== 'gris'
-        const hasNotes = state.notes && state.notes.trim().length > 0
-        if (hasSubScore || hasDirect || hasNotes) renseignees += 1
+        if (countCotees(epreuve, allNiveauxIds, state) > 0) renseignees += 1
+        else if (state.notes && state.notes.trim().length > 0) renseignees += 1
       }
     }
     return { renseignees, total }
-  }, [grille.domaines, draft.epreuves])
+  }, [grille.sections, allNiveauxIds, draft.epreuves])
 
   const handleReset = () => {
     if (!confirm('Effacer toute la saisie de ce bilan ? Cette action est irréversible.')) return
@@ -209,58 +248,45 @@ export default function BilanMathForm({ grille }: BilanMathFormProps) {
     setGeneratedCRBO(null)
   }
 
-  /**
-   * Assemble le payload `domaines/epreuves` au format attendu par l'API et
-   * lance la génération du CRBO complet. Le résultat est affiché dans une
-   * section éditable plus bas, sans sauvegarder en base (l'ortho confirme
-   * explicitement via "Sauvegarder en historique").
-   */
+  // ===== Génération CRBO complet =====
   const handleGenerateCRBO = async () => {
     if (!draft.patient.prenom.trim() || !draft.patient.nom.trim()) {
-      toast.error('Renseigne au moins le prénom et le nom du patient avant de générer.')
+      toast.error('Renseigne au moins le prénom et le nom du patient.')
       return
     }
     if (completionCount.renseignees < 3) {
       const ok = confirm(
-        `Seulement ${completionCount.renseignees} épreuve(s) renseignée(s). Le CRBO sera très court et peu informatif. Continuer quand même ?`,
+        `Seulement ${completionCount.renseignees} épreuve(s) renseignée(s). Le CRBO sera très court. Continuer ?`,
       )
       if (!ok) return
     }
 
-    // Construction du payload : pour chaque domaine on inclut les épreuves
-    // qui ont au moins une cotation ou des notes (pas les épreuves vierges).
-    const domainesPayload = grille.domaines.map((dom) => {
-      const epreuves = dom.epreuves
+    // Payload : pour chaque section, liste des épreuves cotées avec leurs cellules.
+    const domainesPayload = grille.sections.map((section) => {
+      const epreuves = section.epreuves
         .map((ep) => {
           const state = draft.epreuves[ep.id]
           if (!state) return null
-          const isMono = ep.sousEpreuves.length === 0
-          const sousEpreuves = isMono
-            ? []
-            : ep.sousEpreuves.map((se) => ({
-                label: se.label,
-                color: (state.sousEpreuves[se.id] ?? 'gris') as PastilleEtat,
-              }))
-          const parentColor: PastilleEtat = isMono
-            ? (state.direct ?? 'gris')
-            : computeParentColor(sousEpreuves.map((s) => s.color))
-          // Skip si totalement vierge (pas de cotation, pas de note, pas de iaText)
+          const parentColor = epreuveColorFromState(ep, allNiveauxIds, state)
           const hasAny =
             parentColor !== 'gris' ||
             (state.notes && state.notes.trim().length > 0) ||
             (state.iaText && state.iaText.trim().length > 0)
           if (!hasAny) return null
+          const sousEpreuves = ep.sousEpreuves.map((se) => ({
+            label: se.label,
+            color: aggregateColorForSousEpreuve(allNiveauxIds, se.id, state),
+          }))
           return {
             epreuveLabel: ep.label,
             parentColor,
             sousEpreuves,
-            direct: isMono ? state.direct : undefined,
             notes: state.notes ?? '',
             iaText: state.iaText ?? '',
           }
         })
         .filter((e): e is NonNullable<typeof e> => e !== null)
-      return { domaineLabel: dom.label, epreuves }
+      return { domaineLabel: section.label, epreuves }
     })
 
     setIsGeneratingCRBO(true)
@@ -277,7 +303,7 @@ export default function BilanMathForm({ grille }: BilanMathFormProps) {
       })
       const data = await res.json().catch(() => ({}))
       if (!res.ok) {
-        toast.error(data?.error || 'Erreur lors de la génération du CRBO.')
+        toast.error(data?.error || 'Erreur lors de la génération.')
         return
       }
       const text = typeof data?.text === 'string' ? data.text : ''
@@ -287,7 +313,6 @@ export default function BilanMathForm({ grille }: BilanMathFormProps) {
       }
       setGeneratedCRBO(text)
       toast.success('CRBO généré — relis et sauvegarde quand tu es prête.')
-      // Scroll smooth vers la section CRBO (qui apparaît en bas de page)
       setTimeout(() => {
         document.getElementById('crbo-preview')?.scrollIntoView({ behavior: 'smooth', block: 'start' })
       }, 100)
@@ -298,7 +323,7 @@ export default function BilanMathForm({ grille }: BilanMathFormProps) {
     }
   }
 
-  /** Sauvegarde le CRBO en base + redirection vers /dashboard/historique/[id]. */
+  // ===== Sauvegarde Supabase + redirection =====
   const handleSaveCRBO = async () => {
     if (!generatedCRBO) return
     setIsSaving(true)
@@ -309,7 +334,6 @@ export default function BilanMathForm({ grille }: BilanMathFormProps) {
         toast.error('Session expirée — reconnecte-toi.')
         return
       }
-
       const { data: saved, error } = await supabase
         .from('crbos')
         .insert({
@@ -337,10 +361,7 @@ export default function BilanMathForm({ grille }: BilanMathFormProps) {
         toast.error(error?.message || "L'enregistrement a échoué.")
         return
       }
-
       toast.success('CRBO sauvegardé.')
-      // Nettoie le draft localStorage (il est maintenant en base, plus de risque
-      // de perte ; on évite la confusion d'avoir un draft fantôme au retour).
       try { localStorage.removeItem(draftKey) } catch {}
       router.push(`/dashboard/historique/${saved.id}`)
     } catch (e: any) {
@@ -350,8 +371,6 @@ export default function BilanMathForm({ grille }: BilanMathFormProps) {
     }
   }
 
-  /** Téléchargement .txt local sans Word — Word arrivera en Phase 4 avec
-   *  un export structuré (markdown → .docx via la lib docx du projet). */
   const handleDownloadCRBO = () => {
     if (!generatedCRBO) return
     const filename = `CRBO-${grille.label}-${draft.patient.prenom || 'patient'}-${draft.patient.nom || ''}-${new Date().toISOString().slice(0, 10)}.txt`
@@ -367,8 +386,25 @@ export default function BilanMathForm({ grille }: BilanMathFormProps) {
     URL.revokeObjectURL(url)
   }
 
+  // ===== Liste des épreuves cotées (pour la section notes/IA en dessous) =====
+  const epreuvesCotees = useMemo(() => {
+    const out: Array<{ sectionLabel: string; epreuveId: string; epreuveLabel: string; color: PastilleEtat }> = []
+    for (const section of grille.sections) {
+      for (const ep of section.epreuves) {
+        const state = draft.epreuves[ep.id]
+        if (!state) continue
+        const color = epreuveColorFromState(ep, allNiveauxIds, state)
+        const hasNotes = state.notes && state.notes.trim().length > 0
+        const hasIa = state.iaText && state.iaText.trim().length > 0
+        if (color === 'gris' && !hasNotes && !hasIa) continue
+        out.push({ sectionLabel: section.label, epreuveId: ep.id, epreuveLabel: ep.label, color })
+      }
+    }
+    return out
+  }, [grille.sections, allNiveauxIds, draft.epreuves])
+
   return (
-    <div style={{ maxWidth: 920, margin: '0 auto', paddingBottom: 80 }}>
+    <div style={{ maxWidth: 1100, margin: '0 auto', paddingBottom: 80 }}>
       {/* En-tête bilan */}
       <header style={{ marginBottom: 24 }}>
         <h1 style={{ margin: 0, fontSize: 24, fontWeight: 700, color: 'var(--fg-1)' }}>
@@ -379,10 +415,10 @@ export default function BilanMathForm({ grille }: BilanMathFormProps) {
         </p>
       </header>
 
-      {/* Coordonnées patient */}
+      {/* Patient */}
       <section
         style={{
-          marginBottom: 20,
+          marginBottom: 16,
           padding: 16,
           background: 'var(--bg-surface-1)',
           border: '1px solid var(--border-ds)',
@@ -393,28 +429,10 @@ export default function BilanMathForm({ grille }: BilanMathFormProps) {
           Patient
         </h2>
         <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(180px, 1fr))', gap: 10 }}>
-          <FormField
-            label="Prénom"
-            value={draft.patient.prenom}
-            onChange={(v) => setDraft((d) => ({ ...d, patient: { ...d.patient, prenom: v }, updatedAt: Date.now() }))}
-          />
-          <FormField
-            label="Nom"
-            value={draft.patient.nom}
-            onChange={(v) => setDraft((d) => ({ ...d, patient: { ...d.patient, nom: v }, updatedAt: Date.now() }))}
-          />
-          <FormField
-            label="Date de naissance"
-            type="date"
-            value={draft.patient.date_naissance}
-            onChange={(v) => setDraft((d) => ({ ...d, patient: { ...d.patient, date_naissance: v }, updatedAt: Date.now() }))}
-          />
-          <FormField
-            label="Classe / niveau"
-            placeholder="ex: 6ème, CM1"
-            value={draft.patient.classe}
-            onChange={(v) => setDraft((d) => ({ ...d, patient: { ...d.patient, classe: v }, updatedAt: Date.now() }))}
-          />
+          <FormField label="Prénom" value={draft.patient.prenom} onChange={(v) => setDraft((d) => ({ ...d, patient: { ...d.patient, prenom: v }, updatedAt: Date.now() }))} />
+          <FormField label="Nom" value={draft.patient.nom} onChange={(v) => setDraft((d) => ({ ...d, patient: { ...d.patient, nom: v }, updatedAt: Date.now() }))} />
+          <FormField label="Date de naissance" type="date" value={draft.patient.date_naissance} onChange={(v) => setDraft((d) => ({ ...d, patient: { ...d.patient, date_naissance: v }, updatedAt: Date.now() }))} />
+          <FormField label="Classe / niveau" placeholder="ex: 6ème, CM1" value={draft.patient.classe} onChange={(v) => setDraft((d) => ({ ...d, patient: { ...d.patient, classe: v }, updatedAt: Date.now() }))} />
         </div>
       </section>
 
@@ -446,7 +464,6 @@ export default function BilanMathForm({ grille }: BilanMathFormProps) {
                 fontSize: 14,
                 fontWeight: draft.mode === mode ? 600 : 500,
                 cursor: 'pointer',
-                transition: 'all 140ms',
               }}
             >
               Bilan {mode === 'initial' ? 'initial' : 'de renouvellement'}
@@ -455,36 +472,49 @@ export default function BilanMathForm({ grille }: BilanMathFormProps) {
         </div>
       </section>
 
-      <div style={{ marginBottom: 20 }}>
+      <div style={{ marginBottom: 16 }}>
         <PastilleLegend />
       </div>
 
-      {/* Grille globale interactive — l'ortho peut coter directement ici
-          sans avoir à scroller jusqu'aux cartes par épreuve plus bas. Les
-          deux vues sont synchronisées sur le même état (single source of
-          truth). Les notes brutes et le bouton "Générer avec l'IA" restent
-          dans les cartes par épreuve plus bas. */}
-      <div style={{ marginBottom: 24 }}>
-        <BilanMathSummary
-          grille={grille}
+      {/* Matrices — une par section */}
+      {grille.sections.map((section) => (
+        <MatriceSection
+          key={section.id}
+          section={section}
           epreuves={draft.epreuves}
-          onEpreuveChange={handleEpreuveChange}
-          titleOverride={`${grille.label} — Grille de cotation`}
-        />
-      </div>
-
-      {/* Cartes détaillées par épreuve : notes brutes + bouton IA. Les
-          pastilles ici restent cliquables, doublant la grille globale ci-dessus. */}
-      {grille.domaines.map((domaine) => (
-        <DomaineSection
-          key={domaine.id}
-          domaine={domaine}
-          epreuves={draft.epreuves}
-          onEpreuveChange={handleEpreuveChange}
-          onGenerateEpreuve={handleGenerateEpreuve}
-          generatingEpreuveId={generatingEpreuveId}
+          interactive
+          onCellChange={handleEpreuveChange}
         />
       ))}
+
+      {/* Notes & IA par épreuve cotée */}
+      {epreuvesCotees.length > 0 && (
+        <section style={{ marginTop: 32 }}>
+          <h2 style={{ margin: '0 0 12px', fontSize: 14, fontWeight: 700, color: 'var(--fg-2)', textTransform: 'uppercase', letterSpacing: '0.05em' }}>
+            <MessageSquare size={14} style={{ display: 'inline', marginRight: 6, verticalAlign: -2 }} />
+            Notes &amp; analyse IA par épreuve
+          </h2>
+          <p style={{ margin: '0 0 16px', fontSize: 12, color: 'var(--fg-3)' }}>
+            Les épreuves cotées apparaissent ici. Ajoute des notes libres et génère un paragraphe clinique pour chacune.
+          </p>
+          <div style={{ display: 'flex', flexDirection: 'column', gap: 14 }}>
+            {epreuvesCotees.map((item) => (
+              <EpreuveNotesCard
+                key={item.epreuveId}
+                epreuveId={item.epreuveId}
+                epreuveLabel={item.epreuveLabel}
+                sectionLabel={item.sectionLabel}
+                color={item.color}
+                state={draft.epreuves[item.epreuveId] ?? { cells: {}, notes: '' }}
+                onNotesChange={(notes) => handleNotesChange(item.epreuveId, notes)}
+                onIaTextChange={(t) => handleIaTextChange(item.epreuveId, t)}
+                onGenerate={() => handleGenerateEpreuve(item.epreuveId, item.sectionLabel, item.epreuveLabel)}
+                isGenerating={generatingEpreuveId === item.epreuveId}
+              />
+            ))}
+          </div>
+        </section>
+      )}
 
       {/* Footer : avancement + actions */}
       <footer
@@ -550,7 +580,7 @@ export default function BilanMathForm({ grille }: BilanMathFormProps) {
         </div>
       </footer>
 
-      {/* Section CRBO généré (visible uniquement après génération) */}
+      {/* Preview CRBO */}
       {generatedCRBO !== null && (
         <section
           id="crbo-preview"
@@ -569,8 +599,7 @@ export default function BilanMathForm({ grille }: BilanMathFormProps) {
             <button
               type="button"
               onClick={() => setGeneratedCRBO(null)}
-              aria-label="Fermer la prévisualisation"
-              title="Fermer (le brouillon est conservé dans le formulaire)"
+              aria-label="Fermer"
               style={{
                 background: 'transparent', border: 0, padding: 6,
                 color: 'var(--fg-3)', cursor: 'pointer',
@@ -581,17 +610,9 @@ export default function BilanMathForm({ grille }: BilanMathFormProps) {
             </button>
           </header>
           <p style={{ margin: '0 0 12px', fontSize: 13, color: 'var(--fg-3)', lineHeight: 1.5 }}>
-            Tu peux modifier le texte ci-dessous avant de sauvegarder. Le format est markdown :
+            Modifie le texte ci-dessous avant de sauvegarder. Format markdown :
             les <code>**titres**</code> seront rendus en gras dans l&apos;historique.
           </p>
-
-          {/* Grille colorée reprise telle quelle, en tête du CRBO — permet de
-              croiser le profil de cotations avec le texte généré sans avoir
-              à scroller jusqu'au formulaire. */}
-          <div style={{ marginBottom: 14 }}>
-            <BilanMathSummary grille={grille} epreuves={draft.epreuves} />
-          </div>
-
           <textarea
             value={generatedCRBO}
             onChange={(e) => setGeneratedCRBO(e.target.value)}
@@ -650,6 +671,144 @@ export default function BilanMathForm({ grille }: BilanMathFormProps) {
   )
 }
 
+// ============================================================================
+// Sous-composant : carte notes + IA d'une épreuve
+// ============================================================================
+
+function EpreuveNotesCard({
+  epreuveId,
+  epreuveLabel,
+  sectionLabel,
+  color,
+  state,
+  onNotesChange,
+  onIaTextChange,
+  onGenerate,
+  isGenerating,
+}: {
+  epreuveId: string
+  epreuveLabel: string
+  sectionLabel: string
+  color: PastilleEtat
+  state: EpreuveState
+  onNotesChange: (notes: string) => void
+  onIaTextChange: (text: string) => void
+  onGenerate: () => void
+  isGenerating: boolean
+}) {
+  return (
+    <div
+      style={{
+        background: 'var(--bg-surface-1)',
+        border: '1px solid var(--border-ds)',
+        borderRadius: 10,
+        padding: '12px 14px',
+        display: 'flex',
+        flexDirection: 'column',
+        gap: 10,
+      }}
+    >
+      <div style={{ display: 'flex', alignItems: 'center', gap: 10, flexWrap: 'wrap' }}>
+        <Pastille etat={color} readonly size={18} ariaPrefix={`${epreuveLabel} (couleur globale)`} />
+        <span style={{ fontSize: 14, fontWeight: 600, color: 'var(--fg-1)' }}>{epreuveLabel}</span>
+        <span style={{ fontSize: 11, color: 'var(--fg-3)' }}>· {sectionLabel}</span>
+      </div>
+
+      <textarea
+        value={state.notes}
+        onChange={(e) => onNotesChange(e.target.value)}
+        placeholder="Notes brutes — observations pendant la passation…"
+        rows={2}
+        style={{
+          width: '100%',
+          padding: '8px 10px',
+          border: '1px solid var(--border-ds)',
+          borderRadius: 8,
+          fontSize: 13,
+          fontFamily: 'inherit',
+          background: 'var(--bg-surface-2)',
+          color: 'var(--fg-1)',
+          resize: 'vertical',
+          minHeight: 50,
+        }}
+      />
+
+      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', gap: 8, flexWrap: 'wrap' }}>
+        <button
+          type="button"
+          onClick={onGenerate}
+          disabled={isGenerating}
+          style={{
+            display: 'inline-flex',
+            alignItems: 'center',
+            gap: 6,
+            padding: '6px 12px',
+            background: 'var(--ds-primary)',
+            color: 'var(--fg-on-brand)',
+            border: 0,
+            borderRadius: 8,
+            fontSize: 12,
+            fontWeight: 600,
+            cursor: isGenerating ? 'not-allowed' : 'pointer',
+            opacity: isGenerating ? 0.7 : 1,
+          }}
+        >
+          {isGenerating ? <Loader2 size={12} className="animate-spin" /> : <Sparkles size={12} />}
+          {isGenerating ? 'Génération…' : state.iaText ? 'Régénérer' : "Générer avec l'IA"}
+        </button>
+        {state.iaText && (
+          <span style={{ fontSize: 11, color: 'var(--fg-3)', fontStyle: 'italic' }}>
+            Texte modifiable — l&apos;ortho a le dernier mot.
+          </span>
+        )}
+      </div>
+
+      {state.iaText !== undefined && state.iaText !== '' && (
+        <textarea
+          value={state.iaText}
+          onChange={(e) => onIaTextChange(e.target.value)}
+          rows={4}
+          style={{
+            width: '100%',
+            padding: '10px 12px',
+            border: '1px solid var(--ds-primary, #16a34a)',
+            borderRadius: 8,
+            fontSize: 13,
+            lineHeight: 1.5,
+            fontFamily: 'inherit',
+            background: 'var(--ds-primary-soft, #f0f9f4)',
+            color: 'var(--fg-1)',
+            resize: 'vertical',
+            minHeight: 70,
+          }}
+        />
+      )}
+    </div>
+  )
+}
+
+// ============================================================================
+// Helpers
+// ============================================================================
+
+/** Couleur agrégée d'une sous-épreuve toutes lignes confondues. */
+function aggregateColorForSousEpreuve(
+  niveauxIds: string[],
+  sousEpreuveId: string,
+  state: EpreuveState,
+): PastilleEtat {
+  const colors: PastilleEtat[] = []
+  for (const n of niveauxIds) {
+    const c = state.cells[`${n}:${sousEpreuveId}`]
+    if (c) colors.push(c)
+  }
+  const cotees = colors.filter((c) => c !== 'gris')
+  if (cotees.length === 0) return 'gris'
+  if (cotees.some((c) => c === 'rouge')) return 'rouge'
+  if (cotees.some((c) => c === 'orange')) return 'orange'
+  return 'vert'
+}
+
 function FormField({
   label,
   value,
@@ -665,17 +824,7 @@ function FormField({
 }) {
   return (
     <div>
-      <label
-        style={{
-          display: 'block',
-          fontSize: 11,
-          fontWeight: 600,
-          color: 'var(--fg-3)',
-          textTransform: 'uppercase',
-          letterSpacing: '0.04em',
-          marginBottom: 4,
-        }}
-      >
+      <label style={{ display: 'block', fontSize: 11, fontWeight: 600, color: 'var(--fg-3)', textTransform: 'uppercase', letterSpacing: '0.04em', marginBottom: 4 }}>
         {label}
       </label>
       <input
