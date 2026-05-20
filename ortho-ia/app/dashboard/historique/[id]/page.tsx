@@ -24,6 +24,7 @@ import {
 import type { SmartObjectivesPayload } from '@/app/api/generate-smart-objectives/route'
 import CRBOStructuredPreview from '@/components/CRBOStructuredPreview'
 import BilanMathSummary from '@/components/bilans/math/BilanMathSummary'
+import BilanMathCRBORender from '@/components/bilans/math/BilanMathCRBORender'
 import { GRILLE_B_CM } from '@/lib/bilans/math/grille-b-cm'
 import { GRILLE_B_CMADO } from '@/lib/bilans/math/grille-b-cmado'
 import type { BilanMathDraft, GrilleBilan } from '@/lib/bilans/math/types'
@@ -551,18 +552,25 @@ export default function CRBODetailPage() {
           {mathGrille && mathState && (
             <BilanMathSummary grille={mathGrille} epreuves={mathState} />
           )}
-          <div className="bg-white rounded-xl border border-gray-200 overflow-hidden">
-            <div className="border-b border-gray-200 px-6 py-4">
-              <h2 className="font-semibold text-gray-900">Compte rendu de bilan orthophonique</h2>
-            </div>
-            <div className="p-6">
-              <div className="prose prose-sm max-w-none">
-                <pre className="whitespace-pre-wrap font-sans text-gray-700 leading-relaxed">
-                  {crbo.crbo_text || crbo.crbo_genere || ''}
-                </pre>
+          {/* Math bilans : rendu structuré markdown avec sections vertes (trame
+              identique aux CRBO langage). Langage sans structure_json : fallback
+              brut conservé. */}
+          {isMathBilan ? (
+            <BilanMathCRBORender text={crbo.crbo_text || crbo.crbo_genere || ''} />
+          ) : (
+            <div className="bg-white rounded-xl border border-gray-200 overflow-hidden">
+              <div className="border-b border-gray-200 px-6 py-4">
+                <h2 className="font-semibold text-gray-900">Compte rendu de bilan orthophonique</h2>
+              </div>
+              <div className="p-6">
+                <div className="prose prose-sm max-w-none">
+                  <pre className="whitespace-pre-wrap font-sans text-gray-700 leading-relaxed">
+                    {crbo.crbo_text || crbo.crbo_genere || ''}
+                  </pre>
+                </div>
               </div>
             </div>
-          </div>
+          )}
         </div>
       )}
 

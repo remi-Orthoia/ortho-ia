@@ -6,6 +6,7 @@ import { Loader2, Sparkles, Download, Save, X, MessageSquare } from 'lucide-reac
 import MatriceSection from './MatriceSection'
 import PastilleLegend from './PastilleLegend'
 import Pastille from './Pastille'
+import MicButton from '@/components/MicButton'
 import { useToast } from '@/components/Toast'
 import { createClient } from '@/lib/supabase'
 import {
@@ -708,12 +709,15 @@ function EpreuveNotesCard({
         <Pastille etat={color} readonly size={18} ariaPrefix={`${epreuveLabel} (couleur globale)`} />
         <span style={{ fontSize: 14, fontWeight: 600, color: 'var(--fg-1)' }}>{epreuveLabel}</span>
         <span style={{ fontSize: 11, color: 'var(--fg-3)' }}>· {sectionLabel}</span>
+        <div style={{ marginLeft: 'auto' }}>
+          <MicButton value={state.notes} onChange={onNotesChange} />
+        </div>
       </div>
 
       <textarea
         value={state.notes}
         onChange={(e) => onNotesChange(e.target.value)}
-        placeholder="Notes brutes — observations pendant la passation…"
+        placeholder="Notes brutes — observations pendant la passation… (dictée vocale possible)"
         rows={2}
         style={{
           width: '100%',
@@ -760,24 +764,29 @@ function EpreuveNotesCard({
       </div>
 
       {state.iaText !== undefined && state.iaText !== '' && (
-        <textarea
-          value={state.iaText}
-          onChange={(e) => onIaTextChange(e.target.value)}
-          rows={4}
-          style={{
-            width: '100%',
-            padding: '10px 12px',
-            border: '1px solid var(--ds-primary, #16a34a)',
-            borderRadius: 8,
-            fontSize: 13,
-            lineHeight: 1.5,
-            fontFamily: 'inherit',
-            background: 'var(--ds-primary-soft, #f0f9f4)',
-            color: 'var(--fg-1)',
-            resize: 'vertical',
-            minHeight: 70,
-          }}
-        />
+        <div>
+          <div style={{ display: 'flex', justifyContent: 'flex-end', marginBottom: 4 }}>
+            <MicButton value={state.iaText} onChange={onIaTextChange} />
+          </div>
+          <textarea
+            value={state.iaText}
+            onChange={(e) => onIaTextChange(e.target.value)}
+            rows={4}
+            style={{
+              width: '100%',
+              padding: '10px 12px',
+              border: '1px solid var(--ds-primary, #16a34a)',
+              borderRadius: 8,
+              fontSize: 13,
+              lineHeight: 1.5,
+              fontFamily: 'inherit',
+              background: 'var(--ds-primary-soft, #f0f9f4)',
+              color: 'var(--fg-1)',
+              resize: 'vertical',
+              minHeight: 70,
+            }}
+          />
+        </div>
       )}
     </div>
   )

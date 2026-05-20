@@ -128,6 +128,23 @@ export async function POST(request: NextRequest) {
       for (const ep of dom.epreuves) {
         if (typeof ep?.epreuveLabel !== 'string') continue
         if (!isPastilleEtat(ep.parentColor)) continue
+        // Nouveau format : cellules détaillées par niveau × test × critère.
+        const cellules = Array.isArray(ep.cellules)
+          ? ep.cellules
+              .filter((c: any) =>
+                typeof c?.niveau === 'string' &&
+                typeof c?.test === 'string' &&
+                typeof c?.critere === 'string' &&
+                isPastilleEtat(c?.color),
+              )
+              .map((c: any) => ({
+                niveau: c.niveau,
+                test: c.test,
+                critere: c.critere,
+                color: c.color as PastilleEtat,
+              }))
+          : []
+        // Compat legacy : sous-épreuves avec couleur agrégée.
         const sousEpreuves = Array.isArray(ep.sousEpreuves)
           ? ep.sousEpreuves
               .filter((s: any) => typeof s?.label === 'string' && isPastilleEtat(s?.color))
@@ -136,8 +153,8 @@ export async function POST(request: NextRequest) {
         epreuves.push({
           epreuveLabel: ep.epreuveLabel,
           parentColor: ep.parentColor as PastilleEtat,
+          cellules,
           sousEpreuves,
-          direct: isPastilleEtat(ep.direct) ? ep.direct : undefined,
           notes: typeof ep.notes === 'string' ? ep.notes : '',
           iaText: typeof ep.iaText === 'string' ? ep.iaText : '',
         })
@@ -167,6 +184,12 @@ export async function POST(request: NextRequest) {
       ...ep,
       notes: scrubText(ep.notes, scrubList) ?? '',
       iaText: scrubText(ep.iaText, scrubList) ?? '',
+      // Anonymise aussi les critères et niveaux libellés (au cas où un prénom
+      // ait été utilisé comme critère, peu probable mais robuste).
+      cellules: ep.cellules.map((c) => ({
+        ...c,
+        critere: scrubText(c.critere, scrubList) ?? '',
+      })),
     })),
   }))
 
@@ -180,9 +203,17 @@ export async function POST(request: NextRequest) {
 
   const anthropic = new Anthropic({ apiKey: process.env.ANTHROPIC_API_KEY })
 
+  // Prénom anonymisé pour le prompt — sert d'ancrage textuel dans le CRBO
+  // ("[Prénom] maîtrise la numération…"). Sera rehydraté au retour.
+  const safePrenom = scrubText(
+    typeof patient.prenom === 'string' ? patient.prenom : '',
+    scrubList,
+  ) ?? ''
+
   const ctx: BilanMathCRBOContext = {
     bilanType: body.bilanType,
     mode: body.mode,
+    patientPrenom: safePrenom,
     patientAge: computeAge(typeof patient.date_naissance === 'string' ? patient.date_naissance : ''),
     patientClasse: typeof patient.classe === 'string' ? patient.classe : '',
     domaines: safeDomaines,
