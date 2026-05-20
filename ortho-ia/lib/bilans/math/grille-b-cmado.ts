@@ -148,21 +148,22 @@ export const GRILLE_B_CMADO: GrilleBilan = {
             {
               id: 'qte-discontinues', label: 'Qté Discontinues',
               criteres: [
-                c('c1', ['coll-1', 'coll-2'], 'Conservation des volumes'),
-                c('c2', ['cyc3-1', 'cyc3-2'], 'Conservation avec justification'),
-                c('c3', ['cyc2-1', 'cyc2-2'], 'Conservation sans justification'),
+                c('c1', ['coll-1'], 'Conservation des volumes'),
+                c('c2', ['cyc3-1'], 'Conservation avec justification'),
+                c('c3', ['cyc2-1'], 'Conservation sans justification'),
               ],
             },
             {
               id: 'qte-continue', label: 'Qté continue',
               criteres: [
-                c('c1', ['coll-1', 'coll-2', 'cyc3-1', 'cyc3-2'], 'réussite'),
+                c('c1', ['coll-2'], 'réussite'),
+                c('c2', ['cyc3-1'], 'Conservation des liquides-longueurs'),
               ],
             },
             {
               id: 'recipient-eau', label: "récipient d'eau",
               criteres: [
-                c('c1', ['coll-1', 'coll-2'], 'réussite'),
+                c('c1', ['coll-1'], 'réussite'),
               ],
             },
           ],
