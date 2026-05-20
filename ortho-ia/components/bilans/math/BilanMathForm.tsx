@@ -258,7 +258,19 @@ export default function BilanMathForm({ grille }: BilanMathFormProps) {
       if (!ok) return
     }
 
-    // Payload : pour chaque section, liste des épreuves cotées avec leurs cellules.
+    // Index niveau -> label lisible pour les cellules (sert au prompt IA).
+    // Inclut le subLabel quand present (ex: "8 ans (96-98 mo)").
+    const niveauLabelById = new Map<string, string>()
+    for (const s of grille.sections) {
+      for (const n of s.niveaux) {
+        niveauLabelById.set(n.id, n.subLabel ? `${n.label} (${n.subLabel})` : n.label)
+      }
+    }
+
+    // Payload : pour chaque section, liste des épreuves cotées avec leurs
+    // CELLULES detaillees (niveau x test x critere x couleur), pour que le
+    // diagnostic IA s'appuie sur les niveaux precis atteints par le patient
+    // et pas juste sur une couleur agregee.
     const domainesPayload = grille.sections.map((section) => {
       const epreuves = section.epreuves
         .map((ep) => {
@@ -270,13 +282,44 @@ export default function BilanMathForm({ grille }: BilanMathFormProps) {
             (state.notes && state.notes.trim().length > 0) ||
             (state.iaText && state.iaText.trim().length > 0)
           if (!hasAny) return null
+
+          // Liste des cellules cotees (chaque (sous-epreuve, critere) avec
+          // sa couleur si != gris). C'est l'INFO PRINCIPALE pour Claude.
+          const cellules: Array<{
+            niveau: string
+            test: string
+            critere: string
+            color: PastilleEtat
+          }> = []
+          for (const se of ep.sousEpreuves) {
+            for (const cr of se.criteres) {
+              const color = state.cells[`${se.id}:${cr.id}`]
+              if (!color || color === 'gris') continue
+              // Un critere peut couvrir plusieurs niveaux (fusion verticale).
+              // On affiche la plage complete pour que Claude voie le contexte.
+              const niveauxLabels = cr.niveauIds
+                .map((nid) => niveauLabelById.get(nid) ?? nid)
+                .join(' → ')
+              cellules.push({
+                niveau: niveauxLabels || '—',
+                test: se.label,
+                critere: cr.label,
+                color,
+              })
+            }
+          }
+
+          // Compat legacy : couleur agregee par sous-epreuve (pour les prompts
+          // qui n'auraient pas encore migre vers cellules).
           const sousEpreuves = ep.sousEpreuves.map((se) => ({
             label: se.label,
             color: sousEpreuveColorFromState(se, state),
           }))
+
           return {
             epreuveLabel: ep.label,
             parentColor,
+            cellules,
             sousEpreuves,
             notes: state.notes ?? '',
             iaText: state.iaText ?? '',
