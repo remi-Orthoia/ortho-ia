@@ -12,6 +12,7 @@ import {
   epreuveColorFromState,
   countCotees,
   listCotees,
+  sousEpreuveColorFromState,
 } from '@/lib/bilans/math/parent-color'
 import type {
   GrilleBilan,
@@ -121,13 +122,6 @@ export default function BilanMathForm({ grille }: BilanMathFormProps) {
     handleEpreuveChange(epreuveId, { ...current, iaText })
   }
 
-  // ===== Index global niveau → section pour les calculs de contexte =====
-  const allNiveauxIds = useMemo(() => {
-    const ids: string[] = []
-    for (const s of grille.sections) for (const n of s.niveaux) ids.push(n.id)
-    return ids
-  }, [grille.sections])
-
   // ===== Génération IA par épreuve =====
   const handleGenerateEpreuve = async (
     epreuveId: string,
@@ -144,25 +138,23 @@ export default function BilanMathForm({ grille }: BilanMathFormProps) {
 
     const state = draft.epreuves[epreuveId] ?? { cells: {}, notes: '' }
 
-    // Récupère les cellules cotées + leurs labels lisibles pour Claude.
-    const cotees = listCotees(epreuveDef, allNiveauxIds, state)
-    // Résout les libellés des niveaux (concatenated label + sublabel)
+    // Récupère les critères cotés (label + couleur). Map des niveaux pour
+    // associer un critère à son niveau (utile pour le prompt IA).
     const niveauLabelById = new Map<string, string>()
     for (const s of grille.sections) {
       for (const n of s.niveaux) {
         niveauLabelById.set(n.id, n.subLabel ? `${n.label} (${n.subLabel})` : n.label)
       }
     }
-    const sousEpreuveLabelById = new Map(
-      epreuveDef.sousEpreuves.map((se) => [se.id, se.label] as const),
-    )
+    const cotees = listCotees(epreuveDef, state)
     const cellules = cotees.map((c) => ({
-      niveau: niveauLabelById.get(c.niveauId) ?? c.niveauId,
-      test: sousEpreuveLabelById.get(c.sousEpreuveId) ?? c.sousEpreuveId,
+      niveau: niveauLabelById.get(c.criterion.niveauId) ?? c.criterion.niveauId,
+      test: c.sousEpreuve.label,
+      critere: c.criterion.label,
       color: c.color,
     }))
 
-    const parentColor = epreuveColorFromState(epreuveDef, allNiveauxIds, state)
+    const parentColor = epreuveColorFromState(epreuveDef, state)
 
     // Contexte : autres épreuves cotées (couleur agrégée).
     const contexteBilan: Array<{ domaineLabel: string; epreuveLabel: string; color: PastilleEtat }> = []
@@ -171,7 +163,7 @@ export default function BilanMathForm({ grille }: BilanMathFormProps) {
         if (ep.id === epreuveId) continue
         const otherState = draft.epreuves[ep.id]
         if (!otherState) continue
-        const otherColor = epreuveColorFromState(ep, allNiveauxIds, otherState)
+        const otherColor = epreuveColorFromState(ep, otherState)
         if (otherColor !== 'gris') {
           contexteBilan.push({ domaineLabel: section.label, epreuveLabel: ep.label, color: otherColor })
         }
@@ -191,16 +183,13 @@ export default function BilanMathForm({ grille }: BilanMathFormProps) {
             domaineLabel: sectionLabel,
             epreuveLabel,
             parentColor,
-            // Nouveau format : liste de cellules avec niveau + test + couleur.
-            // L'API legacy attendait sousEpreuves[label, color] — la route
-            // serveur sera mise à jour pour consommer `cellules`.
+            // Nouveau format : liste de cellules (niveau + test + critère + couleur).
             cellules,
-            // Compat : on transmet aussi sousEpreuves (avec couleur agrégée
-            // par test, tous niveaux confondus) pour que l'ancienne route
-            // continue de fonctionner pendant la transition.
+            // Compat legacy : couleur agrégée par sous-épreuve, attendue par
+            // l'ancienne route serveur.
             sousEpreuves: epreuveDef.sousEpreuves.map((se) => ({
               label: se.label,
-              color: aggregateColorForSousEpreuve(allNiveauxIds, se.id, state),
+              color: sousEpreuveColorFromState(se, state),
             })),
             notes: state.notes,
           },
@@ -235,12 +224,12 @@ export default function BilanMathForm({ grille }: BilanMathFormProps) {
         total += 1
         const state = draft.epreuves[epreuve.id]
         if (!state) continue
-        if (countCotees(epreuve, allNiveauxIds, state) > 0) renseignees += 1
+        if (countCotees(epreuve, state) > 0) renseignees += 1
         else if (state.notes && state.notes.trim().length > 0) renseignees += 1
       }
     }
     return { renseignees, total }
-  }, [grille.sections, allNiveauxIds, draft.epreuves])
+  }, [grille.sections, draft.epreuves])
 
   const handleReset = () => {
     if (!confirm('Effacer toute la saisie de ce bilan ? Cette action est irréversible.')) return
@@ -267,7 +256,7 @@ export default function BilanMathForm({ grille }: BilanMathFormProps) {
         .map((ep) => {
           const state = draft.epreuves[ep.id]
           if (!state) return null
-          const parentColor = epreuveColorFromState(ep, allNiveauxIds, state)
+          const parentColor = epreuveColorFromState(ep, state)
           const hasAny =
             parentColor !== 'gris' ||
             (state.notes && state.notes.trim().length > 0) ||
@@ -275,7 +264,7 @@ export default function BilanMathForm({ grille }: BilanMathFormProps) {
           if (!hasAny) return null
           const sousEpreuves = ep.sousEpreuves.map((se) => ({
             label: se.label,
-            color: aggregateColorForSousEpreuve(allNiveauxIds, se.id, state),
+            color: sousEpreuveColorFromState(se, state),
           }))
           return {
             epreuveLabel: ep.label,
@@ -393,7 +382,7 @@ export default function BilanMathForm({ grille }: BilanMathFormProps) {
       for (const ep of section.epreuves) {
         const state = draft.epreuves[ep.id]
         if (!state) continue
-        const color = epreuveColorFromState(ep, allNiveauxIds, state)
+        const color = epreuveColorFromState(ep, state)
         const hasNotes = state.notes && state.notes.trim().length > 0
         const hasIa = state.iaText && state.iaText.trim().length > 0
         if (color === 'gris' && !hasNotes && !hasIa) continue
@@ -401,7 +390,7 @@ export default function BilanMathForm({ grille }: BilanMathFormProps) {
       }
     }
     return out
-  }, [grille.sections, allNiveauxIds, draft.epreuves])
+  }, [grille.sections, draft.epreuves])
 
   return (
     <div style={{ maxWidth: 1100, margin: '0 auto', paddingBottom: 80 }}>
@@ -790,24 +779,6 @@ function EpreuveNotesCard({
 // ============================================================================
 // Helpers
 // ============================================================================
-
-/** Couleur agrégée d'une sous-épreuve toutes lignes confondues. */
-function aggregateColorForSousEpreuve(
-  niveauxIds: string[],
-  sousEpreuveId: string,
-  state: EpreuveState,
-): PastilleEtat {
-  const colors: PastilleEtat[] = []
-  for (const n of niveauxIds) {
-    const c = state.cells[`${n}:${sousEpreuveId}`]
-    if (c) colors.push(c)
-  }
-  const cotees = colors.filter((c) => c !== 'gris')
-  if (cotees.length === 0) return 'gris'
-  if (cotees.some((c) => c === 'rouge')) return 'rouge'
-  if (cotees.some((c) => c === 'orange')) return 'orange'
-  return 'vert'
-}
 
 function FormField({
   label,

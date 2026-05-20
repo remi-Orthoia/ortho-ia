@@ -4,56 +4,60 @@
  * Structure matricielle inspirée du PDF source (Elsa DALL'AGNOL, Profil-B CM) :
  *   Chaque grille contient une ou plusieurs SECTIONS, chacune étant un
  *   tableau 2D :
- *     - lignes = niveaux développementaux (âge en mois, ou classe scolaire)
+ *     - lignes (niveaux) = âge ou classe scolaire
  *     - colonnes = sous-épreuves (tests, groupés par épreuve macro)
- *     - cellules = pastilles cotables individuellement
+ *     - cellules = critères graduels SPÉCIFIQUES à chaque test, placés au
+ *       bon niveau (ex: "Classe selon 2 critères" placé à 6 ans pour le
+ *       test "Classification jetons"). Le tableau est donc SPARSE — toutes
+ *       les intersections (niveau × test) ne sont pas remplies.
  *
- * Différence radicale vs les bilans langage du projet : scoring purement
- * qualitatif (vert / orange / rouge) — pas de percentile, pas d'écart-type.
+ * Cotation purement qualitative : vert / orange / rouge / gris.
  */
 
-/** État d'une pastille de cotation.
- *  - gris   : non renseigné (défaut)
- *  - vert   : réussite spontanée
- *  - orange : réussite après étayage / autocorrection
- *  - rouge  : échec */
 export type PastilleEtat = 'gris' | 'vert' | 'orange' | 'rouge'
 
 /** Ligne de la matrice — un niveau développemental ou scolaire. */
 export interface Niveau {
-  /** Identifiant stable, sert de clé en persistance JSON. */
   id: string
   /** Libellé principal (ex: "8 ans", "CM1"). */
   label: string
-  /** Sous-libellé optionnel (ex: "96-98 mo" pour la tranche d'âge en mois). */
+  /** Sous-libellé optionnel (ex: rare ici depuis qu'on a simplifié à l'année). */
   subLabel?: string
 }
 
-/** Colonne du tableau — un test individuel. */
-export interface SousEpreuve {
+/** Critère graduel d'un test, placé à un niveau précis.
+ *  C'est l'élément cotable — l'ortho coche le critère atteint par le patient. */
+export interface Criterion {
+  /** Identifiant stable au sein du test parent. */
   id: string
+  /** Niveau (âge ou classe) auquel ce critère est attendu. */
+  niveauId: string
+  /** Texte du critère (ex: "Classe selon 2 critères", "12/12"). */
   label: string
 }
 
+/** Colonne du tableau — un test individuel.
+ *  Chaque test a ses critères propres gradués (3-5 typiquement). */
+export interface SousEpreuve {
+  id: string
+  label: string
+  criteres: Criterion[]
+}
+
 /** Groupe de colonnes — une "épreuve macro" qui regroupe ses tests.
- *  L'épreuve elle-même n'est PAS cotable directement ; seuls ses tests le sont. */
+ *  L'épreuve elle-même n'est PAS cotable directement ; seuls ses critères le sont. */
 export interface Epreuve {
   id: string
   label: string
   sousEpreuves: SousEpreuve[]
 }
 
-/** Section de la grille — une sous-matrice avec ses propres niveaux (lignes).
- *  B-CM a 2 sections : développementale (ages 5-10) et scolaire (GSM-CM2).
- *  B-CMado a une structure similaire adaptée au collège. */
+/** Section de la grille — une sous-matrice avec ses propres niveaux (lignes). */
 export interface SectionMatrix {
   id: string
   label: string
-  /** Description courte affichée sous le titre de section. */
   description?: string
-  /** Lignes du tableau. Ordre top-to-bottom du rendu UI. */
   niveaux: Niveau[]
-  /** Colonnes groupées par épreuve. */
   epreuves: Epreuve[]
 }
 
@@ -61,15 +65,13 @@ export interface GrilleBilan {
   id: 'b-cm' | 'b-cmado'
   label: string
   description: string
-  /** Une ou plusieurs sections — chaque section est une matrice indépendante. */
   sections: SectionMatrix[]
 }
 
-/** État d'une épreuve : cellules cotées + notes + texte IA.
- *  Les cellules sont indexées par "niveauId:sousEpreuveId" pour pouvoir
- *  tracer la cotation d'un test à un niveau précis. */
+/** État d'une épreuve : critères cotés + notes + texte IA.
+ *  Les cellules sont indexées par "sousEpreuveId:criterionId". */
 export interface EpreuveState {
-  /** Pastilles par cellule, clé = "niveauId:sousEpreuveId". */
+  /** Pastilles par critère, clé = "sousEpreuveId:criterionId". */
   cells: Record<string, PastilleEtat>
   /** Observations cliniques brutes saisies par l'ortho pendant la passation. */
   notes: string
@@ -78,21 +80,14 @@ export interface EpreuveState {
 }
 
 export interface BilanMathDraft {
-  /** Type de bilan — détermine la grille appliquée. */
   type: GrilleBilan['id']
-  /** Bilan initial ou renouvellement (impacte le ton du CRBO IA). */
   mode: 'initial' | 'renouvellement'
-  /** Coordonnées patient saisies inline (intégration carnet patients : Phase 4). */
   patient: {
     prenom: string
     nom: string
-    /** Format YYYY-MM-DD */
     date_naissance: string
-    /** Classe / niveau scolaire (texte libre, ex: "6ème", "CM1") */
     classe: string
   }
-  /** État de chaque épreuve, indexé par epreuve.id (peu importe la section). */
   epreuves: Record<string, EpreuveState>
-  /** Timestamp Unix ms de dernière modification (pour invalidation localStorage). */
   updatedAt: number
 }

@@ -1,17 +1,11 @@
-import type { PastilleEtat, EpreuveState, Epreuve, SectionMatrix } from './types'
+import type { PastilleEtat, EpreuveState, Epreuve, SousEpreuve, Criterion } from './types'
 
 /**
  * Calcule la couleur d'une épreuve parent à partir des couleurs de ses
- * cellules cotées. Règle clinique imposée : "la couleur la plus faible
- * domine" — toute fragilité doit remonter en haut de la grille pour ne pas
- * être masquée par une moyenne.
+ * critères cotés. Règle clinique imposée : "la couleur la plus faible
+ * domine" — toute fragilité doit remonter pour ne pas être masquée.
  *
  *   Rouge > Orange > Vert (dominance descendante)
- *
- * - Au moins une rouge       → rouge
- * - Au moins une orange      → orange
- * - Toutes vertes (≥ 1)      → vert
- * - Aucune cellule cotée     → gris
  */
 export function computeParentColor(states: PastilleEtat[]): PastilleEtat {
   const cotees = states.filter((s) => s !== 'gris')
@@ -21,11 +15,7 @@ export function computeParentColor(states: PastilleEtat[]): PastilleEtat {
   return 'vert'
 }
 
-/**
- * Cycle d'état lors d'un clic sur une pastille : gris → vert → orange → rouge → gris.
- * Cycle court pour permettre de "retirer" une cotation rapidement sans avoir
- * à atteindre rouge en passant par orange.
- */
+/** Cycle d'état lors d'un clic sur une pastille : gris → vert → orange → rouge → gris. */
 export function cyclePastille(current: PastilleEtat): PastilleEtat {
   switch (current) {
     case 'gris':   return 'vert'
@@ -35,82 +25,69 @@ export function cyclePastille(current: PastilleEtat): PastilleEtat {
   }
 }
 
-/** Clé canonique d'une cellule de la matrice. */
-export function cellKey(niveauId: string, sousEpreuveId: string): string {
-  return `${niveauId}:${sousEpreuveId}`
+/** Clé canonique d'une cellule (critère) : "sousEpreuveId:criterionId". */
+export function cellKey(sousEpreuveId: string, criterionId: string): string {
+  return `${sousEpreuveId}:${criterionId}`
 }
 
-/**
- * Couleur globale d'une épreuve : agrège toutes ses cellules cotées toutes
- * lignes confondues. Utile pour le résumé (preview, historique, IA).
- */
+/** Couleur globale d'une épreuve : agrège tous ses critères cotés. */
 export function epreuveColorFromState(
   epreuve: Epreuve,
-  niveauxIds: string[],
   state: EpreuveState | undefined,
 ): PastilleEtat {
   if (!state) return 'gris'
   const colors: PastilleEtat[] = []
-  for (const niv of niveauxIds) {
-    for (const se of epreuve.sousEpreuves) {
-      const c = state.cells[cellKey(niv, se.id)]
+  for (const se of epreuve.sousEpreuves) {
+    for (const cr of se.criteres) {
+      const c = state.cells[cellKey(se.id, cr.id)]
       if (c) colors.push(c)
     }
   }
   return computeParentColor(colors)
 }
 
-/**
- * Couleur agrégée d'une sous-épreuve sur tous les niveaux (le plus défavorable).
- * Permet d'afficher une pastille de synthèse en en-tête de colonne.
- */
+/** Couleur agrégée d'une sous-épreuve sur tous ses critères. */
 export function sousEpreuveColorFromState(
-  niveauxIds: string[],
-  sousEpreuveId: string,
+  sousEpreuve: SousEpreuve,
   state: EpreuveState | undefined,
 ): PastilleEtat {
   if (!state) return 'gris'
   const colors: PastilleEtat[] = []
-  for (const niv of niveauxIds) {
-    const c = state.cells[cellKey(niv, sousEpreuveId)]
+  for (const cr of sousEpreuve.criteres) {
+    const c = state.cells[cellKey(sousEpreuve.id, cr.id)]
     if (c) colors.push(c)
   }
   return computeParentColor(colors)
 }
 
-/**
- * Nombre de cellules cotées (non grises) d'une épreuve sur tous niveaux.
- * Utile pour les compteurs UI ("3/12 cellules cotées").
- */
+/** Nombre de critères cotés (non gris) d'une épreuve. */
 export function countCotees(
   epreuve: Epreuve,
-  niveauxIds: string[],
   state: EpreuveState | undefined,
 ): number {
   if (!state) return 0
   let n = 0
-  for (const niv of niveauxIds) {
-    for (const se of epreuve.sousEpreuves) {
-      const c = state.cells[cellKey(niv, se.id)]
+  for (const se of epreuve.sousEpreuves) {
+    for (const cr of se.criteres) {
+      const c = state.cells[cellKey(se.id, cr.id)]
       if (c && c !== 'gris') n++
     }
   }
   return n
 }
 
-/** Liste des cellules cotées d'une épreuve, au format ((niveauId, sousEpreuveId), couleur). */
+/** Liste des critères cotés d'une épreuve avec leur label. */
 export function listCotees(
   epreuve: Epreuve,
-  niveauxIds: string[],
   state: EpreuveState | undefined,
-): Array<{ niveauId: string; sousEpreuveId: string; color: PastilleEtat }> {
-  const out: Array<{ niveauId: string; sousEpreuveId: string; color: PastilleEtat }> = []
+): Array<{ sousEpreuve: SousEpreuve; criterion: Criterion; color: PastilleEtat }> {
+  const out: Array<{ sousEpreuve: SousEpreuve; criterion: Criterion; color: PastilleEtat }> = []
   if (!state) return out
-  for (const niv of niveauxIds) {
-    for (const se of epreuve.sousEpreuves) {
-      const c = state.cells[cellKey(niv, se.id)]
+  for (const se of epreuve.sousEpreuves) {
+    for (const cr of se.criteres) {
+      const c = state.cells[cellKey(se.id, cr.id)]
       if (c && c !== 'gris') {
-        out.push({ niveauId: niv, sousEpreuveId: se.id, color: c })
+        out.push({ sousEpreuve: se, criterion: cr, color: c })
       }
     }
   }
