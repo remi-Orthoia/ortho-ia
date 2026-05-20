@@ -13,6 +13,7 @@ import SnippetTextarea from '@/components/SnippetTextarea'
 import Tooltip from '@/components/Tooltip'
 import ConfettiBurst from '@/components/ConfettiBurst'
 import CRBOStructuredPreview from '@/components/CRBOStructuredPreview'
+import FileDropZone from '@/components/FileDropZone'
 import ShareCRBOButton from '@/components/ShareCRBOButton'
 import MicButton from '@/components/MicButton'
 import MocaScoresInput from '@/components/forms/MocaScoresInput'
@@ -878,19 +879,19 @@ function NouveauCRBOContent() {
   // document est envoyé séparément à Claude Vision côté API et les résultats
   // sont consolidés en un seul JSON. Cas d'usage typique : page 1 + page 2 d'une
   // feuille de résultats HappyNeuron (Exalang) qu'il faut traiter ensemble.
-  const handleExtractPDF = async (e: React.ChangeEvent<HTMLInputElement>) => {
-    const files = Array.from(e.target.files ?? [])
+  //
+  // Coeur de la logique factorisé hors du handler d'event pour pouvoir être
+  // appelé aussi depuis le drag-and-drop (FileDropZone).
+  const processPDFFiles = async (files: File[]) => {
     if (files.length === 0) return
 
     if (files.length > 3) {
       setError('Maximum 3 fichiers à la fois.')
-      e.target.value = ''
       return
     }
     for (const f of files) {
       if (!f.type.includes('pdf') && !f.type.includes('image')) {
         setError(`Format non supporté pour "${f.name}". Utilisez un PDF ou une image (PNG, JPG).`)
-        e.target.value = ''
         return
       }
     }
@@ -938,9 +939,14 @@ function NouveauCRBOContent() {
       setError(err instanceof Error ? err.message : 'Erreur lors de l\'extraction')
     } finally {
       setExtracting(false)
-      // Reset l'input pour permettre de réimporter les mêmes fichiers
-      e.target.value = ''
     }
+  }
+
+  const handleExtractPDF = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const files = Array.from(e.target.files ?? [])
+    await processPDFFiles(files)
+    // Reset l'input pour permettre de réimporter les mêmes fichiers
+    e.target.value = ''
   }
 
   const nextStep = () => {
@@ -1889,44 +1895,53 @@ function NouveauCRBOContent() {
                           d&apos;analyser les évolutions.
                         </p>
                         <div className="mt-3 flex items-center gap-3 flex-wrap">
-                          <label
-                            style={{
-                              display: 'inline-flex', alignItems: 'center', gap: 8,
-                              padding: '10px 16px',
-                              background: 'var(--ds-primary)',
-                              color: 'var(--fg-on-brand)',
-                              borderRadius: 'var(--radius-pill)',
-                              fontSize: 14, fontWeight: 500,
-                              cursor: uploadingPreviousBilan ? 'not-allowed' : 'pointer',
-                              opacity: uploadingPreviousBilan ? 0.6 : 1,
-                              transition: 'background 180ms',
-                            }}
+                          <FileDropZone
+                            onFilesDropped={(files) => { if (files[0]) handleUploadPreviousBilan(files[0]) }}
+                            accept=".pdf,.docx,.doc,application/pdf,application/vnd.openxmlformats-officedocument.wordprocessingml.document,application/msword"
+                            multiple={false}
+                            disabled={uploadingPreviousBilan}
+                            overlayLabel="Déposez le bilan ici"
+                            className="inline-block"
                           >
-                            {uploadingPreviousBilan ? (
-                              <>
-                                <Loader2 className="animate-spin" size={16} />
-                                Extraction en cours…
-                              </>
-                            ) : (
-                              <>
-                                <Upload size={16} />
-                                Importer le bilan initial (PDF ou Word)
-                              </>
-                            )}
-                            <input
-                              type="file"
-                              accept=".pdf,.docx,.doc,application/pdf,application/vnd.openxmlformats-officedocument.wordprocessingml.document,application/msword"
-                              onChange={(e) => {
-                                const file = e.target.files?.[0]
-                                if (file) handleUploadPreviousBilan(file)
-                                e.target.value = '' // permet de réuploader le même fichier
+                            <label
+                              style={{
+                                display: 'inline-flex', alignItems: 'center', gap: 8,
+                                padding: '10px 16px',
+                                background: 'var(--ds-primary)',
+                                color: 'var(--fg-on-brand)',
+                                borderRadius: 'var(--radius-pill)',
+                                fontSize: 14, fontWeight: 500,
+                                cursor: uploadingPreviousBilan ? 'not-allowed' : 'pointer',
+                                opacity: uploadingPreviousBilan ? 0.6 : 1,
+                                transition: 'background 180ms',
                               }}
-                              disabled={uploadingPreviousBilan}
-                              style={{ display: 'none' }}
-                            />
-                          </label>
+                            >
+                              {uploadingPreviousBilan ? (
+                                <>
+                                  <Loader2 className="animate-spin" size={16} />
+                                  Extraction en cours…
+                                </>
+                              ) : (
+                                <>
+                                  <Upload size={16} />
+                                  Importer le bilan initial (PDF ou Word)
+                                </>
+                              )}
+                              <input
+                                type="file"
+                                accept=".pdf,.docx,.doc,application/pdf,application/vnd.openxmlformats-officedocument.wordprocessingml.document,application/msword"
+                                onChange={(e) => {
+                                  const file = e.target.files?.[0]
+                                  if (file) handleUploadPreviousBilan(file)
+                                  e.target.value = '' // permet de réuploader le même fichier
+                                }}
+                                disabled={uploadingPreviousBilan}
+                                style={{ display: 'none' }}
+                              />
+                            </label>
+                          </FileDropZone>
                           <span style={{ fontSize: 12, color: 'var(--fg-3)' }}>
-                            Formats acceptés : PDF, .docx · max 10 Mo
+                            Cliquez ou glissez-déposez · PDF / .docx · max 10 Mo
                           </span>
                         </div>
                         <p style={{ fontSize: 12, color: 'var(--fg-3)', marginTop: 12, fontStyle: 'italic' }}>
@@ -2457,34 +2472,43 @@ Astuce : tapez /fatigue, /anxiete, /encouragements… pour réutiliser vos formu
 
                 {/* Bouton Import PDF */}
                 <div className="mb-3">
-                  <label
-                    className={`inline-flex items-center gap-2 px-4 py-2.5 border-2 border-dashed rounded-lg cursor-pointer transition ${
-                      extracting
-                        ? 'border-green-400 bg-green-50 text-green-700'
-                        : 'border-green-500 bg-green-50 text-green-700 hover:bg-green-100'
-                    }`}
+                  <FileDropZone
+                    onFilesDropped={processPDFFiles}
+                    accept=".pdf,image/*"
+                    multiple
+                    disabled={extracting}
+                    overlayLabel="Déposez les PDFs ou images ici"
+                    className="inline-block"
                   >
-                    {extracting ? (
-                      <>
-                        <Loader2 className="animate-spin" size={18} />
-                        <span className="text-sm font-medium">Extraction en cours...</span>
-                      </>
-                    ) : (
-                      <>
-                        <FileUp size={18} />
-                        <span className="text-sm font-medium">📄 Importer PDF résultats</span>
-                      </>
-                    )}
-                    <input
-                      type="file"
-                      accept=".pdf,image/*"
-                      multiple
-                      onChange={handleExtractPDF}
-                      disabled={extracting}
-                      className="hidden"
-                    />
-                  </label>
-                  <span className="ml-3 text-xs text-gray-400">Jusqu'à 3 PDFs / images (Exalang, EVALO, ELO...) — multi-page : sélectionnez page 1 + page 2</span>
+                    <label
+                      className={`inline-flex items-center gap-2 px-4 py-2.5 border-2 border-dashed rounded-lg cursor-pointer transition ${
+                        extracting
+                          ? 'border-green-400 bg-green-50 text-green-700'
+                          : 'border-green-500 bg-green-50 text-green-700 hover:bg-green-100'
+                      }`}
+                    >
+                      {extracting ? (
+                        <>
+                          <Loader2 className="animate-spin" size={18} />
+                          <span className="text-sm font-medium">Extraction en cours...</span>
+                        </>
+                      ) : (
+                        <>
+                          <FileUp size={18} />
+                          <span className="text-sm font-medium">📄 Importer PDF résultats</span>
+                        </>
+                      )}
+                      <input
+                        type="file"
+                        accept=".pdf,image/*"
+                        multiple
+                        onChange={handleExtractPDF}
+                        disabled={extracting}
+                        className="hidden"
+                      />
+                    </label>
+                  </FileDropZone>
+                  <span className="ml-3 text-xs text-gray-400">Cliquez ou glissez-déposez — jusqu'à 3 PDFs / images (Exalang, EVALO, ELO...)</span>
                 </div>
 
                 {/* Message d'erreur */}

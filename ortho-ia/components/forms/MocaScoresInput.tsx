@@ -26,6 +26,7 @@
 import { useEffect, useMemo, useRef, useState } from 'react'
 import { Brain, CheckCircle2, AlertCircle, ChevronDown, Camera, Loader2, Lightbulb } from 'lucide-react'
 import MicButton from '../MicButton'
+import FileDropZone from '../FileDropZone'
 
 interface Props {
   /** Notes d'observation (comportement, fatigabilité). Optionnel. */
@@ -407,7 +408,14 @@ export default function MocaScoresInput({ notes, onNotesChange, onResultatsChang
 
       {/* Téléversement photo de la feuille manuscrite — Claude Vision pré-remplit les domaines.
           Reste en bêta : l'ortho doit toujours valider chaque score avant la génération CRBO. */}
-      <div className="rounded-lg border border-dashed border-purple-300 bg-purple-50/50 p-3">
+      <FileDropZone
+        onFilesDropped={(files) => { if (files[0]) handlePhotoUpload(files[0]) }}
+        accept="image/*"
+        multiple={false}
+        disabled={uploading}
+        overlayLabel="Déposez la photo MoCA ici"
+        className="rounded-lg border border-dashed border-purple-300 bg-purple-50/50 p-3"
+      >
         <div className="flex items-start justify-between gap-3 flex-wrap">
           <div className="flex items-start gap-2 min-w-0">
             <Camera size={18} className="text-purple-600 shrink-0 mt-0.5" />
@@ -417,7 +425,7 @@ export default function MocaScoresInput({ notes, onNotesChange, onResultatsChang
                 <span className="font-normal text-purple-600 text-xs">(bêta)</span>
               </p>
               <p className="text-purple-700 text-xs mt-0.5">
-                Photographiez la feuille de cotation papier remplie à la main. Claude Vision lit les 7 scores,
+                Photographiez ou glissez-déposez la feuille de cotation. Claude Vision lit les 7 scores,
                 la case scolarité, et les annotations en marge. <strong>Relisez systématiquement</strong> avant
                 de générer le CRBO.
               </p>
@@ -468,7 +476,7 @@ export default function MocaScoresInput({ notes, onNotesChange, onResultatsChang
             ))}
           </ul>
         )}
-      </div>
+      </FileDropZone>
 
       {/* Cartes par domaine — 1 colonne pour laisser de la place aux règles + observation */}
       <div className="space-y-3">
