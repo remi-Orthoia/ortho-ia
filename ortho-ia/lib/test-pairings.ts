@@ -30,6 +30,7 @@ export const TESTS_WITH_SPECIFIC_FORM = new Set<string>([
   'BECD',
   'BIA',
   'Examath',
+  'EVALO 2-6',
   'EVALEO 6-15',
   'Exalang 3-6',
   'Exalang 5-8',

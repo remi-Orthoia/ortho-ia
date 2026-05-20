@@ -21,6 +21,7 @@ import BetlScoresInput from '@/components/forms/BetlScoresInput'
 import PredimemScoresInput from '@/components/forms/PredimemScoresInput'
 import ExamathScoresInput from '@/components/forms/ExamathScoresInput'
 import Evaleo615ScoresInput from '@/components/forms/Evaleo615ScoresInput'
+import Evalo26ScoresInput from '@/components/forms/Evalo26ScoresInput'
 import Exalang58ScoresInput from '@/components/forms/Exalang58ScoresInput'
 import Exalang36ScoresInput from '@/components/forms/Exalang36ScoresInput'
 import PrediFexScoresInput from '@/components/forms/PrediFexScoresInput'
@@ -2398,6 +2399,12 @@ Astuce : tapez /fatigue, /anxiete, /encouragements… pour réutiliser vos formu
                           <Evaleo615ScoresInput
                             {...sharedNotesProps}
                             onResultatsChange={(v) => handleTestSlotChange('EVALEO 6-15', v)}
+                          />
+                        )}
+                        {test === 'EVALO 2-6' && (
+                          <Evalo26ScoresInput
+                            {...sharedNotesProps}
+                            onResultatsChange={(v) => handleTestSlotChange('EVALO 2-6', v)}
                           />
                         )}
                         {test === 'Exalang 5-8' && (
