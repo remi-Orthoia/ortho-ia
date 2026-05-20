@@ -88,7 +88,7 @@ const DRAFT_KEY = 'ortho-ia:crbo-draft'
 /** Motifs de consultation proposés en multi-sélection à l'étape 2.
  *  Le LLM reformule la sélection en 1-2 phrases fluides via la règle
  *  motif_reformule du system-base. */
-const MOTIF_OPTIONS = ['Langage oral', 'Langage écrit', 'Cognitif', 'OMF'] as const
+const MOTIF_OPTIONS = ['Langage oral', 'Langage écrit', 'Cognitif', 'Maths', 'OMF'] as const
 
 /** Parse la chaîne `formData.motif` en tableau d'options sélectionnées.
  *  La chaîne est de la forme "Langage oral, Cognitif". Tolère les espaces
