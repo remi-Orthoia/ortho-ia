@@ -37,6 +37,8 @@ interface CRBO {
   test_utilise: string
   bilan_date: string
   bilan_type: string
+  /** Sous-type pour distinguer bilans langage (NULL) des bilans math B-CM/B-CMado. */
+  bilan_subtype?: 'b-cm' | 'b-cmado' | null
   crbo_text?: string | null
   crbo_genere?: string | null
   statut: string
@@ -344,7 +346,11 @@ export default function CRBODetailPage() {
     !!crbo.structure_json &&
     Array.isArray((crbo.structure_json as any)?.domains) &&
     (crbo.structure_json as any).domains.length > 0
-  const canGenerateSmart = !isMocaOnly && hasStructure
+  // Bilans math (B-CM / B-CMado) : pas de structure_json mais ils ont leur
+  // propre branche dans /api/generate-smart-objectives (cotations couleur +
+  // crbo_genere comme input). On les considère donc "eligibles SMART".
+  const isMathBilan = crbo.bilan_subtype === 'b-cm' || crbo.bilan_subtype === 'b-cmado'
+  const canGenerateSmart = !isMocaOnly && (hasStructure || isMathBilan)
   const hasCachedSmart = !!crbo.smart_objectives
   const smartGeneratedAt = crbo.smart_objectives_generated_at
     ? new Date(crbo.smart_objectives_generated_at).toLocaleDateString('fr-FR', {
