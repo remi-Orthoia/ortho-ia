@@ -1,6 +1,6 @@
 'use client'
 
-import { useState, useEffect, Suspense } from 'react'
+import { useState, useEffect, useRef, Suspense } from 'react'
 import { useRouter, useSearchParams } from 'next/navigation'
 import { createClient } from '@/lib/supabase'
 import { CLASSES_OPTIONS, CLASSES_GROUPS, TESTS_OPTIONS, TESTS_SCREENING_OPTIONS, CRBOFormData } from '@/lib/types'
@@ -476,14 +476,27 @@ function NouveauCRBOContent() {
   const persistDraft = () => {
     try {
       const { audio_file, resultats_pdf, ...serializable } = formData
-      // Ne rien sauvegarder si rien n'a été saisi (état initial vide)
-      const hasContent =
-        serializable.patient_prenom || serializable.patient_nom ||
-        serializable.motif || serializable.anamnese || serializable.resultats_manuels
+      // Ne rien sauvegarder si rien n'a été saisi (état initial vide).
+      // Check elargi : tout champ texte non vide ou tableau de tests rempli
+      // declenche la sauvegarde (avant on ne checkait que 5 champs et donc
+      // un draft avec juste medecin + tests etait perdu).
+      const hasContent = !!(
+        serializable.patient_prenom?.trim() ||
+        serializable.patient_nom?.trim() ||
+        serializable.patient_classe?.trim() ||
+        serializable.medecin_nom?.trim() ||
+        serializable.medecin_tel?.trim() ||
+        serializable.motif?.trim() ||
+        serializable.anamnese?.trim() ||
+        serializable.resultats_manuels?.trim() ||
+        serializable.notes_analyse?.trim() ||
+        serializable.comportement_seance?.trim() ||
+        (Array.isArray(serializable.test_utilise) && serializable.test_utilise.length > 0)
+      )
       if (!hasContent) return false
       // Flash "Sauvegarde…" pendant ~500ms pour confirmer visuellement chaque
-      // tick d'auto-save (toutes les 15s). Sans ça, l'ortho n'a aucun feedback
-      // que sa frappe est sécurisée.
+      // sauvegarde. Sans ça, l'ortho n'a aucun feedback que sa frappe est
+      // sécurisée.
       setSavingFlash(true)
       localStorage.setItem(DRAFT_KEY, JSON.stringify({ step: currentStep, formData: serializable }))
       setLastSavedAt(Date.now())
@@ -504,12 +517,35 @@ function NouveauCRBOContent() {
     }
   }
 
-  // Auto-save silencieux toutes les 15 secondes
+  // Auto-save : DEUX mecanismes complementaires.
+  //
+  // BUG corrige : auparavant un setInterval(15s) etait recree a chaque
+  // modif de formData (dependance [formData, currentStep]), donc l'horloge
+  // se reinitialisait a chaque frappe et n'atteignait JAMAIS 15s en
+  // saisie continue. Resultat : aucun auto-save pendant la frappe.
+  //
+  // Nouveau systeme :
+  //  1) Debounce 1.5s : sauvegarde 1.5s apres la derniere modification.
+  //     Capture les arrets naturels entre phrases / champs.
+  //  2) Filet de securite : interval fixe 15s independant des changements,
+  //     via une ref pour eviter de recreer l'interval.
+
+  // Mecanisme 1 : debounce 1.5s
   useEffect(() => {
     if (showResult) return
-    const id = setInterval(() => { persistDraft() }, 15_000)
-    return () => clearInterval(id)
+    const t = setTimeout(() => { persistDraft() }, 1_500)
+    return () => clearTimeout(t)
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [formData, currentStep, showResult])
+
+  // Mecanisme 2 : filet de securite 15s (ref pattern, deps stables)
+  const persistDraftRef = useRef(persistDraft)
+  persistDraftRef.current = persistDraft
+  useEffect(() => {
+    if (showResult) return
+    const id = setInterval(() => { persistDraftRef.current() }, 15_000)
+    return () => clearInterval(id)
+  }, [showResult])
 
   // Tick 1s pour rafraîchir le "sauvegardé il y a X s"
   useEffect(() => {
