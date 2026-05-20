@@ -30,6 +30,7 @@ import BiaScoresInput from '@/components/forms/BiaScoresInput'
 import PrediLacScoresInput from '@/components/forms/PrediLacScoresInput'
 import ExalangLyfacScoresInput from '@/components/forms/ExalangLyfacScoresInput'
 import { TESTS_WITH_SPECIFIC_FORM, getComplementarySuggestions, TEST_FAMILIES } from '@/lib/test-pairings'
+import { saveMathBilanHandoff } from '@/lib/bilans/math/handoff'
 import { useToast } from '@/components/Toast'
 import { useFocusMode } from '@/components/FocusMode'
 import { playPrintAnimation } from '@/components/PrintAnimation'
@@ -2353,15 +2354,31 @@ Astuce : tapez /fatigue, /anxiete, /encouragements… pour réutiliser vos formu
                             // Raccourcis vers les parcours dédiés B-CM / B-CMado :
                             // ils naviguent vers une route séparée (cotation qualitative,
                             // pas de percentile) au lieu d'être cochables dans le CRBO langage.
+                            // Avant la navigation, on persiste un handoff localStorage
+                            // (patient + anamnèse + motif) que le formulaire math
+                            // hydrate au montage pour éviter de redemander ces infos.
                             <>
                               {[
-                                { label: 'B-CM', sub: 'enfant', href: '/dashboard/bilan/b-cm' },
-                                { label: 'B-CMado', sub: 'ado', href: '/dashboard/bilan/b-cmado' },
+                                { label: 'B-CM', sub: 'enfant', href: '/dashboard/bilan/b-cm', target: 'b-cm' as const },
+                                { label: 'B-CMado', sub: 'ado', href: '/dashboard/bilan/b-cmado', target: 'b-cmado' as const },
                               ].map((b) => (
                                 <button
                                   key={b.label}
                                   type="button"
-                                  onClick={() => router.push(b.href)}
+                                  onClick={() => {
+                                    saveMathBilanHandoff({
+                                      target: b.target,
+                                      patient: {
+                                        prenom: formData.patient_prenom || '',
+                                        nom: formData.patient_nom || '',
+                                        date_naissance: formData.patient_ddn || '',
+                                        classe: formData.patient_classe || '',
+                                      },
+                                      anamnese: formData.anamnese || '',
+                                      motif: formData.motif || '',
+                                    })
+                                    router.push(b.href)
+                                  }}
                                   className="flex items-center gap-3 p-3 border border-emerald-200 hover:border-emerald-500 hover:bg-emerald-50 rounded-lg transition text-left group"
                                   title={`Parcours dédié — bilan de cognition mathématique ${b.sub}`}
                                 >

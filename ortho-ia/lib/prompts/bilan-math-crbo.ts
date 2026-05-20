@@ -64,6 +64,13 @@ export interface BilanMathCRBOContext {
   patientPrenom: string
   patientAge: string
   patientClasse: string
+  /** Motif de consultation repris du Nouveau CRBO. Sert d'ancrage initial
+   *  dans la section "Bilan réalisé" (sans le reproduire intégralement). */
+  motif?: string
+  /** Anamnèse reprise du Nouveau CRBO. Sert UNIQUEMENT à orienter le profil
+   *  diagnostique (ex: TDA/H connu → Profil 2 dyscalculie secondaire). NE
+   *  doit PAS être reproduite dans le CRBO. */
+  anamnese?: string
   domaines: DomaineInput[]
 }
 
@@ -77,7 +84,7 @@ Le CRBO est destiné au médecin prescripteur ET aux parents. Lecture sobre, pro
 - Modalisation prudente : "compatible avec", "suggère", "évoque", "à confirmer". Pas de verdict définitif.
 - Bilan qualitatif : aucune mention de percentile, d'écart-type, ou de score chiffré. Uniquement les cotations couleur (réussite spontanée / après étayage / échec).
 - Quand une cotation est "après étayage" (orange) : précise-le explicitement, c'est une ressource thérapeutique cruciale.
-- Pas d'anamnèse ni de motif de consultation : ces parties sont rédigées séparément par l'ortho dans son carnet patient.
+- Pas d'anamnèse ni de motif de consultation : ces parties sont rédigées séparément par l'ortho dans son carnet patient. Si un bloc CONTEXTE CLINIQUE t'est fourni, utilise-le UNIQUEMENT pour orienter le diagnostic (choix du profil 1/2/3) et les axes thérapeutiques, ne le reproduis JAMAIS textuellement dans le CRBO.
 - Pas de signature, pas d'en-tête patient, pas de mentions médico-légales.
 
 # FRAMEWORK DIAGNOSTIQUE — PROFIL B (Elsa DALL'AGNOL)
@@ -185,6 +192,25 @@ export function buildBilanMathCRBOUserPrompt(ctx: BilanMathCRBOContext): string 
     lines.push(`Patient : ${ctx.patientAge || 'âge non renseigné'}${ctx.patientClasse ? `, ${ctx.patientClasse}` : ''}`)
   }
   lines.push('')
+
+  // Bloc contexte clinique : motif + anamnèse repris du Nouveau CRBO. NE PAS
+  // reproduire textuellement, juste utiliser pour orienter le diagnostic
+  // (rappel imposé par le system prompt).
+  const motifTrim = (ctx.motif ?? '').trim()
+  const anamneseTrim = (ctx.anamnese ?? '').trim()
+  if (motifTrim || anamneseTrim) {
+    lines.push('## CONTEXTE CLINIQUE (orientation diagnostique uniquement, ne pas reproduire)')
+    if (motifTrim) {
+      lines.push('Motif de consultation :')
+      lines.push(motifTrim)
+      lines.push('')
+    }
+    if (anamneseTrim) {
+      lines.push('Anamnèse :')
+      lines.push(anamneseTrim)
+      lines.push('')
+    }
+  }
 
   for (const dom of ctx.domaines) {
     lines.push(`## ${dom.domaineLabel}`)

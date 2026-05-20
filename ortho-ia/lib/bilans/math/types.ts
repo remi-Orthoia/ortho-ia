@@ -97,6 +97,11 @@ export interface BilanMathDraft {
     date_naissance: string
     classe: string
   }
+  /** Anamnèse + motif récupérés depuis le handoff Nouveau CRBO (étapes 1-3).
+   *  Affichés en lecture seule au-dessus de la matrice et transmis au prompt
+   *  Claude pour mieux orienter le choix du profil diagnostique. */
+  anamnese?: string
+  motif?: string
   epreuves: Record<string, EpreuveState>
   updatedAt: number
 }

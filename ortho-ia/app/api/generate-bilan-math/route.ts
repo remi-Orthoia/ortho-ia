@@ -56,6 +56,8 @@ interface PayloadBody {
     date_naissance: string
     classe: string
   }
+  motif?: string
+  anamnese?: string
   domaines: Array<{
     domaineLabel: string
     epreuves: Array<{
@@ -210,12 +212,22 @@ export async function POST(request: NextRequest) {
     scrubList,
   ) ?? ''
 
+  // Anonymise aussi motif + anamnèse avant envoi à Claude (peuvent contenir
+  // des prénoms/noms d'autres patients ou du personnel scolaire). Si vides
+  // après nettoyage on omet de la sortie.
+  const rawMotif = typeof body.motif === 'string' ? body.motif : ''
+  const rawAnamnese = typeof body.anamnese === 'string' ? body.anamnese : ''
+  const safeMotif = scrubText(rawMotif, scrubList) ?? ''
+  const safeAnamnese = scrubText(rawAnamnese, scrubList) ?? ''
+
   const ctx: BilanMathCRBOContext = {
     bilanType: body.bilanType,
     mode: body.mode,
     patientPrenom: safePrenom,
     patientAge: computeAge(typeof patient.date_naissance === 'string' ? patient.date_naissance : ''),
     patientClasse: typeof patient.classe === 'string' ? patient.classe : '',
+    motif: safeMotif,
+    anamnese: safeAnamnese,
     domaines: safeDomaines,
   }
   const userPrompt = buildBilanMathCRBOUserPrompt(ctx)

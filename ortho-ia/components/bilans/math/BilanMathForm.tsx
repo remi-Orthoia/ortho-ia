@@ -20,6 +20,7 @@ import type {
   EpreuveState,
   PastilleEtat,
 } from '@/lib/bilans/math/types'
+import { readMathBilanHandoff, clearMathBilanHandoff } from '@/lib/bilans/math/handoff'
 
 /**
  * Formulaire complet d'un bilan B-CM / B-CMado en mode MATRICE 2D.
@@ -62,31 +63,58 @@ export default function BilanMathForm({ grille }: BilanMathFormProps) {
   const [isGeneratingCRBO, setIsGeneratingCRBO] = useState(false)
   const [isSaving, setIsSaving] = useState(false)
 
-  // ===== Hydratation localStorage =====
+  // ===== Hydratation localStorage + handoff Nouveau CRBO =====
   // La structure ayant changé (sousEpreuves → cells), les anciens drafts ne
   // se rechargent pas dans le nouveau format. On vérifie la présence de `cells`
   // pour distinguer un draft compatible d'un draft legacy.
+  //
+  // Handoff : si l'ortho arrive depuis l'étape 4 de /dashboard/nouveau-crbo
+  // (clic sur "B-CM"/"B-CMado"), un handoff localStorage contient patient +
+  // anamnèse + motif. On le merge dans le draft (sans écraser une valeur déjà
+  // saisie) puis on le consomme (clear) pour qu'un retour ultérieur sur ce
+  // bilan n'écrase pas la saisie en cours.
   useEffect(() => {
+    let nextDraft: BilanMathDraft | null = null
     try {
       const raw = localStorage.getItem(draftKey)
       if (raw) {
         const parsed = JSON.parse(raw) as BilanMathDraft
         if (parsed && parsed.type === grille.id && parsed.epreuves) {
-          // Vérifie que les épreuves utilisent le nouveau format `cells`.
-          // Si oui, on hydrate ; sinon on repart à vide (le draft legacy
-          // serait incompatible avec la matrice).
           const epreuvesNouveau: Record<string, EpreuveState> = {}
           for (const [epreuveId, state] of Object.entries(parsed.epreuves)) {
             if (state && typeof state === 'object' && 'cells' in state) {
               epreuvesNouveau[epreuveId] = state as EpreuveState
             }
           }
-          setDraft({ ...parsed, epreuves: epreuvesNouveau })
+          nextDraft = { ...parsed, epreuves: epreuvesNouveau }
         }
       }
     } catch {
       // localStorage corrompu : on ignore et on garde le draft vide.
     }
+
+    const handoff = readMathBilanHandoff(grille.id)
+    if (handoff) {
+      // Construit (ou enrichit) le draft avec le handoff. On ne remplace QUE
+      // les champs vides : si l'ortho avait déjà avancé sur ce bilan, sa
+      // saisie prime.
+      const base: BilanMathDraft = nextDraft ?? makeEmptyDraft(grille)
+      nextDraft = {
+        ...base,
+        patient: {
+          prenom: base.patient.prenom || handoff.patient.prenom,
+          nom: base.patient.nom || handoff.patient.nom,
+          date_naissance: base.patient.date_naissance || handoff.patient.date_naissance,
+          classe: base.patient.classe || handoff.patient.classe,
+        },
+        anamnese: base.anamnese || handoff.anamnese,
+        motif: base.motif || handoff.motif,
+        updatedAt: Date.now(),
+      }
+      clearMathBilanHandoff()
+    }
+
+    if (nextDraft) setDraft(nextDraft)
     setHydrated(true)
   }, [draftKey, grille.id])
 
@@ -337,6 +365,10 @@ export default function BilanMathForm({ grille }: BilanMathFormProps) {
           bilanType: grille.id,
           mode: draft.mode,
           patient: draft.patient,
+          // Contexte clinique repris du Nouveau CRBO (étapes 1-3). Sert au
+          // prompt à orienter le choix du profil diagnostique Elsa.
+          motif: draft.motif ?? '',
+          anamnese: draft.anamnese ?? '',
           domaines: domainesPayload,
         }),
       })
@@ -510,6 +542,17 @@ export default function BilanMathForm({ grille }: BilanMathFormProps) {
           ))}
         </div>
       </section>
+
+      {/* Anamnèse + motif. Pré-remplis automatiquement quand l'ortho arrive
+          depuis le Nouveau CRBO (handoff). Toujours affichés pour permettre
+          la saisie directe quand on entre par le menu Bilans. La présence de
+          ces champs alimente le prompt Claude pour orienter le diagnostic. */}
+      <AnamneseBlock
+        motif={draft.motif ?? ''}
+        anamnese={draft.anamnese ?? ''}
+        onMotifChange={(v) => setDraft((d) => ({ ...d, motif: v, updatedAt: Date.now() }))}
+        onAnamneseChange={(v) => setDraft((d) => ({ ...d, anamnese: v, updatedAt: Date.now() }))}
+      />
 
       <div style={{ marginBottom: 16 }}>
         <PastilleLegend />
@@ -707,6 +750,124 @@ export default function BilanMathForm({ grille }: BilanMathFormProps) {
         </section>
       )}
     </div>
+  )
+}
+
+// ============================================================================
+// Sous-composant : bloc anamnèse + motif (handoff Nouveau CRBO)
+// ============================================================================
+
+function AnamneseBlock({
+  motif,
+  anamnese,
+  onMotifChange,
+  onAnamneseChange,
+}: {
+  motif: string
+  anamnese: string
+  onMotifChange: (v: string) => void
+  onAnamneseChange: (v: string) => void
+}) {
+  // Replié par défaut quand au moins un champ est rempli (cas handoff) — on
+  // suppose que l'ortho a déjà validé ces infos en amont et veut juste les
+  // voir sans les re-saisir. Si TOUT est vide, on déplie pour signaler que
+  // ces champs sont disponibles.
+  const hasContent = motif.trim().length > 0 || anamnese.trim().length > 0
+  const [open, setOpen] = useState(!hasContent)
+
+  return (
+    <section
+      style={{
+        marginBottom: 16,
+        background: 'var(--bg-surface-1)',
+        border: '1px solid var(--border-ds)',
+        borderRadius: 12,
+        overflow: 'hidden',
+      }}
+    >
+      <button
+        type="button"
+        onClick={() => setOpen((o) => !o)}
+        style={{
+          width: '100%',
+          padding: '12px 16px',
+          background: 'transparent',
+          border: 0,
+          cursor: 'pointer',
+          display: 'flex',
+          alignItems: 'center',
+          justifyContent: 'space-between',
+          gap: 12,
+          textAlign: 'left',
+        }}
+      >
+        <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
+          <h2 style={{ margin: 0, fontSize: 14, fontWeight: 700, color: 'var(--fg-2)' }}>
+            Contexte clinique
+          </h2>
+          {hasContent && (
+            <span style={{ fontSize: 11, color: 'var(--ds-primary, #16a34a)', fontWeight: 500 }}>
+              · repris du Nouveau CRBO
+            </span>
+          )}
+        </div>
+        <span style={{ fontSize: 12, color: 'var(--fg-3)' }}>{open ? '▼ Replier' : '▶ Déplier'}</span>
+      </button>
+      {open && (
+        <div style={{ padding: '0 16px 16px', display: 'flex', flexDirection: 'column', gap: 10 }}>
+          <div>
+            <label style={{ display: 'block', fontSize: 11, fontWeight: 600, color: 'var(--fg-3)', textTransform: 'uppercase', letterSpacing: '0.04em', marginBottom: 4 }}>
+              Motif de consultation
+            </label>
+            <textarea
+              value={motif}
+              onChange={(e) => onMotifChange(e.target.value)}
+              rows={2}
+              placeholder="Motif (repris du Nouveau CRBO si applicable)"
+              style={{
+                width: '100%',
+                padding: '8px 10px',
+                border: '1px solid var(--border-ds)',
+                borderRadius: 8,
+                fontSize: 13,
+                fontFamily: 'inherit',
+                background: 'var(--bg-surface-2)',
+                color: 'var(--fg-1)',
+                resize: 'vertical',
+                minHeight: 44,
+              }}
+            />
+          </div>
+          <div>
+            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 4 }}>
+              <label style={{ fontSize: 11, fontWeight: 600, color: 'var(--fg-3)', textTransform: 'uppercase', letterSpacing: '0.04em' }}>
+                Anamnèse
+              </label>
+              <MicButton value={anamnese} onChange={onAnamneseChange} />
+            </div>
+            <textarea
+              value={anamnese}
+              onChange={(e) => onAnamneseChange(e.target.value)}
+              rows={5}
+              placeholder="Anamnèse (reprise du Nouveau CRBO si applicable). Sera utilisée pour orienter le diagnostic Profil B."
+              style={{
+                width: '100%',
+                padding: '10px 12px',
+                border: '1px solid var(--border-ds)',
+                borderRadius: 8,
+                fontSize: 13,
+                lineHeight: 1.5,
+                fontFamily: 'inherit',
+                background: 'var(--bg-surface-2)',
+                color: 'var(--fg-1)',
+                resize: 'vertical',
+                minHeight: 100,
+              }}
+            />
+          </div>
+        </div>
+      )}
+    </section>
   )
 }
 
