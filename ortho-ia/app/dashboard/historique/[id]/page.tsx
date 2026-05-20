@@ -23,6 +23,10 @@ import {
 } from 'lucide-react'
 import type { SmartObjectivesPayload } from '@/app/api/generate-smart-objectives/route'
 import CRBOStructuredPreview from '@/components/CRBOStructuredPreview'
+import BilanMathSummary from '@/components/bilans/math/BilanMathSummary'
+import { GRILLE_B_CM } from '@/lib/bilans/math/grille-b-cm'
+import { GRILLE_B_CMADO } from '@/lib/bilans/math/grille-b-cmado'
+import type { BilanMathDraft, GrilleBilan } from '@/lib/bilans/math/types'
 import { useToast } from '@/components/Toast'
 import { playPrintAnimation } from '@/components/PrintAnimation'
 import { applyVocabToObject } from '@/lib/vocab-perso'
@@ -350,6 +354,24 @@ export default function CRBODetailPage() {
   // propre branche dans /api/generate-smart-objectives (cotations couleur +
   // crbo_genere comme input). On les considère donc "eligibles SMART".
   const isMathBilan = crbo.bilan_subtype === 'b-cm' || crbo.bilan_subtype === 'b-cmado'
+
+  // Parsing de l'etat de la grille math depuis crbo.resultats (JSON serialise
+  // par BilanMathForm.handleSaveCRBO). Permet de rendre la grille coloree
+  // (BilanMathSummary) en tete du CRBO pour relecture rapide.
+  let mathState: BilanMathDraft['epreuves'] | null = null
+  let mathGrille: GrilleBilan | null = null
+  if (isMathBilan && crbo.resultats) {
+    try {
+      const parsed = JSON.parse(crbo.resultats)
+      if (parsed && typeof parsed === 'object' && parsed.epreuves) {
+        mathState = parsed.epreuves
+        mathGrille = crbo.bilan_subtype === 'b-cm' ? GRILLE_B_CM : GRILLE_B_CMADO
+      }
+    } catch {
+      // resultats illisible : on continue sans la grille, le texte du CRBO
+      // est toujours affiche dans le fallback ci-dessous.
+    }
+  }
   const canGenerateSmart = !isMocaOnly && (hasStructure || isMathBilan)
   const hasCachedSmart = !!crbo.smart_objectives
   const smartGeneratedAt = crbo.smart_objectives_generated_at
@@ -494,7 +516,9 @@ export default function CRBODetailPage() {
         </div>
       </div>
 
-      {/* CRBO Content — preview structuré si structure_json, fallback texte brut sinon */}
+      {/* CRBO Content — preview structuré si structure_json, fallback texte brut sinon.
+          Pour les bilans math (B-CM/B-CMado) : on prepend la grille colorée
+          au-dessus du texte du CRBO pour relecture rapide du profil de cotations. */}
       {crbo.structure_json ? (
         <CRBOStructuredPreview
           structure={crbo.structure_json}
@@ -502,15 +526,21 @@ export default function CRBODetailPage() {
           onPreview={() => setShowPreviewModal(true)}
         />
       ) : (
-        <div className="bg-white rounded-xl border border-gray-200 overflow-hidden">
-          <div className="border-b border-gray-200 px-6 py-4">
-            <h2 className="font-semibold text-gray-900">Compte rendu de bilan orthophonique</h2>
-          </div>
-          <div className="p-6">
-            <div className="prose prose-sm max-w-none">
-              <pre className="whitespace-pre-wrap font-sans text-gray-700 leading-relaxed">
-                {crbo.crbo_text}
-              </pre>
+        <div className="space-y-4">
+          {/* Grille colorée — uniquement pour les bilans math avec un etat valide */}
+          {mathGrille && mathState && (
+            <BilanMathSummary grille={mathGrille} epreuves={mathState} />
+          )}
+          <div className="bg-white rounded-xl border border-gray-200 overflow-hidden">
+            <div className="border-b border-gray-200 px-6 py-4">
+              <h2 className="font-semibold text-gray-900">Compte rendu de bilan orthophonique</h2>
+            </div>
+            <div className="p-6">
+              <div className="prose prose-sm max-w-none">
+                <pre className="whitespace-pre-wrap font-sans text-gray-700 leading-relaxed">
+                  {crbo.crbo_text || crbo.crbo_genere || ''}
+                </pre>
+              </div>
             </div>
           </div>
         </div>

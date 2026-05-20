@@ -5,6 +5,7 @@ import { useRouter } from 'next/navigation'
 import { Loader2, Sparkles, Download, Save, X } from 'lucide-react'
 import DomaineSection from './DomaineSection'
 import PastilleLegend from './PastilleLegend'
+import BilanMathSummary from './BilanMathSummary'
 import { useToast } from '@/components/Toast'
 import { createClient } from '@/lib/supabase'
 import { computeParentColor } from '@/lib/bilans/math/parent-color'
@@ -568,6 +569,14 @@ export default function BilanMathForm({ grille }: BilanMathFormProps) {
             Tu peux modifier le texte ci-dessous avant de sauvegarder. Le format est markdown :
             les <code>**titres**</code> seront rendus en gras dans l&apos;historique.
           </p>
+
+          {/* Grille colorée reprise telle quelle, en tête du CRBO — permet de
+              croiser le profil de cotations avec le texte généré sans avoir
+              à scroller jusqu'au formulaire. */}
+          <div style={{ marginBottom: 14 }}>
+            <BilanMathSummary grille={grille} epreuves={draft.epreuves} />
+          </div>
+
           <textarea
             value={generatedCRBO}
             onChange={(e) => setGeneratedCRBO(e.target.value)}
