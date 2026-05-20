@@ -5,7 +5,6 @@ import { useRouter } from 'next/navigation'
 import { Loader2, Sparkles, Download, Save, X, MessageSquare } from 'lucide-react'
 import MatriceSection from './MatriceSection'
 import PastilleLegend from './PastilleLegend'
-import Pastille from './Pastille'
 import MicButton from '@/components/MicButton'
 import { useToast } from '@/components/Toast'
 import { createClient } from '@/lib/supabase'
@@ -749,7 +748,6 @@ function EpreuveNotesCard({
       }}
     >
       <div style={{ display: 'flex', alignItems: 'center', gap: 10, flexWrap: 'wrap' }}>
-        <Pastille etat={color} readonly size={18} ariaPrefix={`${epreuveLabel} (couleur globale)`} />
         <span style={{ fontSize: 14, fontWeight: 600, color: 'var(--fg-1)' }}>{epreuveLabel}</span>
         <span style={{ fontSize: 11, color: 'var(--fg-3)' }}>· {sectionLabel}</span>
         <div style={{ marginLeft: 'auto' }}>
