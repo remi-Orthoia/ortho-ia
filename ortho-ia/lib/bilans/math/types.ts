@@ -62,6 +62,15 @@ export interface SectionMatrix {
   description?: string
   niveaux: Niveau[]
   epreuves: Epreuve[]
+  /** Si vrai, fusionne dans la colonne Niveau les lignes consécutives qui
+   *  partagent le même label (rowspan) et masque leurs subLabels.
+   *  Utilisé pour B-CMado où "Collège 1 / Collège 2 / Collège 3" deviennent
+   *  une seule cellule "Collège" fusionnée. */
+  mergeNiveauxByLabel?: boolean
+  /** Active la coloration de fond par cycle (Collège vert tinte, Cycle II
+   *  sable tinte, Cycle III neutre). Utilisé conjointement avec
+   *  mergeNiveauxByLabel pour B-CMado. */
+  cycleBackgrounds?: boolean
 }
 
 export interface GrilleBilan {

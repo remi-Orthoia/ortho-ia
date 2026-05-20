@@ -57,6 +57,8 @@ export const GRILLE_B_CMADO: GrilleBilan = {
       label: 'Classifications, Combinatoire, Sériation, Inclusion, Conservation',
       description: 'Compétences logiques.',
       niveaux: NIVEAUX_ALL,
+      mergeNiveauxByLabel: true,
+      cycleBackgrounds: true,
       epreuves: [
         {
           id: 'classifications', label: 'CLASSIFICATIONS',
@@ -188,6 +190,8 @@ export const GRILLE_B_CMADO: GrilleBilan = {
       label: 'Chaîne numérique, Dénombrement, Numérosité — sens du nombre',
       description: 'Habiletés numériques de base.',
       niveaux: NIVEAUX_ALL,
+      mergeNiveauxByLabel: true,
+      cycleBackgrounds: true,
       epreuves: [
         {
           id: 'chaine-numerique', label: 'CHAÎNE NUMÉRIQUE',
@@ -280,6 +284,8 @@ export const GRILLE_B_CMADO: GrilleBilan = {
       label: 'Numération, Transcodage, Opérations, Problèmes',
       description: 'Compétences scolaires.',
       niveaux: NIVEAUX_ALL,
+      mergeNiveauxByLabel: true,
+      cycleBackgrounds: true,
       epreuves: [
         {
           id: 'numeration', label: 'NUMÉRATION',
