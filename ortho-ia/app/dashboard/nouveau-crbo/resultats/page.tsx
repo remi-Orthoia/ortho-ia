@@ -605,10 +605,15 @@ export default function ResultatsPage() {
   // simplifiée 3 colonnes (Épreuve / Score / Commentaire) avec sous-rows.
   // Les commentaires sont par ÉPREUVE (et non par domaine) — chaque domaine
   // cognitif MoCA mérite son propre paragraphe clinique.
-  const isMoca = (Array.isArray(fd.test_utilise) ? fd.test_utilise : [fd.test_utilise || ''])
-    .length === 1 &&
-    (Array.isArray(fd.test_utilise) ? fd.test_utilise[0] : fd.test_utilise) === 'MoCA'
-  const groups: ChartGroup[] = isMoca ? [] : extracted.domains
+  const testsArray = Array.isArray(fd.test_utilise) ? fd.test_utilise : [fd.test_utilise || '']
+  const isMoca = testsArray.length === 1 && testsArray[0] === 'MoCA'
+  // BETL-only : bilan verdict-based (N/P depuis matrice Annexe 3), pas de
+  // percentile. Le graphique HappyNeuron est cliniquement absurde pour ce
+  // test (rendrait des barres à 0 ou des valeurs invalides). Le verdict
+  // est affiché en clair dans le tableau du formulaire BetlScoresInput.
+  const isBetlOnly = testsArray.length === 1 && testsArray[0] === 'BETL'
+  const skipChart = isMoca || isBetlOnly
+  const groups: ChartGroup[] = skipChart ? [] : extracted.domains
     .map(d => ({ name: d.nom, bars: d.epreuves.map(e => ({ label: e.nom, value: e.percentile_value })) }))
     .filter(g => g.bars.length > 0)
 
