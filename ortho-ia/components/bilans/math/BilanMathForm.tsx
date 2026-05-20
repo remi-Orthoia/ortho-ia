@@ -5,6 +5,7 @@ import { useRouter } from 'next/navigation'
 import { Loader2, Sparkles, Download, Save, X, MessageSquare } from 'lucide-react'
 import MatriceSection from './MatriceSection'
 import PastilleLegend from './PastilleLegend'
+import BilanMathCRBORender from './BilanMathCRBORender'
 import MicButton from '@/components/MicButton'
 import { useToast } from '@/components/Toast'
 import { createClient } from '@/lib/supabase'
@@ -61,6 +62,9 @@ export default function BilanMathForm({ grille }: BilanMathFormProps) {
   const [generatingEpreuveId, setGeneratingEpreuveId] = useState<string | null>(null)
   const [generatedCRBO, setGeneratedCRBO] = useState<string | null>(null)
   const [isGeneratingCRBO, setIsGeneratingCRBO] = useState(false)
+  // Texte CRBO accumulé pendant le streaming SSE. Permet d'afficher la
+  // génération en direct plutôt qu'un spinner.
+  const [streamingCRBO, setStreamingCRBO] = useState('')
   const [isSaving, setIsSaving] = useState(false)
 
   // ===== Hydratation localStorage + handoff Nouveau CRBO =====
@@ -357,8 +361,12 @@ export default function BilanMathForm({ grille }: BilanMathFormProps) {
     })
 
     setIsGeneratingCRBO(true)
+    setStreamingCRBO('')
     try {
-      const res = await fetch('/api/generate-bilan-math', {
+      // Streaming SSE : on consomme les `text_delta` au fil de la génération
+      // pour afficher le CRBO se rédigeant en direct (markdown progressif).
+      // Le serveur émet { type: 'start' | 'delta' | 'complete' | 'error' }.
+      const res = await fetch('/api/generate-bilan-math?stream=1', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
@@ -372,12 +380,53 @@ export default function BilanMathForm({ grille }: BilanMathFormProps) {
           domaines: domainesPayload,
         }),
       })
-      const data = await res.json().catch(() => ({}))
+
       if (!res.ok) {
-        toast.error(data?.error || 'Erreur lors de la génération.')
+        // Erreur AVANT le démarrage du stream (auth, quota, payload invalide) :
+        // la réponse est JSON classique, pas SSE.
+        const errJson = await res.json().catch(() => ({}))
+        toast.error(errJson?.error || 'Erreur lors de la génération.')
         return
       }
-      const text = typeof data?.text === 'string' ? data.text : ''
+
+      const reader = res.body?.getReader()
+      if (!reader) {
+        toast.error('Streaming non supporté par ce navigateur.')
+        return
+      }
+      const decoder = new TextDecoder()
+      let sseBuffer = ''
+      let accumulated = ''
+      let finalText: string | null = null
+      let streamErr: string | null = null
+
+      while (true) {
+        const { value, done } = await reader.read()
+        if (done) break
+        sseBuffer += decoder.decode(value, { stream: true })
+        const events = sseBuffer.split('\n\n')
+        sseBuffer = events.pop() ?? ''
+        for (const evt of events) {
+          if (!evt.startsWith('data:')) continue
+          const line = evt.replace(/^data:\s*/, '')
+          let parsed: any
+          try { parsed = JSON.parse(line) } catch { continue }
+          if (parsed.type === 'delta' && typeof parsed.text === 'string') {
+            accumulated += parsed.text
+            setStreamingCRBO(accumulated)
+          } else if (parsed.type === 'complete' && typeof parsed.text === 'string') {
+            finalText = parsed.text
+          } else if (parsed.type === 'error') {
+            streamErr = parsed.message || 'Erreur streaming'
+          }
+        }
+      }
+
+      if (streamErr) {
+        toast.error(streamErr)
+        return
+      }
+      const text = (finalText ?? accumulated).trim()
       if (!text) {
         toast.error('Réponse IA vide.')
         return
@@ -391,6 +440,7 @@ export default function BilanMathForm({ grille }: BilanMathFormProps) {
       toast.error(e?.message || 'Erreur réseau.')
     } finally {
       setIsGeneratingCRBO(false)
+      setStreamingCRBO('')
     }
   }
 
@@ -661,6 +711,67 @@ export default function BilanMathForm({ grille }: BilanMathFormProps) {
           </button>
         </div>
       </footer>
+
+      {/* Overlay streaming : affiché pendant que le CRBO se rédige en direct.
+          Le texte markdown arrive token par token, on le rend via le même
+          composant que le rendu final pour une transition fluide. */}
+      {isGeneratingCRBO && (
+        <div
+          style={{
+            position: 'fixed',
+            inset: 0,
+            background: 'rgba(15, 23, 42, 0.55)',
+            backdropFilter: 'blur(4px)',
+            zIndex: 100,
+            display: 'flex',
+            alignItems: 'center',
+            justifyContent: 'center',
+            padding: 24,
+          }}
+        >
+          <div
+            style={{
+              background: 'var(--bg-surface-1, white)',
+              borderRadius: 16,
+              padding: 24,
+              maxWidth: 760,
+              width: '100%',
+              maxHeight: '85vh',
+              overflowY: 'auto',
+              boxShadow: '0 20px 60px rgba(0,0,0,0.30)',
+            }}
+          >
+            <div style={{ display: 'flex', alignItems: 'center', gap: 10, marginBottom: 16 }}>
+              <div
+                style={{
+                  width: 36, height: 36, borderRadius: 10,
+                  background: 'linear-gradient(135deg, #22c55e 0%, #10b981 100%)',
+                  color: 'white',
+                  display: 'flex', alignItems: 'center', justifyContent: 'center',
+                  boxShadow: '0 4px 12px rgba(34,197,94,0.30)',
+                }}
+              >
+                <Loader2 size={18} className="animate-spin" />
+              </div>
+              <div>
+                <p style={{ margin: 0, fontWeight: 600, fontSize: 14, color: 'var(--fg-1)' }}>
+                  Ortho.ia rédige votre CRBO…
+                </p>
+                <p style={{ margin: 0, fontSize: 12, color: 'var(--fg-3)' }}>
+                  Le diagnostic, les axes et la conclusion s&apos;écrivent en direct.
+                </p>
+              </div>
+            </div>
+            {streamingCRBO ? (
+              <BilanMathCRBORender text={streamingCRBO} />
+            ) : (
+              <p style={{ margin: 0, fontSize: 13, color: 'var(--fg-3)', fontStyle: 'italic' }}>
+                Préparation de la réponse…
+              </p>
+            )}
+          </div>
+        </div>
+      )}
 
       {/* Preview CRBO */}
       {generatedCRBO !== null && (

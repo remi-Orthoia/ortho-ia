@@ -232,6 +232,103 @@ export async function POST(request: NextRequest) {
   }
   const userPrompt = buildBilanMathCRBOUserPrompt(ctx)
 
+  const reverseMap = {
+    tokens: {
+      '__P_PRENOM__': typeof patient.prenom === 'string' ? patient.prenom : '',
+      '__P_NOM__': typeof patient.nom === 'string' ? patient.nom : '',
+      '__O_NOM__': orthoNom,
+    },
+  }
+
+  // ============ Streaming SSE (opt-in via ?stream=1) ============
+  // Output texte simple (markdown) — on stream les `text_delta` au fil de la
+  // génération + rehydratation des tokens d'anonymisation à la volée. Le
+  // client accumule, le rendu se fait en direct (sections markdown
+  // remplies progressivement).
+  //
+  // Format SSE :
+  //   { type: "start" }
+  //   { type: "delta", text: "<partial>" }    (rehydraté)
+  //   { type: "complete", text: "<full>" }    (texte final, sécurité)
+  //   { type: "error", message: "..." }
+  const isStream = request.nextUrl.searchParams.get('stream') === '1'
+
+  if (isStream) {
+    const encoder = new TextEncoder()
+    const tokenPairs: Array<[string, string]> = Object.entries(reverseMap.tokens)
+      .sort((a, b) => b[0].length - a[0].length)
+    const rehydratePartial = (s: string): string => {
+      let out = s
+      for (const [token, value] of tokenPairs) {
+        if (value && out.indexOf(token) >= 0) out = out.split(token).join(value)
+      }
+      return out
+    }
+
+    const sseStream = new ReadableStream({
+      async start(controller) {
+        const send = (obj: unknown) => {
+          try {
+            controller.enqueue(encoder.encode(`data: ${JSON.stringify(obj)}\n\n`))
+          } catch {
+            // Client déconnecté.
+          }
+        }
+
+        try {
+          send({ type: 'start' })
+
+          const stream = anthropic.messages.stream({
+            model: 'claude-sonnet-4-6',
+            max_tokens: 4000,
+            temperature: 0.4,
+            system: SYSTEM_PROMPT_BILAN_MATH_CRBO,
+            messages: [{ role: 'user', content: userPrompt }],
+          })
+
+          let accumulated = ''
+          for await (const event of stream as any) {
+            if (
+              event?.type === 'content_block_delta' &&
+              event.delta?.type === 'text_delta' &&
+              typeof event.delta.text === 'string'
+            ) {
+              const piece = rehydratePartial(event.delta.text)
+              accumulated += piece
+              send({ type: 'delta', text: piece })
+            }
+          }
+
+          const final = await stream.finalMessage()
+          const block = final.content.find((b: any) => b.type === 'text')
+          const fullText = block && block.type === 'text'
+            ? rehydrate(block.text.trim(), reverseMap)
+            : accumulated.trim()
+
+          send({ type: 'complete', text: fullText })
+        } catch (err: any) {
+          console.error('generate-bilan-math (stream) error:', err)
+          send({
+            type: 'error',
+            message: err?.message?.slice(0, 200) || 'Erreur de streaming',
+          })
+        } finally {
+          try { controller.close() } catch {}
+        }
+      },
+    })
+
+    return new Response(sseStream, {
+      headers: {
+        'Content-Type': 'text/event-stream; charset=utf-8',
+        'Cache-Control': 'no-cache, no-transform',
+        'Connection': 'keep-alive',
+        'X-Accel-Buffering': 'no',
+      },
+    })
+  }
+
+  // ============ Mode non-stream (fallback) ============
   let safeText: string
   try {
     const message = await withRetry(
@@ -256,15 +353,6 @@ export async function POST(request: NextRequest) {
     return NextResponse.json({ error: 'Erreur lors de la génération.' }, { status: 500 })
   }
 
-  // ---- Rehydratation ----
-  const reverseMap = {
-    tokens: {
-      '__P_PRENOM__': typeof patient.prenom === 'string' ? patient.prenom : '',
-      '__P_NOM__': typeof patient.nom === 'string' ? patient.nom : '',
-      '__O_NOM__': orthoNom,
-    },
-  }
   const text = rehydrate(safeText, reverseMap)
-
   return NextResponse.json({ text })
 }
