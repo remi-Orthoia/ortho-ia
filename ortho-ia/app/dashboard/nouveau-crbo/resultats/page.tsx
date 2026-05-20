@@ -273,7 +273,7 @@ export default function ResultatsPage() {
         body: JSON.stringify({
           phase: 'synthesize',
           formData: handoff.formData,
-          format: handoff.formData.format_crbo || 'complet',
+          format: handoff.formData.format_crbo || 'synthetique',
           extracted: handoff.extracted,
           edits: {
             anamnese: anamneseEdit,

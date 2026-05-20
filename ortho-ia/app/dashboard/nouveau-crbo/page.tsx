@@ -232,7 +232,9 @@ function NouveauCRBOContent() {
     test_utilise: [],
     resultats_manuels: '',
     notes_analyse: '',
-    format_crbo: 'complet',
+    // Defaut : bilan synthetique (2-3 pages, essentiel). L'ortho peut basculer
+    // sur "Complet" via le toggle a l'etape Resultats si elle veut le 4-6 pages.
+    format_crbo: 'synthetique',
   })
 
   // Charger les infos utilisateur et patients au démarrage
@@ -1070,7 +1072,7 @@ function NouveauCRBOContent() {
         body: JSON.stringify({
           phase: 'extract',
           formData: formDataForSubmission,
-          format: formDataForSubmission.format_crbo || 'complet',
+          format: formDataForSubmission.format_crbo || 'synthetique',
         }),
       })
 
@@ -2173,7 +2175,7 @@ Astuce : tapez /fatigue, /anxiete, /encouragements… pour réutiliser vos formu
               <p className="text-sm font-medium text-gray-700 dark:text-gray-200 mb-2">Format du CRBO</p>
               <div className="grid grid-cols-2 gap-2">
                 {(['synthetique', 'complet'] as const).map((fmt) => {
-                  const active = (formData.format_crbo || 'complet') === fmt
+                  const active = (formData.format_crbo || 'synthetique') === fmt
                   const labels = fmt === 'synthetique'
                     ? { emoji: '🟢', title: 'Synthétique', sub: '2-3 pages · essentiel' }
                     : { emoji: '🔵', title: 'Complet', sub: '4-6 pages · détaillé' }
