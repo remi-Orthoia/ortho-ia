@@ -87,17 +87,17 @@ export const GRILLE_B_CMADO: GrilleBilan = {
             {
               id: 'telephonie', label: 'téléphonie',
               criteres: [
-                c('c1', ['coll-1'], 'calcul ou schéma'),
-                c('c2', ['cyc3-1'], 'complet'),
-                c('c3', ['cyc2-1'], 'incomplet'),
+                c('c1', ['coll-1', 'coll-2'], 'calcul ou schéma'),
+                c('c2', ['cyc3-1', 'cyc3-2'], 'complet'),
+                c('c3', ['cyc2-1', 'cyc2-2'], 'incomplet'),
               ],
             },
             {
               id: 'jetons-3c', label: 'jetons 3C',
               criteres: [
                 c('c1', ['coll-2'], 'tab. cart.'),
-                c('c2', ['cyc3-1'], 'complet'),
-                c('c3', ['cyc2-1'], 'incomplet'),
+                c('c2', ['cyc3-1', 'cyc3-2'], 'complet'),
+                c('c3', ['cyc2-1', 'cyc2-2'], 'incomplet'),
               ],
             },
           ],
@@ -116,7 +116,7 @@ export const GRILLE_B_CMADO: GrilleBilan = {
             {
               id: 'decimaux', label: 'décimaux',
               criteres: [
-                c('c1', ['cyc3-1'], '3 nb corrects'),
+                c('c1', ['coll-1', 'coll-2', 'cyc3-1'], '3 nb corrects'),
               ],
             },
           ],
@@ -127,7 +127,7 @@ export const GRILLE_B_CMADO: GrilleBilan = {
             {
               id: 'etres-vivants', label: 'êtres vivants',
               criteres: [
-                c('c1', ['coll-1'], '3 niveaux'),
+                c('c1', ['coll-1', 'coll-2'], '3 niveaux'),
                 c('c2', ['cyc3-1'], '2 niveaux'),
                 c('c3', ['cyc2-1'], '1 niveau'),
                 c('c4', ['cyc2-2'], 'aucune inc.'),
@@ -136,8 +136,8 @@ export const GRILLE_B_CMADO: GrilleBilan = {
             {
               id: 'la-ferme', label: 'la ferme',
               criteres: [
-                c('c1', ['coll-1'], 'réussite'),
-                c('c2', ['cyc3-1'], 'réussite partielle'),
+                c('c1', ['coll-1', 'coll-2'], 'réussite'),
+                c('c2', ['cyc3-1', 'cyc3-2'], 'réussite partielle'),
               ],
             },
           ],
@@ -148,21 +148,21 @@ export const GRILLE_B_CMADO: GrilleBilan = {
             {
               id: 'qte-discontinues', label: 'Qté Discontinues',
               criteres: [
-                c('c1', ['cyc3-1'], 'Conservation avec justification'),
-                c('c2', ['cyc2-1'], 'Conservation sans justification'),
+                c('c1', ['coll-1', 'coll-2'], 'Conservation des volumes'),
+                c('c2', ['cyc3-1', 'cyc3-2'], 'Conservation avec justification'),
+                c('c3', ['cyc2-1', 'cyc2-2'], 'Conservation sans justification'),
               ],
             },
             {
               id: 'qte-continue', label: 'Qté continue',
               criteres: [
-                c('c1', ['coll-2', 'cyc3-1'], 'réussite'),
+                c('c1', ['coll-1', 'coll-2', 'cyc3-1', 'cyc3-2'], 'réussite'),
               ],
             },
             {
               id: 'recipient-eau', label: "récipient d'eau",
               criteres: [
-                c('c1', ['coll-1'], 'Conservation des volumes'),
-                c('c2', ['cyc3-1'], 'Conservation des liquides-longueurs'),
+                c('c1', ['coll-1', 'coll-2'], 'réussite'),
               ],
             },
           ],
@@ -267,14 +267,14 @@ export const GRILLE_B_CMADO: GrilleBilan = {
             {
               id: 'entiere', label: 'entière',
               criteres: [
-                c('c1', ['cyc3-1'], 'grands nombres'),
-                c('c2', ['cyc2-1'], 'mille'),
+                c('c1', ['cyc3-1', 'cyc3-2'], 'grands nombres'),
+                c('c2', ['cyc2-1', 'cyc2-2'], 'mille'),
               ],
             },
             {
               id: 'decimale', label: 'décimale',
               criteres: [
-                c('c1', ['cyc3-1'], 'décimale'),
+                c('c1', ['cyc3-1', 'cyc3-2'], 'décimale'),
               ],
             },
             {
@@ -289,15 +289,15 @@ export const GRILLE_B_CMADO: GrilleBilan = {
             {
               id: 'lecture', label: 'lecture',
               criteres: [
-                c('c1', ['cyc3-1'], 'quantitatif manip'),
-                c('c2', ['cyc2-1'], '3 chiffres'),
+                c('c1', ['cyc3-1', 'cyc3-2'], 'quantitatif manip'),
+                c('c2', ['cyc2-1', 'cyc2-2'], '3 chiffres'),
               ],
             },
             {
               id: 'ecriture', label: 'écriture',
               criteres: [
-                c('c1', ['cyc3-1'], 'décimaux / frac. grands nbres'),
-                c('c2', ['cyc2-1'], '3 chiffres'),
+                c('c1', ['cyc3-1', 'cyc3-2'], 'décimaux / frac. grands nbres'),
+                c('c2', ['cyc2-1', 'cyc2-2'], '3 chiffres'),
               ],
             },
           ],
