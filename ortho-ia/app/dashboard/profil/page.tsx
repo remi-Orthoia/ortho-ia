@@ -203,17 +203,22 @@ function ProfilContent() {
       return
     }
 
+    // Upsert (pas update) pour gérer les comptes créés manuellement via le
+    // dashboard Supabase Auth : la ligne profiles n'existe pas, un UPDATE
+    // affecte alors 0 ligne en silence (pas d'erreur renvoyée) et l'ortho
+    // pense avoir sauvegardé alors que rien n'est en base.
     const { error } = await supabase
       .from('profiles')
-      .update({
+      .upsert({
+        id: user.id,
+        email: user.email || profile.email,
         prenom: (profile.prenom || '').trim(),
         nom: (profile.nom || '').trim(),
         adresse: (profile.adresse || '').trim(),
         code_postal: (profile.code_postal || '').trim(),
         ville: (profile.ville || '').trim(),
         telephone: (profile.telephone || '').trim(),
-      })
-      .eq('id', user.id)
+      }, { onConflict: 'id' })
 
     setSaving(false)
     if (error) {
@@ -586,9 +591,11 @@ function ProfilContent() {
       {/* ============================================================
           Section Connexion extension Chrome HappyNeuron
           L'ancre #extension est ciblée par le popup Chrome (popup.js).
-          Visible uniquement si l'utilisatrice est connectée (userLoaded).
+          Masquée pour les beta-testeuses tant que l'extension n'est pas
+          publiée sur le Chrome Web Store — visible uniquement pour le
+          compte propriétaire (qui doit pouvoir continuer à tester).
           ============================================================ */}
-      {userLoaded && (
+      {userLoaded && profile.email === 'remi.berrio@gmail.com' && (
         <section
           id="extension"
           className="rounded-2xl border border-primary-200 bg-gradient-to-br from-primary-50 to-emerald-50 p-5 sm:p-6"
