@@ -98,7 +98,10 @@ export const TESTS_WITH_SPECIFIC_FORM = new Set<string>([
   'EVALO 2-6',
   'EVALEO 6-15',
   'Exalang 3-6',
-  'Exalang 5-8',
+  // 'Exalang 5-8' — retiré 2026-05-21 sur demande utilisateur : revient à
+  // la saisie libre (textarea générique) pour ce test. Le composant
+  // Exalang58ScoresInput existe encore mais n'est plus monté tant que
+  // ce test n'est pas dans cet ensemble.
   'Exalang Lyfac',
 ])
 
