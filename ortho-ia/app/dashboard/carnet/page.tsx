@@ -1,14 +1,18 @@
 'use client'
 
 /**
- * Carnet de session — journal libre de l'orthophoniste.
+ * Mon bloc notes — journal libre de l'orthophoniste.
  *
- * Inspiré des bullet journals papier des orthos : entre les CRBOs,
- * on note des observations vrac, des idées, des rappels. Pas lié à
- * un patient (pour ça, il y a PatientNotesThread sur la fiche).
+ * Entre les CRBOs, on note des idées, des to-do, des rappels de formation.
+ * Pas lié à un patient (pour ça, il y a PatientNotesThread sur la fiche).
  *
- * UI : timeline antéchronologique, compose en haut + MicButton pour
- * dictée, filtrage par catégorie, édition inline.
+ * UI : pavé de post-its inclinés, compose en haut + MicButton pour dictée,
+ * filtrage par catégorie, édition inline.
+ *
+ * Catégories actuelles : idée / to do / formation / autre. La catégorie
+ * `observation` reste valide côté API pour les entrées historiques mais
+ * n'est plus proposée à la création — les anciennes entrées s'affichent
+ * sans pastille de catégorie.
  */
 
 import { useEffect, useState } from 'react'
@@ -19,13 +23,26 @@ import { useToast } from '@/components/Toast'
 
 type Category = 'observation' | 'idee' | 'rappel' | 'formation' | 'autre'
 
-const CATEGORIES: Array<{ id: Category; label: string; emoji: string; color: string }> = [
-  { id: 'observation', label: 'Observation', emoji: '👁️', color: '#7c3aed' },
-  { id: 'idee',        label: 'Idée',        emoji: '💡', color: '#d97706' },
-  { id: 'rappel',      label: 'Rappel',      emoji: '⏰', color: '#dc2626' },
-  { id: 'formation',   label: 'Formation',   emoji: '📚', color: '#2563eb' },
-  { id: 'autre',       label: 'Autre',       emoji: '✏️', color: '#6b7280' },
+/** Palette post-it : couleur de la feuille + couleur d'accent (corner / chip).
+ *  Tons inspirés des vrais Post-it Notes (3M) pour le mimétisme visuel. */
+const CATEGORIES: Array<{
+  id: Category
+  label: string
+  emoji: string
+  paper: string   // fond de la feuille
+  accent: string  // couleur d'accent (chip filtre, bord supérieur)
+  ink: string     // couleur du texte sur la feuille
+}> = [
+  { id: 'idee',      label: 'Idée',      emoji: '💡', paper: '#FFF6A8', accent: '#D97706', ink: '#5C4A05' },
+  { id: 'rappel',    label: 'To do',     emoji: '✅', paper: '#FFC7CC', accent: '#DB2777', ink: '#651B26' },
+  { id: 'formation', label: 'Formation', emoji: '📚', paper: '#BFE3FF', accent: '#1D4ED8', ink: '#1E3A5F' },
+  { id: 'autre',     label: 'Autres',    emoji: '✏️', paper: '#C7F0CB', accent: '#15803D', ink: '#1F4A2A' },
 ]
+
+/** Fond par défaut quand une entrée n'a pas (ou plus) de catégorie connue. */
+const FALLBACK_PAPER = '#F5F2E6'
+const FALLBACK_INK = '#3F3A2E'
+const FALLBACK_ACCENT = '#A8A29E'
 
 interface Entry {
   id: string
@@ -43,7 +60,6 @@ function formatRelative(iso: string): string {
     if (diffSec < 60) return "à l'instant"
     if (diffSec < 3600) return `il y a ${Math.floor(diffSec / 60)} min`
     if (diffSec < 86400) return `il y a ${Math.floor(diffSec / 3600)} h`
-    // Pour les entrées plus anciennes, date absolue lisible
     const sameDay = d.toDateString() === now.toDateString()
     if (sameDay) return `Aujourd'hui, ${d.toLocaleTimeString('fr-FR', { hour: '2-digit', minute: '2-digit' })}`
     const yesterday = new Date(now.getFullYear(), now.getMonth(), now.getDate() - 1)
@@ -52,6 +68,25 @@ function formatRelative(iso: string): string {
   } catch {
     return ''
   }
+}
+
+/** Inclinaison déterministe en fonction de l'id de l'entrée (entre -2.4 et
+ *  +2.4 deg). Garantit un rendu stable d'un re-render à l'autre tout en
+ *  cassant l'alignement parfait → vrai pavé de post-its.
+ *  Pour ne pas rendre la lecture pénible, on bascule l'inclinaison vers 0
+ *  pendant l'édition (cf. composant). */
+function tiltFromId(id: string): number {
+  let h = 0
+  for (let i = 0; i < id.length; i++) h = (h * 31 + id.charCodeAt(i)) >>> 0
+  // Mappe sur [-2.4, +2.4]
+  return ((h % 49) - 24) / 10
+}
+
+/** Palette résolue pour une entrée (catégorie valide ou fallback). */
+function paletteFor(category: Category | null) {
+  const cat = CATEGORIES.find(c => c.id === category)
+  if (cat) return { paper: cat.paper, accent: cat.accent, ink: cat.ink, label: cat.label, emoji: cat.emoji }
+  return { paper: FALLBACK_PAPER, accent: FALLBACK_ACCENT, ink: FALLBACK_INK, label: null, emoji: null }
 }
 
 export default function CarnetPage() {
@@ -135,7 +170,7 @@ export default function CarnetPage() {
     }
   }
   const handleDelete = async (id: string) => {
-    if (!confirm('Supprimer cette entrée ? Cette action est irréversible.')) return
+    if (!confirm('Supprimer ce post-it ? Cette action est irréversible.')) return
     try {
       const res = await fetch(`/api/journal/${id}`, { method: 'DELETE' })
       if (!res.ok) {
@@ -143,7 +178,7 @@ export default function CarnetPage() {
         throw new Error(data.error || 'Erreur')
       }
       setEntries(prev => prev.filter(e => e.id !== id))
-      toast.success('Entrée supprimée.')
+      toast.success('Post-it supprimé.')
     } catch (err: any) {
       toast.error(err?.message || 'Suppression échouée')
     }
@@ -152,17 +187,17 @@ export default function CarnetPage() {
   const filteredEntries = filter === 'all' ? entries : entries.filter(e => e.category === filter)
 
   return (
-    <div style={{ maxWidth: 820, margin: '0 auto', fontFamily: 'var(--font-body)' }}>
+    <div style={{ maxWidth: 1080, margin: '0 auto', fontFamily: 'var(--font-body)' }}>
       <header style={{ marginBottom: 24 }}>
         <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginBottom: 4 }}>
           <BookText size={20} style={{ color: 'var(--ds-primary, #16a34a)' }} />
           <h1 style={{ margin: 0, fontSize: 28, fontWeight: 700, color: 'var(--fg-1)' }}>
-            Carnet de session
+            Mon bloc notes
           </h1>
         </div>
         <p style={{ margin: 0, fontSize: 14, color: 'var(--fg-2)', lineHeight: 1.6 }}>
-          Journal libre entre les bilans : observations cliniques brutes, idées de formation,
-          rappels personnels. Privé, jamais transmis à l&apos;IA.
+          Idées, to-do, rappels de formation, notes en vrac. Chaque saisie devient un post-it.
+          Privé, jamais transmis à l&apos;IA.
         </p>
       </header>
 
@@ -172,7 +207,7 @@ export default function CarnetPage() {
         border: '1px solid var(--border-ds, #E5E7EB)',
         borderRadius: 14,
         padding: 18,
-        marginBottom: 20,
+        marginBottom: 24,
       }}>
         <div style={{ display: 'flex', gap: 8, marginBottom: 10, flexWrap: 'wrap' }}>
           {CATEGORIES.map(c => (
@@ -183,9 +218,9 @@ export default function CarnetPage() {
               style={{
                 padding: '5px 10px',
                 fontSize: 12, fontWeight: 500,
-                background: composeCategory === c.id ? c.color : 'transparent',
-                color: composeCategory === c.id ? 'white' : c.color,
-                border: `1px solid ${c.color}40`,
+                background: composeCategory === c.id ? c.accent : 'transparent',
+                color: composeCategory === c.id ? 'white' : c.accent,
+                border: `1px solid ${c.accent}40`,
                 borderRadius: 999,
                 cursor: 'pointer',
                 fontFamily: 'inherit',
@@ -199,7 +234,7 @@ export default function CarnetPage() {
           <SnippetTextarea
             value={composeText}
             onChange={setComposeText}
-            placeholder="Notez une observation, une idée, un rappel… (tapez /fatigue, /anxiete pour insérer vos snippets · Cmd+Entrée pour publier)"
+            placeholder="Notez une idée, un to-do, un rappel… (tapez /fatigue, /anxiete pour insérer vos snippets · Cmd+Entrée pour publier)"
             rows={4}
             onKeyDown={(e) => {
               if ((e.metaKey || e.ctrlKey) && e.key === 'Enter') {
@@ -230,14 +265,14 @@ export default function CarnetPage() {
             style={{ display: 'inline-flex', alignItems: 'center', gap: 6 }}
           >
             {submitting ? <Loader2 size={14} className="animate-spin" /> : <Send size={14} />}
-            Ajouter au carnet
+            Coller au mur
           </button>
         </div>
       </section>
 
       {/* Filtres */}
       {entries.length > 0 && (
-        <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginBottom: 16, flexWrap: 'wrap' }}>
+        <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginBottom: 20, flexWrap: 'wrap' }}>
           <Filter size={14} style={{ color: 'var(--fg-3)' }} />
           <button
             type="button"
@@ -253,7 +288,7 @@ export default function CarnetPage() {
               fontFamily: 'inherit',
             }}
           >
-            Toutes ({entries.length})
+            Tous ({entries.length})
           </button>
           {CATEGORIES.map(c => {
             const count = entries.filter(e => e.category === c.id).length
@@ -266,9 +301,9 @@ export default function CarnetPage() {
                 style={{
                   padding: '4px 10px',
                   fontSize: 12, fontWeight: 500,
-                  background: filter === c.id ? c.color : 'transparent',
-                  color: filter === c.id ? 'white' : c.color,
-                  border: `1px solid ${c.color}40`,
+                  background: filter === c.id ? c.accent : 'transparent',
+                  color: filter === c.id ? 'white' : c.accent,
+                  border: `1px solid ${c.accent}40`,
                   borderRadius: 999,
                   cursor: 'pointer',
                   fontFamily: 'inherit',
@@ -281,7 +316,7 @@ export default function CarnetPage() {
         </div>
       )}
 
-      {/* Liste */}
+      {/* Liste — pavé de post-its */}
       {loading ? (
         <div style={{ display: 'flex', justifyContent: 'center', padding: 32 }}>
           <Loader2 size={20} className="animate-spin" style={{ color: 'var(--fg-3)' }} />
@@ -297,30 +332,72 @@ export default function CarnetPage() {
         }}>
           <BookText size={28} style={{ marginBottom: 8, opacity: 0.5 }} />
           <p style={{ margin: 0, fontStyle: 'italic' }}>
-            Votre carnet est vide. Notez votre première observation ci-dessus.
+            Aucun post-it pour le moment. Notez votre première idée ci-dessus.
           </p>
         </div>
       ) : filteredEntries.length === 0 ? (
         <p style={{ fontSize: 14, color: 'var(--fg-3)', textAlign: 'center', padding: 24, fontStyle: 'italic' }}>
-          Aucune entrée dans cette catégorie.
+          Aucun post-it dans cette catégorie.
         </p>
       ) : (
-        <div style={{ display: 'flex', flexDirection: 'column', gap: 12 }}>
+        <div
+          style={{
+            display: 'grid',
+            gridTemplateColumns: 'repeat(auto-fill, minmax(220px, 1fr))',
+            gap: 22,
+            paddingBottom: 24,
+          }}
+        >
           {filteredEntries.map(e => {
-            const cat = CATEGORIES.find(c => c.id === e.category)
+            const palette = paletteFor(e.category)
             const isEditing = editingId === e.id
             const edited = e.updated_at !== e.created_at
+            // Pendant l'édition, on remet à plat (rotation 0) pour faciliter
+            // la frappe — un post-it tordu est sympa à lire mais pénible à
+            // éditer.
+            const tilt = isEditing ? 0 : tiltFromId(e.id)
             return (
               <article
                 key={e.id}
                 style={{
-                  background: 'var(--bg-surface, white)',
-                  border: '1px solid var(--border-ds, #E5E7EB)',
-                  borderRadius: 12,
-                  padding: 16,
                   position: 'relative',
+                  background: palette.paper,
+                  color: palette.ink,
+                  borderRadius: 4,
+                  padding: '18px 16px 14px',
+                  minHeight: 180,
+                  // Double ombre : interne (pli papier) + portée (relief).
+                  boxShadow:
+                    'inset 0 -8px 14px -10px rgba(0,0,0,0.18),' +
+                    '4px 8px 14px rgba(15,23,42,0.18),' +
+                    '1px 2px 4px rgba(15,23,42,0.10)',
+                  transform: `rotate(${tilt}deg)`,
+                  transformOrigin: 'center top',
+                  transition: 'transform 200ms ease, box-shadow 200ms ease',
+                  // Pli de papier en haut à droite (effet sticker / corner curl).
+                  // Réalisé via un linear-gradient diagonal qui assombrit le coin.
+                  backgroundImage:
+                    `linear-gradient(135deg, transparent 0, transparent calc(100% - 18px), ${palette.accent}33 calc(100% - 18px), ${palette.accent}22 100%)`,
                 }}
               >
+                {/* Bande de scotch décorative en haut */}
+                <span
+                  aria-hidden="true"
+                  style={{
+                    position: 'absolute',
+                    top: -10,
+                    left: '50%',
+                    transform: 'translateX(-50%) rotate(-2deg)',
+                    width: 64,
+                    height: 16,
+                    background: `${palette.accent}55`,
+                    border: `1px solid ${palette.accent}33`,
+                    borderRadius: 2,
+                    boxShadow: '0 1px 2px rgba(0,0,0,0.12)',
+                    pointerEvents: 'none',
+                  }}
+                />
+
                 {isEditing ? (
                   <div>
                     <div style={{ display: 'flex', gap: 6, marginBottom: 10, flexWrap: 'wrap' }}>
@@ -332,9 +409,9 @@ export default function CarnetPage() {
                           style={{
                             padding: '3px 8px',
                             fontSize: 11, fontWeight: 500,
-                            background: editCategory === c.id ? c.color : 'transparent',
-                            color: editCategory === c.id ? 'white' : c.color,
-                            border: `1px solid ${c.color}40`,
+                            background: editCategory === c.id ? c.accent : 'transparent',
+                            color: editCategory === c.id ? 'white' : c.accent,
+                            border: `1px solid ${c.accent}66`,
                             borderRadius: 999,
                             cursor: 'pointer',
                             fontFamily: 'inherit',
@@ -348,11 +425,11 @@ export default function CarnetPage() {
                       value={editText}
                       onChange={setEditText}
                       rows={4}
-                      className="w-full px-3 py-2 border border-gray-300 rounded text-sm focus:outline-none focus:ring-2 focus:ring-green-500 resize-none"
+                      className="w-full px-3 py-2 border border-gray-400 rounded text-sm focus:outline-none focus:ring-2 focus:ring-green-500 resize-none bg-white/60"
                       maxLength={10000}
                     />
                     <div style={{ marginTop: 8, display: 'flex', justifyContent: 'flex-end', gap: 8 }}>
-                      <button onClick={cancelEdit} style={{ padding: '5px 10px', fontSize: 12, background: 'transparent', border: 0, color: 'var(--fg-3)', cursor: 'pointer' }}>
+                      <button onClick={cancelEdit} style={{ padding: '5px 10px', fontSize: 12, background: 'transparent', border: 0, color: palette.ink, cursor: 'pointer' }}>
                         <X size={12} style={{ verticalAlign: 'middle', marginRight: 2 }} /> Annuler
                       </button>
                       <button
@@ -360,7 +437,7 @@ export default function CarnetPage() {
                         disabled={!editText.trim() || editSaving}
                         style={{
                           padding: '5px 10px', fontSize: 12,
-                          background: 'var(--ds-primary, #16a34a)',
+                          background: palette.accent,
                           color: 'white', border: 0, borderRadius: 6, cursor: 'pointer',
                           opacity: !editText.trim() || editSaving ? 0.5 : 1,
                         }}
@@ -372,41 +449,50 @@ export default function CarnetPage() {
                   </div>
                 ) : (
                   <>
-                    <div style={{ display: 'flex', alignItems: 'baseline', justifyContent: 'space-between', gap: 12, marginBottom: 8, flexWrap: 'wrap' }}>
-                      {cat ? (
+                    <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: 8, marginBottom: 8 }}>
+                      {palette.label ? (
                         <span style={{
                           padding: '2px 8px',
-                          background: `${cat.color}22`,
-                          color: cat.color,
-                          fontSize: 11,
+                          background: `${palette.accent}25`,
+                          color: palette.accent,
+                          fontSize: 10.5,
                           fontWeight: 700,
                           textTransform: 'uppercase',
                           letterSpacing: 0.5,
-                          borderRadius: 4,
+                          borderRadius: 999,
                         }}>
-                          {cat.emoji} {cat.label}
+                          {palette.emoji} {palette.label}
                         </span>
                       ) : <span />}
-                      <span style={{ fontSize: 11, color: 'var(--fg-3)' }}>
+                      <span style={{ fontSize: 10, color: palette.ink, opacity: 0.55 }}>
                         {formatRelative(e.created_at)}
                         {edited && ' · modifié'}
                       </span>
                     </div>
-                    <p style={{ margin: 0, fontSize: 14.5, color: 'var(--fg-1)', whiteSpace: 'pre-wrap', lineHeight: 1.6 }}>
+                    <p style={{
+                      margin: 0,
+                      fontFamily: 'var(--font-caveat), "Patrick Hand", "Comic Sans MS", cursive',
+                      fontSize: 19,
+                      color: palette.ink,
+                      whiteSpace: 'pre-wrap',
+                      lineHeight: 1.4,
+                      // Permet au texte long de s'étendre sans déborder.
+                      wordBreak: 'break-word',
+                    }}>
                       {e.body}
                     </p>
-                    <div style={{ marginTop: 10, display: 'flex', justifyContent: 'flex-end', gap: 4 }}>
+                    <div style={{ marginTop: 12, display: 'flex', justifyContent: 'flex-end', gap: 4 }}>
                       <button
                         onClick={() => startEdit(e)}
                         title="Modifier"
-                        style={{ padding: 4, background: 'transparent', border: 0, color: 'var(--fg-3)', cursor: 'pointer', borderRadius: 4 }}
+                        style={{ padding: 4, background: 'transparent', border: 0, color: palette.ink, opacity: 0.55, cursor: 'pointer', borderRadius: 4 }}
                       >
                         <Edit size={13} />
                       </button>
                       <button
                         onClick={() => handleDelete(e.id)}
                         title="Supprimer"
-                        style={{ padding: 4, background: 'transparent', border: 0, color: 'var(--fg-3)', cursor: 'pointer', borderRadius: 4 }}
+                        style={{ padding: 4, background: 'transparent', border: 0, color: palette.ink, opacity: 0.55, cursor: 'pointer', borderRadius: 4 }}
                       >
                         <Trash2 size={13} />
                       </button>

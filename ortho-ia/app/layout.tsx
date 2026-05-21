@@ -1,5 +1,5 @@
 import type { Metadata } from 'next'
-import { Fraunces, Inter_Tight, Inter, Manrope, Poppins } from 'next/font/google'
+import { Fraunces, Inter_Tight, Inter, Manrope, Poppins, Caveat } from 'next/font/google'
 import './globals.css'
 import CookieBanner from '@/components/CookieBanner'
 
@@ -37,6 +37,13 @@ const poppins = Poppins({
   variable: '--font-poppins',
   display: 'swap',
 })
+// Caveat : police manuscrite pour les post-its du bloc notes.
+const caveat = Caveat({
+  subsets: ['latin'],
+  weight: ['400', '500', '600', '700'],
+  variable: '--font-caveat',
+  display: 'swap',
+})
 
 export const metadata: Metadata = {
   title: 'Ortho.ia — Génération automatique de CRBO',
@@ -67,7 +74,7 @@ export default function RootLayout({
     <html
       lang="fr"
       data-direction="A"
-      className={`${fraunces.variable} ${interTight.variable} ${inter.variable} ${manrope.variable} ${poppins.variable}`}
+      className={`${fraunces.variable} ${interTight.variable} ${inter.variable} ${manrope.variable} ${poppins.variable} ${caveat.variable}`}
     >
       <body className="antialiased">
         {children}
