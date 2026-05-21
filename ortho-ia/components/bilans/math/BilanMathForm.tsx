@@ -23,6 +23,8 @@ import type {
   PastilleEtat,
 } from '@/lib/bilans/math/types'
 import { readMathBilanHandoff, clearMathBilanHandoff } from '@/lib/bilans/math/handoff'
+import DemoAutofillButton from '@/components/DemoAutofillButton'
+import { buildDemoMathDraft } from '@/lib/demo-autofill'
 
 /**
  * Formulaire complet d'un bilan B-CM / B-CMado en mode MATRICE 2D.
@@ -555,13 +557,23 @@ export default function BilanMathForm({ grille }: BilanMathFormProps) {
   return (
     <div style={{ maxWidth: 1100, margin: '0 auto', paddingBottom: 80 }}>
       {/* En-tête bilan */}
-      <header style={{ marginBottom: 24 }}>
-        <h1 style={{ margin: 0, fontSize: 24, fontWeight: 700, color: 'var(--fg-1)' }}>
-          {grille.label} <span style={{ fontWeight: 400, color: 'var(--fg-3)' }}>— Bilan de cognition mathématique</span>
-        </h1>
-        <p style={{ margin: '6px 0 0', fontSize: 14, color: 'var(--fg-3)', lineHeight: 1.5 }}>
-          {grille.description}
-        </p>
+      <header style={{ marginBottom: 24, display: 'flex', alignItems: 'flex-start', justifyContent: 'space-between', gap: 16 }}>
+        <div>
+          <h1 style={{ margin: 0, fontSize: 24, fontWeight: 700, color: 'var(--fg-1)' }}>
+            {grille.label} <span style={{ fontWeight: 400, color: 'var(--fg-3)' }}>— Bilan de cognition mathématique</span>
+          </h1>
+          <p style={{ margin: '6px 0 0', fontSize: 14, color: 'var(--fg-3)', lineHeight: 1.5 }}>
+            {grille.description}
+          </p>
+        </div>
+        {/* Auto-remplissage démo : remplit patient + anamnèse + cellules
+            colorées + notes pour tester rapidement la génération du CRBO.
+            Visible uniquement pour demo@ortho-ia.fr. */}
+        <DemoAutofillButton
+          variant="prominent"
+          label="Auto-remplir la démo"
+          onFill={() => setDraft(buildDemoMathDraft(grille))}
+        />
       </header>
 
       {/* Patient */}

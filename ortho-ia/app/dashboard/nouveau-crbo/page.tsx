@@ -31,6 +31,8 @@ import PrediLacScoresInput from '@/components/forms/PrediLacScoresInput'
 import ExalangLyfacScoresInput from '@/components/forms/ExalangLyfacScoresInput'
 import { TESTS_WITH_SPECIFIC_FORM, getComplementarySuggestions, TEST_FAMILIES } from '@/lib/test-pairings'
 import { saveMathBilanHandoff } from '@/lib/bilans/math/handoff'
+import DemoAutofillButton from '@/components/DemoAutofillButton'
+import { DEMO_LANGAGE_FIXTURE } from '@/lib/demo-autofill'
 import { useToast } from '@/components/Toast'
 import { useFocusMode } from '@/components/FocusMode'
 import { playPrintAnimation } from '@/components/PrintAnimation'
@@ -1407,7 +1409,17 @@ function NouveauCRBOContent() {
             onStepClick={(step) => setCurrentStep(step)}
           />
         </div>
-        <div className="shrink-0 pb-1">
+        <div className="shrink-0 pb-1 flex items-center gap-3">
+          {/* Auto-remplissage démo : patient + motif + anamnèse + 1 test
+              langage pour tester rapidement la génération. Visible uniquement
+              pour demo@ortho-ia.fr. */}
+          <DemoAutofillButton
+            onFill={() => {
+              setFormData(prev => ({ ...prev, ...DEMO_LANGAGE_FIXTURE }))
+              setCurrentStep(4)
+            }}
+            label="Auto-remplir la démo"
+          />
           <AutoSaveIndicator
             lastSavedAt={lastSavedAt}
             nowTick={nowTick}
