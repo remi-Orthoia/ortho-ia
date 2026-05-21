@@ -10,6 +10,18 @@ import { logger } from '@/lib/logger'
 const MAX_BODY = 10_000
 const VALID_CATEGORIES = ['observation', 'idee', 'rappel', 'formation', 'autre'] as const
 
+/** Mappe un SQLSTATE Postgres vers un libellé court côté client. Sécurise
+ *  l'exposition d'erreur DB en ne laissant filtrer que la nature du problème
+ *  (sans définition de contrainte, nom de colonne ou contenu de ligne). */
+function mapPgErrorToLabel(code: string | undefined | null): string | null {
+  if (!code) return null
+  if (code === '42P01') return 'table manquante — appliquer la migration session_journal'
+  if (code === '42501' || code === '42503') return 'permissions / RLS'
+  if (code.startsWith('23')) return 'contrainte de validation'
+  if (code === '08006' || code.startsWith('08')) return 'connexion DB'
+  return `code ${code}`
+}
+
 export async function GET(request: NextRequest) {
   const supabase = createServerSupabaseClient()
   const { data: { user } } = await supabase.auth.getUser()
@@ -64,14 +76,12 @@ export async function POST(request: NextRequest) {
 
   if (error || !created) {
     logger.error('journal-create', error)
-    // Surface le détail Supabase au client pour diagnostic rapide (table
-    // manquante, RLS, contrainte). Pas de données sensibles dans le message,
-    // c'est un code/texte Postgres.
-    const detail = error?.message
-      ? ` (${error.code ?? 'db'} : ${error.message})`
-      : ''
+    // On expose un libellé court basé sur error.code (Postgres SQLSTATE)
+    // pour aider au debug sans laisser fuiter le texte d'erreur brut, qui
+    // peut contenir des définitions de contraintes / colonnes.
+    const detail = mapPgErrorToLabel(error?.code)
     return NextResponse.json(
-      { error: `Erreur lors de la création de l'entrée${detail}` },
+      { error: `Erreur lors de la création de l'entrée${detail ? ` (${detail})` : ''}` },
       { status: 500 },
     )
   }

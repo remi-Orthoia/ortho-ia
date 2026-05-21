@@ -191,7 +191,33 @@ export const DEMO_LANGAGE_FIXTURE = {
   comportement_seance:
     "Léa s'est montrée coopérative tout au long du bilan. Bonne attention, persévérance face aux épreuves les plus difficiles. Demande des explications quand une consigne lui échappe.",
   test_utilise: ['EVALEO 6-15'] as string[],
-  resultats_manuels: '',
+  // Résultats fictifs cohérents EVALEO 6-15 niveau CM2 (mixte fragile +
+  // moyen). Permet au bouton "Visualiser les résultats" de s'activer
+  // directement après l'auto-fill, sans saisie manuelle. Format libre
+  // accepté par la phase 1 d'extraction.
+  resultats_manuels: [
+    '=== EVALEO 6-15 ===',
+    '',
+    'LANGAGE ÉCRIT',
+    'Lecture de mots (Régulier) : 25/40, É-T -1.6, Classe 2 (faible)',
+    'Lecture de mots (Irrégulier) : 18/40, É-T -1.8, Classe 2 (faible)',
+    'Lecture de pseudomots : 14/40, É-T -2.1, Classe 1 (très faible)',
+    'Compréhension écrite : 7/12, É-T -0.6, Classe 4 (moyen)',
+    'Dictée de mots : 22/40, É-T -1.5, Classe 2 (faible)',
+    'Dictée de phrases : 9/30, É-T -2.0, Classe 1 (très faible)',
+    'Production écrite (idées) : 5/10, É-T -0.4, Classe 4 (moyen)',
+    'Production écrite (orthographe) : 3/10, É-T -1.7, Classe 2 (faible)',
+    '',
+    'LANGAGE ORAL',
+    'Compréhension orale : 8/10, É-T -0.2, Classe 5 (moyen)',
+    'Vocabulaire : 22/30, É-T -0.5, Classe 4 (moyen)',
+    'Conscience phonologique : 12/20, É-T -1.4, Classe 2 (faible)',
+    '',
+    'COMPÉTENCES TRANSVERSES',
+    'Mémoire de travail (empan endroit) : 4 items, É-T -1.0, Classe 3',
+    'Empan envers : 3 items, É-T -1.2, Classe 3',
+    'Fluence visuo-attentionnelle : 18 items/2 min, É-T -1.3, Classe 2',
+  ].join('\n'),
   bilan_type: 'initial' as const,
   format_crbo: 'synthetique' as const,
 }
