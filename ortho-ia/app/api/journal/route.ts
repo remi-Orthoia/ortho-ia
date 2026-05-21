@@ -64,7 +64,16 @@ export async function POST(request: NextRequest) {
 
   if (error || !created) {
     logger.error('journal-create', error)
-    return NextResponse.json({ error: "Erreur lors de la création de l'entrée" }, { status: 500 })
+    // Surface le détail Supabase au client pour diagnostic rapide (table
+    // manquante, RLS, contrainte). Pas de données sensibles dans le message,
+    // c'est un code/texte Postgres.
+    const detail = error?.message
+      ? ` (${error.code ?? 'db'} : ${error.message})`
+      : ''
+    return NextResponse.json(
+      { error: `Erreur lors de la création de l'entrée${detail}` },
+      { status: 500 },
+    )
   }
 
   return NextResponse.json({ entry: created }, { status: 201 })
