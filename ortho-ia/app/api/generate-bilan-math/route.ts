@@ -280,7 +280,7 @@ export async function POST(request: NextRequest) {
 
           const stream = anthropic.messages.stream({
             model: 'claude-sonnet-4-6',
-            max_tokens: 4000,
+            max_tokens: 8000,
             temperature: 0.4,
             system: SYSTEM_PROMPT_BILAN_MATH_CRBO,
             messages: [{ role: 'user', content: userPrompt }],

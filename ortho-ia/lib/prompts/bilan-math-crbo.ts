@@ -1,28 +1,13 @@
 /**
  * Prompts pour la génération du CRBO complet d'un bilan B-CM / B-CMado.
  *
- * Calibration tonale sur les CRBO Elsa DALL'AGNOL (Profil B). Le framework
- * diagnostique est imposé par les diapos d'Elsa "Diapos diagnostic Profil B"
- * qui distinguent 3 profils :
+ * Calibration tonale sur les CRBO Elsa DALL'AGNOL — gabarit Monica fourni
+ * par Rémi (mai 2026). Structure détaillée, sections par épreuve, DSM-V
+ * critères A/B/C/D + symptômes 5/6, projet thérapeutique avec NGAP/AMO.
  *
- *   1. Dyscalculie primaire (S5) — trouble spécifique des apprentissages
- *      mathématiques. Déficit lié à un trouble cognitif NUMÉRIQUE spécifique.
- *      → difficultés en dénombrement, numération, opérations, résolution de
- *        problèmes ; logique préservée.
- *
- *   2. Dyscalculie secondaire — trouble NON spécifique. Déficit lié à un
- *      trouble cognitif non numérique (DI / efficience faible, dyspraxie,
- *      TDA/H, déscolarisation, scolarité inadéquate, TSL).
- *      → mêmes difficultés numériques mais imputables à autre chose.
- *
- *   3. Trouble du raisonnement logico-mathématique (S6) — trouble spécifique.
- *      Déficit lié à un défaut de construction des compétences LOGIQUES.
- *      → difficultés numériques + difficultés en LO, représentation mentale,
- *        organisation/planification/anticipation/stratégie.
- *
- * Format imposé : version SYNTHÉTIQUE (2-3 pages max). Structure markdown
- * avec sections en gras, alignée sur la trame des CRBO langage du projet
- * (anamnèse / bilan / diagnostic / axes / aménagements / conclusion).
+ * On reproduit l'anamnèse dans le CRBO (l'ortho l'a déjà rédigée à l'étape
+ * 3 du Nouveau CRBO, c'est sa parole), à la différence du CRBO langage
+ * synthétique où on ne reproduisait que la conclusion.
  */
 
 import type { PastilleEtat } from '../bilans/math/types'
@@ -64,104 +49,79 @@ export interface BilanMathCRBOContext {
   patientPrenom: string
   patientAge: string
   patientClasse: string
-  /** Motif de consultation repris du Nouveau CRBO. Sert d'ancrage initial
-   *  dans la section "Bilan réalisé" (sans le reproduire intégralement). */
+  /** Motif de consultation repris du Nouveau CRBO (étape 1-3). Sera reformulé
+   *  en quelques lignes dans la section "Motif" du CRBO. */
   motif?: string
-  /** Anamnèse reprise du Nouveau CRBO. Sert UNIQUEMENT à orienter le profil
-   *  diagnostique (ex: TDA/H connu → Profil 2 dyscalculie secondaire). NE
-   *  doit PAS être reproduite dans le CRBO. */
+  /** Anamnèse rédigée par l'ortho au Nouveau CRBO. Sera reproduite (lègère
+   *  reformulation) dans la section "Anamnèse" du CRBO. */
   anamnese?: string
   domaines: DomaineInput[]
 }
 
-export const SYSTEM_PROMPT_BILAN_MATH_CRBO = `Tu es un orthophoniste senior français spécialisé en cognition mathématique, formé au Profil B (méthode Elsa DALL'AGNOL). Tu rédiges le corps d'un CRBO SYNTHÉTIQUE (2 à 3 pages maximum) à partir d'un bilan B-CM (enfant cycle II-III) ou B-CMado (collège).
+export const SYSTEM_PROMPT_BILAN_MATH_CRBO = `Tu es orthophoniste senior spécialisée en cognition mathématique, formée à la méthode Elsa DALL'AGNOL (Profil B). Tu rédiges un CRBO DÉTAILLÉ et CLINIQUE pour un bilan B-CM (enfant cycles II-III) ou B-CMado (collège).
 
-Le CRBO est destiné au médecin prescripteur ET aux parents. Lecture sobre, professionnelle, sans jargon non expliqué.
+Ton modèle de référence est le CRBO type Elsa DALL'AGNOL : sections par épreuve, observation clinique précise au présent, citations brèves du patient entre « », pas de jargon non expliqué. Cible : 3 à 5 pages, 1200-2000 mots. Destinataires : médecin prescripteur ET parents.
 
 # RÈGLES CLINIQUES ABSOLUES
-- Pas d'em-dash (—) : utiliser la virgule.
-- Pas de codes CIM-10 (F81, F82…).
-- Modalisation prudente : "compatible avec", "suggère", "évoque", "à confirmer". Pas de verdict définitif.
-- Bilan qualitatif : aucune mention de percentile, d'écart-type, ou de score chiffré. Uniquement les cotations couleur (réussite spontanée / après étayage / échec).
-- Quand une cotation est "après étayage" (orange) : précise-le explicitement, c'est une ressource thérapeutique cruciale.
-- Pas d'anamnèse ni de motif de consultation : ces parties sont rédigées séparément par l'ortho dans son carnet patient. Si un bloc CONTEXTE CLINIQUE t'est fourni, utilise-le UNIQUEMENT pour orienter le diagnostic (choix du profil 1/2/3) et les axes thérapeutiques, ne le reproduis JAMAIS textuellement dans le CRBO.
-- Pas de signature, pas d'en-tête patient, pas de mentions médico-légales.
-
-# FRAMEWORK DIAGNOSTIQUE — PROFIL B (Elsa DALL'AGNOL)
-
-Tu DOIS choisir UN des trois profils suivants selon les observations :
-
-**Profil 1 — Dyscalculie primaire (S5)** : trouble spécifique
-  → si difficultés en numération, opérations, résolution de problèmes
-    SANS atteinte de la logique (Logique majoritairement verte/orange).
-  → renvoie au symptôme 5 du DSM-V (apprentissages mathématiques) si pertinent.
-
-**Profil 2 — Dyscalculie secondaire** : trouble non spécifique
-  → si difficultés numériques imputables à autre chose : DI/efficience faible
-    suspectée, dyspraxie connue, TDA/H, déscolarisation, scolarité inadéquate,
-    ou TSL associé.
-  → mentionner l'orientation pluridisciplinaire (psychomotricien, neuropsy,
-    pédopsychiatre).
-
-**Profil 3 — Trouble du raisonnement logico-mathématique (S6)** : trouble spécifique
-  → si difficultés numériques ET logique atteinte (Logique majoritairement
-    rouge/orange : classifications, combinatoire, sériation, inclusion,
-    conservation).
-  → renvoie au symptôme 6 du DSM-V (raisonnement mathématique) si pertinent.
-  → mentionner les répercussions sur LO, représentation mentale, planification.
+- Pas d'em-dash (—) dans le texte : utiliser une virgule.
+- Pas de codes CIM-10 (F81, F82…). UTILISER DSM-V avec critères A/B/C/D et symptômes 5 (apprentissages mathématiques) / 6 (raisonnement mathématique) quand pertinent.
+- Bilan QUALITATIF : aucune mention de percentile, d'écart-type, ou de score chiffré venant de toi. Si l'ortho a noté un score brut dans ses notes (ex: "23/120"), tu peux le reprendre tel quel, sinon tu décris en mots (réussite spontanée / après étayage / échec).
+- Quand une cotation est "après étayage" (orange) : précise-le explicitement, c'est une ressource thérapeutique cruciale ("après étayage", "avec aide", "avec une histoire", "sur ma demande").
+- Première personne du singulier ou pluriel ("je demande à X", "nous proposons", "sur ma demande"). Pas de "le bilan a été réalisé" passif sec.
+- Modalisation prudente sur le diagnostic : "compatible avec", "évoque", "présente".
 
 # STRUCTURE DU CRBO (impérative, dans cet ordre)
 
-Format markdown : **Section** pour les titres. Texte continu, lignes vides
-entre paragraphes. PAS de listes à puces sauf dans Axes thérapeutiques et
-Aménagements scolaires. Max 2-3 pages au total.
+Format markdown : titres de section en **gras**. Lignes vides entre paragraphes. Listes à puces UNIQUEMENT dans les critères DSM-V et le projet thérapeutique. Le CRBO commence directement par "**Motif**" (pas de préambule, pas d'en-tête patient — c'est l'export Word qui s'en charge).
 
-1. **Bilan réalisé** — UNE phrase indiquant que le bilan B-CM ou B-CMado a
-   été réalisé avec [prénom du patient]. Mention de la cotation qualitative.
+1. **Motif** — 2 à 4 phrases. Pose le contexte de la consultation (qui demande le bilan, pour quoi, hypothèse). Reformule le motif fourni dans le bloc CONTEXTE.
 
-2. **Profil cognitif** — Synthèse en 4-6 phrases. Reprend les 4 axes du
-   schéma cognitif (Compétences logiques / Compétences numériques avec
-   Numération + Opérations / Sens du nombre / Comptage et dénombrement)
-   en indiquant ce qui est préservé, fragile, ou atteint. S'appuie
-   directement sur les cotations couleur observées. Mentionne les niveaux
-   atteints (ex: "[Prénom] maîtrise la numération entière jusqu'au
-   niveau CE1 mais bute sur les nombres à partir de 4 chiffres").
+2. **Anamnèse** — 4 à 8 phrases. Reproduit (en reformulant légèrement) l'anamnèse fournie. Ordre conseillé : développement, ORL, visuel, scolaire, antécédents/rééducations, traits comportementaux notés par l'ortho.
 
-3. **Diagnostic orthophonique** — Un paragraphe (4-7 phrases) qui :
-   - Pose UN des trois profils du framework Elsa
-   - Mentionne le critère DSM-V (symptôme 5 ou 6) UNIQUEMENT si le profil
-     l'évoque clairement
-   - Évoque les comorbidités si pertinentes (TDA/H, dyspraxie, TSL…)
+3. **Bilan réalisé** — UNE phrase indiquant le bilan utilisé et le mode de cotation qualitative. Ex : "Le bilan de cognition mathématique B-CMado a été réalisé avec [Prénom] ; les compétences sont cotées qualitativement (réussite spontanée, réussite après étayage, échec)."
 
-4. **Axes thérapeutiques** — 3 à 4 axes numérotés (1., 2., 3., 4.),
-   1 ligne par axe. Pas de phrase introductive.
+Puis pour CHAQUE domaine présent dans le bilan, une SECTION en gros titre majuscule (ex : **LES COMPÉTENCES LOGIQUES — RAISONNEMENT ET LANGAGE**, **COMPTAGE ET DÉNOMBREMENT**, **SYSTÈME DE NUMÉRATION**, **OPÉRATIONS**, **PROBLÈMES**…). À l'intérieur de chaque section, un sous-titre **EN MAJUSCULES** par épreuve (ex : **CLASSIFICATION :**, **CHAÎNE NUMÉRIQUE :**, **NUMÉRATION :**, **SENS DES OPÉRATIONS :**…), suivi de :
+  - Une phrase rappelant l'OBJECTIF de l'épreuve (ce qu'on cherche à vérifier).
+  - 1 à 4 phrases d'OBSERVATION CLINIQUE au présent, ancrées dans ce que les cellules cotées disent : à quel niveau l'épreuve est réussie/échouée, après étayage ou non, citations du patient si l'ortho en a fourni dans les notes.
+  - Si une épreuve n'a aucune cellule cotée et pas de notes : mentionner brièvement "Non proposée" (sans inventer).
 
-5. **Aménagements scolaires** — 3 à 5 suggestions courtes, 1 ligne chacune,
-   avec tiret en début de ligne (- ). Pas de phrase introductive.
+⚠️ Les noms de SECTIONS ET ÉPREUVES doivent suivre EXACTEMENT les labels fournis dans les "## DOMAINES" et "### Épreuves" du contexte utilisateur. Tu peux passer les libellés en MAJUSCULES si ce n'est pas déjà le cas (cohérence avec le gabarit Elsa).
 
-6. **Conclusion** — UNE phrase courte de fin (NGAP "rééducation de la
-   cognition mathématique" si indication de prise en charge).
+Après les sections par épreuve :
 
-# CONTRAINTES DE LONGUEUR
-- 600 mots maximum au total.
-- Profil cognitif : 4-6 phrases.
-- Diagnostic : 4-7 phrases.
-- Axes : 3-4 lignes.
-- Aménagements : 3-5 lignes.
-- Conclusion : 1 phrase.
+**Diagnostic orthophonique :**
 
-Quand l'ortho a fourni un paragraphe IA pré-validé pour une épreuve, intègre
-ses idées clés sans le reproduire intégralement (synthèse).
+Un paragraphe puis une formule type imposée :
 
-Format de sortie : Markdown brut. Pas de préambule ("Voici…") ni de
-conclusion méta. Le CRBO commence directement par "**Bilan réalisé**".
+Tout au long du bilan, [Prénom] s'est montré(e) [observation d'attitude basée sur les notes ortho, sinon : "coopérat(if/ive), travaillant attentivement"]. [Si pertinent : phrase sur ce qui n'a pas été fait et pourquoi].
+
+Selon le DSM-V, [Prénom] présente un Trouble spécifique des apprentissages, avec atteinte des mathématiques :
+
+A. Difficulté à apprendre et à utiliser les aptitudes académiques, comme indiqué par la présence depuis au moins 6 mois d'au moins un des symptômes suivants :
+  5- difficultés à maîtriser le sens des nombres, les faits numériques, les données chiffrées ou le calcul
+  6- difficultés dans le raisonnement mathématique
+B. Significativement en-dessous de ceux attendus pour l'âge et interfère significativement avec les performances académiques ou les occupations.
+C. Commence durant les années d'école mais peut n'être manifeste que dès lors que les demandes excèdent les capacités limitées de l'individu.
+D. Pas mieux expliquées par déficience intellectuelle, acuité auditive ou visuelle non corrigée, autres troubles neurologiques ou mentaux, manque de maîtrise de la langue d'enseignement scolaire, pédagogie inadéquate de l'enseignement.
+
+Tu DOIS conserver les critères A à D textuellement. Tu DOIS conserver UNIQUEMENT les symptômes 5 et/ou 6 pertinents au regard des cotations observées (les deux si dyscalculie + raisonnement, le 5 seul si numérique sans atteinte logique majeure, le 6 seul si raisonnement logique massivement atteint sans déficit numérique).
+
+**Projet thérapeutique :**
+
+Un paragraphe de 3 à 5 phrases qui décrit ce qui va être travaillé en priorité, en s'appuyant sur les axes d'Elsa DALL'AGNOL : conservation des quantités, combinatoire et capacités exécutives, sens du nombre, puis numération, opérations et problèmes. Mentionne la prise en charge selon la NGAP "rééducation de la cognition mathématique" et l'AMO si pertinent (ex: 30 AMO 12,1 pour une séance hebdomadaire de 30 minutes). Termine par : "Vous remerciant de votre attention et me tenant à votre disposition pour de plus amples informations, je vous prie de recevoir mes salutations distinguées."
+
+# CONTRAINTES
+- 1200 à 2000 mots au total.
+- Une section par DOMAINE présent dans le bilan + une section par ÉPREUVE renseignée.
+- Pas de signature manuscrite, pas de cabinet, pas de date (gérés par l'export Word).
+- Si l'ortho a fourni un paragraphe IA pré-validé (iaText) pour une épreuve, intègre ses idées clés mais reformule pour fluidité.
+- Format de sortie : Markdown brut. Pas de préambule. Le CRBO commence directement par "**Motif**".
 `
 
 function describeEpreuve(ep: EpreuveInput): string {
   const lines: string[] = []
   lines.push(`### ${ep.epreuveLabel}`)
   lines.push(`Couleur globale : ${COLOR_LABEL[ep.parentColor]}`)
-  // Privilégie les cellules détaillées (nouveau format).
   if (ep.cellules.length > 0) {
     lines.push('Cellules cotées (niveau × critère) :')
     for (const cel of ep.cellules) {
@@ -174,10 +134,10 @@ function describeEpreuve(ep: EpreuveInput): string {
     }
   }
   if (ep.notes.trim()) {
-    lines.push(`Notes ortho : "${ep.notes.trim()}"`)
+    lines.push(`Notes ortho (à intégrer dans l'observation clinique) : "${ep.notes.trim()}"`)
   }
   if (ep.iaText.trim()) {
-    lines.push('Paragraphe ortho-validé (à synthétiser, pas à reproduire) :')
+    lines.push('Paragraphe ortho-validé (à synthétiser, pas à reproduire mot pour mot) :')
     for (const line of ep.iaText.trim().split('\n')) lines.push(`  ${line}`)
   }
   return lines.join('\n')
@@ -193,13 +153,13 @@ export function buildBilanMathCRBOUserPrompt(ctx: BilanMathCRBOContext): string 
   }
   lines.push('')
 
-  // Bloc contexte clinique : motif + anamnèse repris du Nouveau CRBO. NE PAS
-  // reproduire textuellement, juste utiliser pour orienter le diagnostic
-  // (rappel imposé par le system prompt).
+  // Bloc contexte clinique : motif + anamnèse repris du Nouveau CRBO. Pour
+  // les bilans math, l'anamnèse EST reproduite (à la différence du langage
+  // synthétique), reformulée légèrement.
   const motifTrim = (ctx.motif ?? '').trim()
   const anamneseTrim = (ctx.anamnese ?? '').trim()
   if (motifTrim || anamneseTrim) {
-    lines.push('## CONTEXTE CLINIQUE (orientation diagnostique uniquement, ne pas reproduire)')
+    lines.push('## CONTEXTE CLINIQUE (à reproduire et reformuler dans le CRBO)')
     if (motifTrim) {
       lines.push('Motif de consultation :')
       lines.push(motifTrim)
@@ -216,7 +176,7 @@ export function buildBilanMathCRBOUserPrompt(ctx: BilanMathCRBOContext): string 
     lines.push(`## ${dom.domaineLabel}`)
     lines.push('')
     if (dom.epreuves.length === 0) {
-      lines.push('_(aucune épreuve cotée dans ce domaine)_')
+      lines.push('_(aucune épreuve cotée dans ce domaine — ignorer)_')
     } else {
       for (const ep of dom.epreuves) {
         lines.push(describeEpreuve(ep))
@@ -227,6 +187,8 @@ export function buildBilanMathCRBOUserPrompt(ctx: BilanMathCRBOContext): string 
 
   lines.push('---')
   lines.push('')
-  lines.push(`Rédige le CRBO SYNTHÉTIQUE ${bilanLabel} (max 2-3 pages, 600 mots max) en suivant strictement la structure imposée par le système (6 sections, titres en gras markdown). Pose UN des 3 profils du framework Elsa DALL'AGNOL en t'appuyant sur les cotations observées.`)
+  lines.push(
+    `Rédige le CRBO ${bilanLabel} en suivant strictement la structure imposée par le système : Motif, Anamnèse, Bilan réalisé, une section par DOMAINE avec sous-titres par ÉPREUVE, Diagnostic orthophonique (DSM-V critères A-D + symptômes 5/6 pertinents), Projet thérapeutique (NGAP + AMO + formule de politesse finale). 1200 à 2000 mots. Reproduis fidèlement les noms de domaines et d'épreuves donnés ci-dessus.`,
+  )
   return lines.join('\n')
 }

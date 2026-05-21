@@ -6,6 +6,7 @@ import { Loader2, Sparkles, Download, Save, X, MessageSquare } from 'lucide-reac
 import MatriceSection from './MatriceSection'
 import PastilleLegend from './PastilleLegend'
 import BilanMathCRBORender from './BilanMathCRBORender'
+import BilanMathWordPreview from './BilanMathWordPreview'
 import MicButton from '@/components/MicButton'
 import { useToast } from '@/components/Toast'
 import { createClient } from '@/lib/supabase'
@@ -65,6 +66,9 @@ export default function BilanMathForm({ grille }: BilanMathFormProps) {
   // Texte CRBO accumulé pendant le streaming SSE. Permet d'afficher la
   // génération en direct plutôt qu'un spinner.
   const [streamingCRBO, setStreamingCRBO] = useState('')
+  // Mode d'affichage de la preview : 'word' = aperçu fidèle du Word à
+  // exporter (par défaut), 'edit' = textarea brute pour ajuster le markdown.
+  const [previewMode, setPreviewMode] = useState<'word' | 'edit'>('word')
   const [isSaving, setIsSaving] = useState(false)
 
   // ===== Hydratation localStorage + handoff Nouveau CRBO =====
@@ -492,19 +496,43 @@ export default function BilanMathForm({ grille }: BilanMathFormProps) {
     }
   }
 
-  const handleDownloadCRBO = () => {
+  const handleDownloadCRBO = async () => {
     if (!generatedCRBO) return
-    const filename = `CRBO-${grille.label}-${draft.patient.prenom || 'patient'}-${draft.patient.nom || ''}-${new Date().toISOString().slice(0, 10)}.txt`
-      .replace(/[^a-zA-Z0-9.-]/g, '_')
-    const blob = new Blob([generatedCRBO], { type: 'text/plain;charset=utf-8' })
-    const url = URL.createObjectURL(blob)
-    const a = document.createElement('a')
-    a.href = url
-    a.download = filename
-    document.body.appendChild(a)
-    a.click()
-    document.body.removeChild(a)
-    URL.revokeObjectURL(url)
+    try {
+      // Récupère le profil ortho pour l'en-tête cabinet (nom, adresse, tél).
+      const supabase = createClient()
+      const { data: { user } } = await supabase.auth.getUser()
+      let profile = null
+      if (user) {
+        const { data } = await supabase
+          .from('profiles')
+          .select('prenom, nom, adresse, code_postal, ville, telephone, email')
+          .eq('id', user.id)
+          .single()
+        profile = data ?? null
+      }
+
+      const { generateBilanMathWord } = await import('@/lib/bilan-math-word-export')
+      const blob = await generateBilanMathWord({
+        grille,
+        draft,
+        crboText: generatedCRBO,
+        profile,
+      })
+
+      const filename = `CRBO-${grille.label}-${draft.patient.prenom || 'patient'}-${draft.patient.nom || ''}-${new Date().toISOString().slice(0, 10)}.docx`
+        .replace(/[^a-zA-Z0-9.-]/g, '_')
+      const url = URL.createObjectURL(blob)
+      const a = document.createElement('a')
+      a.href = url
+      a.download = filename
+      document.body.appendChild(a)
+      a.click()
+      document.body.removeChild(a)
+      URL.revokeObjectURL(url)
+    } catch (e: any) {
+      toast.error(e?.message || 'Erreur lors de la génération du Word.')
+    }
   }
 
   // ===== Liste des épreuves cotées (pour la section notes/IA en dessous) =====
@@ -787,43 +815,88 @@ export default function BilanMathForm({ grille }: BilanMathFormProps) {
         >
           <header style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', gap: 12, flexWrap: 'wrap', marginBottom: 12 }}>
             <h2 style={{ margin: 0, fontSize: 18, fontWeight: 700, color: 'var(--fg-1)' }}>
-              CRBO généré — relecture et édition
+              CRBO généré — aperçu et édition
             </h2>
-            <button
-              type="button"
-              onClick={() => setGeneratedCRBO(null)}
-              aria-label="Fermer"
-              style={{
-                background: 'transparent', border: 0, padding: 6,
-                color: 'var(--fg-3)', cursor: 'pointer',
-                display: 'grid', placeItems: 'center', borderRadius: 8,
-              }}
-            >
-              <X size={18} />
-            </button>
+            <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
+              {/* Toggle Aperçu Word / Édition markdown */}
+              <div
+                role="tablist"
+                style={{
+                  display: 'inline-flex',
+                  padding: 2,
+                  background: 'var(--bg-surface-2)',
+                  borderRadius: 8,
+                  border: '1px solid var(--border-ds)',
+                }}
+              >
+                {(['word', 'edit'] as const).map((m) => (
+                  <button
+                    key={m}
+                    type="button"
+                    role="tab"
+                    aria-selected={previewMode === m}
+                    onClick={() => setPreviewMode(m)}
+                    style={{
+                      padding: '5px 12px',
+                      fontSize: 12,
+                      fontWeight: 500,
+                      borderRadius: 6,
+                      border: 0,
+                      background: previewMode === m ? 'var(--ds-primary, #16a34a)' : 'transparent',
+                      color: previewMode === m ? 'var(--fg-on-brand, white)' : 'var(--fg-2)',
+                      cursor: 'pointer',
+                    }}
+                  >
+                    {m === 'word' ? 'Aperçu Word' : 'Édition'}
+                  </button>
+                ))}
+              </div>
+              <button
+                type="button"
+                onClick={() => setGeneratedCRBO(null)}
+                aria-label="Fermer"
+                style={{
+                  background: 'transparent', border: 0, padding: 6,
+                  color: 'var(--fg-3)', cursor: 'pointer',
+                  display: 'grid', placeItems: 'center', borderRadius: 8,
+                }}
+              >
+                <X size={18} />
+              </button>
+            </div>
           </header>
-          <p style={{ margin: '0 0 12px', fontSize: 13, color: 'var(--fg-3)', lineHeight: 1.5 }}>
-            Modifie le texte ci-dessous avant de sauvegarder. Format markdown :
-            les <code>**titres**</code> seront rendus en gras dans l&apos;historique.
-          </p>
-          <textarea
-            value={generatedCRBO}
-            onChange={(e) => setGeneratedCRBO(e.target.value)}
-            rows={24}
-            style={{
-              width: '100%',
-              padding: '14px 16px',
-              border: '1px solid var(--border-ds)',
-              borderRadius: 10,
-              fontSize: 14,
-              lineHeight: 1.6,
-              fontFamily: 'inherit',
-              background: 'var(--bg-surface-1)',
-              color: 'var(--fg-1)',
-              resize: 'vertical',
-              minHeight: 400,
-            }}
-          />
+          {previewMode === 'word' ? (
+            <BilanMathWordPreview
+              grille={grille}
+              draft={draft}
+              generatedCRBO={generatedCRBO}
+            />
+          ) : (
+            <>
+              <p style={{ margin: '0 0 12px', fontSize: 13, color: 'var(--fg-3)', lineHeight: 1.5 }}>
+                Modifie le texte ci-dessous avant de sauvegarder. Format markdown :
+                les <code>**titres**</code> seront rendus en gras dans l&apos;historique.
+              </p>
+              <textarea
+                value={generatedCRBO}
+                onChange={(e) => setGeneratedCRBO(e.target.value)}
+                rows={24}
+                style={{
+                  width: '100%',
+                  padding: '14px 16px',
+                  border: '1px solid var(--border-ds)',
+                  borderRadius: 10,
+                  fontSize: 14,
+                  lineHeight: 1.6,
+                  fontFamily: 'inherit',
+                  background: 'var(--bg-surface-1)',
+                  color: 'var(--fg-1)',
+                  resize: 'vertical',
+                  minHeight: 400,
+                }}
+              />
+            </>
+          )}
           <div style={{ marginTop: 14, display: 'flex', gap: 10, flexWrap: 'wrap', justifyContent: 'flex-end' }}>
             <button
               type="button"
@@ -838,7 +911,7 @@ export default function BilanMathForm({ grille }: BilanMathFormProps) {
               }}
             >
               <Download size={14} />
-              Télécharger en .txt
+              Télécharger en Word
             </button>
             <button
               type="button"
