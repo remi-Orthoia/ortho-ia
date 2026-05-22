@@ -1,5 +1,25 @@
 # CLAUDE.md - Ortho.ia
 
+## ⚠️ RÈGLE ABSOLUE — ISOLATION DES BILANS
+
+Toute modification spécifique à UN bilan (MoCA, BETL, EVALEO 6-15, B-CMado…) ne doit toucher QUE :
+
+- `components/forms/<Nom>ScoresInput.tsx` OU `components/bilans/<nom>/...` (le formulaire de saisie)
+- `lib/prompts/tests/<nom>.ts` (le module prompt spécifique)
+- `lib/bilan-registry.ts` (l'entrée dans le registry, pour métadonnées)
+
+**Ne JAMAIS modifier les fichiers partagés** pour résoudre un cas particulier d'un bilan unique :
+
+- ❌ `lib/prompts/system-base.ts` (prompt système universel — règles transverses uniquement)
+- ❌ `lib/prompts/tool-schema.ts` (contrat JSON Claude — modifs cassent tous les bilans en DB)
+- ❌ `lib/word-export.ts` (export Word générique — utiliser `wordRenderer: 'moca' | 'math'` du registry pour customiser, ou créer `lib/word/renderers/<nom>.ts`)
+- ❌ `lib/prompts/extraction.ts` (extraction PDF générique)
+- ❌ `lib/prompts/index.ts` ou `lib/types.ts` (types globaux)
+
+Si une feature *transverse* s'impose, elle doit être pilotée par un champ du registry (cf. `BilanEntry.scoreSchema`, `wordRenderer`, `generateRoute`) — jamais par un `if (testName === 'X')` au cœur d'un module partagé.
+
+L'`audit 2026-05-22` (commentaires en tête de `lib/bilan-registry.ts`) liste les 3 hot spots restants à migrer hors des modules partagés. Quand tu travailles dessus, **ouvre une migration dédiée** (1 PR, 1 hot spot), ne profite pas d'un bilan-fix pour glisser un refactor non lié.
+
 ## Projet
 SaaS B2B pour orthophonistes francophones. Génère automatiquement des Comptes Rendus de Bilan Orthophonique (CRBO) via Claude API.
 
