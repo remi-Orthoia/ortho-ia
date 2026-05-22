@@ -302,10 +302,10 @@ async function runTestCase(tc: TestCase): Promise<{ structure: CRBOStructure; ra
   }
 
   const anthropic = new Anthropic({ apiKey: process.env.ANTHROPIC_API_KEY })
-  console.log(`\n⏳ Appel Anthropic (Claude Sonnet 4.5)...`)
+  console.log(`\n⏳ Appel Anthropic (Claude Sonnet 4.6)...`)
   const t0 = Date.now()
   const message = await anthropic.messages.create({
-    model: 'claude-sonnet-4-5',
+    model: 'claude-sonnet-4-6',
     max_tokens: 8000,
     temperature: 0.3,
     system: systemPrompt,
