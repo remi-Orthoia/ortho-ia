@@ -7,6 +7,7 @@ import MatriceSection from './MatriceSection'
 import PastilleLegend from './PastilleLegend'
 import BilanMathCRBORender from './BilanMathCRBORender'
 import BilanMathWordPreview from './BilanMathWordPreview'
+import GenerationLoader from '@/components/GenerationLoader'
 import MicButton from '@/components/MicButton'
 import { useToast } from '@/components/Toast'
 import { createClient } from '@/lib/supabase'
@@ -752,66 +753,11 @@ export default function BilanMathForm({ grille }: BilanMathFormProps) {
         </div>
       </footer>
 
-      {/* Overlay streaming : affiché pendant que le CRBO se rédige en direct.
-          Le texte markdown arrive token par token, on le rend via le même
-          composant que le rendu final pour une transition fluide. */}
-      {isGeneratingCRBO && (
-        <div
-          style={{
-            position: 'fixed',
-            inset: 0,
-            background: 'rgba(15, 23, 42, 0.55)',
-            backdropFilter: 'blur(4px)',
-            zIndex: 100,
-            display: 'flex',
-            alignItems: 'center',
-            justifyContent: 'center',
-            padding: 24,
-          }}
-        >
-          <div
-            style={{
-              background: 'var(--bg-surface-1, white)',
-              borderRadius: 16,
-              padding: 24,
-              maxWidth: 760,
-              width: '100%',
-              maxHeight: '85vh',
-              overflowY: 'auto',
-              boxShadow: '0 20px 60px rgba(0,0,0,0.30)',
-            }}
-          >
-            <div style={{ display: 'flex', alignItems: 'center', gap: 10, marginBottom: 16 }}>
-              <div
-                style={{
-                  width: 36, height: 36, borderRadius: 10,
-                  background: 'linear-gradient(135deg, #22c55e 0%, #10b981 100%)',
-                  color: 'white',
-                  display: 'flex', alignItems: 'center', justifyContent: 'center',
-                  boxShadow: '0 4px 12px rgba(34,197,94,0.30)',
-                }}
-              >
-                <Loader2 size={18} className="animate-spin" />
-              </div>
-              <div>
-                <p style={{ margin: 0, fontWeight: 600, fontSize: 14, color: 'var(--fg-1)' }}>
-                  Ortho.ia rédige votre CRBO…
-                </p>
-                <p style={{ margin: 0, fontSize: 12, color: 'var(--fg-3)' }}>
-                  Le diagnostic, les axes et la conclusion s&apos;écrivent en direct.
-                </p>
-              </div>
-            </div>
-            {streamingCRBO ? (
-              <BilanMathCRBORender text={streamingCRBO} />
-            ) : (
-              <p style={{ margin: 0, fontSize: 13, color: 'var(--fg-3)', fontStyle: 'italic' }}>
-                Préparation de la réponse…
-              </p>
-            )}
-          </div>
-        </div>
-      )}
+      {/* Overlay de génération : aligne sur celui des autres bilans
+          (composant GenerationLoader partagé), plutôt qu'un rendu live du
+          texte streamé. Le streaming SSE continue côté serveur, on accumule
+          en streamingCRBO en arrière-plan ; seul l'affichage change. */}
+      <GenerationLoader visible={isGeneratingCRBO} />
 
       {/* Preview CRBO */}
       {generatedCRBO !== null && (
