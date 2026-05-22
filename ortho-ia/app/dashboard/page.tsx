@@ -367,7 +367,7 @@ export default function DashboardPage() {
       <div className="flex flex-col sm:flex-row sm:items-end sm:justify-between gap-4">
         <div>
           <h1 className="text-3xl font-bold text-gray-900 dark:text-gray-100">
-            {salutation} {userName} <span className="inline-block animate-pulse">👋</span>
+            {salutation} {userName} 👋
           </h1>
           <p className="text-gray-500 dark:text-gray-400 mt-1.5">
             {stats.total === 0
