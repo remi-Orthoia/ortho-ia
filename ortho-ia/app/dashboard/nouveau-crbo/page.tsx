@@ -52,7 +52,8 @@ import {
   Users,
   FileUp,
   Calculator,
-  ArrowUpRight
+  ArrowUpRight,
+  X
 } from 'lucide-react'
 
 interface Patient {
@@ -184,6 +185,7 @@ function NouveauCRBOContent() {
   const [patients, setPatients] = useState<Patient[]>([])
   const [selectedPatientId, setSelectedPatientId] = useState<string>('')
   const [showNewPatientForm, setShowNewPatientForm] = useState(false)
+  const [showPatientGrid, setShowPatientGrid] = useState(false)
 
   // Médecins (banque)
   const [medecins, setMedecins] = useState<Medecin[]>([])
@@ -645,6 +647,7 @@ function NouveauCRBOContent() {
   const handleSelectPatient = (patient: Patient) => {
     setSelectedPatientId(patient.id)
     setShowNewPatientForm(false)
+    setShowPatientGrid(false)
     setFormData(prev => ({
       ...prev,
       patient_prenom: patient.prenom,
@@ -1460,51 +1463,38 @@ function NouveauCRBOContent() {
             <div>
               <StepPhaseBadge step={1} />
               <h2 className="text-xl font-semibold text-gray-900">Informations patient</h2>
-              <p className="mt-1 text-sm text-gray-500">Sélectionnez un patient existant ou créez-en un nouveau</p>
+              <p className="mt-1 text-sm text-gray-500">Saisissez les informations patient, ou sélectionnez-en un dans votre carnet</p>
             </div>
 
-            {/* Patient Selector */}
-            {patients.length > 0 && (
-              <div className="bg-gray-50 rounded-lg p-4 space-y-3">
-                <div className="flex items-center gap-2 text-sm font-medium text-gray-700">
-                  <Users size={18} />
-                  Sélectionner un patient existant
+            {/* Bandeau patient sélectionné */}
+            {selectedPatientId && (
+              <div className="flex items-center justify-between gap-3 bg-green-50 border border-green-200 rounded-lg px-3 py-2">
+                <div className="flex items-center gap-2 text-sm text-green-900 min-w-0">
+                  <span aria-hidden>👤</span>
+                  <span className="truncate">
+                    Patient sélectionné : <span className="font-semibold">{(formData.patient_nom || '').toUpperCase()} {formData.patient_prenom}</span>
+                  </span>
                 </div>
-                <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-2">
-                  {patients.map(patient => (
-                    <button
-                      key={patient.id}
-                      type="button"
-                      onClick={() => handleSelectPatient(patient)}
-                      className={`text-left p-3 rounded-lg border-2 transition ${
-                        selectedPatientId === patient.id
-                          ? 'border-green-500 bg-green-50'
-                          : 'border-gray-200 bg-white hover:border-gray-300'
-                      }`}
-                    >
-                      <p className="font-medium text-gray-900 text-sm truncate">
-                        {patient.prenom} {patient.nom}
-                      </p>
-                      <p className="text-xs text-gray-500">{patient.classe || 'Classe non définie'}</p>
-                    </button>
-                  ))}
-                  <button
-                    type="button"
-                    onClick={handleNewPatient}
-                    className={`p-3 rounded-lg border-2 border-dashed transition flex flex-col items-center justify-center gap-1 ${
-                      showNewPatientForm
-                        ? 'border-green-500 bg-green-50'
-                        : 'border-gray-300 hover:border-green-500 hover:bg-green-50'
-                    }`}
-                  >
-                    <UserPlus size={20} className="text-green-600" />
-                    <span className="text-xs text-gray-600">Nouveau</span>
-                  </button>
-                </div>
+                <button
+                  type="button"
+                  onClick={() => {
+                    setSelectedPatientId('')
+                    setShowPatientGrid(false)
+                    setFormData(prev => ({
+                      ...prev,
+                      patient_prenom: '',
+                      patient_nom: '',
+                      patient_ddn: '',
+                      patient_classe: '',
+                    }))
+                  }}
+                  className="text-xs font-medium text-green-700 hover:text-green-900 underline decoration-dotted whitespace-nowrap"
+                >
+                  Changer
+                </button>
               </div>
             )}
 
-            {/* Patient Form */}
             {/* Bandeau info renouvellement sur patient existant */}
             {formData.bilan_type === 'renouvellement' && selectedPatientId && (
               <div className="bg-purple-50 dark:bg-purple-900/20 border border-purple-200 dark:border-purple-800/40 rounded-lg p-4 mb-2">
@@ -1522,35 +1512,52 @@ function NouveauCRBOContent() {
               </div>
             )}
 
+            {/* Formulaire patient — toujours visible */}
             <div className="grid sm:grid-cols-2 gap-4">
-              {!selectedPatientId && (
-                <>
-                  <div>
-                    <label className="block text-sm font-medium text-gray-700 mb-1">Prénom *</label>
-                    <input
-                      type="text"
-                      name="patient_prenom"
-                      value={formData.patient_prenom}
-                      onChange={handleChange}
-                      required
-                      className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-green-500"
-                      placeholder="Delyss"
-                    />
-                  </div>
-                  <div>
-                    <label className="block text-sm font-medium text-gray-700 mb-1">Nom *</label>
-                    <input
-                      type="text"
-                      name="patient_nom"
-                      value={formData.patient_nom}
-                      onChange={handleChange}
-                      required
-                      className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-green-500"
-                      placeholder="Martin"
-                    />
-                  </div>
-                </>
-              )}
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-1">
+                  Prénom *
+                  {formData.bilan_type === 'renouvellement' && selectedPatientId && (
+                    <span className="ml-1 text-xs text-gray-400">🔒 verrouillé</span>
+                  )}
+                </label>
+                <input
+                  type="text"
+                  name="patient_prenom"
+                  value={formData.patient_prenom}
+                  onChange={handleChange}
+                  required
+                  readOnly={formData.bilan_type === 'renouvellement' && !!selectedPatientId}
+                  className={`w-full px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-green-500 ${
+                    formData.bilan_type === 'renouvellement' && selectedPatientId
+                      ? 'bg-gray-50 dark:bg-surface-dark-muted text-gray-600 cursor-not-allowed'
+                      : ''
+                  }`}
+                  placeholder="Delyss"
+                />
+              </div>
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-1">
+                  Nom *
+                  {formData.bilan_type === 'renouvellement' && selectedPatientId && (
+                    <span className="ml-1 text-xs text-gray-400">🔒 verrouillé</span>
+                  )}
+                </label>
+                <input
+                  type="text"
+                  name="patient_nom"
+                  value={formData.patient_nom}
+                  onChange={handleChange}
+                  required
+                  readOnly={formData.bilan_type === 'renouvellement' && !!selectedPatientId}
+                  className={`w-full px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-green-500 ${
+                    formData.bilan_type === 'renouvellement' && selectedPatientId
+                      ? 'bg-gray-50 dark:bg-surface-dark-muted text-gray-600 cursor-not-allowed'
+                      : ''
+                  }`}
+                  placeholder="Martin"
+                />
+              </div>
               <div>
                 <label className="block text-sm font-medium text-gray-700 mb-1">
                   Date de naissance *
@@ -1621,6 +1628,54 @@ function NouveauCRBOContent() {
                 </select>
               </div>
             </div>
+
+            {/* Bouton toggle grille des patients existants */}
+            {patients.length > 0 && (
+              <div className="pt-2">
+                <button
+                  type="button"
+                  onClick={() => setShowPatientGrid(v => !v)}
+                  className="inline-flex items-center gap-2 px-3 py-2 text-sm font-medium text-gray-700 bg-white border border-gray-300 rounded-lg hover:bg-gray-50 hover:border-gray-400 transition"
+                >
+                  {showPatientGrid ? (
+                    <>
+                      <X size={16} />
+                      Fermer
+                    </>
+                  ) : (
+                    <>
+                      <span aria-hidden>👤</span>
+                      Sélectionner un patient existant
+                      <span className="text-xs text-gray-500">({patients.length})</span>
+                    </>
+                  )}
+                </button>
+
+                {showPatientGrid && (
+                  <div className="mt-3 bg-gray-50 rounded-lg p-4">
+                    <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-2">
+                      {patients.map(patient => (
+                        <button
+                          key={patient.id}
+                          type="button"
+                          onClick={() => handleSelectPatient(patient)}
+                          className={`text-left p-3 rounded-lg border-2 transition ${
+                            selectedPatientId === patient.id
+                              ? 'border-green-500 bg-green-50'
+                              : 'border-gray-200 bg-white hover:border-gray-300'
+                          }`}
+                        >
+                          <p className="font-medium text-gray-900 text-sm truncate">
+                            {patient.prenom} {patient.nom}
+                          </p>
+                          <p className="text-xs text-gray-500">{patient.classe || 'Classe non définie'}</p>
+                        </button>
+                      ))}
+                    </div>
+                  </div>
+                )}
+              </div>
+            )}
           </div>
         )}
 
