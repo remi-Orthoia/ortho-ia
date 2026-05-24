@@ -42,6 +42,7 @@ import { SEUILS, seuilFor, getPercentileColor, formatPercentileForDisplay } from
 import { classifyEpreuveFamily, FAMILY_LABEL, FAMILY_ORDER, type FamilyKey } from '@/lib/chart'
 import { applyVocabToObject } from '@/lib/vocab-perso'
 import { applyGlossaireToObject } from '@/lib/glossaire'
+import RenouvellementComparisonTable from '@/components/RenouvellementComparisonTable'
 
 interface CRBORow {
   id: string
@@ -526,6 +527,11 @@ export default function CRBOPreviewPage() {
   const [saveStatus, setSaveStatus] = useState<'idle' | 'saving' | 'saved' | 'error'>('idle')
   const [lastSavedAt, setLastSavedAt] = useState<number | null>(null)
   const [downloadingWord, setDownloadingWord] = useState(false)
+  // Bilan precedent — uniquement pour le tableau comparatif (renouvellement).
+  // Charge en parallele du CRBO courant au mount si bilan_precedent_id existe.
+  // Reutilise pour le download Word (eviter un 2e fetch au click).
+  const [previousStructure, setPreviousStructure] = useState<CRBOStructure | null>(null)
+  const [previousBilanDate, setPreviousBilanDate] = useState<string | null>(null)
 
   /** Modale de régénération de section. `field_path` est le chemin éditable
    *  (ex. "diagnostic", "axes_therapeutiques") ; `section_name` est la clé
@@ -571,6 +577,24 @@ export default function CRBOPreviewPage() {
         : null
       setStructure(baseStructure)
       setProfile((profileRes.data as Profile) ?? null)
+
+      // Bilan precedent (renouvellement) : on charge la structure JSON +
+      // la date pour alimenter le tableau comparatif d'evolution affiche
+      // au-dessus du bilan detaille. Best-effort : si le fetch echoue ou
+      // si le bilan precedent a ete supprime, le composant rend null
+      // (RenouvellementComparisonTable a un guard interne).
+      if (row.bilan_precedent_id) {
+        const { data: prev } = await supabase
+          .from('crbos')
+          .select('structure_json, bilan_date')
+          .eq('id', row.bilan_precedent_id)
+          .eq('user_id', user.id)
+          .maybeSingle()
+        if (prev?.structure_json) {
+          setPreviousStructure(prev.structure_json as CRBOStructure)
+          setPreviousBilanDate(prev.bilan_date as string)
+        }
+      }
 
       // Statut kanban : à l'ouverture de la preview, on passe à "a_relire"
       // si on était encore en "a_rediger" (premier passage). Sans régression
@@ -707,21 +731,9 @@ export default function CRBOPreviewPage() {
     setDownloadingWord(true)
     try {
       const { downloadCRBOWord } = await import('@/lib/word-export')
-      // Charge bilan précédent si renouvellement (pour graphique évolution)
-      let previousStructure: CRBOStructure | null = null
-      let previousBilanDate: string | undefined
-      if (crbo.bilan_precedent_id) {
-        const supabase = createClient()
-        const { data: prev } = await supabase
-          .from('crbos')
-          .select('structure_json, bilan_date')
-          .eq('id', crbo.bilan_precedent_id)
-          .maybeSingle()
-        if (prev?.structure_json) {
-          previousStructure = prev.structure_json as CRBOStructure
-          previousBilanDate = prev.bilan_date as string
-        }
-      }
+      // Bilan precedent (pour graphique evolution + tableau comparatif) :
+      // deja charge au mount dans les state previousStructure / previousBilanDate.
+      // On reutilise pour eviter un 2e fetch identique au click download.
       await downloadCRBOWord({
         formData: {
           ortho_nom: profile ? `${profile.prenom} ${profile.nom}` : '',
@@ -747,7 +759,7 @@ export default function CRBOPreviewPage() {
         },
         structure,
         previousStructure,
-        previousBilanDate,
+        previousBilanDate: previousBilanDate ?? undefined,
       })
       // Premier téléchargement Word/PDF de la session → propose le chaînage
       // d'un 2ᵉ bilan pour le même patient (cas typique : screening MoCA →
@@ -801,6 +813,11 @@ export default function CRBOPreviewPage() {
   const navSections = [
     { id: 'sec-anamnese',  label: 'Anamnèse',  icon: <BookOpen size={14} /> },
     // Section "Motif" retirée de la nav et du rendu (demande Laurie 2026-05)
+    // Tableau d'evolution : uniquement pour les renouvellements avec
+    // structure precedente chargee.
+    ...(previousStructure
+      ? [{ id: 'sec-evolution', label: '🔄 Évolution', icon: <RefreshCw size={14} /> }]
+      : []),
     ...structure.domains.map((d, i) => ({
       id: `sec-domain-${i}`,
       label: d.nom,
@@ -908,6 +925,21 @@ export default function CRBOPreviewPage() {
               (demande Laurie 2026-05). Le motif reste saisi dans le
               formulaire d'entrée et reste utile à l'IA pour l'anamnèse,
               mais n'apparaît plus en section dédiée dans le document final. */}
+
+          {/* Tableau comparatif d'evolution — visible uniquement pour les
+              bilans de renouvellement (le composant rend null s'il n'y a pas
+              de previousStructure). Reflete fidelement le bloc "Evolution
+              depuis le dernier bilan" du Word final. */}
+          {previousStructure && (
+            <div id="sec-evolution" className="scroll-mt-24">
+              <RenouvellementComparisonTable
+                currentStructure={structure}
+                previousStructure={previousStructure}
+                previousBilanDate={previousBilanDate}
+                bilanDate={crbo.bilan_date}
+              />
+            </div>
+          )}
 
           {/* Bilan par domaine */}
           {structure.domains.length > 0 && (

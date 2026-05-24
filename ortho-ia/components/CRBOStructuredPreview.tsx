@@ -5,6 +5,7 @@ import { Download, Edit, AlertTriangle, Sparkles, BookOpen, Eye, UserCheck } fro
 import type { CRBOStructure } from '@/lib/prompts'
 import { SEUILS, seuilFor, getPercentileColor, formatPercentileForDisplay } from '@/lib/word-export'
 import ReasoningClinicalDisplay from './ReasoningClinical'
+import RenouvellementComparisonTable from './RenouvellementComparisonTable'
 
 interface Props {
   structure: CRBOStructure
@@ -80,60 +81,6 @@ export default function CRBOStructuredPreview({
 }: Props) {
   const sev = structure.severite_globale
 
-  // Calcul du tableau comparatif renouvellement : index des épreuves du bilan
-  // précédent indexées par nom normalisé, puis pour chaque épreuve actuelle
-  // calcul du delta de percentile et classification (progres / stable /
-  // regression / nouvelle). Reflète la logique du Word (lib/word-export.ts).
-  const hasPrev =
-    !!previousStructure &&
-    Array.isArray(previousStructure.domains) &&
-    previousStructure.domains.length > 0
-  const comparison = (() => {
-    if (!hasPrev || !structure.domains || structure.domains.length === 0) return null
-    const prevIndex = new Map<string, { percentile: string; value: number; domain: string }>()
-    for (const d of previousStructure!.domains) {
-      for (const e of d.epreuves) {
-        prevIndex.set(e.nom.toLowerCase().trim(), {
-          percentile: e.percentile,
-          value: e.percentile_value,
-          domain: d.nom,
-        })
-      }
-    }
-    let progres = 0, stable = 0, regression = 0, nouvelles = 0
-    const progresList: string[] = []
-    const regressionList: string[] = []
-    const nouvellesList: string[] = []
-    for (const d of structure.domains) {
-      for (const e of d.epreuves) {
-        const prev = prevIndex.get(e.nom.toLowerCase().trim())
-        if (!prev) { nouvelles++; nouvellesList.push(e.nom); continue }
-        const delta = e.percentile_value - prev.value
-        if (delta >= 10) { progres++; progresList.push(e.nom) }
-        else if (delta <= -10) { regression++; regressionList.push(e.nom) }
-        else stable++
-      }
-    }
-    let badgeText: string, badgeClasses: string
-    if (progres > regression * 2 && progres >= 3) {
-      badgeText = `✓ Progression significative · ${progres} épreuve${progres > 1 ? 's' : ''} en progrès`
-      badgeClasses = 'bg-green-100 text-green-900 border-green-300'
-    } else if (regression > progres && regression >= 2) {
-      badgeText = `↓ Régression observée · ${regression} épreuve${regression > 1 ? 's' : ''} en baisse`
-      badgeClasses = 'bg-red-100 text-red-900 border-red-300'
-    } else {
-      badgeText = `≈ Profil globalement stable · ${progres} progrès · ${stable} stable · ${regression} régression`
-      badgeClasses = 'bg-gray-100 text-gray-800 border-gray-300'
-    }
-    return { prevIndex, progres, stable, regression, nouvelles, progresList, regressionList, nouvellesList, badgeText, badgeClasses }
-  })()
-
-  const formatDateFr = (iso?: string | null): string => {
-    if (!iso) return ''
-    const d = new Date(iso)
-    if (isNaN(d.getTime())) return iso
-    return d.toLocaleDateString('fr-FR')
-  }
   const sevColors: Record<string, { bg: string; text: string; ring: string }> = {
     'Léger':      { bg: 'bg-green-100 dark:bg-green-900/30',   text: 'text-green-800 dark:text-green-200',   ring: 'ring-green-300 dark:ring-green-800' },
     'Modéré':     { bg: 'bg-amber-100 dark:bg-amber-900/30',   text: 'text-amber-800 dark:text-amber-200',   ring: 'ring-amber-300 dark:ring-amber-800' },
@@ -207,99 +154,15 @@ export default function CRBOStructuredPreview({
         </p>
       </Section>
 
-      {/* Tableau comparatif renouvellement — uniquement si bilan précédent fourni.
-          Reflète fidèlement le bloc "ÉVOLUTION DEPUIS LE DERNIER BILAN" du Word. */}
-      {comparison && hasPrev && (
-        <Section title="🔄 Évolution depuis le dernier bilan" color="primary">
-          {/* Dates comparées */}
-          <p className="text-center text-xs text-gray-500 dark:text-gray-400 mb-3">
-            {previousBilanDate ? `Bilan initial du ${formatDateFr(previousBilanDate)}` : 'Bilan initial'}
-            {'  →  '}
-            {bilanDate ? `Bilan actuel du ${formatDateFr(bilanDate)}` : 'Bilan actuel'}
-          </p>
-          {/* Badge évolution globale */}
-          <div className={`text-center font-semibold text-sm px-4 py-2 rounded-lg border ${comparison.badgeClasses} mb-4`}>
-            {comparison.badgeText}
-          </div>
-          {/* Listes courtes */}
-          {comparison.progresList.length > 0 && (
-            <p className="text-sm mb-1.5">
-              <span className="font-bold text-green-700 dark:text-green-400">🌱 Domaines en progrès :</span>
-              <span className="ml-1.5 text-gray-700 dark:text-gray-300">{comparison.progresList.slice(0, 8).join(' · ')}</span>
-            </p>
-          )}
-          {comparison.regressionList.length > 0 && (
-            <p className="text-sm mb-1.5">
-              <span className="font-bold text-red-700 dark:text-red-400">⚠ Domaines en régression à surveiller :</span>
-              <span className="ml-1.5 text-gray-700 dark:text-gray-300">{comparison.regressionList.slice(0, 8).join(' · ')}</span>
-            </p>
-          )}
-          {comparison.nouvellesList.length > 0 && (
-            <p className="text-sm mb-3">
-              <span className="font-bold text-blue-700 dark:text-blue-400">✨ Épreuves ajoutées :</span>
-              <span className="ml-1.5 text-gray-700 dark:text-gray-300">{comparison.nouvellesList.slice(0, 8).join(' · ')}</span>
-            </p>
-          )}
-          {/* Tableau comparatif détaillé */}
-          <div className="overflow-x-auto mt-3 -mx-5 px-5">
-            <table className="w-full text-sm border-collapse">
-              <thead className="bg-emerald-50 dark:bg-emerald-900/20 text-xs uppercase tracking-wider">
-                <tr>
-                  <th className="text-left py-2 px-3 border border-gray-200 dark:border-surface-dark-muted">Domaine / Épreuve</th>
-                  <th className="text-center py-2 px-3 border border-gray-200 dark:border-surface-dark-muted w-28">
-                    {previousBilanDate ? formatDateFr(previousBilanDate) : 'Précédent'}
-                  </th>
-                  <th className="text-center py-2 px-3 border border-gray-200 dark:border-surface-dark-muted w-28">
-                    {bilanDate ? formatDateFr(bilanDate) : 'Actuel'}
-                  </th>
-                  <th className="text-center py-2 px-3 border border-gray-200 dark:border-surface-dark-muted w-28">Δ Évolution</th>
-                </tr>
-              </thead>
-              <tbody>
-                {structure.domains.map((d, dIdx) => (
-                  <React.Fragment key={`comp-${dIdx}`}>
-                    <tr className="bg-emerald-50/60 dark:bg-emerald-900/10">
-                      <td colSpan={4} className="font-bold text-emerald-700 dark:text-emerald-300 py-1.5 px-3 border border-gray-200 dark:border-surface-dark-muted">
-                        {d.nom}
-                      </td>
-                    </tr>
-                    {d.epreuves.map((e, eIdx) => {
-                      const prev = comparison.prevIndex.get(e.nom.toLowerCase().trim())
-                      const prevColor = prev ? getPercentileColor(prev.value) : ''
-                      const curColor = getPercentileColor(e.percentile_value)
-                      let arrow = '→', arrowLabel = 'Stable', arrowClass = 'text-gray-500'
-                      if (prev) {
-                        const delta = e.percentile_value - prev.value
-                        if (delta >= 10) { arrow = '↑'; arrowLabel = `+${Math.round(delta)}`; arrowClass = 'text-green-700 dark:text-green-400 font-bold' }
-                        else if (delta <= -10) { arrow = '↓'; arrowLabel = `${Math.round(delta)}`; arrowClass = 'text-red-700 dark:text-red-400 font-bold' }
-                        else { arrow = '→'; arrowLabel = 'Stable'; arrowClass = 'text-gray-500 dark:text-gray-400' }
-                      } else {
-                        arrow = '✦'; arrowLabel = 'Nouvelle'; arrowClass = 'text-blue-700 dark:text-blue-400 font-bold'
-                      }
-                      return (
-                        <tr key={`comp-${dIdx}-${eIdx}`} className="hover:bg-gray-50 dark:hover:bg-surface-dark-muted/30">
-                          <td className="py-1.5 pl-6 pr-3 border border-gray-200 dark:border-surface-dark-muted text-gray-900 dark:text-gray-100">
-                            {e.nom}
-                          </td>
-                          <td className="py-1.5 px-3 text-center font-mono border border-gray-200 dark:border-surface-dark-muted" style={prev ? { backgroundColor: '#' + prevColor + '60' } : undefined}>
-                            {prev ? formatPercentileForDisplay(prev.percentile, prev.value) : '—'}
-                          </td>
-                          <td className="py-1.5 px-3 text-center font-mono border border-gray-200 dark:border-surface-dark-muted" style={{ backgroundColor: '#' + curColor + '60' }}>
-                            {formatPercentileForDisplay(e.percentile, e.percentile_value)}
-                          </td>
-                          <td className={`py-1.5 px-3 text-center border border-gray-200 dark:border-surface-dark-muted ${arrowClass}`}>
-                            <span className="text-base mr-1">{arrow}</span>{arrowLabel}
-                          </td>
-                        </tr>
-                      )
-                    })}
-                  </React.Fragment>
-                ))}
-              </tbody>
-            </table>
-          </div>
-        </Section>
-      )}
+      {/* Tableau comparatif renouvellement — composant extrait, partage avec
+          la page preview/[id] et le Word. Renvoie null s'il n'y a pas de bilan
+          precedent fourni — pas besoin de guard ici. */}
+      <RenouvellementComparisonTable
+        currentStructure={structure}
+        previousStructure={previousStructure}
+        previousBilanDate={previousBilanDate}
+        bilanDate={bilanDate}
+      />
 
       {/* Bilan — un bloc par domaine */}
       {structure.domains?.length > 0 && (
