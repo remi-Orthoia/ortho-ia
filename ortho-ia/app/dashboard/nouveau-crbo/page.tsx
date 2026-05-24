@@ -87,7 +87,15 @@ const STEPS = [
 ]
 const TOTAL_STEPS = STEPS.length
 
-const DRAFT_KEY = 'ortho-ia:crbo-draft'
+// Clé localStorage scopee par user.id pour eviter qu'un brouillon ortho A
+// fuite vers ortho B sur le meme navigateur (poste partage en cabinet).
+// La clé globale legacy etait juste `ortho-ia:crbo-draft` et est purgee a
+// la 1ere connexion pour ne plus jamais polluer.
+const LEGACY_DRAFT_KEY = 'ortho-ia:crbo-draft'
+const DRAFT_KEY_PREFIX = 'ortho-ia:crbo-draft:'
+// Brouillons > 30j : on les considere abandonnes et on purge silencieusement
+// pour eviter qu'un ancien brouillon ressurgisse plusieurs mois apres.
+const DRAFT_MAX_AGE_MS = 30 * 24 * 60 * 60 * 1000
 
 /** Motifs de consultation proposés en multi-sélection à l'étape 2.
  *  Le LLM reformule la sélection en 1-2 phrases fluides via la règle
@@ -168,6 +176,19 @@ function NouveauCRBOContent() {
   // s'exécute — donne un feedback visible sur l'auto-save toutes les 15s.
   const [savingFlash, setSavingFlash] = useState(false)
   const [nowTick, setNowTick] = useState(0)
+  // Cle localStorage scopee par user.id — initialisee une fois user connu.
+  // Tant que null : persistDraft est no-op (evite d'ecrire dans une cle
+  // globale qui pourrait fuiter d'un ortho a l'autre).
+  const [draftKey, setDraftKey] = useState<string | null>(null)
+  // Un autre onglet vient de generer (DRAFT_KEY supprime via storage event)
+  // → cet onglet bascule en lecture seule : auto-save desactive + banniere
+  // d'erreur. Refs en parallele pour que persistDraft (debounce + interval)
+  // lise toujours la valeur fraiche, meme si son closure est perime.
+  const [staleTab, setStaleTab] = useState(false)
+  const staleTabRef = useRef(false)
+  // Le toast d'erreur quota n'est emis qu'une fois par session — sinon
+  // chaque tick 15s spammerait l'ortho avec le meme message.
+  const quotaErrorShownRef = useRef(false)
   const [importingAnamnese, setImportingAnamnese] = useState(false)
   const [prefillBanner, setPrefillBanner] = useState<string>('')
   // État des accordéons de familles de tests dans l'étape Résultats.
@@ -365,18 +386,45 @@ function NouveauCRBOContent() {
         }
       }
 
+      // Cle de brouillon scopee par user.id (eviter fuites entre orthos sur
+      // poste partage). Une fois posee, persistDraft peut s'executer.
+      const scopedKey = `${DRAFT_KEY_PREFIX}${user.id}`
+      setDraftKey(scopedKey)
+      // One-shot : purge la cle globale legacy (potentiellement croisee
+      // entre orthos qui ont partage ce navigateur avant le fix).
+      try { localStorage.removeItem(LEGACY_DRAFT_KEY) } catch {}
+
       // Reprendre un brouillon s'il y en a un
       // Skippé si on charge un prefill (les résultats arrivent du screenshot,
       // pas le brouillon) OU un renouvellement OU une commande vocale
       // (les données viennent de Whisper+IA, on n'écrase pas).
       const prefillIdFromUrl = searchParams.get('prefill')
       try {
-        const raw = localStorage.getItem(DRAFT_KEY)
+        const raw = localStorage.getItem(scopedKey)
         if (raw && !patientIdFromUrl && !prefillIdFromUrl && !isRenouvellement && !isVoiceCommand) {
-          const draft = JSON.parse(raw) as { step: number; formData: Partial<CRBOFormData> }
-          if (draft?.formData) {
+          const draft = JSON.parse(raw) as {
+            step: number
+            formData: Partial<CRBOFormData>
+            savedAt?: number
+          }
+          const savedAt = draft.savedAt || 0
+          const ageMs = savedAt ? Date.now() - savedAt : 0
+          if (savedAt && ageMs > DRAFT_MAX_AGE_MS) {
+            // Brouillon > 30j : purge silencieuse (abandon presume).
+            try { localStorage.removeItem(scopedKey) } catch {}
+          } else if (draft?.formData) {
             setFormData(prev => ({ ...prev, ...draft.formData }))
             setCurrentStep(draft.step || 1)
+            // Banniere visible pour que l'ortho realise que son ancien
+            // brouillon a ete restaure (sinon elle peut ecraser sans s'en
+            // rendre compte un dossier en cours).
+            if (savedAt) {
+              const d = new Date(savedAt)
+              const ageLabel = `${d.toLocaleDateString('fr-FR')} a ${d.toLocaleTimeString('fr-FR', { hour: '2-digit', minute: '2-digit' })}`
+              setPrefillBanner(`📂 Brouillon restaure (etape ${draft.step || 1}) — sauvegarde le ${ageLabel}. Verifiez puis poursuivez.`)
+            } else {
+              setPrefillBanner(`📂 Brouillon restaure a l'etape ${draft.step || 1}. Verifiez puis poursuivez.`)
+            }
           }
         }
       } catch {
@@ -479,6 +527,13 @@ function NouveauCRBOContent() {
   }, [searchParams, router])
 
   const persistDraft = () => {
+    // Pas de cle = user pas encore charge. Pas de save tant que la cle n'est
+    // pas scopee par user.id (eviter ecriture dans une cle globale qui
+    // pourrait fuiter d'un ortho a l'autre).
+    if (!draftKey) return false
+    // Onglet stale (autre onglet a deja genere ce brouillon) : on ne re-ecrit
+    // pas, sinon on ressuscite un brouillon fantome qui reapparaitra ensuite.
+    if (staleTabRef.current) return false
     try {
       const { audio_file, resultats_pdf, ...serializable } = formData
       // Ne rien sauvegarder si rien n'a été saisi (état initial vide).
@@ -503,12 +558,26 @@ function NouveauCRBOContent() {
       // sauvegarde. Sans ça, l'ortho n'a aucun feedback que sa frappe est
       // sécurisée.
       setSavingFlash(true)
-      localStorage.setItem(DRAFT_KEY, JSON.stringify({ step: currentStep, formData: serializable }))
+      // savedAt : horodatage pour la banniere de restauration + purge >30j.
+      localStorage.setItem(draftKey, JSON.stringify({
+        step: currentStep,
+        formData: serializable,
+        savedAt: Date.now(),
+      }))
       setLastSavedAt(Date.now())
       setTimeout(() => setSavingFlash(false), 500)
       return true
-    } catch {
+    } catch (e) {
       setSavingFlash(false)
+      // QuotaExceededError (localStorage plein) ou autre erreur de stockage :
+      // on previent l'ortho via toast UNE SEULE FOIS — sinon chaque tick 15s
+      // re-emettrait un toast et noierait l'ecran.
+      if (!quotaErrorShownRef.current) {
+        quotaErrorShownRef.current = true
+        try {
+          toast.error("Stockage navigateur plein — sauvegarde locale impossible. Telechargez votre Word des que possible.")
+        } catch {}
+      }
       return false
     }
   }
@@ -557,6 +626,48 @@ function NouveauCRBOContent() {
     const id = setInterval(() => setNowTick(Date.now()), 1000)
     return () => clearInterval(id)
   }, [])
+
+  // Sync staleTab state → ref pour que persistDraft (closure perime dans le
+  // setTimeout du debounce) lise toujours la valeur fraiche.
+  useEffect(() => { staleTabRef.current = staleTab }, [staleTab])
+
+  // Multi-onglets : si un autre onglet modifie ou supprime le brouillon, on
+  // le detecte via l'event 'storage' (firefox/chrome emettent l'event UNIQUEMENT
+  // sur les AUTRES onglets, jamais sur celui qui a ecrit — donc pas de boucle
+  // infinie). Deux cas :
+  //   - e.newValue === null  → un autre onglet a genere (cleanup post-INSERT)
+  //                             ou supprime manuellement → ce onglet devient stale
+  //   - e.newValue contient un draft → un autre onglet a sauvegarde, on
+  //                                     reabsorbe pour rester sync
+  useEffect(() => {
+    if (!draftKey || typeof window === 'undefined') return
+    const onStorage = (e: StorageEvent) => {
+      if (e.key !== draftKey) return
+      if (e.newValue === null) {
+        // Autre onglet a genere ou supprime → cet onglet ne doit plus rien
+        // ecrire (sinon ressuscite un brouillon fantome).
+        setStaleTab(true)
+        setError("Ce CRBO vient d'etre genere ou supprime dans un autre onglet — fermez cet onglet pour eviter d'ecraser des donnees.")
+        return
+      }
+      try {
+        const draft = JSON.parse(e.newValue) as {
+          step: number
+          formData: Partial<CRBOFormData>
+          savedAt?: number
+        }
+        if (draft?.formData) {
+          setFormData(prev => ({ ...prev, ...draft.formData }))
+          if (typeof draft.step === 'number') setCurrentStep(draft.step)
+          if (draft.savedAt) setLastSavedAt(draft.savedAt)
+        }
+      } catch {
+        // Draft corrompu venant d'un autre onglet → on ignore.
+      }
+    }
+    window.addEventListener('storage', onStorage)
+    return () => window.removeEventListener('storage', onStorage)
+  }, [draftKey])
 
   // Raccourci clavier Cmd/Ctrl + Entrée pour générer depuis l'étape 5
   useEffect(() => {
@@ -1037,7 +1148,7 @@ function NouveauCRBOContent() {
    * du profil et ne change pas d'un dossier à l'autre.
    */
   const handleResetFormForNewPatient = () => {
-    try { localStorage.removeItem(DRAFT_KEY) } catch {}
+    try { if (draftKey) localStorage.removeItem(draftKey) } catch {}
     setSelectedPatientId('')
     setSelectedMedecinId('')
     setShowNewPatientForm(false)
@@ -1142,7 +1253,7 @@ function NouveauCRBOContent() {
       }
       try {
         sessionStorage.setItem('ortho-ia:crbo-handoff', JSON.stringify(handoff))
-        localStorage.removeItem(DRAFT_KEY)
+        if (draftKey) localStorage.removeItem(draftKey)
       } catch (e) {
         // Si sessionStorage échoue (mode privé, quota dépassé, navigateur exotique),
         // on NE navigue PAS vers /resultats — sinon la page suivante ne trouve
@@ -1291,7 +1402,7 @@ function NouveauCRBOContent() {
         <div className="flex gap-4">
           <button
             onClick={() => {
-              try { localStorage.removeItem(DRAFT_KEY) } catch {}
+              try { if (draftKey) localStorage.removeItem(draftKey) } catch {}
               setShowResult(false)
               setGeneratedCRBO('')
               setGeneratedStructure(null)

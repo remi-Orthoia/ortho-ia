@@ -77,6 +77,19 @@ const STATUT_BADGE: Record<CRBOStatus, { label: string; classes: string }> = {
 
 const PAGE_SIZE = 20
 
+// Doit rester aligne avec app/dashboard/nouveau-crbo/page.tsx (meme prefixe).
+// Une cle scopee par user.id pour eviter qu'un brouillon ortho A fuite vers
+// ortho B sur le meme navigateur (poste partage en cabinet).
+const DRAFT_KEY_PREFIX = 'ortho-ia:crbo-draft:'
+const LEGACY_DRAFT_KEY = 'ortho-ia:crbo-draft'
+const DRAFT_MAX_AGE_MS = 30 * 24 * 60 * 60 * 1000
+
+interface DraftPreview {
+  step: number
+  patientName: string
+  daysAgo: number
+}
+
 export default function DashboardPage() {
   const router = useRouter()
   const toast = useToast()
@@ -93,6 +106,9 @@ export default function DashboardPage() {
   const [feedbackCrboId, setFeedbackCrboId] = useState<string | null>(null)
   const [downloadingId, setDownloadingId] = useState<string | null>(null)
   const [deletingId, setDeletingId] = useState<string | null>(null)
+  // Brouillon en cours pour l'user courant — affiche un bandeau "Reprendre"
+  // en haut du dashboard. Hydrate dans fetchData apres recup de user.id.
+  const [draftPreview, setDraftPreview] = useState<DraftPreview | null>(null)
   // Pagination client-side : 20 CRBOs par page. Au-delà, l'ortho navigue
   // avec les boutons Prev / Next. Côté serveur on charge tous les CRBOs
   // (filtrés par RLS user_id) — le volume reste petit (max quelques
@@ -116,6 +132,37 @@ export default function DashboardPage() {
     if (!user) {
       router.push('/auth/login')
       return
+    }
+
+    // Brouillon CRBO en cours pour CET ortho (cle scopee par user.id pour
+    // eviter qu'un brouillon ortho A fuite vers ortho B sur le meme
+    // navigateur). On purge aussi la cle globale legacy au passage.
+    try {
+      localStorage.removeItem(LEGACY_DRAFT_KEY)
+      const draftRaw = localStorage.getItem(`${DRAFT_KEY_PREFIX}${user.id}`)
+      if (draftRaw) {
+        const draft = JSON.parse(draftRaw) as {
+          step?: number
+          formData?: { patient_prenom?: string; patient_nom?: string }
+          savedAt?: number
+        }
+        const savedAt = draft.savedAt || 0
+        const ageMs = savedAt ? Date.now() - savedAt : 0
+        if (savedAt && ageMs > DRAFT_MAX_AGE_MS) {
+          // Brouillon abandonne > 30j : purge silencieuse, pas de banniere.
+          try { localStorage.removeItem(`${DRAFT_KEY_PREFIX}${user.id}`) } catch {}
+        } else {
+          const fd = draft.formData || {}
+          const name = [fd.patient_prenom, fd.patient_nom].filter(Boolean).join(' ').trim()
+          setDraftPreview({
+            step: draft.step || 1,
+            patientName: name || 'patient non renseigne',
+            daysAgo: savedAt ? Math.floor(ageMs / (1000 * 60 * 60 * 24)) : 0,
+          })
+        }
+      }
+    } catch {
+      // localStorage indisponible (mode prive) ou draft corrompu → on ignore.
     }
 
     // Profil ortho (pour le header Word + bandeau salutation)
@@ -383,6 +430,31 @@ export default function DashboardPage() {
           </Link>
         </div>
       </div>
+
+      {/* Bandeau "Brouillon en cours" — affiche si un draft CRBO existe en
+          localStorage pour cet ortho. Sinon l'ortho ne savait pas qu'un
+          brouillon l'attendait et risquait de redemarrer un dossier de zero. */}
+      {draftPreview && (
+        <div className="rounded-2xl border border-amber-200 dark:border-amber-800/40 bg-gradient-to-br from-amber-50 to-orange-50 dark:from-amber-900/20 dark:to-orange-900/20 p-4 flex flex-col sm:flex-row items-start sm:items-center gap-3">
+          <div className="w-10 h-10 rounded-xl bg-amber-100 dark:bg-amber-900/40 text-amber-700 dark:text-amber-300 flex items-center justify-center shrink-0 text-lg">
+            📝
+          </div>
+          <div className="flex-1 min-w-0">
+            <p className="font-semibold text-gray-900 dark:text-gray-100">
+              Brouillon en cours — {draftPreview.patientName}
+            </p>
+            <p className="text-xs text-gray-600 dark:text-gray-400 mt-0.5">
+              Etape {draftPreview.step} sur 4 · {draftPreview.daysAgo === 0 ? "aujourd'hui" : `il y a ${draftPreview.daysAgo} j`}
+            </p>
+          </div>
+          <Link
+            href="/dashboard/nouveau-crbo"
+            className="px-4 py-2 rounded-lg bg-amber-600 text-white text-sm font-semibold hover:bg-amber-700 whitespace-nowrap shadow-sm"
+          >
+            Reprendre
+          </Link>
+        </div>
+      )}
 
       {/* 4 cartes stats */}
       <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
