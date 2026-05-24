@@ -19,7 +19,15 @@
 | `bilan_references` | ❌ MANQUANTE — utilisee par `POST /api/feedbacks` (branche score≤3) | **livre dans v2 §1.2** |
 | `previous_bilans` | ❌ MANQUANTE — utilisee par `POST /api/extract-previous-bilan` | **livre dans v2 §1.3** |
 | `session_journal` | ❌ MANQUANTE — utilisee par `GET/POST/PUT /api/journal/*` (le code log « 42P01 → table manquante ») | **livre dans v2 §1.4** |
-| `patient_notes` | ❌ MANQUANTE — utilisee par `GET/POST/PUT/DELETE /api/patients/[id]/notes/*`. **Loupee par l'audit v2**, rattrapee dans la migration `20260524180000_create_patient_notes_table` | **appliquee 2026-05-24** |
+| `patient_notes` | ❌ MANQUANTE — utilisee par `GET/POST/PUT/DELETE /api/patients/[id]/notes/*`. **Loupee par l'audit v2**, rattrapee dans la migration `create_patient_notes_table` | **appliquee 2026-05-24** |
+| `user_google_tokens` | ❌ MANQUANTE — `lib/google-calendar.ts` (6 appels) + `/api/calendar/*`. Fonctionnalite Google Calendar TOTALEMENT non operationnelle. | **appliquee dans v3** |
+| `abuse_signals` + colonnes `profiles.signup_ip/signup_user_agent/signup_at` | ❌ MANQUANTES — system anti-abuse complet en off | **appliquees dans v3** |
+| Colonnes `medecins.prenom/ville/code_postal/usage_count` + index | ❌ MANQUANTES — la banque medecins fonctionne mais sans ville/CP ni tri par frequence | **appliquees dans v3** |
+| RPC `get_monthly_crbo_count` | ❌ MANQUANTE — **INCIDENT MAJEUR** : le code `/api/generate-crbo:189` appelle ce RPC pour verifier le quota free mais le code a un fallback "fail-open" qui laisse passer tous les CRBOs. Quota mensuel free plan donc inoperant depuis la mise en prod. | **appliquee dans v3** |
+| RPC `log_abuse_signal` | ❌ MANQUANTE — tous les logs d'abus (quota_reached, blocked, signup) tombaient dans le vide | **appliquee dans v3** |
+| RPC `count_recent_signups_by_ip` | ❌ MANQUANTE — rate limit 2 inscriptions / IP / 30j inoperant | **appliquee dans v3** |
+| RPC `increment_medecin_usage` | ❌ MANQUANTE — pas de tracking de la frequence d'usage des medecins prescripteurs | **appliquee dans v3** |
+| `subscriptions.crbo_limit` DEFAULT | DEFAULT etait `3` au lieu de `10` (mais aucun compte free actuel : 2 comptes pro illimites en DB) | **DEFAULT passe a 10 + backfill execute** (0 ligne modifiee, aucun free en DB) |
 | `crbos.smart_objectives`, `crbos.smart_objectives_generated_at` | ❌ MANQUANTES — ecrites par `/api/generate-smart-objectives`, lues par fiche historique. UPDATE rate silencieusement → regeneration a chaque clic (cout Claude) | **livre dans v2 §2** |
 | Index couvrants sur 4 FK | ❌ manquants (lint perfo) | **livre dans v2 §3** |
 | `search_path` sur 6 fonctions | ❌ mutable (lint secu) | **livre dans v2 §4** |
@@ -30,9 +38,34 @@
 
 ## 📦 Fichiers livres
 
-- `supabase-audit-fixes-v2.sql` — migration unique a executer dans le SQL Editor Supabase (idempotente, replay safe). Couvre §1 a §5.
-- `supabase-rls-perf-patch.sql` — patch separe pour les 25 policies RLS + consolidation referrals. A appliquer hors heure de pointe (lock bref par policy).
+- `supabase-audit-fixes-v2.sql` — migration v2 (4 tables manquantes + crbos columns + index FK + search_path + REVOKE). Appliquee.
+- `supabase-rls-perf-patch.sql` — 26 policies RLS optimisees + consolidation referrals. Appliquee.
 - `supabase-audit-fixes.sql` (v1, conservee) — **partiellement obsolete**. Ne pas reappliquer telle quelle : elle cree `drafts` (inutile) et tente d'ajouter `format_crbo`/`crbo_text` (fausses alertes).
+
+## 🔁 Rattrapage v3 (2026-05-24 soir — grep exhaustif `from('X')` + `rpc('X')`)
+
+L'audit v2 avait detecte 4 tables fantomes. Un grep exhaustif a posteriori a revele **5 manques supplementaires** correspondant a 4 fichiers de migration entiers jamais executes :
+
+| Fichier .sql racine | Objets non appliques | Statut |
+|---|---|---|
+| `supabase-patient-notes.sql` | table + 4 policies + trigger | appliquee (`create_patient_notes_table`) |
+| `supabase-google-calendar.sql` | table `user_google_tokens` + 2 policies + trigger | appliquee (v3) |
+| `supabase-anti-abuse.sql` | table `abuse_signals` + 3 cols profiles + 2 RPC | appliquee (v3) |
+| `supabase-quota-mensuel.sql` | DEFAULT crbo_limit=10 + backfill + RPC `get_monthly_crbo_count` | appliquee (v3) |
+| `supabase-medecins-fields.sql` | 4 cols medecins + index + RPC `increment_medecin_usage` | appliquee (v3) |
+
+Migrations Supabase ajoutees :
+- `20260524180000_create_patient_notes_table`
+- `20260524181000_v3_google_calendar_anti_abuse_quota_medecins`
+- `20260524181100_v3_revoke_anon_on_authenticated_only_rpcs`
+
+**Lecon transferable** : la presence d'un fichier `.sql` versionne ne prouve PAS qu'il a ete applique. Pour un audit exhaustif, il faut systematiquement croiser :
+1. Liste de toutes les tables/fonctions du code (`grep "from\\(['\"]X['\"]"` et `grep "rpc\\(['\"]X['\"]"`)
+2. Liste de toutes les tables/fonctions vraiment en DB (`pg_proc`, `to_regclass`, `pg_indexes`)
+3. Si une table/fonction n'est ni dans le code ni en DB → unused — ignorer
+4. Si dans le code mais pas en DB → **fantome bloquant**
+
+L'audit v2 visuel a loupe 5 objets ; le grep mecanique a tout rattrape.
 
 ## 🚀 Action utilisateur
 
