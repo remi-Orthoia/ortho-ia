@@ -58,6 +58,27 @@ Migrations Supabase ajoutees :
 - `20260524180000_create_patient_notes_table`
 - `20260524181000_v3_google_calendar_anti_abuse_quota_medecins`
 - `20260524181100_v3_revoke_anon_on_authenticated_only_rpcs`
+- `20260524182000_v3_handle_new_user_trigger_and_backfill`
+
+## 🩹 Rattrapage trigger `handle_new_user` (2026-05-24 soir)
+
+`supabase-auto-create-profile.sql` jamais applique : 6 comptes `auth.users`
+mais seulement 2 lignes dans `profiles` + `subscriptions`. Resultat :
+**4 beta testeuses (Lea + 3 autres) avec compte auth orphelin** —
+authentification fonctionnait mais aucun profil ni quota associes,
+l'app cassait silencieusement aux ecrans qui lisent `profiles` ou
+`subscriptions`.
+
+Applique en migration `v3_handle_new_user_trigger_and_backfill` :
+- Fonction `public.handle_new_user()` (SECURITY DEFINER, search_path
+  fige public/pg_temp, crbo_limit aligne v3 = 10)
+- Trigger `on_auth_user_created` AFTER INSERT ON auth.users
+- Backfill : 4 profiles + 4 subscriptions crees pour les orphelins +
+  referral_code genere pour chacun
+
+Statut Lea (verifie post-backfill) : profile present (referral_code
+`LEA.4099`), subscription `free` avec crbo_limit=10 actif. prenom/nom
+vides — a completer via /profil quand elle se reconnecte.
 
 **Lecon transferable** : la presence d'un fichier `.sql` versionne ne prouve PAS qu'il a ete applique. Pour un audit exhaustif, il faut systematiquement croiser :
 1. Liste de toutes les tables/fonctions du code (`grep "from\\(['\"]X['\"]"` et `grep "rpc\\(['\"]X['\"]"`)
