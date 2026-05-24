@@ -19,6 +19,7 @@
 | `bilan_references` | ❌ MANQUANTE — utilisee par `POST /api/feedbacks` (branche score≤3) | **livre dans v2 §1.2** |
 | `previous_bilans` | ❌ MANQUANTE — utilisee par `POST /api/extract-previous-bilan` | **livre dans v2 §1.3** |
 | `session_journal` | ❌ MANQUANTE — utilisee par `GET/POST/PUT /api/journal/*` (le code log « 42P01 → table manquante ») | **livre dans v2 §1.4** |
+| `patient_notes` | ❌ MANQUANTE — utilisee par `GET/POST/PUT/DELETE /api/patients/[id]/notes/*`. **Loupee par l'audit v2**, rattrapee dans la migration `20260524180000_create_patient_notes_table` | **appliquee 2026-05-24** |
 | `crbos.smart_objectives`, `crbos.smart_objectives_generated_at` | ❌ MANQUANTES — ecrites par `/api/generate-smart-objectives`, lues par fiche historique. UPDATE rate silencieusement → regeneration a chaque clic (cout Claude) | **livre dans v2 §2** |
 | Index couvrants sur 4 FK | ❌ manquants (lint perfo) | **livre dans v2 §3** |
 | `search_path` sur 6 fonctions | ❌ mutable (lint secu) | **livre dans v2 §4** |
