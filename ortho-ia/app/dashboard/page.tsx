@@ -3,7 +3,6 @@
 import { useState, useEffect } from 'react'
 import DashboardSkeleton from '@/components/skeletons/DashboardSkeleton'
 import OnboardingTour from '@/components/OnboardingTour'
-import DailyTip from '@/components/DailyTip'
 import MilestoneCelebration from '@/components/MilestoneCelebration'
 import CalendarWidget from '@/components/CalendarWidget'
 import VoiceCommandButton from '@/components/VoiceCommandButton'
@@ -401,7 +400,6 @@ export default function DashboardPage() {
       <OnboardingTour />
       <MilestoneCelebration crboCount={stats.total} />
       <FeedbackBanner crboId={feedbackCrboId} />
-      {stats.total > 0 && <DailyTip crboCount={stats.total} />}
 
       <CalendarWidget />
 
