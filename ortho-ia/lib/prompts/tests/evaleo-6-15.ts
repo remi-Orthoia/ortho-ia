@@ -279,6 +279,77 @@ l'épreuve **Empan visuo-attentionnel** notée en **millisecondes**.
 
 ---
 
+#### 🆕 FORMAT DE RÉDACTION EVALEO (style Anne Frouard, prose continue)
+
+**SURCHARGE le format global du wizard** (système prompt principal). Quand EVALEO 6-15 est sélectionné, le rendu attendu est calqué sur le format Anne Frouard observé dans les exemples joints au module \`evaleo-method.ts\` (2 PDF + 4 Word de référence). Ce format diffère du format COMPLET générique sur 4 points concrets — applique les règles EVALEO ci-dessous **en priorité** sur les règles globales.
+
+**1. Commentaires de domaine (\`domain_commentaires\` / commentaire dans \`domains[].commentaire\`)**
+
+❌ NE PAS écrire en bullets condensés ("• **Lecture de mots :** [observation 1 ligne]").
+✅ Écrire en **prose continue**, 1 paragraphe par domaine, 4-8 lignes par paragraphe.
+
+Modèle attendu pour un domaine (ex. Lecture identification) :
+> "X obtient un score de [X] mots lus en 2 minutes, ce qui la situe en classe [Y].
+> La lecture de mots montre un effet de fréquence [marqué/léger/absent], traduisant
+> [un lexique orthographique encore en construction / un déficit de la voie d'adressage].
+> L'effet de longueur sur le temps [marqué/léger/absent] signale [voie d'assemblage
+> encore coûteuse / voie d'adressage automatisée]. La lecture de pseudomots est
+> [préservée/déficitaire], indiquant [voie d'assemblage fonctionnelle/atteinte].
+> Au total, le profil de lecture est compatible avec une dyslexie [phonologique /
+> de surface / mixte], confirmée par les croisements [épreuves convergentes]."
+
+Pas de bullets dans le commentaire de domaine. Pas de label en gras du nom de l'épreuve en début de ligne. Pas de phrase d'1 ligne. Prose dense et factuelle.
+
+**2. Diagnostic (\`diagnostic\`)**
+
+❌ NE PAS structurer en "phrase formelle + phrase synthèse points d'appui / axes de fragilité" comme le format COMPLET générique le demande.
+✅ Structurer en **bloc continu unique** suivant exactement le canevas Anne Frouard imposé par le décret 2002-721 (déjà détaillé dans \`evaleo-method.ts\` section 6, à appliquer verbatim sur la formule juridique d'ouverture).
+
+Structure obligatoire (un seul bloc, pas de sous-titres internes) :
+
+1. **Bloc d'ouverture juridique** (3-5 lignes, format imposé) :
+   > "Conformément au décret n°2002-721 du JO du 4 mai 2002 [et de la loi du 26 janvier 2016] rendant le diagnostic orthophonique obligatoire et en référence aux classifications internationales en cours (DSM-5 / CIM-10), le bilan orthophonique réalisé ce jour met en évidence un trouble spécifique du langage [écrit / oral / écrit et oral] objectivé par un retentissement notable sur les apprentissages et par l'obtention de résultats affaiblis lors de la passation d'épreuves standardisées."
+
+2. **Énumération des troubles identifiés** en bullets **non numérotés** (style "+" ou "•" Anne Frouard) :
+   > "Ce trouble spécifique du langage [écrit/oral] se caractérise par :
+   >   + Une dyslexie [phonologique / de surface / mixte] : [description factuelle 1-2 lignes]
+   >   + Une dysorthographie [phonologique / lexicale / mixte / linguistique grammaticale] : [description]
+   >   + [Optionnel] Une dysgraphie : [description]"
+
+3. **Clause causale** en bullets non numérotés :
+   > "Ce trouble s'explique par :
+   >   + Un trouble phonologique : [détail]
+   >   + Un trouble visuo-attentionnel : [détail]
+   >   + Un trouble mnésique : [détail]"
+
+4. **Clause négative obligatoire** (si compréhension orale préservée) :
+   > "[Prénom] ne présente pas de trouble de compréhension orale donc selon les Recommandations de Bonne Pratique en langage écrit (CFO, 2022), il s'agit d'un trouble spécifique du langage écrit sans trouble de compréhension orale appelé communément une dyslexie/dysorthographie, que nous qualifions de [légère / moyenne / sévère]."
+
+5. **Si \`difficultes_identifiees\` est rempli en sortie JSON** : retourner \`""\` pour cette clé (la synthèse points d'appui / axes de fragilité du format COMPLET global n'a PAS sa place dans le diagnostic EVALEO). Le diagnostic EVALEO se suffit à lui-même.
+
+**3. Recommandations / Projet thérapeutique (\`recommandations\` et \`axes_therapeutiques\`)**
+
+❌ NE PAS retourner \`recommandations=""\` comme le format COMPLET global le demande (suppression de la section "Projet thérapeutique").
+✅ Remplir \`recommandations\` avec un **projet thérapeutique en prose courte** suivi d'**axes en bullets non numérotés** (pas \`1. 2. 3.\`).
+
+Structure attendue :
+
+> "Il semble important de mettre en place une prise en charge orthophonique afin de [objectif court]. Un Plan d'Accompagnement Personnalisé (PAP) est également indiqué pour permettre à [prénom] de suivre sa scolarité dans des conditions adaptées au trouble identifié.
+>
+> Axes thérapeutiques proposés :
+>   • Renforcement de la conscience phonologique et des correspondances graphème-phonème
+>   • Enrichissement du stock lexical orthographique (voie d'adressage)
+>   • Travail des stratégies de compensation
+>   • [autres axes selon profil]
+>
+> Une séance individuelle hebdomadaire de 30 AMO [12,1 / 10,1 / 5 selon profil] est proposée pour une durée de 24 à 36 mois, à réévaluer."
+
+**4. PAP / Aménagements scolaires (\`pap_suggestions\`)**
+
+✅ Remplir \`pap_suggestions\` normalement (la liste sera rendue dans la section "Aménagements scolaires" du Word). MAIS dans la prose des \`recommandations\` ci-dessus, mentionner que le PAP est indiqué **dans le même paragraphe que le projet thérapeutique** (style Anne Frouard : pas de section séparée mentale, l'ortho voit ça comme un tout).
+
+---
+
 #### 🆕 MODE RENOUVELLEMENT EVALEO (form ortho.ia)
 
 Quand le bloc \`=== COMPARAISON BILAN PRECEDENT (mode renouvellement) ===\` est présent dans les résultats transmis, tu DOIS activer un traitement spécifique renouvellement. C'est un signal explicite envoyé par le form (différent du \`bilan_type='renouvellement'\` global du wizard, qui peut être mis sans données comparatives).
