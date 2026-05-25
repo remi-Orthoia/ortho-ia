@@ -292,6 +292,57 @@ bornes ci-dessus.
 ⚠️ NE PAS utiliser la grille Exalang (Excellent / Moyenne haute / Difficulte
 severe...) — c'est une autre batterie. EVALEO impose ses 7 classes officielles.
 
+⚠️ **EPREUVES MULTI-SOUS-SCORES — REGLE OFFICIELLE EVALEO**
+
+Beaucoup d'epreuves EVALEO ont **plusieurs lignes de score** dans le tableau de
+cotation, chacune avec sa propre cellule de classe (X dans une des colonnes
+1-7). Le form ortho.ia n'a QU'UN seul champ \`percentile\` par epreuve. La
+regle officielle (Livret de cotation p. 5 + bilans exemples ortho-edition) est :
+
+**Les cellules en GRAS du cahier de cotation = scores principaux. Les autres
+lignes (non grasses) = sous-scores complementaires.** Pour pre-remplir le
+\`percentile\`, prendre la classe du **score principal**. Si plusieurs lignes
+en gras → prendre la **PIRE classe des scores principaux** (la plus basse, la
+plus diagnostique).
+
+Tableau des scores principaux (cellules en gras dans le cahier officiel) :
+
+| Epreuve (key) | Score(s) principal(aux) — extraire la classe d'ici |
+|---|---|
+| \`lecture_mots\` | Score total /44, Temps total |
+| \`lecture_pseudomots\` | Score /22, Temps |
+| \`evalouette\`, \`mouette_test\`, \`pingouin_retest\` | Score mots correctement lus (efficience, NMCL) |
+| \`eval2m\` | Score d'efficience |
+| \`comp_ecrite_phrases\`, \`comp_ecrite_paragraphe\`, \`comp_ecrite_texte\`, \`comp_ecrite_orale_mots\` | Score total (+ Temps si present) |
+| \`dictee_pseudomots\` | Score pseudomots corrects |
+| \`dictee_mots\` | Score mots corrects |
+| \`dictee_phrases\` | Score mots corrects (avant relecture), Temps |
+| \`decision_ortho\` | Score corrects |
+| \`recit_ecrit_images\` | Nb mots, Total macrostructure, Total Microstructure elements adaptes, Taux erreurs en orthographe |
+| \`stroop\` | **Temps 3 et Temps 4 UNIQUEMENT** (Scores 1-4 et Temps 1-2 = sous-scores de baseline) |
+| \`empan_visuo_attentionnel\` | Empan VA moyen, Total Report Chiffres |
+| \`rep_chiffres_endroit_envers\` | **Empan endroit, Empan envers** (Score endroit/envers = sous-scores) |
+| \`rep_logatomes\` | Total logatomes CV+CCV, Total syllabes CV+CCV |
+| \`rappel_item\` | Score |
+| \`rappel_seriel\` | Score item Rappel seriel |
+| \`rep_phrases_complexes\` | **Score phrases Morphosyntaxe (MS correctes), Empan nombre de mots** (Mots en erreur MS = sous-score) |
+| \`metaphonologie\` | Score total metaphonologie, Temps total |
+| \`denom_lex_phono\` | Total Lexique, Total temps, Gain Lexique, Total Phonologie |
+| \`denom_rapide_couleurs\`, \`denom_rapide_chiffres\` | Score Denomination, Temps |
+| \`creation_neologismes\` | Score, Temps |
+| Toutes les autres epreuves a score unique (\`prog_orale_phrases\`, \`comp_orale_phrases\`, \`rep_pseudomots\`, \`designation_images\`, \`discrim_phono\`, etc.) | Le score unique |
+
+**Exemples** :
+- \`stroop\` : si le PDF montre Temps 3 en classe 3 et Temps 4 en classe 5 →
+  \`percentile = 'classe_3'\` (la pire des 2 cellules en gras).
+- \`rep_phrases_complexes\` : Score MS en classe 2 + Empan mots en classe 7 →
+  \`percentile = 'classe_2'\`.
+- \`rep_chiffres_endroit_envers\` : Empan endroit classe 1 + Empan envers
+  classe 1 → \`percentile = 'classe_1'\`.
+
+NE JAMAIS faire de moyenne arithmetique des classes. NE JAMAIS prendre la classe
+d'un sous-score quand un score principal est disponible.
+
 Si la classe n'est pas claire dans le PDF → ''.
 
 **score_brut** : tel qu'affiche, format libre. Ex. "23/30", "78%", "12.5".

@@ -1,6 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server'
 import Anthropic from '@anthropic-ai/sdk'
-import mammoth from 'mammoth'
 import {
   EVALEO_EXTRACT_PROMPT,
   EVALEO_EXTRACT_TOOL,
@@ -14,41 +13,34 @@ import { handleAnthropicError } from '@/lib/anthropic-error'
 /**
  * POST /api/extract-evaleo-pdf
  *
- * Recoit un PDF, une image ou un document Word (.docx) et retourne un objet
- * `EvaleoExtracted` typage strict, pret a pre-remplir le state du form
- * components/forms/Evaleo615ScoresInput.tsx.
+ * Recoit un PDF et retourne un objet `EvaleoExtracted` typage strict, pret a
+ * pre-remplir le state du form components/forms/Evaleo615ScoresInput.tsx.
  *
- * Sources acceptees :
- *  - PDF : rapport de cotation HappyNeuron, scan du cahier rempli → Claude
- *    Vision document.
- *  - Image (PNG/JPEG/WebP) : photo du cahier → Claude Vision image.
- *  - DOCX : bilan deja redige en Word → mammoth extrait le texte brut, Claude
- *    le structure (memes prompt + tool — pas de bloc vision).
+ * **EVALEO PDF UNIQUEMENT** : la cotation EVALEO encode les classes (1 a 7)
+ * dans des tableaux ou la cellule de la classe atteinte est marquee X.
+ * L'extraction texte d'un .docx (via mammoth) ou d'une image (via Vision)
+ * fait perdre la position en colonne du X et conduit a des erreurs de
+ * cotation sur des epreuves multi-sous-scores (Evalouette, Mouette, Stroop,
+ * Lecture de pseudomots). Seule la lecture PDF par Claude Vision document
+ * preserve la grille tabulaire. Si l'ortho dispose d'un .docx, elle doit le
+ * convertir en PDF avant import.
  *
  * Body : FormData multipart avec champ `file` (max 10 Mo).
  *
  * Respecte la regle d'isolation CLAUDE.md : cette route est specifique a
- * EVALEO, n'est pas appelee par d'autres bilans. Elle reutilise les
- * utilitaires generiques (withRetry, handleAnthropicError, logger, mammoth)
- * mais ne les modifie pas.
+ * EVALEO, n'est pas appelee par d'autres bilans.
  */
 
 export const maxDuration = 90
 
 const MAX_BYTES = 10 * 1024 * 1024 // 10 Mo
 const PER_FILE_TIMEOUT_MS = 60_000
-const DOCX_TRUNCATE = 80_000 // ~80k chars, large marge sur la limite tokens
 
-const SUPPORTED_DOCX_MIMES = [
-  'application/vnd.openxmlformats-officedocument.wordprocessingml.document',
-  'application/msword', // .doc legacy — on tente quand meme mammoth, sinon erreur
-]
-
-function detectKind(file: File): 'pdf' | 'image' | 'docx' | 'unknown' {
+function detectKind(file: File): 'pdf' | 'docx' | 'image' | 'unknown' {
   const m = file.type || ''
   const n = file.name || ''
   if (m.includes('pdf') || /\.pdf$/i.test(n)) return 'pdf'
-  if (SUPPORTED_DOCX_MIMES.includes(m) || /\.docx?$/i.test(n)) return 'docx'
+  if (/\.docx?$/i.test(n) || m.includes('officedocument') || m === 'application/msword') return 'docx'
   if (m.includes('image')) return 'image'
   return 'unknown'
 }
@@ -78,88 +70,37 @@ export async function POST(request: NextRequest) {
       return NextResponse.json({ error: `Fichier trop volumineux (max ${MAX_BYTES / 1024 / 1024} Mo).` }, { status: 400 })
     }
     const kind = detectKind(file)
-    if (kind === 'unknown') {
+    if (kind === 'docx' || kind === 'image') {
       return NextResponse.json(
-        { error: 'Type de fichier non supporte. Acceptes : PDF, image (PNG/JPEG/WebP), Word (.docx).' },
+        {
+          error:
+            "EVALEO 6-15 n'accepte que le PDF a l'import : les tableaux Word ou les images ne permettent pas de detecter de facon fiable la position des marques de classe (X dans les colonnes 1 a 7). Convertissez votre document en PDF avant import (Word > Fichier > Exporter > PDF).",
+        },
+        { status: 400 },
+      )
+    }
+    if (kind !== 'pdf') {
+      return NextResponse.json(
+        { error: 'Type de fichier non supporte. Seul le PDF est accepte pour EVALEO 6-15.' },
         { status: 400 },
       )
     }
 
     const anthropic = new Anthropic({ apiKey: process.env.ANTHROPIC_API_KEY })
 
-    // Construit le bloc de contenu adapte au format.
-    // PDF/image -> bloc vision base64 ; DOCX -> mammoth -> texte injecte dans le prompt.
-    let content: Anthropic.MessageParam['content']
-
-    if (kind === 'pdf') {
-      const bytes = await file.arrayBuffer()
-      const base64 = Buffer.from(bytes).toString('base64')
-      content = [
-        {
-          type: 'document',
-          source: { type: 'base64', media_type: 'application/pdf', data: base64 },
-        },
-        {
-          type: 'text',
-          text: EVALEO_EXTRACT_PROMPT,
-          cache_control: { type: 'ephemeral' as const },
-        },
-      ]
-    } else if (kind === 'image') {
-      const bytes = await file.arrayBuffer()
-      const base64 = Buffer.from(bytes).toString('base64')
-      let imageMediaType: 'image/png' | 'image/jpeg' | 'image/gif' | 'image/webp' = 'image/png'
-      if (file.type.includes('jpeg') || file.type.includes('jpg')) imageMediaType = 'image/jpeg'
-      else if (file.type.includes('gif')) imageMediaType = 'image/gif'
-      else if (file.type.includes('webp')) imageMediaType = 'image/webp'
-      content = [
-        {
-          type: 'image',
-          source: { type: 'base64', media_type: imageMediaType, data: base64 },
-        },
-        {
-          type: 'text',
-          text: EVALEO_EXTRACT_PROMPT,
-          cache_control: { type: 'ephemeral' as const },
-        },
-      ]
-    } else {
-      // DOCX : mammoth -> texte brut -> bloc texte uniquement.
-      const buffer = Buffer.from(await file.arrayBuffer())
-      let text = ''
-      try {
-        const result = await mammoth.extractRawText({ buffer })
-        text = (result?.value || '').trim()
-      } catch (e: any) {
-        logger.error('extract-evaleo-pdf-mammoth', e)
-        return NextResponse.json(
-          { error: "Le document Word n'a pas pu etre lu. Reessayez avec un PDF." },
-          { status: 422 },
-        )
-      }
-      if (!text || text.length < 30) {
-        return NextResponse.json(
-          { error: 'Le document Word est vide ou illisible.' },
-          { status: 422 },
-        )
-      }
-      if (text.length > DOCX_TRUNCATE) {
-        logger.warn(
-          'extract-evaleo-pdf-docx-truncate',
-          `DOCX tronque : ${text.length} -> ${DOCX_TRUNCATE} caracteres`,
-        )
-      }
-      const truncated = text.length > DOCX_TRUNCATE
-        ? text.slice(0, DOCX_TRUNCATE) + '\n\n[... document tronque ...]'
-        : text
-      content = [
-        {
-          type: 'text',
-          text: `${EVALEO_EXTRACT_PROMPT}\n\n## DOCUMENT WORD A ANALYSER (texte extrait via mammoth)\n\n${truncated}`,
-          cache_control: { type: 'ephemeral' as const },
-        },
-      ]
-    }
+    const bytes = await file.arrayBuffer()
+    const base64 = Buffer.from(bytes).toString('base64')
+    const content: Anthropic.MessageParam['content'] = [
+      {
+        type: 'document',
+        source: { type: 'base64', media_type: 'application/pdf', data: base64 },
+      },
+      {
+        type: 'text',
+        text: EVALEO_EXTRACT_PROMPT,
+        cache_control: { type: 'ephemeral' as const },
+      },
+    ]
 
     const abortController = new AbortController()
     const timeoutId = setTimeout(() => abortController.abort(), PER_FILE_TIMEOUT_MS)

@@ -972,7 +972,12 @@ export default function Evaleo615ScoresInput({
         </div>
       </div>
 
-      {/* L3 : import PDF / Word / image EVALEO (rapport HappyNeuron, scan cahier, bilan deja redige) */}
+      {/* L3 : import PDF EVALEO uniquement (rapport HappyNeuron ou scan du cahier).
+          Le .docx et l'image sont volontairement exclus : la position des X de
+          classe dans les tableaux EVALEO est perdue lors de l'extraction texte
+          (mammoth) ou de la Vision image, ce qui fausse la cotation des
+          epreuves multi-sous-scores (Evalouette, Mouette, Stroop, Lecture de
+          pseudomots). Seul le PDF preserve la grille tabulaire. */}
       <div className="rounded-lg border border-sky-200 bg-sky-50/60 p-3">
         <div className="flex items-start justify-between gap-3 flex-wrap">
           <div className="flex items-start gap-2 min-w-0">
@@ -980,10 +985,11 @@ export default function Evaleo615ScoresInput({
             <div className="text-sm min-w-0">
               <p className="font-semibold text-sky-900">Importer un document EVALEO (optionnel)</p>
               <p className="text-sky-800 text-xs mt-0.5 leading-relaxed">
-                Acceptes : <strong>PDF</strong> (rapport de cotation HappyNeuron, scan du cahier de passation rempli),
-                <strong> Word .docx</strong> (bilan deja redige), <strong>image PNG/JPEG/WebP</strong>
-                (photo du cahier). Claude lit le document et pre-remplit niveau, anamnese et scores. Vous pouvez
-                ensuite corriger librement. Max 10 Mo.
+                Format accepte : <strong>PDF uniquement</strong> (rapport de cotation HappyNeuron, scan
+                du cahier de passation rempli, ou bilan deja redige exporte en PDF). Si vous avez un
+                Word, exportez-le en PDF avant import (Fichier &gt; Exporter &gt; PDF). Claude lit le
+                document et pre-remplit niveau, anamnese et scores. Vous pouvez ensuite corriger
+                librement. Max 10 Mo.
               </p>
             </div>
           </div>
@@ -991,7 +997,7 @@ export default function Evaleo615ScoresInput({
             <input
               ref={fileInputRef}
               type="file"
-              accept=".pdf,.docx,.doc,application/vnd.openxmlformats-officedocument.wordprocessingml.document,application/msword,image/png,image/jpeg,image/webp"
+              accept=".pdf,application/pdf"
               onChange={(e) => {
                 const f = e.target.files?.[0]
                 if (f) handleImportFile(f)

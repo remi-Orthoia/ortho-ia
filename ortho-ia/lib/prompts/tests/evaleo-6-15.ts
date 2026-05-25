@@ -224,6 +224,88 @@ Exalang) — EVALEO n'utilise pas cette notation.
 (<Libelle>) - P_-P_" arrive deja dans le bloc resultats. Recopie-la dans
 \`interpretation\` au format "Classe X - <Libelle>".
 
+#### 🔒 SCORE PRINCIPAL PAR EPREUVE — REGLE OFFICIELLE EVALEO (multi-sous-scores)
+
+**Source officielle** : Livret de cotation EVALEO 6-15 p. 5 — "Pastille indiquant
+la classe d'etalonnage **du score total**" — confirme par les 2 bilans exemples
+ortho-edition (Mila 5e, Enora 5e) ou les **cellules en gras** des tableaux de
+cotation designent les scores principaux et les cellules non grasses sont des
+sous-scores d'analyse complementaire.
+
+**Consequence pour ortho.ia** : pour CHAQUE epreuve EVALEO, le champ
+\`interpretation\` du JSON CRBO doit refleter la classe du **score principal**
+(ou la pire classe des scores principaux quand il y en a plusieurs en gras).
+Les sous-scores sont decrits dans le \`commentaire\` mais ne supplantent JAMAIS
+le score principal pour la classe officielle de l'epreuve.
+
+**Convention de fusion multi-principal** : si une epreuve a plusieurs scores
+principaux (cellules en gras), reporter dans \`interpretation\` la classe
+**la plus basse** (= la plus diagnostique, convention conservative cohérente
+avec le canevas Anne Frouard / Justine Peyre). Les scores principaux en
+meilleure classe sont mentionnes dans le commentaire pour souligner la
+dissociation eventuelle.
+
+**Tableau des scores principaux par epreuve** (verifie sur les 2 bilans
+exemples ortho-edition) :
+
+| Epreuve | Score(s) principal(aux) en gras dans le cahier officiel |
+|---|---|
+| Lecture de mots | Score total /44, Temps total |
+| Lecture de pseudomots | Score /22, Temps |
+| Evalouette / La Mouette / Le Pingouin | Score mots correctement lus (efficience, NMCL) — uniquement |
+| EVAL2M | Score d'efficience |
+| Comprehension ecrite de mots / phrases / paragraphe / texte | Score total (+ Temps si present) |
+| Dictee de pseudomots | Score pseudomots corrects |
+| Dictee de mots | Score mots corrects |
+| Dictee de phrases | Score mots corrects (avant relecture), Temps |
+| Decision orthographique | Score corrects |
+| Recit ecrit | Nb mots, Total macrostructure, Total Microstructure elements adaptes, Taux erreurs en orthographe (4 axes co-principaux) |
+| **Effet Stroop** | **Temps 3, Temps 4 UNIQUEMENT** (les 4 Scores et Temps 1, Temps 2 sont des sous-scores de baseline) — ce sont les conditions d'interference pure et de flexibilite cognitive qui mesurent l'inhibition |
+| Empan visuo-attentionnel | Empan VA moyen, Total Report Chiffres |
+| **Repetition de chiffres endroit/envers** | **Empan endroit, Empan envers** (les 2 directions sont equivalentes en clinique) — Score endroit et Score envers sont des sous-scores |
+| Repetition de logatomes | Total logatomes CV+CCV, Total syllabes CV+CCV |
+| Rappel - Item | Score /10 |
+| Rappel - seriel | Score item Rappel seriel |
+| **Repetition de phrases complexes** | **Score phrases Morphosyntaxe (MS correctes /15 ou /16), Empan nombre de mots** — "Mots en erreur MS" est un sous-score (non en gras) |
+| Metaphonologie | Score total metaphonologie, Temps total |
+| Denomination Lexique - phonologie | Total Lexique, Total temps, Gain Lexique, Total Phonologie |
+| Denomination rapide couleurs/chiffres | Score Denomination, Temps |
+| Creation de neologismes | Score, Temps |
+| Programmation orale de phrases | Score (unique) |
+| Comprehension orale de phrases | Score (unique) |
+| Repetition de pseudomots | Score (unique) |
+| Designation d'images | Score (unique) |
+| Discrimination phonologique | Score (unique) |
+
+**Exemples concrets de fusion (cas Matuanui CE2)** :
+
+- *Effet Stroop* : Temps 3 = classe 3, Temps 4 = classe 5. Scores et Temps 1/2
+  sont des sous-scores. → \`interpretation\` = **"Classe 3 - Norme"** (pire des
+  2 temps principaux). Commentaire mentionne que Temps 4 est en classe 5 et
+  que les baselines (Temps 1, Temps 2, Scores) sont bien preservees.
+
+- *Repetition de phrases complexes* : Score MS = classe 2 (12/15), Empan mots =
+  classe 7 (13 mots). → \`interpretation\` = **"Classe 2 - Fragilite"** (pire
+  des 2 principaux). Commentaire mentionne la dissociation : empan tres
+  superieur (capacite de stockage preservee) versus traitement morphosyntaxique
+  fragile (objet du test).
+
+- *Repetition de chiffres endroit/envers* : Empan endroit = classe 1, Empan
+  envers = classe 1. → \`interpretation\` = **"Classe 1 - Pathologique"**.
+  Score endroit/envers sont des sous-scores et meublent le commentaire.
+
+**Anti-patterns a proscrire** :
+- ❌ Reporter la classe d'un sous-score (Temps quand le Score est principal,
+  Mots en erreur quand MS correctes est principal, etc.) dans \`interpretation\`.
+- ❌ Faire une moyenne arithmetique des classes des sous-scores. Une moyenne
+  de classe 1 + classe 7 ne fait PAS classe 4.
+- ❌ Estimer la classe par "feeling" a partir du score brut sans s'appuyer sur
+  la cellule de classe deja cotee dans la grille du cahier de passation.
+
+⚠️ Pour les epreuves multi-principal, si la dissociation est forte entre les
+scores principaux (ex. cl 7 vs cl 2 dans Repetition phrases complexes), c'est
+un signal clinique majeur — le commentaire DOIT le signaler explicitement.
+
 #### SCORING (general)
 
 - Resultats en **classes EVALEO** (1 a 7) OU **notes standardisees** selon les epreuves.
