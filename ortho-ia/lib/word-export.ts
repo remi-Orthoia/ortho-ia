@@ -808,7 +808,17 @@ export async function generateCRBOWord(payload: WordExportPayload): Promise<Blob
   // MoCA : pas de légende colorée. Le tableau MoCA est dépouillé (Épreuve /
   // Score / Commentaire), aucune zone d'interprétation type Excellent /
   // Fragilité / Difficulté — incohérent pour un screening cognitif /30.
+  // EVALEO 6-15 (legendType='evaleo' dans le registry) : grille officielle
+  // 7 classes Launay et al. 2018 + textes intro + resume.
   // Autres tests : 6 zones percentiles (SEUILS, refonte 2026-05-ter).
+  const legendType: 'standard' | 'evaleo' = (() => {
+    for (const t of _testListForOrder) {
+      const lt = BILAN_REGISTRY[t]?.legendType
+      if (lt === 'evaleo') return 'evaleo'
+    }
+    return 'standard'
+  })()
+
   if (isMocaOnly) {
     children.push(
       new Paragraph({
@@ -817,6 +827,116 @@ export async function generateCRBOWord(payload: WordExportPayload): Promise<Blob
           size: 18, font: FONT, italics: true, color: '666666',
         })],
         spacing: { before: 200, after: 200 },
+      }),
+    )
+  } else if (legendType === 'evaleo') {
+    // ===== Legende EVALEO 6-15 — grille officielle 7 classes =====
+    // Source : grille de cotation officielle (image livret de cotation 2018).
+    // Reproduit fidelement : 7 colonnes (rouge/orange/3 verts/2 bleus) +
+    // ligne classes (1-7) + ligne % population (7/13/18/24/18/13/7) +
+    // ligne centiles (<7 / 7-20 / 21-38 / 39-62 / 63-80 / 81-93 / >93) +
+    // bandeau "Normalite — 60% de la population" sur les classes 3-4-5.
+    const EVALEO_CLASSES: Array<{ classe: string; pop: string; centiles: string; shading: string; textColor?: string }> = [
+      { classe: '1', pop: '7%',  centiles: 'Centiles <7', shading: 'D32F2F', textColor: 'FFFFFF' }, // rouge
+      { classe: '2', pop: '13%', centiles: '7-20',        shading: 'F57C00', textColor: 'FFFFFF' }, // orange
+      { classe: '3', pop: '18%', centiles: '21-38',       shading: 'A5D6A7' }, // vert clair
+      { classe: '4', pop: '24%', centiles: '39-62',       shading: '66BB6A', textColor: 'FFFFFF' }, // vert moyen
+      { classe: '5', pop: '18%', centiles: '63-80',       shading: '2E7D32', textColor: 'FFFFFF' }, // vert fonce
+      { classe: '6', pop: '13%', centiles: '81-93',       shading: '4FC3F7' }, // bleu clair
+      { classe: '7', pop: '7%',  centiles: '>93',         shading: '0288D1', textColor: 'FFFFFF' }, // bleu fonce
+    ]
+    const eqCols = dxaCols(EVALEO_CLASSES.map(() => 100 / EVALEO_CLASSES.length))
+    children.push(
+      // Texte d'introduction au-dessus
+      new Paragraph({
+        children: [new TextRun({
+          text: 'Les épreuves sont issues de la batterie EVALEO 6-15 (Launay, Maeder, Roustit, Touzin, 2018). L\'analyse des résultats repose sur un étalonnage en sept classes, correspondant à ce qui est habituellement mis en évidence dans la littérature.',
+          size: 18, font: FONT, italics: true, color: '424242',
+        })],
+        spacing: { before: 200, after: 120 },
+      }),
+      // Bandeau "Normalite" — span sur les colonnes 3-4-5 (indices 2-4)
+      // implementé via une ligne separee avec 3 cellules : vide(1+2),
+      // "Normalite"(3+4+5), vide(6+7). columnSpan permet le merge.
+      new Table({
+        width: { size: TOTAL_DXA, type: WidthType.DXA },
+        columnWidths: eqCols,
+        rows: [
+          new TableRow({ children: [
+            new TableCell({ columnSpan: 2, width: { size: eqCols[0] + eqCols[1], type: WidthType.DXA }, children: [new Paragraph({ children: [new TextRun({ text: '' })] })] }),
+            new TableCell({
+              columnSpan: 3,
+              width: { size: eqCols[2] + eqCols[3] + eqCols[4], type: WidthType.DXA },
+              shading: { type: ShadingType.CLEAR, fill: 'F5F5F5', color: 'auto' },
+              children: [new Paragraph({
+                alignment: AlignmentType.CENTER,
+                children: [new TextRun({ text: 'Normalité', bold: true, size: 18, font: FONT, color: '424242' })],
+              })],
+              borders: {
+                top:    { style: BorderStyle.SINGLE, size: 8, color: '424242' },
+                left:   { style: BorderStyle.SINGLE, size: 8, color: '424242' },
+                right:  { style: BorderStyle.SINGLE, size: 8, color: '424242' },
+                bottom: { style: BorderStyle.NONE,   size: 0, color: 'auto' },
+              },
+            }),
+            new TableCell({ columnSpan: 2, width: { size: eqCols[5] + eqCols[6], type: WidthType.DXA }, children: [new Paragraph({ children: [new TextRun({ text: '' })] })] }),
+          ]}),
+          // Ligne 1 : numero de classe (1 a 7) sur fond couleur
+          new TableRow({ children: EVALEO_CLASSES.map((c, i) =>
+            createCell(c.classe, { shading: c.shading, textColor: c.textColor, dxa: eqCols[i], alignment: AlignmentType.CENTER, bold: true }),
+          )}),
+          // Ligne 2 : pourcentage de population
+          new TableRow({ children: EVALEO_CLASSES.map((c, i) =>
+            createCell(c.pop, { dxa: eqCols[i], alignment: AlignmentType.CENTER }),
+          )}),
+          // Ligne 3 : centiles
+          new TableRow({ children: EVALEO_CLASSES.map((c, i) =>
+            createCell(c.centiles, { dxa: eqCols[i], alignment: AlignmentType.CENTER }),
+          )}),
+          // Ligne 4 : bandeau "60% de la population" englobant 3-4-5 (toujours
+          // span 3 sur 7 colonnes via 3 cellules : vide(1+2), label(3+4+5),
+          // vide(6+7)).
+          new TableRow({ children: [
+            new TableCell({ columnSpan: 2, width: { size: eqCols[0] + eqCols[1], type: WidthType.DXA }, children: [new Paragraph({ children: [new TextRun({ text: '' })] })] }),
+            new TableCell({
+              columnSpan: 3,
+              width: { size: eqCols[2] + eqCols[3] + eqCols[4], type: WidthType.DXA },
+              shading: { type: ShadingType.CLEAR, fill: 'F5F5F5', color: 'auto' },
+              children: [new Paragraph({
+                alignment: AlignmentType.CENTER,
+                children: [new TextRun({ text: '60 % de la population', italics: true, size: 16, font: FONT, color: '424242' })],
+              })],
+              borders: {
+                top:    { style: BorderStyle.NONE,   size: 0, color: 'auto' },
+                left:   { style: BorderStyle.SINGLE, size: 8, color: '424242' },
+                right:  { style: BorderStyle.SINGLE, size: 8, color: '424242' },
+                bottom: { style: BorderStyle.SINGLE, size: 8, color: '424242' },
+              },
+            }),
+            new TableCell({ columnSpan: 2, width: { size: eqCols[5] + eqCols[6], type: WidthType.DXA }, children: [new Paragraph({ children: [new TextRun({ text: '' })] })] }),
+          ]}),
+        ],
+      }),
+      // Texte de resume en dessous (5 lignes, listes a puces invisibles)
+      new Paragraph({
+        children: [new TextRun({ text: 'Classe 1 = zone pathologique', size: 18, font: FONT })],
+        spacing: { before: 160, after: 0 },
+      }),
+      new Paragraph({
+        children: [new TextRun({ text: 'Classe 2 = zone à risque, « fragilité »', size: 18, font: FONT })],
+        spacing: { before: 0, after: 0 },
+      }),
+      new Paragraph({
+        children: [new TextRun({ text: 'Classes 3 - 4 - 5 = norme (représentant 60 % de la population)', size: 18, font: FONT })],
+        spacing: { before: 0, after: 0 },
+      }),
+      new Paragraph({
+        children: [new TextRun({ text: 'Classe 6 = zone supérieure à la moyenne', size: 18, font: FONT })],
+        spacing: { before: 0, after: 0 },
+      }),
+      new Paragraph({
+        children: [new TextRun({ text: 'Classe 7 = zone très supérieure', size: 18, font: FONT })],
+        spacing: { before: 0, after: 200 },
       }),
     )
   } else {

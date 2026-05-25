@@ -171,14 +171,87 @@ export default function CRBOStructuredPreview({
             <BookOpen size={18} className="text-primary-600 dark:text-primary-400" />
             Bilan détaillé
           </h2>
-          {/* Légende des seuils */}
-          <div className="flex flex-wrap gap-2 text-xs">
-            {SEUILS.map(s => (
-              <span key={s.label} className="inline-flex items-center gap-1.5 px-2 py-1 rounded border" style={{ backgroundColor: '#' + s.shading, borderColor: '#' + s.shading, color: s.textColor ? '#' + s.textColor : undefined }}>
-                <strong>{s.label}</strong> {s.range}
-              </span>
-            ))}
-          </div>
+          {/* Legende des seuils — heuristique : si au moins une interpretation
+              suit le format EVALEO ("Classe X - ..."), on affiche la grille
+              officielle EVALEO 7 classes au lieu de la grille Exalang 6 zones. */}
+          {(() => {
+            const isEvaleo = structure.domains.some(d =>
+              d.epreuves.some(e => /^classe\s*[1-7]\s*[-–]/i.test((e.interpretation ?? '').trim())),
+            )
+            if (isEvaleo) {
+              const EVALEO_CLASSES = [
+                { classe: '1', pop: '7 %',  centiles: '< 7',    bg: '#D32F2F', text: '#fff' },
+                { classe: '2', pop: '13 %', centiles: '7-20',   bg: '#F57C00', text: '#fff' },
+                { classe: '3', pop: '18 %', centiles: '21-38',  bg: '#A5D6A7', text: '#1B5E20' },
+                { classe: '4', pop: '24 %', centiles: '39-62',  bg: '#66BB6A', text: '#fff' },
+                { classe: '5', pop: '18 %', centiles: '63-80',  bg: '#2E7D32', text: '#fff' },
+                { classe: '6', pop: '13 %', centiles: '81-93',  bg: '#4FC3F7', text: '#0D47A1' },
+                { classe: '7', pop: '7 %',  centiles: '> 93',   bg: '#0288D1', text: '#fff' },
+              ]
+              return (
+                <div className="space-y-2 text-xs">
+                  <p className="text-gray-600 dark:text-gray-400 italic leading-relaxed">
+                    Les épreuves sont issues de la batterie EVALEO 6-15 (Launay, Maeder, Roustit, Touzin, 2018).
+                    L&apos;analyse repose sur un étalonnage en sept classes.
+                  </p>
+                  <div className="overflow-x-auto">
+                    <table className="border-collapse">
+                      <tbody>
+                        <tr>
+                          <td colSpan={2}></td>
+                          <td colSpan={3} className="text-center text-[11px] font-semibold text-gray-700 dark:text-gray-300 border-2 border-gray-700 border-b-0 px-2 py-0.5">Normalité</td>
+                          <td colSpan={2}></td>
+                        </tr>
+                        <tr>
+                          {EVALEO_CLASSES.map(c => (
+                            <td key={`c-${c.classe}`} className="font-bold text-center px-3 py-1 border border-gray-300 min-w-[48px]" style={{ backgroundColor: c.bg, color: c.text }}>
+                              {c.classe}
+                            </td>
+                          ))}
+                        </tr>
+                        <tr>
+                          {EVALEO_CLASSES.map(c => (
+                            <td key={`p-${c.classe}`} className="text-center px-2 py-0.5 border border-gray-200 text-gray-600 dark:text-gray-300">
+                              {c.pop}
+                            </td>
+                          ))}
+                        </tr>
+                        <tr>
+                          {EVALEO_CLASSES.map(c => (
+                            <td key={`v-${c.classe}`} className="text-center px-2 py-0.5 border border-gray-200 text-gray-600 dark:text-gray-300">
+                              {c.centiles}
+                            </td>
+                          ))}
+                        </tr>
+                        <tr>
+                          <td colSpan={2}></td>
+                          <td colSpan={3} className="text-center text-[10px] italic text-gray-600 dark:text-gray-400 border-2 border-gray-700 border-t-0 px-2 py-0.5">60 % de la population</td>
+                          <td colSpan={2}></td>
+                        </tr>
+                      </tbody>
+                    </table>
+                  </div>
+                  <ul className="text-[11px] text-gray-700 dark:text-gray-300 space-y-0.5 mt-1">
+                    <li>Classe 1 = zone pathologique</li>
+                    <li>Classe 2 = zone à risque, « fragilité »</li>
+                    <li>Classes 3 - 4 - 5 = norme (représentant 60 % de la population)</li>
+                    <li>Classe 6 = zone supérieure à la moyenne</li>
+                    <li>Classe 7 = zone très supérieure</li>
+                  </ul>
+                </div>
+              )
+            }
+            // Légende standard 6 zones Laurie (autres bilans).
+            return (
+              <div className="flex flex-wrap gap-2 text-xs">
+                {SEUILS.map(s => (
+                  <span key={s.label} className="inline-flex items-center gap-1.5 px-2 py-1 rounded border" style={{ backgroundColor: '#' + s.shading, borderColor: '#' + s.shading, color: s.textColor ? '#' + s.textColor : undefined }}>
+                    <strong>{s.label}</strong> {s.range}
+                  </span>
+                ))}
+              </div>
+            )
+          })()}
 
           {structure.domains.map((domain, dIdx) => (
             <div key={dIdx} className="card-modern p-5">

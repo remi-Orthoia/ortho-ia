@@ -127,6 +127,14 @@ export interface BilanEntry {
    *  (mix langage écrit en premier, sous-jacents au milieu, langage oral à
    *  la fin — incompatible avec le tri défensif générique). */
   preserveDomainOrder?: boolean
+  /** Type de légende des scores à rendre dans le Word avant le bloc BILAN.
+   *  - 'standard' (défaut) : 6 zones Laurie (Excellent / Moyenne haute / ...
+   *    / Difficulté sévère) — palette Exalang générique.
+   *  - 'evaleo' : grille officielle EVALEO 6-15 en 7 classes avec libellé
+   *    "Normalité" englobant les classes 3-4-5, palette rouge/orange/verts/
+   *    bleus + texte intro Launay et al. + résumé des 7 classes en dessous.
+   *  Le drapeau pilote `buildLegendBlock()` de lib/word-export.ts. */
+  legendType?: 'standard' | 'evaleo'
 }
 
 // ============================================================================
@@ -229,6 +237,10 @@ export const BILAN_REGISTRY: Record<string, BilanEntry> = {
     // LO morphosyntaxe → LO autres. Incompatible avec le tri defensif
     // oral → écrit → sub generic.
     preserveDomainOrder: true,
+    // Legende des scores : grille officielle EVALEO 6-15 en 7 classes
+    // (Pathologique / Fragilite / 3 x Norme / Superieure a la moyenne /
+    // Tres superieure), pas la grille Exalang generique.
+    legendType: 'evaleo',
   },
   'Exalang 3-6': {
     nom: 'Exalang 3-6',
