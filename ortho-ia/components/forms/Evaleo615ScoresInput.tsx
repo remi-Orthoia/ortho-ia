@@ -21,8 +21,8 @@
  * test_utilise === ['EVALEO 6-15'].
  */
 
-import { useEffect, useMemo, useState } from 'react'
-import { Brain, BookOpen, ChevronDown, Info } from 'lucide-react'
+import { useEffect, useMemo, useRef, useState } from 'react'
+import { Brain, BookOpen, ChevronDown, FileUp, Info, Loader2 } from 'lucide-react'
 import MicButton from '../MicButton'
 
 interface Props {
@@ -579,10 +579,93 @@ function ErreursDicteeEditor({
   )
 }
 
-export default function Evaleo615ScoresInput({ notes, onNotesChange, onResultatsChange }: Props) {
+export default function Evaleo615ScoresInput({ notes, onNotesChange, onResultatsChange, onError }: Props) {
   const [state, setState] = useState<State>(emptyState)
   const [expandedSection, setExpandedSection] = useState<Record<string, boolean>>({ lo: true, le: true, autres: false })
   const [expandedSub, setExpandedSub] = useState<Record<string, boolean>>({})
+
+  // L3 : import PDF EVALEO
+  const fileInputRef = useRef<HTMLInputElement | null>(null)
+  const [importing, setImporting] = useState(false)
+  const [importInfo, setImportInfo] = useState<string | null>(null)
+
+  async function handleImportFile(file: File) {
+    setImporting(true)
+    setImportInfo(null)
+    try {
+      const fd = new FormData()
+      fd.append('file', file)
+      const res = await fetch('/api/extract-evaleo-pdf', { method: 'POST', body: fd })
+      const data = await res.json()
+      if (!res.ok || !data?.success) {
+        const msg = data?.error ?? 'Echec de l\'import PDF.'
+        onError?.(msg)
+        setImportInfo(`Erreur : ${msg}`)
+        return
+      }
+      const ex = data.extracted as {
+        niveau: string
+        trimestre: string
+        anamnese: FicheAnamnese
+        epreuves: Array<{
+          key: string
+          percentile: string
+          score_brut: string
+          temps: string
+          observation: string
+          non_passee: boolean
+          effets?: EpreuveEffets
+          erreurs?: EpreuveErreurs
+        }>
+      }
+      // Fusion : ecrase le state avec les donnees extraites (l'ortho peut
+      // toujours modifier apres). Seuls les champs renseignes par Claude
+      // ecrasent l'existant.
+      setState(prev => {
+        const next: State = {
+          niveau: (ex.niveau || prev.niveau) as State['niveau'],
+          trimestre: (ex.trimestre || prev.trimestre) as TrimestreKey,
+          anamnese: { ...prev.anamnese },
+          epreuves: { ...prev.epreuves },
+        }
+        // Anamnese : ne remplace que les champs non vides
+        for (const c of ANAMNESE_CHAMPS) {
+          const v = ex.anamnese?.[c.key]
+          if (typeof v === 'string' && v.trim()) {
+            next.anamnese[c.key] = v.trim()
+          }
+        }
+        // Epreuves : merge par cle
+        for (const item of ex.epreuves ?? []) {
+          if (!next.epreuves[item.key]) continue  // cle inconnue → ignorer
+          const cur = next.epreuves[item.key]
+          next.epreuves[item.key] = {
+            percentile: (item.percentile as PercentileKey) || cur.percentile,
+            score_brut: item.score_brut || cur.score_brut,
+            temps:      item.temps      || cur.temps,
+            observation: item.observation || cur.observation,
+            non_passee: !!item.non_passee,
+            ...(EPREUVES_AVEC_EFFETS.has(item.key)
+              ? { effets: { ...(cur.effets ?? emptyEffets()), ...(item.effets ?? {}) } }
+              : {}),
+            ...(EPREUVES_AVEC_ERREURS.has(item.key)
+              ? { erreurs: { ...(cur.erreurs ?? emptyErreurs()), ...(item.erreurs ?? {}) } }
+              : {}),
+          }
+        }
+        return next
+      })
+      const epreuvesImported = (ex.epreuves ?? []).length
+      setImportInfo(`Import reussi : ${epreuvesImported} epreuve${epreuvesImported > 1 ? 's' : ''} pre-remplie${epreuvesImported > 1 ? 's' : ''}. Verifiez et completez si besoin.`)
+    } catch (err: any) {
+      const msg = err?.message ?? 'Erreur reseau durant l\'import.'
+      onError?.(msg)
+      setImportInfo(`Erreur : ${msg}`)
+    } finally {
+      setImporting(false)
+      if (fileInputRef.current) fileInputRef.current.value = ''
+    }
+  }
 
   const totalSaisies = useMemo(() => {
     let n = 0
@@ -718,6 +801,49 @@ export default function Evaleo615ScoresInput({ notes, onNotesChange, onResultats
             niveau scolaire — sélectionnez-le ci-dessous. Q1 = P25 = NORMAL, jamais déficitaire.
           </p>
         </div>
+      </div>
+
+      {/* L3 : import PDF EVALEO (rapport HappyNeuron ou scan cahier rempli) */}
+      <div className="rounded-lg border border-sky-200 bg-sky-50/60 p-3">
+        <div className="flex items-start justify-between gap-3 flex-wrap">
+          <div className="flex items-start gap-2 min-w-0">
+            <FileUp size={18} className="text-sky-700 shrink-0 mt-0.5" />
+            <div className="text-sm min-w-0">
+              <p className="font-semibold text-sky-900">Importer un PDF EVALEO (optionnel)</p>
+              <p className="text-sky-800 text-xs mt-0.5 leading-relaxed">
+                Acceptes : rapport de cotation HappyNeuron (PDF), scan du cahier de passation rempli (PDF ou image),
+                document Word/PDF de bilan deja redige. Claude lit le document et pre-remplit niveau, anamnese et
+                scores. Vous pouvez ensuite corriger librement. Max 10 Mo.
+              </p>
+            </div>
+          </div>
+          <div className="flex items-center gap-2 shrink-0">
+            <input
+              ref={fileInputRef}
+              type="file"
+              accept=".pdf,image/png,image/jpeg,image/webp"
+              onChange={(e) => {
+                const f = e.target.files?.[0]
+                if (f) handleImportFile(f)
+              }}
+              className="hidden"
+            />
+            <button
+              type="button"
+              onClick={() => fileInputRef.current?.click()}
+              disabled={importing}
+              className="inline-flex items-center gap-1.5 px-3 py-2 rounded text-sm font-medium bg-sky-600 text-white hover:bg-sky-700 disabled:bg-sky-300 disabled:cursor-wait transition"
+            >
+              {importing ? <Loader2 size={14} className="animate-spin" /> : <FileUp size={14} />}
+              {importing ? 'Extraction en cours…' : 'Choisir un fichier'}
+            </button>
+          </div>
+        </div>
+        {importInfo && (
+          <p className={`mt-2 text-xs ${importInfo.startsWith('Erreur') ? 'text-red-700' : 'text-emerald-700'}`}>
+            {importInfo}
+          </p>
+        )}
       </div>
 
       {/* Niveau scolaire + trimestre */}
