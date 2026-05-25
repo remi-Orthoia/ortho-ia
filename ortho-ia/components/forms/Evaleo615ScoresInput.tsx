@@ -848,9 +848,12 @@ export default function Evaleo615ScoresInput({ notes, onNotesChange, onResultats
           const tag = e.tag ? ` (${e.tag})` : ''
           lines.push(`Épreuve : ${e.label}${tag}`)
           if (st.percentile !== '') {
-            // Format EVALEO natif : "Classe 5 (Norme supérieure) — P63-P80"
-            // Claude DOIT utiliser cette terminologie verbatim dans le commentaire
-            // et le champ `interpretation` du JSON CRBO.
+            // Format EVALEO natif officiel : "Classe 4 (Norme) — P39-P62".
+            // Pour les classes 3, 4, 5 le libelle est "Norme" tout court
+            // (jamais "Norme faible/mediane/haute" — ce serait une fabrication
+            // non officielle). Pour les classes 6/7 : "Superieure a la moyenne"
+            // / "Tres superieure". Pour 1/2 : "Pathologique" / "Fragilite".
+            // Claude DOIT recopier exactement ce label dans `interpretation`.
             const lbl = classeEvaleoLabel(st.percentile)
             const full = classeEvaleoFullLabel(st.percentile)
             const range = classeEvaleoRange(st.percentile)

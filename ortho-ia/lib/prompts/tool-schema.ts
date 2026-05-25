@@ -29,16 +29,24 @@ const EPREUVE_SCHEMA = {
     },
     interpretation: {
       type: 'string' as const,
-      enum: ['Excellent', 'Moyenne haute', 'Moyenne basse', 'Zone de fragilité', 'Difficulté', 'Difficulté sévère'],
       description:
-        "Interprétation clinique COURTE — grille 6 zones imposée Laurie (refonte 2026-05-ter) : " +
+        "Interprétation clinique COURTE — la nomenclature dépend du test utilisé. " +
+        "Par DÉFAUT (Exalang, BETL, Examath, EVALO, BALE, etc.) — grille 6 zones imposée Laurie (refonte 2026-05-ter) : " +
         "'Excellent' pour P76-P100 ; " +
         "'Moyenne haute' pour P50-P75 (Q3 inclus) ; " +
         "'Moyenne basse' pour P26-P49 ; " +
         "'Zone de fragilité' pour P11-P25 (Q1 = P25 inclus) ; " +
         "'Difficulté' pour P6-P10 ; " +
-        "'Difficulté sévère' pour P1-P5. " +
-        "Note : Exalang n'affiche JAMAIS de bande <P5 — P5 est inclus dans Difficulté sévère.",
+        "'Difficulté sévère' pour P1-P5 (Exalang n'affiche JAMAIS de bande <P5). " +
+        "EXCEPTION EVALEO 6-15 — utiliser la grille officielle 7 classes Launay et al. 2018 : " +
+        "'Classe 1 - Pathologique' (<P7) ; " +
+        "'Classe 2 - Fragilité' (P7-P20) ; " +
+        "'Classe 3 - Norme' / 'Classe 4 - Norme' / 'Classe 5 - Norme' (P21-P38 / P39-P62 / P63-P80, totalisent 60 % de la population) ; " +
+        "'Classe 6 - Supérieure à la moyenne' (P81-P93) ; " +
+        "'Classe 7 - Très supérieure' (>P93). " +
+        "EXCEPTION MoCA — laisser '' (le rendu Word MoCA n'affiche pas de colonne Interprétation par épreuve). " +
+        "EXCEPTION B-CM / B-CMado — laisser '' (rendu math pastilles qualitatives, pas de percentile). " +
+        "Pour les autres bilans HappyNeuron (PREDIMEM, PrediFex, PrediLac) — utiliser la nomenclature 6 zones par défaut.",
     },
     sous_epreuves: {
       type: 'array' as const,
