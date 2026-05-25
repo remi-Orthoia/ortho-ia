@@ -22,14 +22,24 @@
  */
 
 import { useEffect, useMemo, useRef, useState } from 'react'
-import { Brain, BookOpen, ChevronDown, FileUp, Info, Loader2 } from 'lucide-react'
+import { Brain, BookOpen, ChevronDown, FileUp, Info, Loader2, GitCompare } from 'lucide-react'
 import MicButton from '../MicButton'
+import type { CRBOStructure } from '@/lib/prompts'
 
 interface Props {
   notes: string
   onNotesChange: (v: string) => void
   onResultatsChange: (normalized: string) => void
   onError?: (msg: string) => void
+  /** MODE RENOUVELLEMENT — structure du bilan précédent extraite depuis le
+   *  bouton d'import "bilan précédent" de l'étape 4 du wizard. Si présente,
+   *  le form affiche un encart d'évolution dans le panneau "Comparaison" et
+   *  sérialise les épreuves précédentes pour que Claude calcule les flèches
+   *  d'évolution dans le CRBO généré (et que le rendu Word produise son
+   *  tableau comparatif avec ↑↓→). */
+  bilanPrecedentStructure?: CRBOStructure | null
+  /** Date du bilan précédent (ISO) — affichée dans l'encart d'évolution. */
+  bilanPrecedentDate?: string | null
 }
 
 /**
@@ -678,7 +688,10 @@ function ErreursDicteeEditor({
   )
 }
 
-export default function Evaleo615ScoresInput({ notes, onNotesChange, onResultatsChange, onError }: Props) {
+export default function Evaleo615ScoresInput({
+  notes, onNotesChange, onResultatsChange, onError,
+  bilanPrecedentStructure, bilanPrecedentDate,
+}: Props) {
   const [state, setState] = useState<State>(emptyState)
   // Defaut : LE ouvert (focus principal des bilans EVALEO langage ecrit comme
   // l'exemple Justine), Competences sous-jacentes ouvert (Stroop / MdT
@@ -797,7 +810,8 @@ export default function Evaleo615ScoresInput({ notes, onNotesChange, onResultats
   useEffect(() => {
     const anamneseHasData = ANAMNESE_CHAMPS.some(c => state.anamnese[c.key].trim().length > 0)
     const compHasData = comparaisonHasData(state.comparaison)
-    if (totalSaisies === 0 && !state.niveau && !anamneseHasData && !compHasData) {
+    const hasBilanPrecedent = !!(bilanPrecedentStructure && bilanPrecedentStructure.domains && bilanPrecedentStructure.domains.length > 0)
+    if (totalSaisies === 0 && !state.niveau && !anamneseHasData && !compHasData && !hasBilanPrecedent) {
       onResultatsChange('')
       return
     }
@@ -821,10 +835,11 @@ export default function Evaleo615ScoresInput({ notes, onNotesChange, onResultats
       lines.push('')
     }
     // L4 : comparaison bilan precedent → active le MODE RENOUVELLEMENT prompt
-    if (compHasData) {
+    if (compHasData || hasBilanPrecedent) {
       const c = state.comparaison
       lines.push('=== COMPARAISON BILAN PRECEDENT (mode renouvellement) ===')
-      if (c.date_precedent) lines.push(`Date bilan precedent : ${c.date_precedent}`)
+      const dateToUse = c.date_precedent || (bilanPrecedentDate ?? '')
+      if (dateToUse) lines.push(`Date bilan precedent : ${dateToUse}`)
       if (c.test_precedent.trim()) lines.push(`Test precedent : ${c.test_precedent.trim()}`)
       if (c.pec_anterieure.trim()) lines.push(`PEC entre les 2 bilans : ${c.pec_anterieure.trim()}`)
       const dumpTraj = (label: string, traj: TrajectoireKey, comm: string) => {
@@ -840,6 +855,23 @@ export default function Evaleo615ScoresInput({ notes, onNotesChange, onResultats
       dumpTraj('Trajectoire Autres', c.trajectoire_autres, c.commentaire_autres)
       if (c.evolution_globale.trim()) {
         lines.push(`Synthese evolution globale : ${c.evolution_globale.trim()}`)
+      }
+      // Tableau structure du bilan precedent (epreuve par epreuve) si importe :
+      // Claude exploitera ces percentile_value pour calculer les evolutions
+      // chiffrees et produire son synthese_evolution.
+      if (hasBilanPrecedent) {
+        lines.push('')
+        lines.push('--- Tableau brut du bilan precedent (epreuves + classe/percentile importe via /api/extract-previous-bilan) ---')
+        lines.push('Format : "<Domaine> | <Epreuve> | classe/percentile precedent | percentile_value precedent"')
+        for (const d of bilanPrecedentStructure!.domains) {
+          for (const ep of d.epreuves) {
+            const interp = (ep.interpretation || '').trim()
+            const perc = (ep.percentile || '').trim()
+            const pv = typeof ep.percentile_value === 'number' ? ep.percentile_value : null
+            lines.push(`${d.nom} | ${ep.nom} | ${interp || perc || '—'} | ${pv != null ? pv : '—'}`)
+          }
+        }
+        lines.push('--- fin tableau bilan precedent ---')
       }
       lines.push('')
     }
@@ -1054,7 +1086,7 @@ export default function Evaleo615ScoresInput({ notes, onNotesChange, onResultats
 
       {/* L4 : Comparaison bilan precedent — active le mode renouvellement */}
       <div className="rounded-lg border border-teal-200 bg-teal-50/40">
-        <details className="group" open={false}>
+        <details className="group" open={!!bilanPrecedentStructure}>
           <summary className="cursor-pointer px-4 py-3 flex items-center justify-between gap-3 hover:bg-teal-50">
             <div className="min-w-0">
               <p className="text-sm font-semibold text-teal-900">Comparaison avec un bilan precedent (renouvellement)</p>
@@ -1067,6 +1099,35 @@ export default function Evaleo615ScoresInput({ notes, onNotesChange, onResultats
             <ChevronDown size={16} className="shrink-0 transition-transform group-open:rotate-180" />
           </summary>
           <div className="border-t border-teal-200 px-4 py-3 space-y-3">
+
+            {/* Encart bilan precedent importe ou message d'aide */}
+            {bilanPrecedentStructure ? (
+              <div className="rounded border border-emerald-300 bg-emerald-50/70 p-2.5 flex items-start gap-2">
+                <GitCompare size={16} className="text-emerald-700 shrink-0 mt-0.5" />
+                <div className="text-[11px] text-emerald-900 leading-relaxed min-w-0">
+                  <p className="font-semibold">Bilan precedent importe et detecte</p>
+                  <p className="mt-0.5">
+                    {bilanPrecedentStructure.domains.length} domaine{bilanPrecedentStructure.domains.length > 1 ? 's' : ''} ·{' '}
+                    {bilanPrecedentStructure.domains.reduce((acc, d) => acc + d.epreuves.length, 0)} epreuves precedentes
+                    {bilanPrecedentDate ? ` · ${new Date(bilanPrecedentDate).toLocaleDateString('fr-FR')}` : ''}.
+                    L&apos;IA va calculer automatiquement les evolutions epreuve par epreuve et le rendu Word
+                    affichera un tableau comparatif avec fleches d&apos;evolution (↑ progres / → stable /
+                    ↓ regression).
+                  </p>
+                </div>
+              </div>
+            ) : (
+              <div className="rounded border border-amber-200 bg-amber-50/60 p-2.5 flex items-start gap-2">
+                <Info size={14} className="text-amber-700 shrink-0 mt-0.5" />
+                <p className="text-[11px] text-amber-900 leading-relaxed">
+                  <strong>Astuce :</strong> pour comparer automatiquement aux scores d&apos;un bilan
+                  precedent (PDF ou Word), utilisez le bouton <em>« Importer un bilan precedent »</em> a
+                  l&apos;etape 4 du wizard. Une fois importe, l&apos;IA produira un tableau comparatif
+                  avec fleches d&apos;evolution dans le CRBO final. Vous pouvez aussi remplir manuellement
+                  les champs ci-dessous (trajectoires par domaine + commentaires libres).
+                </p>
+              </div>
+            )}
             <div className="grid sm:grid-cols-2 gap-2.5">
               <div className="flex flex-col">
                 <label className="text-[11px] font-medium text-teal-900 mb-0.5">Date du bilan precedent</label>

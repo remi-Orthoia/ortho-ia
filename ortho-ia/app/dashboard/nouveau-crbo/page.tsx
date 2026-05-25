@@ -2716,6 +2716,8 @@ Astuce : tapez /fatigue, /anxiete, /encouragements… pour réutiliser vos formu
                           <Evaleo615ScoresInput
                             {...sharedNotesProps}
                             onResultatsChange={(v) => handleTestSlotChange('EVALEO 6-15', v)}
+                            bilanPrecedentStructure={formData.bilan_precedent_structure ?? null}
+                            bilanPrecedentDate={formData.bilan_precedent_date ?? null}
                           />
                         )}
                         {test === 'EVALO 2-6' && (

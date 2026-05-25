@@ -529,13 +529,36 @@ Quand le bloc \`=== COMPARAISON BILAN PRECEDENT (mode renouvellement) ===\` est 
 3. Les \`domains[]\` listent les épreuves du nouveau bilan comme d'habitude.
 4. Dans les \`commentaire\` de chaque domaine, intègre la dimension d'évolution UNIQUEMENT si le commentaire de trajectoire le mentionne explicitement. Sinon, commentaire standard.
 
-**Comment traiter en phase 2 (synthesize)** :
+**🆕 TABLEAU BRUT DU BILAN PRECEDENT (si fourni)**
+
+Quand le bloc inclut une section \`--- Tableau brut du bilan precedent (epreuves + classe/percentile importe...) ---\`, c'est que l'ortho a importé un PDF/Word du bilan précédent via le wizard étape 4 et l'extraction a produit une structure typée. Chaque ligne suit le format :
+\`<Domaine> | <Epreuve> | <classe/percentile precedent> | <percentile_value precedent>\`
+
+**Comment l'utiliser** :
+
+1. **Croise nominativement** chaque épreuve du bilan ACTUEL (saisie par l'ortho dans le form) avec son équivalent dans le bilan PRÉCÉDENT (table brute). Le matching se fait par nom d'épreuve (ex. "Lecture de mots" ↔ "Lecture de mots").
+
+2. **Pour chaque épreuve matchée**, calcule l'évolution :
+   - \`percentile_value\` actuel ≥ percentile_value précédent + 10 → **progrès** (↑).
+   - \`percentile_value\` actuel ≤ percentile_value précédent - 10 → **régression** (↓).
+   - Sinon → **stable** (→).
+
+3. **Le rendu Word produit AUTOMATIQUEMENT** un tableau comparatif avec ces flèches ↑↓→, couleurs vert/rouge/gris et delta chiffré entre les deux bilans (cf. \`lib/word-export.ts\` ligne 668). Tu n'as PAS à reproduire ce tableau dans ta sortie texte — il est généré côté rendu à partir des \`percentile_value\` actuels et précédents.
+
+4. **Ce que TU dois produire** dans le JSON :
+   - \`synthese_evolution.resume\` : 2-3 phrases qui synthétisent l'évolution globale.
+   - \`synthese_evolution.domaines_progres\` : liste des épreuves ↑ (delta ≥ +10).
+   - \`synthese_evolution.domaines_stagnation\` : liste des épreuves → (|delta| < 10).
+   - \`synthese_evolution.domaines_regression\` : liste des épreuves ↓ (delta ≤ -10).
+   - Dans les commentaires de domaine, mentionne les évolutions saillantes (ex. "La lecture de pseudomots progresse de la classe 1 a la classe 3 — bénéfice du travail métaphonologique").
+
+**Comment traiter en phase 2 (synthesize) — règle standard renouvellement** :
 
 5. Le champ \`synthese_evolution\` du JSON CRBO DOIT être renseigné :
-   - \`resume\` : 2-3 phrases qui synthétisent l'évolution globale en croisant les 3 trajectoires fournies et la PEC.
-   - \`domaines_progres\` : liste les domaines marqués \`Progres\` dans le bloc.
-   - \`domaines_stagnation\` : liste les domaines marqués \`Stagnation\`.
-   - \`domaines_regression\` : liste les domaines marqués \`Regression\`.
+   - \`resume\` : 2-3 phrases qui synthétisent l'évolution globale en croisant les 3 trajectoires fournies, la PEC, et le tableau brut si présent.
+   - \`domaines_progres\` : liste les domaines marqués \`Progres\` dans le bloc OU calculés via le tableau brut.
+   - \`domaines_stagnation\` : idem stagnation.
+   - \`domaines_regression\` : idem régression.
 
 6. Le \`diagnostic\` doit s'ouvrir sur une phrase d'évolution : "Par rapport au bilan du [date précédente], on observe [synthèse trajectoires]. Le profil actuel se caractérise par [diagnostic actuel]..." — puis enchaîner sur le diagnostic classique.
 
