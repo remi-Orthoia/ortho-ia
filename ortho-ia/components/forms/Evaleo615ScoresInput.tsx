@@ -434,10 +434,54 @@ function emptyAnamnese(): FicheAnamnese {
   }
 }
 
+type TrajectoireKey = '' | 'progres' | 'stagnation' | 'regression'
+
+const TRAJECTOIRE_OPTIONS: Array<{ key: Exclude<TrajectoireKey, ''>; label: string; chip: string }> = [
+  { key: 'progres',     label: 'Progres',     chip: 'bg-emerald-500 text-white' },
+  { key: 'stagnation',  label: 'Stagnation',  chip: 'bg-yellow-300 text-yellow-900' },
+  { key: 'regression',  label: 'Regression',  chip: 'bg-red-600 text-white' },
+]
+
+/**
+ * Donnees de comparaison avec un bilan precedent — active le MODE
+ * RENOUVELLEMENT cote prompt EVALEO. Si l'ortho remplit ces champs, le
+ * bloc est serialise avec un en-tete dedie qui declenche un traitement
+ * specifique par Claude (synthese d'evolution, conclusion sur la PEC,
+ * recommandation poursuite/intensification/arret).
+ */
+interface ComparaisonPrecedent {
+  date_precedent: string  // YYYY-MM-DD
+  test_precedent: string  // libre ('EVALEO 6-15 2024', 'Exalang 8-11 2023', ...)
+  trajectoire_lo: TrajectoireKey
+  commentaire_lo: string
+  trajectoire_le: TrajectoireKey
+  commentaire_le: string
+  trajectoire_autres: TrajectoireKey
+  commentaire_autres: string
+  evolution_globale: string  // textarea long pour synthese narrative
+  pec_anterieure: string     // type / frequence / duree de la PEC entre les 2 bilans
+}
+
+function emptyComparaison(): ComparaisonPrecedent {
+  return {
+    date_precedent: '',
+    test_precedent: '',
+    trajectoire_lo: '',
+    commentaire_lo: '',
+    trajectoire_le: '',
+    commentaire_le: '',
+    trajectoire_autres: '',
+    commentaire_autres: '',
+    evolution_globale: '',
+    pec_anterieure: '',
+  }
+}
+
 interface State {
   niveau: typeof NIVEAU_OPTIONS[number]['key']
   trimestre: TrimestreKey
   anamnese: FicheAnamnese
+  comparaison: ComparaisonPrecedent
   epreuves: Record<string, EpreuveState>
 }
 
@@ -449,7 +493,16 @@ function emptyState(): State {
     if (EPREUVES_AVEC_ERREURS.has(e.key)) base.erreurs = emptyErreurs()
     ep[e.key] = base
   }
-  return { niveau: '', trimestre: '', anamnese: emptyAnamnese(), epreuves: ep }
+  return { niveau: '', trimestre: '', anamnese: emptyAnamnese(), comparaison: emptyComparaison(), epreuves: ep }
+}
+
+function comparaisonHasData(c: ComparaisonPrecedent): boolean {
+  return !!(
+    c.date_precedent || c.test_precedent ||
+    c.trajectoire_lo || c.trajectoire_le || c.trajectoire_autres ||
+    c.commentaire_lo.trim() || c.commentaire_le.trim() || c.commentaire_autres.trim() ||
+    c.evolution_globale.trim() || c.pec_anterieure.trim()
+  )
 }
 
 function PercentileChips({ value, onChange }: { value: PercentileKey; onChange: (v: PercentileKey) => void }) {
@@ -626,6 +679,7 @@ export default function Evaleo615ScoresInput({ notes, onNotesChange, onResultats
           niveau: (ex.niveau || prev.niveau) as State['niveau'],
           trimestre: (ex.trimestre || prev.trimestre) as TrimestreKey,
           anamnese: { ...prev.anamnese },
+          comparaison: prev.comparaison,
           epreuves: { ...prev.epreuves },
         }
         // Anamnese : ne remplace que les champs non vides
@@ -690,7 +744,8 @@ export default function Evaleo615ScoresInput({ notes, onNotesChange, onResultats
 
   useEffect(() => {
     const anamneseHasData = ANAMNESE_CHAMPS.some(c => state.anamnese[c.key].trim().length > 0)
-    if (totalSaisies === 0 && !state.niveau && !anamneseHasData) {
+    const compHasData = comparaisonHasData(state.comparaison)
+    if (totalSaisies === 0 && !state.niveau && !anamneseHasData && !compHasData) {
       onResultatsChange('')
       return
     }
@@ -710,6 +765,29 @@ export default function Evaleo615ScoresInput({ notes, onNotesChange, onResultats
       for (const c of ANAMNESE_CHAMPS) {
         const v = state.anamnese[c.key].trim()
         if (v) lines.push(`${c.label} : ${v}`)
+      }
+      lines.push('')
+    }
+    // L4 : comparaison bilan precedent → active le MODE RENOUVELLEMENT prompt
+    if (compHasData) {
+      const c = state.comparaison
+      lines.push('=== COMPARAISON BILAN PRECEDENT (mode renouvellement) ===')
+      if (c.date_precedent) lines.push(`Date bilan precedent : ${c.date_precedent}`)
+      if (c.test_precedent.trim()) lines.push(`Test precedent : ${c.test_precedent.trim()}`)
+      if (c.pec_anterieure.trim()) lines.push(`PEC entre les 2 bilans : ${c.pec_anterieure.trim()}`)
+      const dumpTraj = (label: string, traj: TrajectoireKey, comm: string) => {
+        if (!traj && !comm.trim()) return
+        const trajLabel = TRAJECTOIRE_OPTIONS.find(o => o.key === traj)?.label ?? ''
+        const parts: string[] = []
+        if (trajLabel) parts.push(trajLabel)
+        if (comm.trim()) parts.push(comm.trim())
+        lines.push(`${label} : ${parts.join(' — ')}`)
+      }
+      dumpTraj('Trajectoire LO', c.trajectoire_lo, c.commentaire_lo)
+      dumpTraj('Trajectoire LE', c.trajectoire_le, c.commentaire_le)
+      dumpTraj('Trajectoire Autres', c.trajectoire_autres, c.commentaire_autres)
+      if (c.evolution_globale.trim()) {
+        lines.push(`Synthese evolution globale : ${c.evolution_globale.trim()}`)
       }
       lines.push('')
     }
@@ -910,6 +988,102 @@ export default function Evaleo615ScoresInput({ notes, onNotesChange, onResultats
                 />
               </div>
             ))}
+          </div>
+        </details>
+      </div>
+
+      {/* L4 : Comparaison bilan precedent — active le mode renouvellement */}
+      <div className="rounded-lg border border-teal-200 bg-teal-50/40">
+        <details className="group" open={false}>
+          <summary className="cursor-pointer px-4 py-3 flex items-center justify-between gap-3 hover:bg-teal-50">
+            <div className="min-w-0">
+              <p className="text-sm font-semibold text-teal-900">Comparaison avec un bilan precedent (renouvellement)</p>
+              <p className="text-[11px] text-teal-700 mt-0.5 leading-relaxed">
+                Remplissez ces champs UNIQUEMENT si c&apos;est un renouvellement de bilan. L&apos;IA structurera
+                alors la synthese comme une comparaison aux resultats anterieurs (progres / stagnation /
+                regression par domaine) et conclura sur l&apos;efficacite de la prise en charge.
+              </p>
+            </div>
+            <ChevronDown size={16} className="shrink-0 transition-transform group-open:rotate-180" />
+          </summary>
+          <div className="border-t border-teal-200 px-4 py-3 space-y-3">
+            <div className="grid sm:grid-cols-2 gap-2.5">
+              <div className="flex flex-col">
+                <label className="text-[11px] font-medium text-teal-900 mb-0.5">Date du bilan precedent</label>
+                <input
+                  type="date"
+                  value={state.comparaison.date_precedent}
+                  onChange={(e) => setState(s => ({ ...s, comparaison: { ...s.comparaison, date_precedent: e.target.value } }))}
+                  className="px-2 py-1.5 border border-teal-200 rounded text-[11px] bg-white"
+                />
+              </div>
+              <div className="flex flex-col">
+                <label className="text-[11px] font-medium text-teal-900 mb-0.5">Test precedent (intitule)</label>
+                <input
+                  type="text"
+                  value={state.comparaison.test_precedent}
+                  onChange={(e) => setState(s => ({ ...s, comparaison: { ...s.comparaison, test_precedent: e.target.value } }))}
+                  placeholder="ex. EVALEO 6-15 (decembre 2024), Exalang 8-11..."
+                  className="px-2 py-1.5 border border-teal-200 rounded text-[11px] bg-white"
+                />
+              </div>
+            </div>
+
+            <div className="flex flex-col">
+              <label className="text-[11px] font-medium text-teal-900 mb-0.5">Prise en charge anterieure (entre les 2 bilans)</label>
+              <textarea
+                value={state.comparaison.pec_anterieure}
+                onChange={(e) => setState(s => ({ ...s, comparaison: { ...s.comparaison, pec_anterieure: e.target.value } }))}
+                rows={2}
+                placeholder="Type de PEC (orthophonie hebdomadaire 45 min, axes cibles), duree, assiduite, autres suivis (psychomotricite, ergotherapie)..."
+                className="px-2 py-1.5 border border-teal-200 rounded text-[11px] leading-relaxed resize-y bg-white"
+              />
+            </div>
+
+            {(['lo', 'le', 'autres'] as const).map(dom => {
+              const trajKey = `trajectoire_${dom}` as 'trajectoire_lo' | 'trajectoire_le' | 'trajectoire_autres'
+              const commKey = `commentaire_${dom}` as 'commentaire_lo' | 'commentaire_le' | 'commentaire_autres'
+              const domLabel = { lo: 'Langage Oral', le: 'Langage Ecrit', autres: 'Autres (memoire, visuo-att., praxies)' }[dom]
+              const traj = state.comparaison[trajKey]
+              return (
+                <div key={dom} className="rounded border border-teal-200 bg-white p-2">
+                  <p className="text-[11px] font-semibold text-teal-900 mb-1">{domLabel}</p>
+                  <div className="flex flex-wrap gap-1 mb-1.5">
+                    {TRAJECTOIRE_OPTIONS.map(o => {
+                      const active = traj === o.key
+                      return (
+                        <button
+                          key={o.key}
+                          type="button"
+                          onClick={() => setState(s => ({ ...s, comparaison: { ...s.comparaison, [trajKey]: active ? '' : o.key } }))}
+                          className={`px-2 py-0.5 rounded text-[10px] font-medium transition ${o.chip} ${active ? 'ring-2 ring-offset-1 ring-gray-700' : 'opacity-50 hover:opacity-100'}`}
+                        >
+                          {o.label}
+                        </button>
+                      )
+                    })}
+                  </div>
+                  <textarea
+                    value={state.comparaison[commKey]}
+                    onChange={(e) => setState(s => ({ ...s, comparaison: { ...s.comparaison, [commKey]: e.target.value } }))}
+                    rows={1}
+                    placeholder="Commentaire libre sur l'evolution de ce domaine..."
+                    className="w-full px-2 py-1 border border-teal-200 rounded text-[11px] leading-relaxed resize-y bg-white"
+                  />
+                </div>
+              )
+            })}
+
+            <div className="flex flex-col">
+              <label className="text-[11px] font-medium text-teal-900 mb-0.5">Synthese narrative de l&apos;evolution globale (optionnelle)</label>
+              <textarea
+                value={state.comparaison.evolution_globale}
+                onChange={(e) => setState(s => ({ ...s, comparaison: { ...s.comparaison, evolution_globale: e.target.value } }))}
+                rows={3}
+                placeholder="Synthese narrative libre sur l'evolution globale entre les 2 bilans : faits saillants, leviers, freins, ressenti de l'enfant et de la famille..."
+                className="px-2 py-1.5 border border-teal-200 rounded text-[11px] leading-relaxed resize-y bg-white"
+              />
+            </div>
           </div>
         </details>
       </div>

@@ -279,6 +279,56 @@ l'épreuve **Empan visuo-attentionnel** notée en **millisecondes**.
 
 ---
 
+#### 🆕 MODE RENOUVELLEMENT EVALEO (form ortho.ia)
+
+Quand le bloc \`=== COMPARAISON BILAN PRECEDENT (mode renouvellement) ===\` est présent dans les résultats transmis, tu DOIS activer un traitement spécifique renouvellement. C'est un signal explicite envoyé par le form (différent du \`bilan_type='renouvellement'\` global du wizard, qui peut être mis sans données comparatives).
+
+**Contenu du bloc** :
+- Date du bilan précédent
+- Test précédent (intitulé libre)
+- PEC entre les 2 bilans (type, fréquence, axes, durée, assiduité)
+- Trajectoire par grand domaine (Langage Oral / Langage Écrit / Autres) → \`Progres\` / \`Stagnation\` / \`Regression\` + commentaire libre
+- Synthèse narrative globale optionnelle
+
+**Comment traiter en phase 1 (extract)** :
+
+1. \`anamnese_redigee\` reste centrée sur l'anamnèse du patient. Ne pas y intégrer la PEC anterieure.
+2. \`motif_reformule\` doit refléter qu'il s'agit d'un renouvellement : "Renouvellement du bilan orthophonique réalisé le [date précédente] dans le contexte de [PEC]." (1-2 phrases).
+3. Les \`domains[]\` listent les épreuves du nouveau bilan comme d'habitude.
+4. Dans les \`commentaire\` de chaque domaine, intègre la dimension d'évolution UNIQUEMENT si le commentaire de trajectoire le mentionne explicitement. Sinon, commentaire standard.
+
+**Comment traiter en phase 2 (synthesize)** :
+
+5. Le champ \`synthese_evolution\` du JSON CRBO DOIT être renseigné :
+   - \`resume\` : 2-3 phrases qui synthétisent l'évolution globale en croisant les 3 trajectoires fournies et la PEC.
+   - \`domaines_progres\` : liste les domaines marqués \`Progres\` dans le bloc.
+   - \`domaines_stagnation\` : liste les domaines marqués \`Stagnation\`.
+   - \`domaines_regression\` : liste les domaines marqués \`Regression\`.
+
+6. Le \`diagnostic\` doit s'ouvrir sur une phrase d'évolution : "Par rapport au bilan du [date précédente], on observe [synthèse trajectoires]. Le profil actuel se caractérise par [diagnostic actuel]..." — puis enchaîner sur le diagnostic classique.
+
+7. Les \`recommandations\` doivent **conclure sur la PEC** :
+   - Si les progrès sont nets sur les axes ciblés → "La prise en charge actuelle apporte des bénéfices objectivables. Poursuite à raison de [fréquence] est recommandée pour consolider."
+   - Si stagnation → "La trajectoire suggère une stagnation. Repositionnement des axes vers [nouveaux axes] à envisager."
+   - Si régression → "La trajectoire montre une régression sur [domaines]. Réévaluation des axes thérapeutiques et discussion d'une intensification (séances bi-hebdomadaires ou ateliers de groupe) recommandée."
+   - Si tableau hétérogène → croiser et formuler avec nuance.
+
+8. **TOUJOURS** mentionner explicitement la PEC anterieure dans la conclusion. Sa durée, son intensité, ses axes. C'est l'élément central qui distingue un renouvellement d'un bilan initial.
+
+**Vocabulaire renouvellement à utiliser** :
+- "Par rapport au bilan précédent du [date]…"
+- "Au regard de [N mois] de prise en charge orthophonique…"
+- "Les axes thérapeutiques travaillés (X, Y) ont permis…"
+- "On note une évolution favorable / contrastée / défavorable sur…"
+- "Le seuil clinique [maintenu / dépassé / non encore atteint] sur…"
+
+**Vocabulaire à éviter dans le renouvellement** :
+- "premier bilan", "bilan initial" (faux par construction)
+- "découverte de…" (l'enfant est déjà connu)
+- "découvrir le profil" (on l'a déjà)
+
+---
+
 #### 🆕 TRIMESTRE ET FICHE ANAMNÈSE EVALEO (form ortho.ia)
 
 **Trimestre (T1 / T2 / T3)**
