@@ -82,7 +82,7 @@ export interface EvaleoExtracted {
   }
   epreuves: Array<{
     key: string  // EvaleoEpreuveKey
-    percentile: string  // 'p_sup_95' | 'p_90_95' | 'p_75_90' | 'p_50_75' | 'p_25_50' | 'p_10_25' | 'p_5_10' | 'p_inf_5' | ''
+    percentile: string  // 'classe_7' | 'classe_6' | 'classe_5' | 'classe_4' | 'classe_3' | 'classe_2' | 'classe_1' | ''
     score_brut: string
     temps: string
     observation: string
@@ -153,8 +153,8 @@ export const EVALEO_EXTRACT_TOOL: Anthropic.Tool = {
             },
             percentile: {
               type: 'string',
-              enum: ['', 'p_sup_95', 'p_90_95', 'p_75_90', 'p_50_75', 'p_25_50', 'p_10_25', 'p_5_10', 'p_inf_5'],
-              description: 'Zone percentile : p_sup_95 (>P95), p_90_95 (P91-P95), p_75_90 (P76-P90), p_50_75 (P50-P75, Q3 inclus), p_25_50 (P26-P49), p_10_25 (P11-P25, Q1 inclus), p_5_10 (P6-P10), p_inf_5 (P1-P5). Convertir depuis la classe HappyNeuron (1-7) ou le percentile affiche.',
+              enum: ['', 'classe_7', 'classe_6', 'classe_5', 'classe_4', 'classe_3', 'classe_2', 'classe_1'],
+              description: 'Classe EVALEO officielle (7 classes) : classe_7 (Tres superieure, >P93), classe_6 (Superieure, P81-P93), classe_5 (Norme superieure, P63-P80), classe_4 (Norme mediane, P39-P62), classe_3 (Norme faible, P21-P38), classe_2 (Fragilite, P7-P20), classe_1 (Pathologique, <P7). Recopier la classe affichee par la plateforme HappyNeuron. Si seul un percentile est donne, convertir : >P93→classe_7, P81-P93→classe_6, P63-P80→classe_5, P39-P62→classe_4, P21-P38→classe_3, P7-P20→classe_2, <P7→classe_1.',
             },
             score_brut: { type: 'string', description: 'Score brut tel qu\'affiche, format libre (ex. "23/30", "78", "12,5"). Vide si absent.' },
             temps:      { type: 'string', description: 'Temps en secondes (ou millisecondes pour empan_visuo_attentionnel). Vide si absent.' },
@@ -266,21 +266,26 @@ PDF sur les cles. Exemples :
 - "Evalouette" / "Texte non signifiant" → \`evalouette\`
 - Si une epreuve ne matche AUCUNE cle de l'enum, NE PAS la creer (l'enum est strict).
 
-**percentile** : convertir depuis l'affichage HappyNeuron (classe 1-7 OU percentile
-direct) vers les 8 zones ortho.ia :
-- Classe 7 (>P93) → p_sup_95
-- Classe 6 (P81-P93) → p_90_95 (si ≥P91) ou p_75_90 (P81-P90)
-- Classe 5 (P63-P80) → p_75_90 (P76-P80) ou p_50_75 (P63-P75)
-- Classe 4 (P39-P62) → p_50_75
-- Classe 3 (P21-P38) → p_25_50 (P26-P38) ou p_10_25 (P21-P25)
-- Classe 2 (P7-P20) → p_10_25 (P11-P20) ou p_5_10 (P7-P10)
-- Classe 1 (<P7) → p_5_10 (P6) ou p_inf_5 (P1-P5)
+**percentile** : recopier la **classe EVALEO** affichee par la plateforme
+HappyNeuron, en utilisant la nomenclature officielle de la batterie :
+- Classe 7 (>P93) → \`classe_7\` ("Tres superieure")
+- Classe 6 (P81-P93) → \`classe_6\` ("Superieure")
+- Classe 5 (P63-P80) → \`classe_5\` ("Norme superieure")
+- Classe 4 (P39-P62) → \`classe_4\` ("Norme mediane")
+- Classe 3 (P21-P38) → \`classe_3\` ("Norme faible")
+- Classe 2 (P7-P20) → \`classe_2\` ("Fragilite")
+- Classe 1 (<P7) → \`classe_1\` ("Pathologique")
 
-⚠️ **Q1 = P25 = NORMAL** (zone p_10_25 "Zone de fragilite") — JAMAIS deficitaire.
-Si le PDF affiche "Q1", utiliser p_10_25. Si "Med" ou "Q2", utiliser p_50_75.
-Si "Q3", utiliser p_50_75 (Q3=P75 inclus dans P50-P75).
+Le PDF EVALEO peut presenter la classe sous forme de barre coloree (1-7), de
+nombre, ou de label texte ("Norme mediane", "Pathologique"). Tous ces formats
+mappent sur les 7 classes ci-dessus. Si seul un percentile chiffre est
+disponible, le convertir selon les bornes ci-dessus.
 
-Si percentile pas clair → ''.
+⚠️ NE PAS utiliser la grille Exalang (Excellent / Moyenne haute / Difficulte
+severe...) — c'est une autre batterie. EVALEO impose ses 7 classes
+officielles.
+
+Si la classe n'est pas claire dans le PDF → ''.
 
 **score_brut** : tel qu'affiche, format libre. Ex. "23/30", "78%", "12.5".
 **temps** : en secondes (ms pour empan_visuo_attentionnel). Format libre.

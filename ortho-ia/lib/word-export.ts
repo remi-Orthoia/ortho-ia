@@ -968,12 +968,20 @@ export async function generateCRBOWord(payload: WordExportPayload): Promise<Blob
         const seuil = seuilFor(e.percentile_value)
         // Cellules épreuve / score / É-T : pas de fond coloré (sobre).
         // Centile et Interprétation : fond couleur de la zone + texte adapté.
+        // Interprétation : si Claude a écrit un label custom dans `e.interpretation`
+        // (typiquement pour les bilans qui n'utilisent pas la nomenclature 6 zones
+        // Laurie — EVALEO 7 classes, MoCA 3 zones, etc.), on l'affiche tel quel.
+        // Sinon fallback sur le label par défaut de la grille 6 zones. La couleur
+        // de fond reste pilotée par percentile_value pour cohérence visuelle.
+        const interpLabel = (typeof e.interpretation === 'string' && e.interpretation.trim())
+          ? e.interpretation.trim()
+          : seuil.label
         tableRows.push(new TableRow({ children: [
           createCell(e.nom, { dxa: cols[0] }),
           createCell(e.score, { dxa: cols[1], alignment: AlignmentType.CENTER }),
           createCell(e.et ?? '—', { dxa: cols[2], alignment: AlignmentType.CENTER }),
           createCell(fmtCentile(e.percentile, e.percentile_value), { dxa: cols[3], alignment: AlignmentType.CENTER, shading: seuil.shading, textColor: seuil.textColor, bold: true }),
-          createCell(seuil.label, { dxa: cols[4], alignment: AlignmentType.CENTER, shading: seuil.shading, textColor: seuil.textColor, bold: true }),
+          createCell(interpLabel, { dxa: cols[4], alignment: AlignmentType.CENTER, shading: seuil.shading, textColor: seuil.textColor, bold: true }),
         ]}))
       })
       children.push(

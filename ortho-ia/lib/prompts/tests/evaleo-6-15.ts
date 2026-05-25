@@ -144,20 +144,73 @@ Les normes sont stratifiées par classe. Le cahier de passation comporte des ép
 **spécifiques par niveau** (Conversion Grapho-Phonémique au CP, Décision orthographique
 à partir du CE2, Compréhension écrite de texte à partir de la 6e, etc.).
 
-#### SCORING
+#### 🔒 GRILLE OFFICIELLE EVALEO 6-15 — 7 CLASSES (REGLE IMPERATIVE)
 
-- Résultats en **percentiles** (1 à 99) OU **notes standardisées** selon les épreuves.
-- Cotation informatisée disponible : recopier le percentile/zone affiché par le logiciel.
-- **Seuils cliniques utilisés en CRBO ortho.ia** (grille 6 zones Laurie, refonte 2026-05-ter) :
-  - P76-100 : Excellent
-  - P50-P75 : Moyenne haute (Q3 inclus)
-  - P26-P49 : Moyenne basse
-  - P11-P25 : Zone de fragilité (Q1 inclus)
-  - P6-P10  : Difficulté
-  - P1-P5   : Difficulté sévère (Exalang n'affiche jamais <P5)
+EVALEO n'utilise PAS la grille 6 zones Exalang ("Excellent / Moyenne haute /
+Difficulte severe..."). EVALEO impose sa propre grille officielle en
+**7 classes**, validee par les auteurs et utilisee dans tous les exemples de
+CRBO Anne Frouard / Mila / Enora joints :
 
-⚠️ Comme pour Exalang, ne JAMAIS recalculer un percentile depuis l'écart-type.
-Q1 = P25 = NORMAL, jamais déficitaire.
+| Classe | Libelle officiel    | Plage centiles | Interpretation clinique           |
+|--------|---------------------|----------------|------------------------------------|
+| 7      | Tres superieure     | > P93          | Performance tres au-dessus de la norme |
+| 6      | Superieure          | P81 - P93      | Performance au-dessus de la norme |
+| 5      | Norme superieure    | P63 - P80      | Norme haute                       |
+| 4      | Norme mediane       | P39 - P62      | Norme centrale (moyenne attendue) |
+| 3      | Norme faible        | P21 - P38      | Norme basse, encore dans l'attendu |
+| 2      | Fragilite           | P7 - P20       | Seuil d'alerte, fragilite installee |
+| 1      | Pathologique        | < P7           | Performance pathologique          |
+
+**REGLE ABSOLUE** : pour TOUT bilan EVALEO (et uniquement EVALEO), tu DOIS
+utiliser cette nomenclature dans :
+
+1. Le champ \`interpretation\` du JSON CRBO (\`domains[].epreuves[].interpretation\`)
+   → ecrire **exactement** "Classe X - <Libelle>" (ex. "Classe 5 - Norme superieure",
+   "Classe 1 - Pathologique"). JAMAIS "Excellent", "Moyenne haute", "Difficulte",
+   etc. — ces termes sont reserves a Exalang/HappyNeuron percentile-based.
+
+2. Les commentaires de domaine (\`domains[].commentaire\` et \`domain_commentaires[]\`)
+   → utiliser la terminologie EVALEO :
+   - "X obtient une performance en classe 5 (norme superieure)..."
+   - "Les resultats se situent en classe 2, soit en zone de fragilite..."
+   - "Cette epreuve est cotee en classe 1, soit pathologique..."
+
+3. Le \`diagnostic\` et la \`synthese_evolution\` (renouvellement) :
+   - "X presente plusieurs epreuves en classes 1 et 2..."
+   - "Les domaines preserves sont cotes en classes 4 a 6..."
+
+4. Les \`recommandations\` :
+   - "Les axes en classes 1-2 sont prioritaires : ..."
+
+**Mapping percentile_value (pour la couleur de fond Word)** : la couleur de
+cellule du tableau Word est pilotee par \`percentile_value\` (numerique 0-100)
+qui dois rester aligne sur la classe via la mediane de la plage :
+- Classe 7 → percentile_value = 96
+- Classe 6 → percentile_value = 87
+- Classe 5 → percentile_value = 71
+- Classe 4 → percentile_value = 50
+- Classe 3 → percentile_value = 30
+- Classe 2 → percentile_value = 13
+- Classe 1 → percentile_value = 3
+
+Le rendu Word affichera la couleur correspondante (de vert fonce a rouge) ET
+le label EVALEO que tu auras ecrit dans \`interpretation\`. La coloration et
+le label sont donc independants mais coherents.
+
+**Le champ \`percentile\`** (string) reste utilise pour la valeur textuelle
+brute : tu peux y mettre la plage de centiles ("P63-P80", "< P7") OU "Classe X"
+selon ce qui est plus lisible. Ne PAS y mettre "Q1", "Q3", "Med" (notation
+Exalang) — EVALEO n'utilise pas cette notation.
+
+⚠️ Si l'ortho a saisi via le form ortho.ia, la ligne "Classe EVALEO : Classe X
+(<Libelle>) — P_-P_" arrive deja dans le bloc resultats. Recopie-la dans
+\`interpretation\` au format "Classe X - <Libelle>".
+
+#### SCORING (general)
+
+- Resultats en **classes EVALEO** (1 a 7) OU **notes standardisees** selon les epreuves.
+- Cotation informatisee disponible : recopier la classe affichee par le logiciel.
+- Ne JAMAIS recalculer une classe depuis l'ecart-type.
 
 #### TEMPS
 

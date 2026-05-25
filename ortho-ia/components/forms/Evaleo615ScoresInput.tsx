@@ -32,43 +32,51 @@ interface Props {
   onError?: (msg: string) => void
 }
 
+/**
+ * GRILLE OFFICIELLE EVALEO 6-15 — 7 CLASSES (Launay et al. 2018).
+ *
+ * Substitue la grille 6 zones Laurie d'Exalang. Source : Livret de consignes
+ * et cotation EVALEO 6-15, 6e edition 03/2024.
+ *
+ * Mapping vers `percentile_value` (numerique 0-100) : on prend la mediane de
+ * la fourchette de centiles de chaque classe — ainsi le moteur de coloration
+ * Word (lib/word-export.ts seuilFor()) genere une couleur de fond cellule
+ * coherente avec la severite de la classe, meme si le label texte est en
+ * nomenclature EVALEO native.
+ */
 type PercentileKey =
-  | '' | 'p_sup_95' | 'p_90_95' | 'p_75_90' | 'p_50_75' | 'p_25_50' | 'p_10_25' | 'p_5_10' | 'p_inf_5'
+  | '' | 'classe_7' | 'classe_6' | 'classe_5' | 'classe_4' | 'classe_3' | 'classe_2' | 'classe_1'
 
-// Grille 6 zones imposée Laurie (refonte 2026-05-ter).
-// Exalang n'affiche JAMAIS de bande <P5 — la bande la plus basse est P1-P5.
 const PERCENTILE_OPTIONS: Array<{
   key: Exclude<PercentileKey, ''>
+  /** Label affiche en chip (court). */
   label: string
+  /** Libelle officiel EVALEO complet, transmis a Claude pour le commentaire. */
+  fullLabel: string
+  /** Fourchette de centiles correspondant a la classe. */
+  range: string
+  /** Mediane de la fourchette → pilote la couleur Word via seuilFor(). */
   value: number
-  zone: 'excellent' | 'moyenne_haute' | 'moyenne_basse' | 'fragilite' | 'difficulte' | 'difficulte_severe'
   chip: string
   text: string
 }> = [
-  { key: 'p_sup_95', label: '> P95',     value: 97, zone: 'excellent',         chip: 'bg-emerald-700', text: 'text-white' },
-  { key: 'p_90_95',  label: 'P91 — P95', value: 92, zone: 'excellent',         chip: 'bg-emerald-600', text: 'text-white' },
-  { key: 'p_75_90',  label: 'P76 — P90', value: 80, zone: 'excellent',         chip: 'bg-emerald-500', text: 'text-white' },
-  { key: 'p_50_75',  label: 'P50 — P75', value: 60, zone: 'moyenne_haute',     chip: 'bg-emerald-300', text: 'text-emerald-900' },
-  { key: 'p_25_50',  label: 'P26 — P49', value: 35, zone: 'moyenne_basse',     chip: 'bg-yellow-300',  text: 'text-yellow-900' },
-  { key: 'p_10_25',  label: 'P11 — P25', value: 18, zone: 'fragilite',         chip: 'bg-orange-300',  text: 'text-orange-900' },
-  { key: 'p_5_10',   label: 'P6 — P10',  value: 7,  zone: 'difficulte',        chip: 'bg-orange-500',  text: 'text-white' },
-  { key: 'p_inf_5',  label: 'P1 — P5',   value: 3,  zone: 'difficulte_severe', chip: 'bg-red-600',     text: 'text-white' },
+  { key: 'classe_7', label: 'Classe 7', fullLabel: 'Tres superieure', range: '> P93',     value: 96, chip: 'bg-emerald-700', text: 'text-white' },
+  { key: 'classe_6', label: 'Classe 6', fullLabel: 'Superieure',      range: 'P81 — P93', value: 87, chip: 'bg-emerald-600', text: 'text-white' },
+  { key: 'classe_5', label: 'Classe 5', fullLabel: 'Norme superieure', range: 'P63 — P80', value: 71, chip: 'bg-emerald-400', text: 'text-white' },
+  { key: 'classe_4', label: 'Classe 4', fullLabel: 'Norme mediane',   range: 'P39 — P62', value: 50, chip: 'bg-yellow-300',  text: 'text-yellow-900' },
+  { key: 'classe_3', label: 'Classe 3', fullLabel: 'Norme faible',    range: 'P21 — P38', value: 30, chip: 'bg-amber-400',   text: 'text-amber-900' },
+  { key: 'classe_2', label: 'Classe 2', fullLabel: 'Fragilite',       range: 'P7 — P20',  value: 13, chip: 'bg-orange-500',  text: 'text-white' },
+  { key: 'classe_1', label: 'Classe 1', fullLabel: 'Pathologique',    range: '< P7',      value: 3,  chip: 'bg-red-600',     text: 'text-white' },
 ]
 
-function percentileLabel(k: PercentileKey): string {
+function classeEvaleoLabel(k: PercentileKey): string {
   return PERCENTILE_OPTIONS.find(o => o.key === k)?.label ?? ''
 }
-function zoneLabel(k: PercentileKey): string {
-  const z = PERCENTILE_OPTIONS.find(o => o.key === k)?.zone
-  switch (z) {
-    case 'excellent': return 'Excellent'
-    case 'moyenne_haute': return 'Moyenne haute'
-    case 'moyenne_basse': return 'Moyenne basse'
-    case 'fragilite': return 'Zone de fragilité'
-    case 'difficulte': return 'Difficulté'
-    case 'difficulte_severe': return 'Difficulté sévère'
-    default: return ''
-  }
+function classeEvaleoFullLabel(k: PercentileKey): string {
+  return PERCENTILE_OPTIONS.find(o => o.key === k)?.fullLabel ?? ''
+}
+function classeEvaleoRange(k: PercentileKey): string {
+  return PERCENTILE_OPTIONS.find(o => o.key === k)?.range ?? ''
 }
 
 interface Epreuve {
@@ -505,6 +513,11 @@ function comparaisonHasData(c: ComparaisonPrecedent): boolean {
   )
 }
 
+/**
+ * Sélecteur de classe EVALEO (7 classes officielles). Affiche la classe +
+ * libelle officiel + plage de centiles. Tres compact mais explicite — l'ortho
+ * voit immediatement la nomenclature EVALEO.
+ */
 function PercentileChips({ value, onChange }: { value: PercentileKey; onChange: (v: PercentileKey) => void }) {
   return (
     <div className="flex flex-wrap gap-1">
@@ -515,9 +528,11 @@ function PercentileChips({ value, onChange }: { value: PercentileKey; onChange: 
             key={o.key}
             type="button"
             onClick={() => onChange(active ? '' : o.key)}
-            className={`px-2 py-1 rounded text-xs font-medium transition ${o.chip} ${o.text} ${active ? 'ring-2 ring-offset-1 ring-gray-700' : 'opacity-60 hover:opacity-100'}`}
+            title={`${o.label} - ${o.fullLabel} (${o.range})`}
+            className={`px-2 py-1 rounded text-[10px] font-medium transition ${o.chip} ${o.text} ${active ? 'ring-2 ring-offset-1 ring-gray-700' : 'opacity-55 hover:opacity-100'}`}
           >
-            {o.label}
+            <span className="font-bold">{o.label}</span>
+            <span className="ml-1 opacity-90">{o.fullLabel}</span>
           </button>
         )
       })}
@@ -525,7 +540,7 @@ function PercentileChips({ value, onChange }: { value: PercentileKey; onChange: 
         <button
           type="button"
           onClick={() => onChange('')}
-          className="px-2 py-1 rounded text-xs text-gray-500 hover:text-gray-900 underline decoration-dotted"
+          className="px-2 py-1 rounded text-[10px] text-gray-500 hover:text-gray-900 underline decoration-dotted"
         >
           effacer
         </button>
@@ -731,13 +746,15 @@ export default function Evaleo615ScoresInput({ notes, onNotesChange, onResultats
     return n
   }, [state.epreuves])
 
-  const zoneCounts = useMemo(() => {
-    const c = { excellent: 0, moyenne_haute: 0, moyenne_basse: 0, fragilite: 0, difficulte: 0, difficulte_severe: 0 }
+  /** Compteurs par classe EVALEO (7 classes officielles). */
+  const classeCounts = useMemo(() => {
+    const c: Record<Exclude<PercentileKey, ''>, number> = {
+      classe_7: 0, classe_6: 0, classe_5: 0, classe_4: 0, classe_3: 0, classe_2: 0, classe_1: 0,
+    }
     for (const s of SECTIONS) for (const sd of s.subdomains) for (const e of sd.epreuves) {
       const st = state.epreuves[e.key]
       if (st.non_passee) continue
-      const z = PERCENTILE_OPTIONS.find(o => o.key === st.percentile)?.zone
-      if (z) c[z]++
+      if (st.percentile && st.percentile in c) c[st.percentile as Exclude<PercentileKey, ''>]++
     }
     return c
   }, [state.epreuves])
@@ -811,7 +828,13 @@ export default function Evaleo615ScoresInput({ notes, onNotesChange, onResultats
           const tag = e.tag ? ` (${e.tag})` : ''
           lines.push(`Épreuve : ${e.label}${tag}`)
           if (st.percentile !== '') {
-            lines.push(`  Percentile : ${percentileLabel(st.percentile)} — ${zoneLabel(st.percentile)}`)
+            // Format EVALEO natif : "Classe 5 (Norme supérieure) — P63-P80"
+            // Claude DOIT utiliser cette terminologie verbatim dans le commentaire
+            // et le champ `interpretation` du JSON CRBO.
+            const lbl = classeEvaleoLabel(st.percentile)
+            const full = classeEvaleoFullLabel(st.percentile)
+            const range = classeEvaleoRange(st.percentile)
+            lines.push(`  Classe EVALEO : ${lbl} (${full}) — ${range}`)
           }
           if (st.score_brut.trim()) lines.push(`  Score brut : ${st.score_brut.trim()}`)
           if (st.temps.trim()) lines.push(`  Temps : ${st.temps.trim()}`)
@@ -845,20 +868,18 @@ export default function Evaleo615ScoresInput({ notes, onNotesChange, onResultats
         if (subPrinted) lines.push('')
       }
     }
-    // Synthèse
-    const tot = zoneCounts.excellent + zoneCounts.moyenne_haute + zoneCounts.moyenne_basse + zoneCounts.fragilite + zoneCounts.difficulte + zoneCounts.difficulte_severe
+    // Synthèse — repartition par CLASSES EVALEO officielles (7 classes)
+    const tot = Object.values(classeCounts).reduce((a, b) => a + b, 0)
     if (tot > 0) {
-      lines.push('--- Synthèse zones percentiles ---')
-      lines.push(`Excellent (P76-100) : ${zoneCounts.excellent}`)
-      lines.push(`Moyenne haute (P50-P75) : ${zoneCounts.moyenne_haute}`)
-      lines.push(`Moyenne basse (P26-P49) : ${zoneCounts.moyenne_basse}`)
-      lines.push(`Zone de fragilité (P11-P25) : ${zoneCounts.fragilite}`)
-      lines.push(`Difficulté (P6-P10) : ${zoneCounts.difficulte}`)
-      lines.push(`Difficulté sévère (P1-P5) : ${zoneCounts.difficulte_severe}`)
+      lines.push('--- Synthese classes EVALEO ---')
+      for (const opt of PERCENTILE_OPTIONS) {
+        const n = classeCounts[opt.key]
+        if (n > 0) lines.push(`${opt.label} - ${opt.fullLabel} (${opt.range}) : ${n}`)
+      }
     }
     onResultatsChange(lines.join('\n'))
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [state, totalSaisies, zoneCounts])
+  }, [state, totalSaisies, classeCounts])
 
   const setField = (key: string, field: keyof EpreuveState, v: any) => {
     setState(s => ({ ...s, epreuves: { ...s.epreuves, [key]: { ...s.epreuves[key], [field]: v } } }))
@@ -1089,22 +1110,20 @@ export default function Evaleo615ScoresInput({ notes, onNotesChange, onResultats
         </details>
       </div>
 
-      {/* Synthèse */}
+      {/* Synthèse — repartition par CLASSE EVALEO (7 classes officielles) */}
       {totalSaisies > 0 && (
         <div className="rounded-lg border border-gray-200 bg-gray-50 p-3">
           <p className="text-xs font-semibold text-gray-700 mb-2">
-            Répartition par zone — {totalSaisies}/{totalEpreuves} épreuves saisies
+            Repartition par classe EVALEO — {totalSaisies}/{totalEpreuves} epreuves saisies
           </p>
           <div className="flex flex-wrap gap-1.5">
-            {(['excellent', 'moyenne_haute', 'moyenne_basse', 'fragilite', 'difficulte', 'difficulte_severe'] as const).map(z => {
-              const n = zoneCounts[z]
+            {PERCENTILE_OPTIONS.map(opt => {
+              const n = classeCounts[opt.key]
               if (n === 0) return null
-              const label = { excellent: 'Excellent', moyenne_haute: 'Moyenne haute', moyenne_basse: 'Moyenne basse', fragilite: 'Zone de fragilité', difficulte: 'Difficulté', difficulte_severe: 'Difficulté sévère' }[z]
-              const chip = { excellent: 'bg-emerald-700 text-white', moyenne_haute: 'bg-emerald-400 text-white', moyenne_basse: 'bg-yellow-300 text-yellow-900', fragilite: 'bg-orange-300 text-orange-900', difficulte: 'bg-orange-500 text-white', difficulte_severe: 'bg-red-600 text-white' }[z]
               return (
-                <span key={z} className={`inline-flex items-center gap-1 px-2 py-0.5 rounded text-xs font-medium ${chip}`}>
+                <span key={opt.key} className={`inline-flex items-center gap-1 px-2 py-0.5 rounded text-xs font-medium ${opt.chip} ${opt.text}`}>
                   <span className="font-bold">{n}</span>
-                  <span>{label}</span>
+                  <span>{opt.label} - {opt.fullLabel}</span>
                 </span>
               )
             })}

@@ -28,29 +28,34 @@ complément.
 
 ---
 
-### 1. Étalonnage en 7 classes (à utiliser dans le CRBO si EVALEO actif)
+### 1. Étalonnage en 7 classes (NOMENCLATURE OFFICIELLE EVALEO À UTILISER PARTOUT)
 
-| Classe | Centiles | Zone clinique |
-|--------|----------|----------------|
-| Classe 7 | > P93 | Très supérieure |
-| Classe 6 | P81 – P93 | Supérieure |
-| Classe 5 | P63 – P80 | Norme supérieure |
-| Classe 4 | P39 – P62 | Norme médiane |
-| Classe 3 | P21 – P38 | Norme faible |
-| Classe 2 | P7 – P20 | Fragilité |
-| Classe 1 | < P7 | Pathologique |
+| Classe | Libellé officiel    | Centiles    | Interprétation clinique           |
+|--------|---------------------|-------------|------------------------------------|
+| 7      | Très supérieure     | > P93       | Performance très au-dessus de la norme |
+| 6      | Supérieure          | P81 – P93   | Performance au-dessus de la norme |
+| 5      | Norme supérieure    | P63 – P80   | Norme haute                       |
+| 4      | Norme médiane       | P39 – P62   | Norme centrale (moyenne attendue) |
+| 3      | Norme faible        | P21 – P38   | Norme basse, encore dans l'attendu |
+| 2      | Fragilité           | P7 – P20    | Seuil d'alerte, fragilité installée |
+| 1      | Pathologique        | < P7        | Performance pathologique          |
 
-⚠️ **Mapping avec la grille SEUILS 6 zones ortho.ia** (Laurie refonte 2026-05-ter) :
-- Classes 6-7 (P76+) → "Excellent"
-- Classe 5 (P63-P75) → "Moyenne haute"
-- Classe 4 (P39-P62) → "Moyenne haute" (P50+) ou "Moyenne basse" (P39-49)
-- Classe 3 (P21-P38) → "Moyenne basse" (P26+) ou "Zone de fragilité" (P21-25)
-- Classe 2 (P7-P20) → "Zone de fragilité" (P11-20) ou "Difficulté" (P7-10)
-- Classe 1 (P1-P6) → "Difficulté" (P6) ou "Difficulté sévère" (P1-P5)
+🔒 **Règle imposée** : pour EVALEO, tu DOIS utiliser cette nomenclature
+verbatim dans tes commentaires, le diagnostic et le champ \`interpretation\`
+du JSON. JAMAIS la grille 6 zones Exalang ("Excellent / Moyenne haute /
+Difficulté sévère...") qui appartient à HappyNeuron percentile-based, pas à
+EVALEO.
 
-Quand l'EVALEO indique "classe 1", préférer rester précis sur la valeur Px
-(P6 = Difficulté, P3 = Difficulté sévère) — la classe 1 EVALEO regroupe
-plusieurs gravités cliniques distinctes du point de vue clinique.
+Exemples de formulations correctes :
+- "X obtient une performance en classe 5 (norme supérieure)..."
+- "Plusieurs épreuves sont cotées en classe 1 (pathologique) sur la voie d'assemblage..."
+- "Le score se situe en classe 2, soit en zone de fragilité..."
+
+Le rendu Word d'ortho.ia respecte cette nomenclature : la colonne
+Interprétation du tableau affiche "Classe X - <Libellé>" tel que tu l'écris
+dans \`interpretation\`. La couleur de fond de la cellule est dérivée de la
+plage de centiles (verte pour classes 5-7, jaune pour classe 4, orange pour
+classe 3, rouge pour classes 1-2).
 
 ---
 
