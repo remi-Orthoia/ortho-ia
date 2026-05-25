@@ -312,6 +312,81 @@ interface EpreuveState {
   temps: string
   observation: string
   non_passee: boolean
+  /** Effets en lecture (uniquement pour `lecture_mots` et `lecture_pseudomots`). */
+  effets?: EpreuveEffets
+  /** Qualification des erreurs (uniquement pour les dictees). */
+  erreurs?: EpreuveErreurs
+}
+
+/**
+ * Effets en lecture EVALEO (mots / pseudomots).
+ * Chaque effet est code en zone (excellent / moyenne / classe1-2 deficitaire),
+ * comme affiche par la plateforme HappyNeuron en sortie de cotation.
+ * C'est ce qui distingue dyslexie phono vs surface vs mixte.
+ */
+interface EpreuveEffets {
+  effet_frequence: EffetKey         // F+ vs F-
+  effet_consistance: EffetKey       // C+ vs C-
+  effet_longueur_score: EffetKey    // L1 vs L3 sur score
+  effet_longueur_temps: EffetKey    // L1 vs L3 sur temps
+  effet_lexicalite: EffetKey        // mots vs pseudomots (score ou temps)
+}
+
+type EffetKey = '' | 'absent_normal' | 'leger' | 'marque' | 'tres_marque'
+
+const EFFET_OPTIONS: Array<{ key: Exclude<EffetKey, ''>; label: string; chip: string; hint: string }> = [
+  { key: 'absent_normal', label: 'Absent / Normal', chip: 'bg-emerald-500 text-white', hint: 'Pas d effet significatif (developpement normal a partir de CE2)' },
+  { key: 'leger',         label: 'Leger',           chip: 'bg-yellow-300 text-yellow-900', hint: 'Effet present mais limite, sans impact pathologique' },
+  { key: 'marque',        label: 'Marque',          chip: 'bg-orange-400 text-white', hint: 'Effet net, en zone de fragilite ou difficulte (classe 2)' },
+  { key: 'tres_marque',   label: 'Tres marque',     chip: 'bg-red-600 text-white', hint: 'Effet massif (classe 1) = signature dyslexique' },
+]
+
+/**
+ * Qualification des erreurs en dictee EVALEO (mots / pseudomots / phrases).
+ * Compteurs ONPP / OL / ODM / ODNM / FV / FNP / FA / Seg / Hom.
+ * Ce qui distingue dysorthographie phono vs lexicale vs morpho.
+ */
+interface EpreuveErreurs {
+  onpp: string   // Orthographe Non Phonetiquement Plausible (voie d'assemblage en ecriture)
+  ol: string     // Orthographe Lexicale (voie d'adressage en ecriture)
+  odm: string    // Orthographe Derivable Morphologiquement
+  odnm: string   // Orthographe Derivable Non Morphologiquement
+  fv: string     // Flexion Verbale
+  fnp: string    // Flexion Nominale et Pronominale
+  fa: string     // Flexion Adjectivale
+  seg: string    // Segmentation
+  hom: string    // Homophone
+}
+
+const ERREURS_CHAMPS: Array<{ key: keyof EpreuveErreurs; label: string; hint: string; pour: ('dictee_mots' | 'dictee_pseudomots' | 'dictee_phrases')[] }> = [
+  { key: 'onpp', label: 'ONPP', hint: 'Orthographe Non Phonetiquement Plausible (voie d\'assemblage altereee)', pour: ['dictee_mots', 'dictee_pseudomots', 'dictee_phrases'] },
+  { key: 'ol',   label: 'OL',   hint: 'Orthographe Lexicale (voie d\'adressage altereee)', pour: ['dictee_mots', 'dictee_phrases'] },
+  { key: 'odm',  label: 'ODM',  hint: 'Orthographe Derivable Morphologiquement (affixes previsibles)', pour: ['dictee_mots', 'dictee_phrases'] },
+  { key: 'odnm', label: 'ODNM', hint: 'Orthographe Derivable Non Morphologiquement (racines, lettres muettes)', pour: ['dictee_mots', 'dictee_phrases'] },
+  { key: 'fv',   label: 'FV',   hint: 'Flexion Verbale (conjugaisons)', pour: ['dictee_phrases'] },
+  { key: 'fnp',  label: 'FNP',  hint: 'Flexion Nominale et Pronominale (genre, nombre)', pour: ['dictee_phrases'] },
+  { key: 'fa',   label: 'FA',   hint: 'Flexion Adjectivale (accords)', pour: ['dictee_phrases'] },
+  { key: 'seg',  label: 'Seg',  hint: 'Erreurs de segmentation des mots', pour: ['dictee_phrases'] },
+  { key: 'hom',  label: 'Hom',  hint: 'Homophones (a/a, et/est, son/sont)', pour: ['dictee_phrases'] },
+]
+
+/** Cle des epreuves qui declenchent la saisie des EFFETS de lecture. */
+const EPREUVES_AVEC_EFFETS = new Set(['lecture_mots', 'lecture_pseudomots'])
+/** Cle des epreuves qui declenchent la saisie des ERREURS qualifiees. */
+const EPREUVES_AVEC_ERREURS = new Set(['dictee_mots', 'dictee_pseudomots', 'dictee_phrases'])
+
+function emptyEffets(): EpreuveEffets {
+  return {
+    effet_frequence: '',
+    effet_consistance: '',
+    effet_longueur_score: '',
+    effet_longueur_temps: '',
+    effet_lexicalite: '',
+  }
+}
+
+function emptyErreurs(): EpreuveErreurs {
+  return { onpp: '', ol: '', odm: '', odnm: '', fv: '', fnp: '', fa: '', seg: '', hom: '' }
 }
 
 interface State {
@@ -322,7 +397,10 @@ interface State {
 function emptyState(): State {
   const ep: Record<string, EpreuveState> = {}
   for (const s of SECTIONS) for (const sd of s.subdomains) for (const e of sd.epreuves) {
-    ep[e.key] = { percentile: '', score_brut: '', temps: '', observation: '', non_passee: false }
+    const base: EpreuveState = { percentile: '', score_brut: '', temps: '', observation: '', non_passee: false }
+    if (EPREUVES_AVEC_EFFETS.has(e.key)) base.effets = emptyEffets()
+    if (EPREUVES_AVEC_ERREURS.has(e.key)) base.erreurs = emptyErreurs()
+    ep[e.key] = base
   }
   return { niveau: '', epreuves: ep }
 }
@@ -352,6 +430,104 @@ function PercentileChips({ value, onChange }: { value: PercentileKey; onChange: 
           effacer
         </button>
       )}
+    </div>
+  )
+}
+
+/**
+ * Saisie des EFFETS en lecture (epreuve `lecture_mots` ou `lecture_pseudomots`).
+ * 4 effets coute par dropdown :
+ *  - Effet de frequence (mots frequents vs rares)
+ *  - Effet de consistance (mots consistants vs inconsistants)
+ *  - Effet de longueur sur score
+ *  - Effet de longueur sur temps
+ *  - Effet de lexicalite (mots vs pseudomots, surtout pertinent sur `lecture_pseudomots`)
+ *
+ * Chaque effet = absent_normal / leger / marque / tres_marque. Cette structuration
+ * cible directement la cle du diagnostic dyslexie phono / surface / mixte sans
+ * laisser Claude le deviner depuis du texte libre.
+ */
+function EffetsEditor({
+  value, onChange, epreuveKey,
+}: { value: EpreuveEffets; onChange: (v: EpreuveEffets) => void; epreuveKey: string }) {
+  const setEffet = (k: keyof EpreuveEffets, v: EffetKey) => onChange({ ...value, [k]: v })
+  const showLexicalite = epreuveKey === 'lecture_pseudomots'
+  const lines: Array<{ key: keyof EpreuveEffets; label: string; hint: string }> = [
+    { key: 'effet_frequence',       label: 'Effet frequence',        hint: 'Difference mots frequents F+ vs rares F-. Marque = lexique orthographique insuffisamment constitue.' },
+    { key: 'effet_consistance',     label: 'Effet consistance',      hint: 'Difference mots reguliers C+ vs irreguliers C-. Marque = sensible a l\'opacite, voie d\'adressage perturbee.' },
+    { key: 'effet_longueur_score',  label: 'Effet longueur (score)', hint: 'L1 courts vs L3 longs sur la precision. Marque = voie phonologique encore couteuse.' },
+    { key: 'effet_longueur_temps',  label: 'Effet longueur (temps)', hint: 'L1 courts vs L3 longs sur la vitesse. Marque = lecture analytique persistante.' },
+  ]
+  if (showLexicalite) {
+    lines.push({ key: 'effet_lexicalite', label: 'Effet lexicalite', hint: 'Difference mots vs pseudomots. Marque sur pseudomots = voie phonologique deficitaire.' })
+  }
+  return (
+    <div className="mt-2 rounded border border-indigo-200 bg-indigo-50/50 p-2">
+      <p className="text-[10px] font-semibold text-indigo-900 mb-1.5 uppercase tracking-wide">Effets HappyNeuron — saisir le niveau d&apos;effet observe</p>
+      <div className="space-y-1.5">
+        {lines.map(line => (
+          <div key={line.key} className="flex flex-col gap-1">
+            <div>
+              <span className="text-[11px] font-medium text-gray-800">{line.label}</span>
+              <span className="text-[10px] text-gray-500 ml-1">{line.hint}</span>
+            </div>
+            <div className="flex flex-wrap gap-1">
+              {EFFET_OPTIONS.map(o => {
+                const active = value[line.key] === o.key
+                return (
+                  <button
+                    key={o.key}
+                    type="button"
+                    onClick={() => setEffet(line.key, active ? '' : o.key)}
+                    className={`px-2 py-0.5 rounded text-[10px] font-medium transition ${o.chip} ${active ? 'ring-2 ring-offset-1 ring-gray-700' : 'opacity-50 hover:opacity-100'}`}
+                    title={o.hint}
+                  >
+                    {o.label}
+                  </button>
+                )
+              })}
+            </div>
+          </div>
+        ))}
+      </div>
+    </div>
+  )
+}
+
+/**
+ * Saisie de la QUALIFICATION DES ERREURS pour une dictee EVALEO.
+ * Compteurs ONPP / OL / ODM / ODNM (mots) + FV / FNP / FA / Seg / Hom (phrases).
+ * Cible directement le sous-type de dysorthographie (phonologique / lexicale / morpho).
+ */
+function ErreursDicteeEditor({
+  value, onChange, epreuveKey,
+}: { value: EpreuveErreurs; onChange: (v: EpreuveErreurs) => void; epreuveKey: string }) {
+  const setErreur = (k: keyof EpreuveErreurs, v: string) => onChange({ ...value, [k]: v })
+  // Pseudomots : uniquement ONPP. Mots : ONPP/OL/ODM/ODNM. Phrases : tout.
+  const champsActifs = ERREURS_CHAMPS.filter(c => c.pour.includes(epreuveKey as any))
+  return (
+    <div className="mt-2 rounded border border-rose-200 bg-rose-50/50 p-2">
+      <p className="text-[10px] font-semibold text-rose-900 mb-1.5 uppercase tracking-wide">Qualification des erreurs — nombre par type</p>
+      <div className="grid grid-cols-3 sm:grid-cols-5 gap-1.5">
+        {champsActifs.map(c => (
+          <div key={c.key} className="flex flex-col">
+            <label className="text-[10px] font-medium text-gray-700 flex items-center gap-0.5" title={c.hint}>
+              {c.label}
+            </label>
+            <input
+              type="text"
+              inputMode="numeric"
+              value={value[c.key]}
+              onChange={(e) => setErreur(c.key, e.target.value.replace(/[^0-9]/g, '').slice(0, 3))}
+              placeholder="0"
+              className="px-1.5 py-0.5 border border-gray-300 rounded text-[11px] text-center"
+            />
+          </div>
+        ))}
+      </div>
+      <p className="text-[10px] text-rose-700 mt-1.5 leading-tight">
+        Astuce : la plateforme HappyNeuron affiche directement ces compteurs en sortie de cotation. Reportez tels quels.
+      </p>
     </div>
   )
 }
@@ -417,6 +593,31 @@ export default function Evaleo615ScoresInput({ notes, onNotesChange, onResultats
           }
           if (st.score_brut.trim()) lines.push(`  Score brut : ${st.score_brut.trim()}`)
           if (st.temps.trim()) lines.push(`  Temps : ${st.temps.trim()}`)
+          // L1 : effets de lecture serialises de facon structuree pour Claude
+          if (st.effets) {
+            const e_ = st.effets
+            const effetLabels: Array<[string, string]> = []
+            const fmt = (k: EffetKey) => EFFET_OPTIONS.find(o => o.key === k)?.label ?? ''
+            if (e_.effet_frequence)      effetLabels.push(['Frequence', fmt(e_.effet_frequence)])
+            if (e_.effet_consistance)    effetLabels.push(['Consistance', fmt(e_.effet_consistance)])
+            if (e_.effet_longueur_score) effetLabels.push(['Longueur (score)', fmt(e_.effet_longueur_score)])
+            if (e_.effet_longueur_temps) effetLabels.push(['Longueur (temps)', fmt(e_.effet_longueur_temps)])
+            if (e_.effet_lexicalite)     effetLabels.push(['Lexicalite', fmt(e_.effet_lexicalite)])
+            if (effetLabels.length > 0) {
+              lines.push(`  Effets HappyNeuron : ${effetLabels.map(([k, v]) => `${k}=${v}`).join(' | ')}`)
+            }
+          }
+          // L1 : qualification des erreurs en dictee serialisee
+          if (st.erreurs) {
+            const errLabels: string[] = []
+            for (const c of ERREURS_CHAMPS) {
+              const v = st.erreurs[c.key].trim()
+              if (v && c.pour.includes(e.key as any)) errLabels.push(`${c.label}=${v}`)
+            }
+            if (errLabels.length > 0) {
+              lines.push(`  Qualification erreurs : ${errLabels.join(' | ')}`)
+            }
+          }
           if (st.observation.trim()) lines.push(`  Observation : ${st.observation.trim()}`)
         }
         if (subPrinted) lines.push('')
@@ -588,6 +789,22 @@ export default function Evaleo615ScoresInput({ notes, onNotesChange, onResultats
                                         className="px-2 py-1 border border-gray-200 rounded text-[11px]"
                                       />
                                     </div>
+                                    {/* L1 : effets en lecture (mots / pseudomots) */}
+                                    {st.effets && EPREUVES_AVEC_EFFETS.has(e.key) && (
+                                      <EffetsEditor
+                                        value={st.effets}
+                                        onChange={(v) => setField(e.key, 'effets', v)}
+                                        epreuveKey={e.key}
+                                      />
+                                    )}
+                                    {/* L1 : qualification des erreurs en dictee */}
+                                    {st.erreurs && EPREUVES_AVEC_ERREURS.has(e.key) && (
+                                      <ErreursDicteeEditor
+                                        value={st.erreurs}
+                                        onChange={(v) => setField(e.key, 'erreurs', v)}
+                                        epreuveKey={e.key}
+                                      />
+                                    )}
                                     <textarea
                                       value={st.observation}
                                       onChange={(ev) => setField(e.key, 'observation', ev.target.value)}

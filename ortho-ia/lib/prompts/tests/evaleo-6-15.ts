@@ -279,6 +279,60 @@ l'épreuve **Empan visuo-attentionnel** notée en **millisecondes**.
 
 ---
 
+#### 🆕 FORMAT DES INPUTS STRUCTURÉS DU FORM ORTHO.IA
+
+Le form de saisie EVALEO d'ortho.ia transmet 2 grilles structurées en plus du percentile/score/observation classiques. **Tu DOIS les exploiter dans ton commentaire d'épreuve quand elles sont présentes** — elles encodent directement le diagnostic différentiel.
+
+**1. Effets HappyNeuron (lignes commençant par "Effets HappyNeuron :")**
+
+Présentes sur les épreuves \`Lecture de mots\` et \`Lecture de pseudomots\`. Format :
+\`Effets HappyNeuron : Frequence=X | Consistance=Y | Longueur (score)=Z | Longueur (temps)=W | Lexicalite=L\`
+
+Valeurs possibles pour chaque effet : \`Absent / Normal\`, \`Leger\`, \`Marque\`, \`Tres marque\`.
+
+**Lecture obligatoire des effets pour conclure** :
+
+| Effet | Marque ou Tres marque signifie |
+|-------|--------------------------------|
+| Frequence | Lexique orthographique insuffisamment constitué → voie d'adressage perturbée (signe de **dyslexie de surface** ou mixte) |
+| Consistance | Sujet sensible à l'opacité orthographique → voie lexicale n'accède pas aux mots irréguliers (signe de **surface**) |
+| Longueur (score) | La précision décroît sur les mots longs → voie phonologique encore coûteuse (signe **phonologique** chez les ≥CE2) |
+| Longueur (temps) | La vitesse décroît sur les mots longs → lecture analytique persistante, automatisation faible (signe **phonologique** chez les ≥CE2) |
+| Lexicalite (sur pseudomots) | Pseudomots beaucoup moins bien lus que les mots → voie d'assemblage déficitaire (signe **phonologique**) |
+
+⚠️ À partir du CE2, ces effets s'atténuent normalement (automatisation). \`Absent / Normal\` après CE2 = développement attendu. Effet \`Marque\` ou \`Tres marque\` = signature dyslexique.
+
+**Comment intégrer dans le commentaire de l'épreuve** :
+- Si pattern \`Frequence=Marque + Consistance=Marque\` et longueur Absent → suggérer **dyslexie de surface** dans la conclusion lecture.
+- Si pattern \`Longueur=Marque + Lexicalite=Marque\` et fréquence Absent → suggérer **dyslexie phonologique**.
+- Si tous les effets \`Marque\` ou \`Tres marque\` → **dyslexie mixte**.
+
+NE PAS lister les effets verbatim dans le CRBO — synthétiser : "Sa lecture est marquée par un effet de fréquence et de consistance, traduisant une voie d'adressage insuffisamment constituée."
+
+**2. Qualification des erreurs en dictée (lignes commençant par "Qualification erreurs :")**
+
+Présentes sur \`Dictée de mots\`, \`Dictée de pseudomots\`, \`Dictée de phrases\`. Format :
+\`Qualification erreurs : ONPP=3 | OL=2 | ODM=1 | ODNM=0 | FV=2 | FNP=1 | FA=0 | Seg=1 | Hom=0\`
+
+Acronymes (cf. méthode EVALEO) :
+- **ONPP** : Orthographe Non Phonétiquement Plausible → atteinte **voie d'assemblage en écriture** (signe dysorthographie **phonologique** si majoritaire).
+- **OL** : Orthographe Lexicale → atteinte **voie d'adressage en écriture** (signe dysorthographie **lexicale / de surface**).
+- **ODM** : Orthographe Dérivable Morphologiquement (affixes prévisibles) → atteinte de la **morphologie dérivationnelle**.
+- **ODNM** : Orthographe Dérivable Non Morphologiquement (racines, lettres muettes) → atteinte du **stock orthographique fin**.
+- **FV / FNP / FA** : Flexions Verbale / Nominale-Pronominale / Adjectivale → atteinte de l'**orthographe grammaticale** (accord) — signe dysorthographie **morphologique**.
+- **Seg** : Segmentation des mots → atteinte de la frontière lexicale (mot fonction collé, mot rare segmenté).
+- **Hom** : Homophones (a/à, et/est, son/sont) → atteinte de la décision lexicale en contexte.
+
+**Comment intégrer dans le commentaire de l'épreuve** :
+- ONPP majoritaire → "atteinte dominante de la voie d'assemblage, traduisant un déficit de la correspondance phonographique".
+- OL + ODM + ODNM majoritaires → "atteinte dominante de la voie d'adressage, lexique orthographique insuffisamment constitué".
+- FV + FNP + FA majoritaires → "atteinte dominante de l'orthographe grammaticale, accords morphologiques non automatisés".
+- Mélange ONPP + OL + Flexions → dysorthographie **mixte**.
+
+**Synthèse dans le diagnostic** : utiliser le sous-type (phonologique / lexicale / mixte / linguistique grammaticale) inféré du croisement effets lecture + erreurs dictée.
+
+---
+
 #### INTERPRÉTATION CLINIQUE — DOMAINES CLÉS
 
 **PHONOLOGIE & MÉTAPHONOLOGIE**
