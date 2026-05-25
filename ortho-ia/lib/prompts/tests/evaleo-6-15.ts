@@ -332,31 +332,51 @@ l'épreuve **Empan visuo-attentionnel** notée en **millisecondes**.
 
 ---
 
-#### 🆕 FORMAT DE RÉDACTION EVALEO (style Anne Frouard, prose continue)
+#### 🆕 FORMAT DE RÉDACTION EVALEO (style Anne Frouard, prose continue **CONCISE**)
 
 **SURCHARGE le format global du wizard** (système prompt principal). Quand EVALEO 6-15 est sélectionné, le rendu attendu est calqué sur le format Anne Frouard observé dans les exemples joints au module \`evaleo-method.ts\` (2 PDF + 4 Word de référence). Ce format diffère du format COMPLET générique sur 4 points concrets — applique les règles EVALEO ci-dessous **en priorité** sur les règles globales.
 
-**1. Commentaires de domaine (\`domain_commentaires\` / commentaire dans \`domains[].commentaire\`)**
+🔒 **RÈGLE TRANSVERSALE — CONCISION** : tous les textes produits doivent être **denses et courts**. Le style Anne Frouard EVALEO n'est PAS littéraire ni explicatif — c'est un format clinique professionnel synthétique. Pour chaque section, viser le volume cible indiqué et ne JAMAIS le dépasser de plus de 20%. Si tu hésites entre 2 phrases ou 4 phrases, prends 2. Mieux vaut être laconique et factuel que long et pédagogique. Le CRBO complet ne doit pas dépasser 3-4 pages.
+
+Volumes cibles par section (à respecter strictement) :
+- \`anamnese_redigee\` : 8-15 lignes (1 paragraphe dense)
+- \`motif_reformule\` : 1-2 lignes
+- \`domains[].commentaire\` : **2-3 lignes par domaine** (~40-70 mots)
+- \`diagnostic\` : 10-15 lignes total
+- \`recommandations\` : 8-12 lignes total
+- \`pap_suggestions\` : 4-6 items max, 1 ligne chacun
+
+**1. Commentaires de domaine (\`domain_commentaires\` / commentaire dans \`domains[].commentaire\`)** — SYNTHETIQUES
 
 ❌ NE PAS écrire en bullets condensés ("• **Lecture de mots :** [observation 1 ligne]").
-✅ Écrire en **prose continue**, 1 paragraphe par domaine, 4-8 lignes par paragraphe.
+❌ NE PAS écrire de longs paragraphes explicatifs (5+ lignes). Le premier test a produit des commentaires beaucoup trop lourds.
+✅ Écrire en **prose courte et dense**, **2-3 lignes maximum par domaine** (~40-70 mots). Synthèse, pas dissertation.
 
-Modèle attendu pour un domaine (ex. Lecture identification) :
-> "X obtient un score de [X] mots lus en 2 minutes, ce qui la situe en classe [Y].
-> La lecture de mots montre un effet de fréquence [marqué/léger/absent], traduisant
-> [un lexique orthographique encore en construction / un déficit de la voie d'adressage].
-> L'effet de longueur sur le temps [marqué/léger/absent] signale [voie d'assemblage
-> encore coûteuse / voie d'adressage automatisée]. La lecture de pseudomots est
-> [préservée/déficitaire], indiquant [voie d'assemblage fonctionnelle/atteinte].
-> Au total, le profil de lecture est compatible avec une dyslexie [phonologique /
-> de surface / mixte], confirmée par les croisements [épreuves convergentes]."
+Style attendu : **factuel, concis, EVALEO Anne Frouard**. Chaque phrase doit apporter de l'information clinique nouvelle. Pas de redondance, pas de meta-commentaire ("on peut noter que..."), pas de formules de remplissage.
 
-Pas de bullets dans le commentaire de domaine. Pas de label en gras du nom de l'épreuve en début de ligne. Pas de phrase d'1 ligne. Prose dense et factuelle.
+Modèle attendu pour Lecture identification :
+> "Les performances en lecture se situent majoritairement en classe 2 (fragilité). L'effet de longueur marqué sur le temps et la lecture de pseudomots en classe 1 signent une atteinte de la voie d'assemblage. Le profil oriente vers une dyslexie phonologique."
 
-**2. Diagnostic (\`diagnostic\`)**
+3 phrases denses, 1 idée par phrase :
+1. Constat (zones / classes).
+2. Élément clinique distinctif (effets, croisement).
+3. Synthèse interprétative (sous-type).
 
+Modèle pour un domaine peu marqué (ex. Compréhension écrite préservée) :
+> "La compréhension écrite est cotée en classe 5 (norme supérieure) sur phrases comme sur paragraphes. Cette préservation contraste avec les difficultés de décodage et exclut un trouble de la compréhension."
+
+2 phrases suffisent quand le domaine est simple.
+
+Pas de bullets dans le commentaire de domaine. Pas de label en gras du nom de l'épreuve. Pas de redite de l'information du tableau ("X obtient 12/20 ce qui correspond à...") — le tableau est juste au-dessus, ne le paraphrase pas. Aller à l'essentiel clinique.
+
+**2. Diagnostic (\`diagnostic\`)** — CONCIS
+
+❌ NE PAS écrire un pavé de 20+ lignes. Le diagnostic Anne Frouard fait ~10-15 lignes total, pas plus.
 ❌ NE PAS structurer en "phrase formelle + phrase synthèse points d'appui / axes de fragilité" comme le format COMPLET générique le demande.
-✅ Structurer en **bloc continu unique** suivant exactement le canevas Anne Frouard imposé par le décret 2002-721 (déjà détaillé dans \`evaleo-method.ts\` section 6, à appliquer verbatim sur la formule juridique d'ouverture).
+✅ Structurer en **bloc continu unique** d'environ **10-15 lignes total**, suivant exactement le canevas Anne Frouard imposé par le décret 2002-721 (déjà détaillé dans \`evaleo-method.ts\` section 6, à appliquer verbatim sur la formule juridique d'ouverture).
+✅ Bullets de troubles : **3-5 items max** (un par diagnostic identifié). Description de chaque bullet : **1 ligne max**, factuelle.
+✅ Bullets de causes : **2-4 items max**, idem.
+✅ Pas de répétition entre bullets et clause négative.
 
 Structure obligatoire (un seul bloc, pas de sous-titres internes) :
 
@@ -380,22 +400,24 @@ Structure obligatoire (un seul bloc, pas de sous-titres internes) :
 
 5. **Si \`difficultes_identifiees\` est rempli en sortie JSON** : retourner \`""\` pour cette clé (la synthèse points d'appui / axes de fragilité du format COMPLET global n'a PAS sa place dans le diagnostic EVALEO). Le diagnostic EVALEO se suffit à lui-même.
 
-**3. Recommandations / Projet thérapeutique (\`recommandations\` et \`axes_therapeutiques\`)**
+**3. Recommandations / Projet thérapeutique (\`recommandations\` et \`axes_therapeutiques\`)** — RESSERRÉS
 
 ❌ NE PAS retourner \`recommandations=""\` comme le format COMPLET global le demande (suppression de la section "Projet thérapeutique").
-✅ Remplir \`recommandations\` avec un **projet thérapeutique en prose courte** suivi d'**axes en bullets non numérotés** (pas \`1. 2. 3.\`).
+❌ NE PAS écrire de longues recommandations avec justification clinique par axe — le diagnostic juste au-dessus a déjà fait ce travail.
+✅ Remplir \`recommandations\` avec un **projet thérapeutique en prose très courte** (1 phrase d'intro + 1 phrase PAP, ~3-4 lignes total) suivi d'**axes en bullets non numérotés courts** (1 ligne par axe, **3-5 axes max**, pas \`1. 2. 3.\`).
 
-Structure attendue :
+Structure attendue (volume cible : 8-12 lignes total) :
 
-> "Il semble important de mettre en place une prise en charge orthophonique afin de [objectif court]. Un Plan d'Accompagnement Personnalisé (PAP) est également indiqué pour permettre à [prénom] de suivre sa scolarité dans des conditions adaptées au trouble identifié.
+> "Une prise en charge orthophonique hebdomadaire (30 AMO [12,1 / 10,1 / 5]) est proposée pour 24-36 mois. Un Plan d'Accompagnement Personnalisé (PAP) est indiqué.
 >
-> Axes thérapeutiques proposés :
->   • Renforcement de la conscience phonologique et des correspondances graphème-phonème
->   • Enrichissement du stock lexical orthographique (voie d'adressage)
->   • Travail des stratégies de compensation
->   • [autres axes selon profil]
->
-> Une séance individuelle hebdomadaire de 30 AMO [12,1 / 10,1 / 5 selon profil] est proposée pour une durée de 24 à 36 mois, à réévaluer."
+> Axes thérapeutiques :
+>   • [axe 1, 1 ligne, ex. "Renforcement de la conscience phonologique"]
+>   • [axe 2, 1 ligne]
+>   • [axe 3, 1 ligne]
+>   • [axe 4 ou 5 si pertinent]"
+
+PAS de paragraphe explicatif sur chaque axe. PAS de répétition du diagnostic.
+Si tu hésites à mettre un 6ème axe, ne le mets pas — synthèse > exhaustivité.
 
 **4. PAP / Aménagements scolaires (\`pap_suggestions\`)**
 
