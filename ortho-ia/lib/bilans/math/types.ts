@@ -102,6 +102,22 @@ export interface BilanMathDraft {
    *  Claude pour mieux orienter le choix du profil diagnostique. */
   anamnese?: string
   motif?: string
+  /** Date du bilan (ISO) — handoff depuis l'etape 2 du wizard. */
+  bilanDate?: string
+  /** Medecin prescripteur (etape 3 du wizard). */
+  medecin?: { nom: string; tel: string }
+  /** Observations comportement seance (etape 5 du wizard). */
+  comportementSeance?: string
+  /** Duree totale seance en minutes (etape 5 du wizard). */
+  dureeSeanceMinutes?: number
+  /** Donnees specifiques au renouvellement (etape 4 du wizard si renouvellement). */
+  renouvellement?: {
+    evolutionNotes?: string
+    elementsStables?: string
+    bilanPrecedentId?: string
+    bilanPrecedentDate?: string
+    bilanPrecedentAnamnese?: string
+  }
   epreuves: Record<string, EpreuveState>
   updatedAt: number
 }

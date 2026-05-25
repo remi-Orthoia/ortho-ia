@@ -2554,6 +2554,23 @@ Astuce : tapez /fatigue, /anxiete, /encouragements… pour réutiliser vos formu
                                       },
                                       anamnese: formData.anamnese || '',
                                       motif: formData.motif || '',
+                                      bilanMode: formData.bilan_type === 'renouvellement' ? 'renouvellement' : 'initial',
+                                      bilanDate: formData.bilan_date || '',
+                                      medecin: {
+                                        nom: formData.medecin_nom || '',
+                                        tel: formData.medecin_tel || '',
+                                      },
+                                      comportementSeance: formData.comportement_seance || '',
+                                      dureeSeanceMinutes: formData.duree_seance_minutes,
+                                      renouvellement: formData.bilan_type === 'renouvellement'
+                                        ? {
+                                            evolutionNotes: formData.evolution_notes || '',
+                                            elementsStables: formData.elements_stables || '',
+                                            bilanPrecedentId: formData.bilan_precedent_id || '',
+                                            bilanPrecedentDate: formData.bilan_precedent_date || '',
+                                            bilanPrecedentAnamnese: formData.bilan_precedent_anamnese || '',
+                                          }
+                                        : undefined,
                                     })
                                     router.push(b.href)
                                   }}

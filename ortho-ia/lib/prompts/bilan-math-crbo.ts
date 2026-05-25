@@ -55,6 +55,26 @@ export interface BilanMathCRBOContext {
   /** Anamnèse rédigée par l'ortho au Nouveau CRBO. Sera reproduite (lègère
    *  reformulation) dans la section "Anamnèse" du CRBO. */
   anamnese?: string
+  /** Date du bilan (ISO YYYY-MM-DD). Utilisee dans la section Motif. */
+  bilanDate?: string
+  /** Nom du medecin prescripteur (deja anonymise). Mentionne dans le Motif
+   *  ("a la demande du Dr [nom]..."). */
+  medecinNom?: string
+  /** Observations qualitatives sur le comportement du patient pendant la
+   *  seance — etayent le diagnostic + paragraphe Diagnostic ("Tout au long
+   *  du bilan, [Prenom] s'est montre..."). */
+  comportementSeance?: string
+  /** Duree totale de la seance en minutes — informatif. */
+  dureeSeanceMinutes?: number
+  /** Donnees specifiques renouvellement (etape 4 wizard). Si present, le
+   *  motif et l'anamnese doivent integrer la trajectoire d'evolution et le
+   *  diagnostic doit s'ouvrir sur une phrase de comparaison. */
+  renouvellement?: {
+    evolutionNotes?: string
+    elementsStables?: string
+    bilanPrecedentDate?: string
+    bilanPrecedentAnamnese?: string
+  }
   domaines: DomaineInput[]
 }
 
@@ -143,6 +163,13 @@ function describeEpreuve(ep: EpreuveInput): string {
   return lines.join('\n')
 }
 
+function formatDateFR(iso: string): string {
+  if (!iso) return ''
+  const d = new Date(iso)
+  if (isNaN(d.getTime())) return iso
+  return d.toLocaleDateString('fr-FR')
+}
+
 export function buildBilanMathCRBOUserPrompt(ctx: BilanMathCRBOContext): string {
   const lines: string[] = []
   const bilanLabel = ctx.bilanType === 'b-cm' ? 'B-CM (enfant cycles II-III)' : 'B-CMado (collège)'
@@ -151,6 +178,11 @@ export function buildBilanMathCRBOUserPrompt(ctx: BilanMathCRBOContext): string 
   if (ctx.patientAge || ctx.patientClasse) {
     lines.push(`Patient : ${ctx.patientAge || 'âge non renseigné'}${ctx.patientClasse ? `, ${ctx.patientClasse}` : ''}`)
   }
+  if (ctx.bilanDate) lines.push(`Date du bilan : ${formatDateFR(ctx.bilanDate)}`)
+  if (ctx.medecinNom) lines.push(`Medecin prescripteur : ${ctx.medecinNom}`)
+  if (typeof ctx.dureeSeanceMinutes === 'number' && ctx.dureeSeanceMinutes > 0) {
+    lines.push(`Duree totale de la seance : ${ctx.dureeSeanceMinutes} minutes`)
+  }
   lines.push('')
 
   // Bloc contexte clinique : motif + anamnèse repris du Nouveau CRBO. Pour
@@ -158,7 +190,8 @@ export function buildBilanMathCRBOUserPrompt(ctx: BilanMathCRBOContext): string 
   // synthétique), reformulée légèrement.
   const motifTrim = (ctx.motif ?? '').trim()
   const anamneseTrim = (ctx.anamnese ?? '').trim()
-  if (motifTrim || anamneseTrim) {
+  const comportementTrim = (ctx.comportementSeance ?? '').trim()
+  if (motifTrim || anamneseTrim || comportementTrim) {
     lines.push('## CONTEXTE CLINIQUE (à reproduire et reformuler dans le CRBO)')
     if (motifTrim) {
       lines.push('Motif de consultation :')
@@ -168,6 +201,38 @@ export function buildBilanMathCRBOUserPrompt(ctx: BilanMathCRBOContext): string 
     if (anamneseTrim) {
       lines.push('Anamnèse :')
       lines.push(anamneseTrim)
+      lines.push('')
+    }
+    if (comportementTrim) {
+      lines.push('Observations sur le comportement pendant la seance (a integrer dans le paragraphe Diagnostic, formulation Elsa : "Tout au long du bilan, [Prenom] s\'est montre...") :')
+      lines.push(comportementTrim)
+      lines.push('')
+    }
+  }
+
+  // Bloc renouvellement : trajectoire d'evolution + bilan precedent. Active
+  // un traitement specifique cote prompt (Motif rappelle le bilan precedent,
+  // Anamnese mentionne les elements stables, Diagnostic s'ouvre sur la
+  // synthese d'evolution).
+  const ren = ctx.renouvellement
+  if (ren && (ren.evolutionNotes || ren.elementsStables || ren.bilanPrecedentDate || ren.bilanPrecedentAnamnese)) {
+    lines.push('## RENOUVELLEMENT — donnees d\'evolution depuis le bilan precedent')
+    if (ren.bilanPrecedentDate) {
+      lines.push(`Date du bilan precedent : ${formatDateFR(ren.bilanPrecedentDate)}`)
+    }
+    if ((ren.bilanPrecedentAnamnese ?? '').trim()) {
+      lines.push('Anamnese du bilan precedent (a inclure brievement en rappel) :')
+      lines.push((ren.bilanPrecedentAnamnese ?? '').trim())
+      lines.push('')
+    }
+    if ((ren.elementsStables ?? '').trim()) {
+      lines.push('Elements anamnese stables a conserver :')
+      lines.push((ren.elementsStables ?? '').trim())
+      lines.push('')
+    }
+    if ((ren.evolutionNotes ?? '').trim()) {
+      lines.push('Notes d\'evolution depuis le bilan precedent (a synthetiser dans une ouverture du Diagnostic du type "Par rapport au bilan du [date], on observe...") :')
+      lines.push((ren.evolutionNotes ?? '').trim())
       lines.push('')
     }
   }

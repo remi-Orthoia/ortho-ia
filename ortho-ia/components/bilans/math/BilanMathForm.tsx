@@ -112,6 +112,9 @@ export default function BilanMathForm({ grille }: BilanMathFormProps) {
       const base: BilanMathDraft = nextDraft ?? makeEmptyDraft(grille)
       nextDraft = {
         ...base,
+        // Le mode bilan vient du wizard (initial/renouvellement). Si l'ortho
+        // avait deja change le mode sur le form math, on prefere sa valeur.
+        mode: base.mode !== 'initial' ? base.mode : (handoff.bilanMode ?? base.mode),
         patient: {
           prenom: base.patient.prenom || handoff.patient.prenom,
           nom: base.patient.nom || handoff.patient.nom,
@@ -120,6 +123,13 @@ export default function BilanMathForm({ grille }: BilanMathFormProps) {
         },
         anamnese: base.anamnese || handoff.anamnese,
         motif: base.motif || handoff.motif,
+        bilanDate: base.bilanDate || handoff.bilanDate,
+        medecin: base.medecin && (base.medecin.nom || base.medecin.tel)
+          ? base.medecin
+          : handoff.medecin,
+        comportementSeance: base.comportementSeance || handoff.comportementSeance,
+        dureeSeanceMinutes: base.dureeSeanceMinutes ?? handoff.dureeSeanceMinutes,
+        renouvellement: base.renouvellement ?? handoff.renouvellement,
         updatedAt: Date.now(),
       }
       clearMathBilanHandoff()
@@ -380,10 +390,16 @@ export default function BilanMathForm({ grille }: BilanMathFormProps) {
           bilanType: grille.id,
           mode: draft.mode,
           patient: draft.patient,
-          // Contexte clinique repris du Nouveau CRBO (étapes 1-3). Sert au
-          // prompt à orienter le choix du profil diagnostique Elsa.
+          // Contexte clinique repris du Nouveau CRBO (etapes 1-5). Sert au
+          // prompt a orienter le choix du profil diagnostique Elsa.
           motif: draft.motif ?? '',
           anamnese: draft.anamnese ?? '',
+          // Champs additionnels handoff wizard — transmis si presents.
+          bilanDate: draft.bilanDate ?? '',
+          medecin: draft.medecin ?? undefined,
+          comportementSeance: draft.comportementSeance ?? '',
+          dureeSeanceMinutes: draft.dureeSeanceMinutes,
+          renouvellement: draft.renouvellement ?? undefined,
           domaines: domainesPayload,
         }),
       })

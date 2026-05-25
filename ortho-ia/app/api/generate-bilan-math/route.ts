@@ -58,6 +58,18 @@ interface PayloadBody {
   }
   motif?: string
   anamnese?: string
+  /** Champs handoff wizard (transmis depuis nouveau-crbo → BilanMathForm). */
+  bilanDate?: string
+  medecin?: { nom: string; tel: string }
+  comportementSeance?: string
+  dureeSeanceMinutes?: number
+  renouvellement?: {
+    evolutionNotes?: string
+    elementsStables?: string
+    bilanPrecedentId?: string
+    bilanPrecedentDate?: string
+    bilanPrecedentAnamnese?: string
+  }
   domaines: Array<{
     domaineLabel: string
     epreuves: Array<{
@@ -220,6 +232,25 @@ export async function POST(request: NextRequest) {
   const safeMotif = scrubText(rawMotif, scrubList) ?? ''
   const safeAnamnese = scrubText(rawAnamnese, scrubList) ?? ''
 
+  // Anonymise les champs handoff additionnels (medecin + observations seance +
+  // donnees renouvellement). Les valeurs vides apres nettoyage sont omises au
+  // niveau du prompt builder.
+  const rawComportement = typeof body.comportementSeance === 'string' ? body.comportementSeance : ''
+  const safeComportement = scrubText(rawComportement, scrubList) ?? ''
+  const medecinNom = body.medecin && typeof body.medecin.nom === 'string'
+    ? (scrubText(body.medecin.nom, scrubList) ?? '')
+    : ''
+  const safeRenouvellement = body.renouvellement
+    ? {
+        evolutionNotes: scrubText(body.renouvellement.evolutionNotes ?? '', scrubList) ?? '',
+        elementsStables: scrubText(body.renouvellement.elementsStables ?? '', scrubList) ?? '',
+        bilanPrecedentDate: typeof body.renouvellement.bilanPrecedentDate === 'string'
+          ? body.renouvellement.bilanPrecedentDate
+          : '',
+        bilanPrecedentAnamnese: scrubText(body.renouvellement.bilanPrecedentAnamnese ?? '', scrubList) ?? '',
+      }
+    : undefined
+
   const ctx: BilanMathCRBOContext = {
     bilanType: body.bilanType,
     mode: body.mode,
@@ -228,6 +259,11 @@ export async function POST(request: NextRequest) {
     patientClasse: typeof patient.classe === 'string' ? patient.classe : '',
     motif: safeMotif,
     anamnese: safeAnamnese,
+    bilanDate: typeof body.bilanDate === 'string' ? body.bilanDate : '',
+    medecinNom,
+    comportementSeance: safeComportement,
+    dureeSeanceMinutes: typeof body.dureeSeanceMinutes === 'number' ? body.dureeSeanceMinutes : undefined,
+    renouvellement: safeRenouvellement,
     domaines: safeDomaines,
   }
   const userPrompt = buildBilanMathCRBOUserPrompt(ctx)

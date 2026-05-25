@@ -27,6 +27,27 @@ export interface MathBilanHandoff {
   }
   anamnese: string
   motif: string
+  /** Mode bilan (initial / renouvellement) saisi a l'etape 2 du wizard. */
+  bilanMode?: 'initial' | 'renouvellement'
+  /** Date du bilan (ISO). Utilisee pour le calcul d'age + affichage Word. */
+  bilanDate?: string
+  /** Medecin prescripteur (etape 3 du wizard). */
+  medecin?: {
+    nom: string
+    tel: string
+  }
+  /** Observations sur le comportement pendant la seance (etape 5 — state of the art). */
+  comportementSeance?: string
+  /** Duree totale de la seance en minutes (etape 5). */
+  dureeSeanceMinutes?: number
+  /** Donnees specifiques renouvellement (etape 4 quand bilan_type=renouvellement). */
+  renouvellement?: {
+    evolutionNotes?: string
+    elementsStables?: string
+    bilanPrecedentId?: string
+    bilanPrecedentDate?: string
+    bilanPrecedentAnamnese?: string
+  }
   createdAt: number
 }
 
