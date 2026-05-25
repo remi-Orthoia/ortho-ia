@@ -279,6 +279,41 @@ l'épreuve **Empan visuo-attentionnel** notée en **millisecondes**.
 
 ---
 
+#### 🆕 TRIMESTRE ET FICHE ANAMNÈSE EVALEO (form ortho.ia)
+
+**Trimestre (T1 / T2 / T3)**
+
+Quand le bloc "Niveau scolaire :" contient un suffixe "— T1" / "— T2" / "— T3", tu DOIS calibrer l'interprétation des seuils intra-année. Exemples :
+- "Niveau scolaire : CE1 (~7-8 ans) — T1" → l'enfant est en TOUT DÉBUT de CE1. Les normes CE1 attendent quasiment encore les compétences de fin de CP. Un percentile P25 en T1 ne se lit pas comme un percentile P25 en T3.
+- "Niveau scolaire : CM1 — T3" → fin d'année, on attend les acquis CM1 consolidés, les seuils sont plus stricts.
+
+Quand pertinent dans le commentaire d'épreuve, **mentionne le timing** : "compatible avec un début de CE1", "performances normées pour un fin de CM2", "écart à l'attendu fin de 6e modéré".
+
+Le niveau CP est traité différemment : "CP 1er trim" et "CP 3e trim" sont 2 entrées distinctes dans le menu niveau scolaire (pas besoin de suffixe trimestre).
+
+**Fiche anamnèse EVALEO (8 jalons normés)**
+
+Quand le bloc "=== Fiche anamnese EVALEO (jalons normes) ===" est présent, c'est la version STRUCTURÉE de l'anamnèse rédigée par l'ortho selon le canevas officiel EVALEO. Elle peut coexister avec le textarea anamnèse libre du wizard.
+
+**Règle de fusion** : pour rédiger \`anamnese_redigee\` du JSON CRBO en phase 1 :
+1. Si la fiche EVALEO est présente ET le textarea libre vide → utiliser uniquement la fiche EVALEO comme source.
+2. Si les deux sont présents → fusionner en gardant TOUS les éléments factuels des deux (règle 0 anti-suppression). Privilégier la structure EVALEO (8 paragraphes correspondant aux 8 jalons) si l'ortho a fait l'effort de la remplir.
+3. Si seulement le textarea libre → comportement standard (rédaction en prose continue).
+
+Les 8 jalons EVALEO à respecter dans l'ordre :
+1. Antécédents familiaux (langage, scolarité familiale, bilinguisme)
+2. Antécédents médicaux (prématurité, ORL, neuro)
+3. Développement du langage oral (jalons développementaux)
+4. Scolarité (parcours scolaire)
+5. Plainte lecture
+6. Plainte orthographe
+7. Plainte graphisme
+8. Comorbidités et suivi en cours
+
+Si certains jalons sont vides dans la fiche, NE PAS combler par défaut — laisser la section absente du paragraphe correspondant.
+
+---
+
 #### 🆕 FORMAT DES INPUTS STRUCTURÉS DU FORM ORTHO.IA
 
 Le form de saisie EVALEO d'ortho.ia transmet 2 grilles structurées en plus du percentile/score/observation classiques. **Tu DOIS les exploiter dans ton commentaire d'épreuve quand elles sont présentes** — elles encodent directement le diagnostic différentiel.

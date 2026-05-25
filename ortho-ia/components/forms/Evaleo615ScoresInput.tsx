@@ -389,8 +389,55 @@ function emptyErreurs(): EpreuveErreurs {
   return { onpp: '', ol: '', odm: '', odnm: '', fv: '', fnp: '', fa: '', seg: '', hom: '' }
 }
 
+type TrimestreKey = '' | 'T1' | 'T2' | 'T3'
+
+/**
+ * Fiche d'anamnese type EVALEO 6-15. 8 jalons normes que la batterie demande
+ * de renseigner en priorite avant l'interpretation des resultats.
+ * Source : doc `Etudes de cas CRBO/anamnèse evaleo 6-15.pdf`. Chaque champ est
+ * un textarea court optionnel — si rempli, il est serialise et transmis a
+ * Claude comme version structuree de l'anamnese (en complement du textarea
+ * anamnese libre du wizard general). Si vide, on n'envoie rien.
+ */
+interface FicheAnamnese {
+  antecedents_familiaux: string
+  antecedents_medicaux: string
+  developpement_langage: string
+  scolarite: string
+  plainte_lecture: string
+  plainte_orthographe: string
+  plainte_graphisme: string
+  comorbidites_suivi: string
+}
+
+const ANAMNESE_CHAMPS: Array<{ key: keyof FicheAnamnese; label: string; placeholder: string }> = [
+  { key: 'antecedents_familiaux', label: 'Antecedents familiaux', placeholder: 'Troubles du langage en famille (dyslexie, dysphasie), bilinguisme, fratrie suivie...' },
+  { key: 'antecedents_medicaux',  label: 'Antecedents medicaux',  placeholder: 'Prematurite, hospitalisation, otites a repetition, troubles ORL, neurologie...' },
+  { key: 'developpement_langage', label: 'Developpement du langage oral', placeholder: 'Babillage, 1er mot, phrase 3 elements, intelligibilite, comparaison aux freres et soeurs...' },
+  { key: 'scolarite',             label: 'Scolarite',             placeholder: 'Entree maternelle, redoublement, maintien, classe specialisee (ULIS, SEGPA), comportement en classe...' },
+  { key: 'plainte_lecture',       label: 'Plainte lecture',       placeholder: 'Lenteur, confusions visuelles ou phonologiques, dechiffrage laborieux, comprehension reduite, evite la lecture...' },
+  { key: 'plainte_orthographe',   label: 'Plainte orthographe',   placeholder: 'Types d\'erreurs (phonetiques, lexicales, grammaticales), fatigabilite, ecart oral/ecrit...' },
+  { key: 'plainte_graphisme',     label: 'Plainte graphisme',     placeholder: 'Lenteur, lisibilite, douleur, fatigabilite, tenue du crayon, copie laborieuse...' },
+  { key: 'comorbidites_suivi',    label: 'Comorbidites / suivi en cours', placeholder: 'TDAH (diagnostique ou suspecte), TSA, dyspraxie, dyscalculie, suivi orthophonique anterieur, psychomotricite, ergotherapie, psychotherapie, traitement medicamenteux...' },
+]
+
+function emptyAnamnese(): FicheAnamnese {
+  return {
+    antecedents_familiaux: '',
+    antecedents_medicaux: '',
+    developpement_langage: '',
+    scolarite: '',
+    plainte_lecture: '',
+    plainte_orthographe: '',
+    plainte_graphisme: '',
+    comorbidites_suivi: '',
+  }
+}
+
 interface State {
   niveau: typeof NIVEAU_OPTIONS[number]['key']
+  trimestre: TrimestreKey
+  anamnese: FicheAnamnese
   epreuves: Record<string, EpreuveState>
 }
 
@@ -402,7 +449,7 @@ function emptyState(): State {
     if (EPREUVES_AVEC_ERREURS.has(e.key)) base.erreurs = emptyErreurs()
     ep[e.key] = base
   }
-  return { niveau: '', epreuves: ep }
+  return { niveau: '', trimestre: '', anamnese: emptyAnamnese(), epreuves: ep }
 }
 
 function PercentileChips({ value, onChange }: { value: PercentileKey; onChange: (v: PercentileKey) => void }) {
@@ -559,14 +606,28 @@ export default function Evaleo615ScoresInput({ notes, onNotesChange, onResultats
   }, [state.epreuves])
 
   useEffect(() => {
-    if (totalSaisies === 0 && !state.niveau) {
+    const anamneseHasData = ANAMNESE_CHAMPS.some(c => state.anamnese[c.key].trim().length > 0)
+    if (totalSaisies === 0 && !state.niveau && !anamneseHasData) {
       onResultatsChange('')
       return
     }
     const lines: string[] = []
     lines.push('=== EVALEO 6-15 (Launay, Maeder, Roustit, Touzin — Ortho Édition 2018) ===')
     if (state.niveau) {
-      lines.push(`Niveau scolaire : ${NIVEAU_OPTIONS.find(o => o.key === state.niveau)?.label}`)
+      const niveauLabel = NIVEAU_OPTIONS.find(o => o.key === state.niveau)?.label
+      // Trimestre additionnel applicable uniquement aux niveaux non-CP
+      // (CP_1tr et CP_3tr encodent deja le trimestre).
+      const showTrimestre = state.trimestre && !state.niveau.startsWith('CP_')
+      lines.push(`Niveau scolaire : ${niveauLabel}${showTrimestre ? ` — ${state.trimestre}` : ''}`)
+      lines.push('')
+    }
+    // L2 : fiche anamnese EVALEO serialisee (8 jalons normes)
+    if (anamneseHasData) {
+      lines.push('=== Fiche anamnese EVALEO (jalons normes) ===')
+      for (const c of ANAMNESE_CHAMPS) {
+        const v = state.anamnese[c.key].trim()
+        if (v) lines.push(`${c.label} : ${v}`)
+      }
       lines.push('')
     }
     for (const s of SECTIONS) {
@@ -659,24 +720,72 @@ export default function Evaleo615ScoresInput({ notes, onNotesChange, onResultats
         </div>
       </div>
 
-      {/* Niveau scolaire */}
+      {/* Niveau scolaire + trimestre */}
       <div className="rounded-lg border border-gray-200 bg-white p-4">
         <label className="flex items-center gap-2 text-sm font-semibold text-gray-900 mb-2">
           <Info size={14} className="text-indigo-600" />
           Niveau scolaire au moment de la passation
         </label>
-        <select
-          value={state.niveau}
-          onChange={(e) => setState(s => ({ ...s, niveau: e.target.value as State['niveau'] }))}
-          className="w-full sm:w-72 px-3 py-2 border border-gray-300 rounded text-sm focus:outline-none focus:ring-2 focus:ring-indigo-400"
-        >
-          {NIVEAU_OPTIONS.map(o => (
-            <option key={o.key} value={o.key}>{o.label}</option>
-          ))}
-        </select>
+        <div className="flex flex-wrap gap-2 items-center">
+          <select
+            value={state.niveau}
+            onChange={(e) => setState(s => ({ ...s, niveau: e.target.value as State['niveau'] }))}
+            className="w-full sm:w-72 px-3 py-2 border border-gray-300 rounded text-sm focus:outline-none focus:ring-2 focus:ring-indigo-400"
+          >
+            {NIVEAU_OPTIONS.map(o => (
+              <option key={o.key} value={o.key}>{o.label}</option>
+            ))}
+          </select>
+          {/* L2 : dropdown trimestre additionnel pour les niveaux non-CP
+              (CP_1tr / CP_3tr l'encodent deja). */}
+          {state.niveau && !state.niveau.startsWith('CP_') && (
+            <select
+              value={state.trimestre}
+              onChange={(e) => setState(s => ({ ...s, trimestre: e.target.value as TrimestreKey }))}
+              className="w-full sm:w-44 px-3 py-2 border border-gray-300 rounded text-sm focus:outline-none focus:ring-2 focus:ring-indigo-400"
+            >
+              <option value="">— trimestre —</option>
+              <option value="T1">T1 (oct-dec)</option>
+              <option value="T2">T2 (jan-mars)</option>
+              <option value="T3">T3 (avril-juin)</option>
+            </select>
+          )}
+        </div>
         <p className="text-[11px] text-gray-500 mt-1">
-          8 niveaux d&apos;étalonnage officiels (CP 1er trim, CP 3e trim, CE1, CE2, CM1, CM2, 6e-5e, 4e-3e).
+          8 niveaux d&apos;étalonnage officiels EVALEO. Trimestre utilise pour caler l&apos;interpretation
+          des seuils intra-annee (ex. CE1 T1 vs CE1 T3).
         </p>
+      </div>
+
+      {/* L2 : Fiche anamnese EVALEO — 8 jalons normes optionnels */}
+      <div className="rounded-lg border border-purple-200 bg-purple-50/40">
+        <details className="group" open={false}>
+          <summary className="cursor-pointer px-4 py-3 flex items-center justify-between gap-3 hover:bg-purple-50">
+            <div className="min-w-0">
+              <p className="text-sm font-semibold text-purple-900">Fiche anamnese EVALEO (optionnelle, 8 jalons normes)</p>
+              <p className="text-[11px] text-purple-700 mt-0.5 leading-relaxed">
+                Si vous saisissez ces champs, ils sont transmis a l&apos;IA en complement de l&apos;anamnese
+                libre du wizard general. Permet de respecter le canevas anamnese officiel EVALEO sans
+                contraindre la saisie habituelle.
+              </p>
+            </div>
+            <ChevronDown size={16} className="shrink-0 transition-transform group-open:rotate-180" />
+          </summary>
+          <div className="border-t border-purple-200 px-4 py-3 grid sm:grid-cols-2 gap-2.5">
+            {ANAMNESE_CHAMPS.map(c => (
+              <div key={c.key} className="flex flex-col">
+                <label className="text-[11px] font-medium text-purple-900 mb-0.5">{c.label}</label>
+                <textarea
+                  value={state.anamnese[c.key]}
+                  onChange={(e) => setState(s => ({ ...s, anamnese: { ...s.anamnese, [c.key]: e.target.value } }))}
+                  rows={2}
+                  placeholder={c.placeholder}
+                  className="px-2 py-1.5 border border-purple-200 rounded text-[11px] leading-relaxed resize-y bg-white focus:outline-none focus:ring-2 focus:ring-purple-300"
+                />
+              </div>
+            ))}
+          </div>
+        </details>
       </div>
 
       {/* Synthèse */}
