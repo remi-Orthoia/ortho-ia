@@ -292,56 +292,97 @@ bornes ci-dessus.
 ⚠️ NE PAS utiliser la grille Exalang (Excellent / Moyenne haute / Difficulte
 severe...) — c'est une autre batterie. EVALEO impose ses 7 classes officielles.
 
-⚠️ **EPREUVES MULTI-SOUS-SCORES — REGLE OFFICIELLE EVALEO**
+🔒 **EPREUVES MULTI-SOUS-SCORES — REGLE OFFICIELLE EVALEO (CRUCIALE)**
 
-Beaucoup d'epreuves EVALEO ont **plusieurs lignes de score** dans le tableau de
-cotation, chacune avec sa propre cellule de classe (X dans une des colonnes
-1-7). Le form ortho.ia n'a QU'UN seul champ \`percentile\` par epreuve. La
-regle officielle (Livret de cotation p. 5 + bilans exemples ortho-edition) est :
+⛔ **INTERDICTION ABSOLUE** :
+- ❌ NE FAIS JAMAIS de moyenne arithmetique des classes des sous-scores.
+- ❌ NE PRENDS JAMAIS la classe la plus haute ni la "mediane" des sous-scores.
+- ❌ NE PRENDS JAMAIS automatiquement la classe du premier sous-score (Score)
+  en ignorant les autres principaux.
+- ❌ N'INVENTE PAS une classe intermediaire qui n'existe dans AUCUN sous-score.
 
-**Les cellules en GRAS du cahier de cotation = scores principaux. Les autres
-lignes (non grasses) = sous-scores complementaires.** Pour pre-remplir le
-\`percentile\`, prendre la classe du **score principal**. Si plusieurs lignes
-en gras → prendre la **PIRE classe des scores principaux** (la plus basse, la
-plus diagnostique).
+✅ **PROCEDURE STRICTE EN 3 ETAPES** pour chaque epreuve a sous-scores
+multiples :
 
-Tableau des scores principaux (cellules en gras dans le cahier officiel) :
+1. **Etape 1 — Identifier les sous-scores PRINCIPAUX** uniquement (cf. tableau
+   ci-dessous). Les autres sous-scores du tableau de cotation DOIVENT etre
+   ignores pour la determination de \`percentile\` (ils servent au commentaire).
 
-| Epreuve (key) | Score(s) principal(aux) — extraire la classe d'ici |
-|---|---|
-| \`lecture_mots\` | Score total /44, Temps total |
-| \`lecture_pseudomots\` | Score /22, Temps |
-| \`evalouette\`, \`mouette_test\`, \`pingouin_retest\` | Score mots correctement lus (efficience, NMCL) |
-| \`eval2m\` | Score d'efficience |
-| \`comp_ecrite_phrases\`, \`comp_ecrite_paragraphe\`, \`comp_ecrite_texte\`, \`comp_ecrite_orale_mots\` | Score total (+ Temps si present) |
-| \`dictee_pseudomots\` | Score pseudomots corrects |
-| \`dictee_mots\` | Score mots corrects |
-| \`dictee_phrases\` | Score mots corrects (avant relecture), Temps |
-| \`decision_ortho\` | Score corrects |
-| \`recit_ecrit_images\` | Nb mots, Total macrostructure, Total Microstructure elements adaptes, Taux erreurs en orthographe |
-| \`stroop\` | **Temps 3 et Temps 4 UNIQUEMENT** (Scores 1-4 et Temps 1-2 = sous-scores de baseline) |
-| \`empan_visuo_attentionnel\` | Empan VA moyen, Total Report Chiffres |
-| \`rep_chiffres_endroit_envers\` | **Empan endroit, Empan envers** (Score endroit/envers = sous-scores) |
-| \`rep_logatomes\` | Total logatomes CV+CCV, Total syllabes CV+CCV |
-| \`rappel_item\` | Score |
-| \`rappel_seriel\` | Score item Rappel seriel |
-| \`rep_phrases_complexes\` | **Score phrases Morphosyntaxe (MS correctes), Empan nombre de mots** (Mots en erreur MS = sous-score) |
-| \`metaphonologie\` | Score total metaphonologie, Temps total |
-| \`denom_lex_phono\` | Total Lexique, Total temps, Gain Lexique, Total Phonologie |
-| \`denom_rapide_couleurs\`, \`denom_rapide_chiffres\` | Score Denomination, Temps |
-| \`creation_neologismes\` | Score, Temps |
-| Toutes les autres epreuves a score unique (\`prog_orale_phrases\`, \`comp_orale_phrases\`, \`rep_pseudomots\`, \`designation_images\`, \`discrim_phono\`, etc.) | Le score unique |
+2. **Etape 2 — Lire la classe (1-7) de CHAQUE sous-score principal** dans la
+   grille de cotation du PDF (cellule cochee X).
 
-**Exemples** :
-- \`stroop\` : si le PDF montre Temps 3 en classe 3 et Temps 4 en classe 5 →
-  \`percentile = 'classe_3'\` (la pire des 2 cellules en gras).
-- \`rep_phrases_complexes\` : Score MS en classe 2 + Empan mots en classe 7 →
-  \`percentile = 'classe_2'\`.
-- \`rep_chiffres_endroit_envers\` : Empan endroit classe 1 + Empan envers
-  classe 1 → \`percentile = 'classe_1'\`.
+3. **Etape 3 — Prendre la classe LA PLUS BASSE** parmi les sous-scores
+   principaux identifies. C'est cette classe (et UNIQUEMENT cette classe)
+   qui doit etre reportee dans \`percentile\`.
 
-NE JAMAIS faire de moyenne arithmetique des classes. NE JAMAIS prendre la classe
-d'un sous-score quand un score principal est disponible.
+**Pourquoi "la plus basse"** : c'est la convention clinique conservative
+officielle EVALEO (canevas Anne Frouard, Justine Peyre, bilans ortho-edition
+Mila/Enora). Une dissociation entre 2 sous-scores principaux est un signal
+clinique fort — on report le pire en \`percentile\` et on decrit la
+dissociation dans le \`observation\` ou dans le commentaire genere.
+
+**Tableau des sous-scores principaux par epreuve** — la colonne "principaux
+UNIQUEMENT" est exhaustive : tout ce qui n'y est pas est un sous-score
+complementaire a ignorer pour \`percentile\`.
+
+| Epreuve (key) | Sous-scores PRINCIPAUX (et eux seuls) | Sous-scores a IGNORER pour \`percentile\` |
+|---|---|---|
+| \`lecture_mots\` | Score total /44, Temps total | Score serie 1/2, Temps serie 1/2, Variables (consistance, frequence, longueur) |
+| \`lecture_pseudomots\` | **Score /22 ET Temps** (les 2 sont principaux — prendre la PIRE) | Effets de lexicalite (diff score, diff temps) |
+| \`evalouette\`, \`mouette_test\`, \`pingouin_retest\` | Score mots correctement lus (efficience, NMCL) — **un seul principal** | Vitesse, % corrects/lus, Indice degradation |
+| \`eval2m\` | Score d'efficience | Vitesse |
+| \`comp_ecrite_phrases\` | Score total /15 | — (un seul) |
+| \`comp_ecrite_paragraphe\`, \`comp_ecrite_texte\`, \`comp_ecrite_orale_mots\` | Score total (+ Temps si present) | Sous-scores lexicaux, inferences, coreferences, chronologie |
+| \`dictee_pseudomots\` | Score pseudomots corrects | Temps, ONPP |
+| \`dictee_mots\` | Score mots corrects | Temps, types d'erreurs (ONPP, OL, ODM, ODNM), indices |
+| \`dictee_phrases\` | Score mots corrects (avant relecture), Temps | Tous types d'erreurs, scores apres relecture |
+| \`decision_ortho\` | Score corrects | Erreurs flexions, linguistiques |
+| \`recit_ecrit_images\` | Nb mots, Total macrostructure, Total Microstructure elements adaptes, Taux erreurs en orthographe | Tous sous-scores macro/micro/diversite/orthographe detaille |
+| \`stroop\` | **Temps 3 ET Temps 4 — PRINCIPAUX EXCLUSIFS** | Score 1, Score 2, Score 3, Score 4, Temps 1, Temps 2 (= sous-scores de baseline et lecture simple) |
+| \`empan_visuo_attentionnel\` | Empan VA moyen, Total Report Chiffres | Seuil moyen identification, Score Report global RC1-RC5 |
+| \`rep_chiffres_endroit_envers\` | **Empan endroit ET Empan envers — PRINCIPAUX EXCLUSIFS** | Score endroit /18, Score envers /18 |
+| \`rep_logatomes\` | Total logatomes CV+CCV, Total syllabes CV+CCV | Empans CV/CCV, Logatomes CV/CCV, Syllabes CV/CCV |
+| \`rappel_item\` | Score /10 | — (un seul) |
+| \`rappel_seriel\` | Score item Rappel seriel | Empan, Score images placees |
+| \`rep_phrases_complexes\` | **Score phrases Morphosyntaxe (MS correctes /15 ou /16) ET Empan nombre de mots — PRINCIPAUX EXCLUSIFS** | Mots en erreur MS, Total erreurs MS |
+| \`metaphonologie\` | Score total metaphonologie, Temps total | Score Suppression, Score Contrepeteries, Temps Suppression, Temps Contrepeteries |
+| \`denom_lex_phono\` | Total Lexique, Total temps, Gain Lexique, Total Phonologie | % phono correcte, % phono mots bien repetes |
+| \`denom_rapide_couleurs\`, \`denom_rapide_chiffres\` | Score Denomination, Temps | — |
+| \`creation_neologismes\` | Score, Temps | — |
+| Epreuves a score unique (\`prog_orale_phrases\`, \`comp_orale_phrases\`, \`rep_pseudomots\`, \`designation_images\`, \`discrim_phono\`, \`fluence_*\`, etc.) | Le score unique | — |
+
+**EXEMPLES CHIFFRES — applique strictement la procedure** :
+
+**Exemple A — \`stroop\`** :
+- PDF montre : Score 1 cl7, Score 2 cl2, Score 3 cl3, Score 4 cl7, Temps 1 cl4,
+  Temps 2 cl2, Temps 3 cl3, Temps 4 cl5.
+- Etape 1 : principaux = Temps 3 et Temps 4 UNIQUEMENT. Tout le reste ignore.
+- Etape 2 : Temps 3 = cl3, Temps 4 = cl5.
+- Etape 3 : min(cl3, cl5) = cl3 → \`percentile = 'classe_3'\`.
+- ❌ NE PAS prendre cl4 (qui serait une moyenne) ni cl2 (sous-score Temps 2).
+
+**Exemple B — \`rep_phrases_complexes\`** :
+- PDF montre : Score MS = 12/15 cl2, Mots en erreur = 6/75 cl1, Empan mots = 13 cl7.
+- Etape 1 : principaux = Score MS et Empan mots. "Mots en erreur" est un
+  sous-score IGNORE pour \`percentile\`.
+- Etape 2 : Score MS = cl2, Empan mots = cl7.
+- Etape 3 : min(cl2, cl7) = cl2 → \`percentile = 'classe_2'\`.
+- ❌ NE PAS prendre cl3 (moyenne implicite des 3 sous-scores) ni cl7 (la classe
+  haute) ni cl1 (sous-score Mots en erreur).
+
+**Exemple C — \`lecture_pseudomots\`** :
+- PDF montre : Score /22 = 18/22 cl3, Temps = 73 sec cl2.
+- Etape 1 : principaux = Score ET Temps (les 2).
+- Etape 2 : Score = cl3, Temps = cl2.
+- Etape 3 : min(cl3, cl2) = cl2 → \`percentile = 'classe_2'\`.
+- ❌ NE PAS prendre cl3 (en ignorant le Temps).
+
+**Exemple D — \`rep_chiffres_endroit_envers\`** :
+- PDF montre : Empan endroit cl1, Empan envers cl1, Score endroit cl2, Score
+  envers cl2.
+- Etape 1 : principaux = Empan endroit et Empan envers UNIQUEMENT.
+- Etape 2 : les 2 empans en cl1.
+- Etape 3 : min(cl1, cl1) = cl1 → \`percentile = 'classe_1'\`.
 
 Si la classe n'est pas claire dans le PDF → ''.
 
