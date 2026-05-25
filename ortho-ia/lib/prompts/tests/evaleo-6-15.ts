@@ -146,45 +146,63 @@ Les normes sont stratifiées par classe. Le cahier de passation comporte des ép
 
 #### 🔒 GRILLE OFFICIELLE EVALEO 6-15 — 7 CLASSES (REGLE IMPERATIVE)
 
-EVALEO n'utilise PAS la grille 6 zones Exalang ("Excellent / Moyenne haute /
+EVALEO **n'utilise PAS** la grille Exalang ("Excellent / Moyenne haute /
 Difficulte severe..."). EVALEO impose sa propre grille officielle en
-**7 classes**, validee par les auteurs et utilisee dans tous les exemples de
-CRBO Anne Frouard / Mila / Enora joints :
+**7 classes**, validee par les auteurs (Launay, Maeder, Roustit, Touzin 2018)
+et representee dans la grille de cotation officielle suivante :
 
-| Classe | Libelle officiel    | Plage centiles | Interpretation clinique           |
-|--------|---------------------|----------------|------------------------------------|
-| 7      | Tres superieure     | > P93          | Performance tres au-dessus de la norme |
-| 6      | Superieure          | P81 - P93      | Performance au-dessus de la norme |
-| 5      | Norme superieure    | P63 - P80      | Norme haute                       |
-| 4      | Norme mediane       | P39 - P62      | Norme centrale (moyenne attendue) |
-| 3      | Norme faible        | P21 - P38      | Norme basse, encore dans l'attendu |
-| 2      | Fragilite           | P7 - P20       | Seuil d'alerte, fragilite installee |
-| 1      | Pathologique        | < P7           | Performance pathologique          |
+| Classe | Centiles | % population | Couleur officielle | Libelle EVALEO         |
+|--------|----------|--------------|---------------------|------------------------|
+|   1    |   < 7    |    7 %       | rouge               | **Pathologique**       |
+|   2    |   7-20   |   13 %       | orange              | **Fragilite** (zone a risque) |
+|   3    |  21-38   |   18 %       | vert clair          | **Norme**              |
+|   4    |  39-62   |   24 %       | vert moyen          | **Norme**              |
+|   5    |  63-80   |   18 %       | vert fonce          | **Norme**              |
+|   6    |  81-93   |   13 %       | bleu clair          | **Superieure a la moyenne** |
+|   7    |   > 93   |    7 %       | bleu fonce          | **Tres superieure**    |
+
+⚠️ **POINT CRUCIAL** : les classes 3, 4 et 5 totalisent **60 % de la population**
+et sont toutes considerees comme "**Norme**" en clinique EVALEO. **Ne JAMAIS
+parler de "norme faible / mediane / superieure"** — c'est une fabrication non
+officielle. Une performance en classe 3 est NORMEE, pas "limite". Une
+performance en classe 5 est NORMEE, pas "Moyenne haute". La distinction
+percentile interne (P21 vs P62 vs P80) peut nuancer la formulation ("dans la
+moitie basse de la norme", "en haut de la norme") mais l'etiquette clinique
+reste "Norme".
 
 **REGLE ABSOLUE** : pour TOUT bilan EVALEO (et uniquement EVALEO), tu DOIS
 utiliser cette nomenclature dans :
 
 1. Le champ \`interpretation\` du JSON CRBO (\`domains[].epreuves[].interpretation\`)
-   → ecrire **exactement** "Classe X - <Libelle>" (ex. "Classe 5 - Norme superieure",
-   "Classe 1 - Pathologique"). JAMAIS "Excellent", "Moyenne haute", "Difficulte",
-   etc. — ces termes sont reserves a Exalang/HappyNeuron percentile-based.
+   → ecrire **exactement** un de ces 5 libelles :
+   - "Classe 1 - Pathologique"
+   - "Classe 2 - Fragilite"
+   - "Classe 3 - Norme" / "Classe 4 - Norme" / "Classe 5 - Norme"
+   - "Classe 6 - Superieure a la moyenne"
+   - "Classe 7 - Tres superieure"
+
+   JAMAIS "Excellent", "Moyenne haute", "Moyenne basse", "Difficulte",
+   "Difficulte severe", "Zone de fragilite" — ces termes sont **reserves a
+   Exalang** et n'existent pas dans EVALEO.
 
 2. Les commentaires de domaine (\`domains[].commentaire\` et \`domain_commentaires[]\`)
    → utiliser la terminologie EVALEO :
-   - "X obtient une performance en classe 5 (norme superieure)..."
+   - "X obtient une performance en classe 4, soit dans la norme attendue..."
    - "Les resultats se situent en classe 2, soit en zone de fragilite..."
    - "Cette epreuve est cotee en classe 1, soit pathologique..."
+   - "La compreh ension ecrite atteint la classe 6, performance superieure a la moyenne..."
 
 3. Le \`diagnostic\` et la \`synthese_evolution\` (renouvellement) :
    - "X presente plusieurs epreuves en classes 1 et 2..."
    - "Les domaines preserves sont cotes en classes 4 a 6..."
+   - "Le profil est globalement dans la norme (classes 3 a 5)..."
 
 4. Les \`recommandations\` :
    - "Les axes en classes 1-2 sont prioritaires : ..."
 
 **Mapping percentile_value (pour la couleur de fond Word)** : la couleur de
 cellule du tableau Word est pilotee par \`percentile_value\` (numerique 0-100)
-qui dois rester aligne sur la classe via la mediane de la plage :
+qui doit rester aligne sur la classe via la mediane de la plage :
 - Classe 7 → percentile_value = 96
 - Classe 6 → percentile_value = 87
 - Classe 5 → percentile_value = 71
@@ -193,9 +211,9 @@ qui dois rester aligne sur la classe via la mediane de la plage :
 - Classe 2 → percentile_value = 13
 - Classe 1 → percentile_value = 3
 
-Le rendu Word affichera la couleur correspondante (de vert fonce a rouge) ET
-le label EVALEO que tu auras ecrit dans \`interpretation\`. La coloration et
-le label sont donc independants mais coherents.
+Le rendu Word affichera la couleur (du rouge au vert) ET le label EVALEO que
+tu auras ecrit dans \`interpretation\`. La coloration et le label sont
+independants mais coherents.
 
 **Le champ \`percentile\`** (string) reste utilise pour la valeur textuelle
 brute : tu peux y mettre la plage de centiles ("P63-P80", "< P7") OU "Classe X"
@@ -203,7 +221,7 @@ selon ce qui est plus lisible. Ne PAS y mettre "Q1", "Q3", "Med" (notation
 Exalang) — EVALEO n'utilise pas cette notation.
 
 ⚠️ Si l'ortho a saisi via le form ortho.ia, la ligne "Classe EVALEO : Classe X
-(<Libelle>) — P_-P_" arrive deja dans le bloc resultats. Recopie-la dans
+(<Libelle>) - P_-P_" arrive deja dans le bloc resultats. Recopie-la dans
 \`interpretation\` au format "Classe X - <Libelle>".
 
 #### SCORING (general)

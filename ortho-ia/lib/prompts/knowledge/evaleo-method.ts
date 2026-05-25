@@ -28,34 +28,41 @@ complément.
 
 ---
 
-### 1. Étalonnage en 7 classes (NOMENCLATURE OFFICIELLE EVALEO À UTILISER PARTOUT)
+### 1. Étalonnage en 7 classes (GRILLE OFFICIELLE EVALEO À UTILISER VERBATIM)
 
-| Classe | Libellé officiel    | Centiles    | Interprétation clinique           |
-|--------|---------------------|-------------|------------------------------------|
-| 7      | Très supérieure     | > P93       | Performance très au-dessus de la norme |
-| 6      | Supérieure          | P81 – P93   | Performance au-dessus de la norme |
-| 5      | Norme supérieure    | P63 – P80   | Norme haute                       |
-| 4      | Norme médiane       | P39 – P62   | Norme centrale (moyenne attendue) |
-| 3      | Norme faible        | P21 – P38   | Norme basse, encore dans l'attendu |
-| 2      | Fragilité           | P7 – P20    | Seuil d'alerte, fragilité installée |
-| 1      | Pathologique        | < P7        | Performance pathologique          |
+| Classe | Centiles | % population | Couleur officielle | Libellé EVALEO         |
+|--------|----------|--------------|---------------------|------------------------|
+|   1    |   < 7    |    7 %       | rouge               | **Pathologique**       |
+|   2    |   7-20   |   13 %       | orange              | **Fragilité** (zone à risque) |
+|   3    |  21-38   |   18 %       | vert clair          | **Norme**              |
+|   4    |  39-62   |   24 %       | vert moyen          | **Norme**              |
+|   5    |  63-80   |   18 %       | vert foncé          | **Norme**              |
+|   6    |  81-93   |   13 %       | bleu clair          | **Supérieure à la moyenne** |
+|   7    |   > 93   |    7 %       | bleu foncé          | **Très supérieure**    |
 
-🔒 **Règle imposée** : pour EVALEO, tu DOIS utiliser cette nomenclature
-verbatim dans tes commentaires, le diagnostic et le champ \`interpretation\`
-du JSON. JAMAIS la grille 6 zones Exalang ("Excellent / Moyenne haute /
-Difficulté sévère...") qui appartient à HappyNeuron percentile-based, pas à
-EVALEO.
+🔑 **Point crucial** : les classes 3, 4, 5 représentent **60 % de la population**
+et sont toutes regroupées sous l'étiquette "**Norme**". Ne JAMAIS parler de
+"norme faible / médiane / supérieure" pour EVALEO — c'est une fabrication.
+Une performance en classe 3 est normée (pas "limite"). Une performance en
+classe 5 est normée (pas "moyenne haute" qui appartient à Exalang).
+
+🔒 **Règle imposée** : pour EVALEO, tu DOIS utiliser uniquement ces 5 libellés
+("Pathologique" / "Fragilité" / "Norme" / "Supérieure à la moyenne" / "Très
+supérieure") dans tes commentaires, le diagnostic et le champ \`interpretation\`
+du JSON. JAMAIS la grille Exalang ("Excellent / Moyenne haute / Difficulté
+sévère...") qui appartient à HappyNeuron percentile-based, pas à EVALEO.
 
 Exemples de formulations correctes :
-- "X obtient une performance en classe 5 (norme supérieure)..."
+- "X obtient une performance en classe 4, soit dans la norme attendue..."
 - "Plusieurs épreuves sont cotées en classe 1 (pathologique) sur la voie d'assemblage..."
 - "Le score se situe en classe 2, soit en zone de fragilité..."
+- "La compréhension écrite atteint la classe 6, performance supérieure à la moyenne..."
 
 Le rendu Word d'ortho.ia respecte cette nomenclature : la colonne
 Interprétation du tableau affiche "Classe X - <Libellé>" tel que tu l'écris
 dans \`interpretation\`. La couleur de fond de la cellule est dérivée de la
-plage de centiles (verte pour classes 5-7, jaune pour classe 4, orange pour
-classe 3, rouge pour classes 1-2).
+plage de centiles via les seuils internes (rouge pour classes 1, orange pour 2,
+nuances de vert pour 3-5, vert foncé pour 6-7).
 
 ---
 

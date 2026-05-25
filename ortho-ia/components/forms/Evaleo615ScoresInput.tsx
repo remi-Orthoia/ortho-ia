@@ -33,40 +33,59 @@ interface Props {
 }
 
 /**
- * GRILLE OFFICIELLE EVALEO 6-15 — 7 CLASSES (Launay et al. 2018).
+ * GRILLE OFFICIELLE EVALEO 6-15 — 7 CLASSES (Launay, Maeder, Roustit, Touzin,
+ * Ortho Edition 2018). Source visuelle : grille de cotation officielle EVALEO
+ * (image fournie par Laurie). Distribution attendue (population de reference) :
  *
- * Substitue la grille 6 zones Laurie d'Exalang. Source : Livret de consignes
- * et cotation EVALEO 6-15, 6e edition 03/2024.
+ *  | Classe | Centiles | % population | Couleur officielle | Interpretation        |
+ *  |--------|----------|--------------|---------------------|----------------------|
+ *  |   1    |   < 7    |    7 %       | rouge               | pathologique          |
+ *  |   2    |   7-20   |   13 %       | orange              | fragilite (zone risque)|
+ *  |   3    |  21-38   |   18 %       | vert clair          | norme                 |
+ *  |   4    |  39-62   |   24 %       | vert moyen          | norme                 |
+ *  |   5    |  63-80   |   18 %       | vert fonce          | norme                 |
+ *  |   6    |  81-93   |   13 %       | bleu clair          | superieure a la moy.  |
+ *  |   7    |   > 93   |    7 %       | bleu fonce          | tres superieure       |
  *
- * Mapping vers `percentile_value` (numerique 0-100) : on prend la mediane de
- * la fourchette de centiles de chaque classe — ainsi le moteur de coloration
- * Word (lib/word-export.ts seuilFor()) genere une couleur de fond cellule
- * coherente avec la severite de la classe, meme si le label texte est en
- * nomenclature EVALEO native.
+ * Les classes 3, 4 et 5 totalisent **60 %** de la population et sont toutes
+ * regroupees sous l'etiquette "norme". On NE PARLE PAS de "norme faible /
+ * mediane / superieure" en clinique EVALEO — ces 3 classes sont toutes des
+ * performances normees attendues. La nuance vert clair/moyen/fonce est juste
+ * indicative pour l'ortho qui veut situer dans la moitie basse/centre/haute
+ * de la norme.
+ *
+ * `value` = mediane de la fourchette de centiles → pilote la couleur de fond
+ * cellule Word via lib/word-export.ts seuilFor(). Couleur du chip = palette
+ * officielle EVALEO (rouge/orange/vert/bleu).
  */
 type PercentileKey =
   | '' | 'classe_7' | 'classe_6' | 'classe_5' | 'classe_4' | 'classe_3' | 'classe_2' | 'classe_1'
 
 const PERCENTILE_OPTIONS: Array<{
   key: Exclude<PercentileKey, ''>
-  /** Label affiche en chip (court). */
+  /** Label court "Classe X" affiche dans le chip. */
   label: string
-  /** Libelle officiel EVALEO complet, transmis a Claude pour le commentaire. */
+  /** Libelle officiel EVALEO transmis a Claude (pour 3-4-5 : "Norme"). */
   fullLabel: string
   /** Fourchette de centiles correspondant a la classe. */
   range: string
+  /** Pourcentage de la population dans cette classe. */
+  pop: string
+  /** Hint sous-titre pour le chip (situe la nuance interne aux 3 classes de norme). */
+  hint?: string
   /** Mediane de la fourchette → pilote la couleur Word via seuilFor(). */
   value: number
+  /** Couleur de fond du chip — palette officielle EVALEO. */
   chip: string
   text: string
 }> = [
-  { key: 'classe_7', label: 'Classe 7', fullLabel: 'Tres superieure', range: '> P93',     value: 96, chip: 'bg-emerald-700', text: 'text-white' },
-  { key: 'classe_6', label: 'Classe 6', fullLabel: 'Superieure',      range: 'P81 — P93', value: 87, chip: 'bg-emerald-600', text: 'text-white' },
-  { key: 'classe_5', label: 'Classe 5', fullLabel: 'Norme superieure', range: 'P63 — P80', value: 71, chip: 'bg-emerald-400', text: 'text-white' },
-  { key: 'classe_4', label: 'Classe 4', fullLabel: 'Norme mediane',   range: 'P39 — P62', value: 50, chip: 'bg-yellow-300',  text: 'text-yellow-900' },
-  { key: 'classe_3', label: 'Classe 3', fullLabel: 'Norme faible',    range: 'P21 — P38', value: 30, chip: 'bg-amber-400',   text: 'text-amber-900' },
-  { key: 'classe_2', label: 'Classe 2', fullLabel: 'Fragilite',       range: 'P7 — P20',  value: 13, chip: 'bg-orange-500',  text: 'text-white' },
-  { key: 'classe_1', label: 'Classe 1', fullLabel: 'Pathologique',    range: '< P7',      value: 3,  chip: 'bg-red-600',     text: 'text-white' },
+  { key: 'classe_1', label: 'Classe 1', fullLabel: 'Pathologique',            range: '< P7',      pop: '7 %',  value: 3,  chip: 'bg-red-500',    text: 'text-white' },
+  { key: 'classe_2', label: 'Classe 2', fullLabel: 'Fragilite',               range: 'P7 - P20',  pop: '13 %', value: 13, chip: 'bg-orange-400', text: 'text-white' },
+  { key: 'classe_3', label: 'Classe 3', fullLabel: 'Norme',                   range: 'P21 - P38', pop: '18 %', hint: 'norme (moitie basse)',   value: 30, chip: 'bg-green-300', text: 'text-green-900' },
+  { key: 'classe_4', label: 'Classe 4', fullLabel: 'Norme',                   range: 'P39 - P62', pop: '24 %', hint: 'norme (centre)',         value: 50, chip: 'bg-green-500', text: 'text-white' },
+  { key: 'classe_5', label: 'Classe 5', fullLabel: 'Norme',                   range: 'P63 - P80', pop: '18 %', hint: 'norme (moitie haute)',   value: 71, chip: 'bg-green-700', text: 'text-white' },
+  { key: 'classe_6', label: 'Classe 6', fullLabel: 'Superieure a la moyenne', range: 'P81 - P93', pop: '13 %', value: 87, chip: 'bg-sky-400',    text: 'text-white' },
+  { key: 'classe_7', label: 'Classe 7', fullLabel: 'Tres superieure',         range: '> P93',     pop: '7 %',  value: 96, chip: 'bg-sky-600',    text: 'text-white' },
 ]
 
 function classeEvaleoLabel(k: PercentileKey): string {
@@ -514,9 +533,10 @@ function comparaisonHasData(c: ComparaisonPrecedent): boolean {
 }
 
 /**
- * Sélecteur de classe EVALEO (7 classes officielles). Affiche la classe +
- * libelle officiel + plage de centiles. Tres compact mais explicite — l'ortho
- * voit immediatement la nomenclature EVALEO.
+ * Selecteur de classe EVALEO (7 classes officielles, ordre 1 → 7).
+ * Chip affiche la classe + libelle officiel + (pour classes 3-4-5) une
+ * nuance "norme basse/centre/haute" en sous-titre. Tooltip donne la plage
+ * de centiles + le pourcentage de population de la classe.
  */
 function PercentileChips({ value, onChange }: { value: PercentileKey; onChange: (v: PercentileKey) => void }) {
   return (
@@ -528,11 +548,11 @@ function PercentileChips({ value, onChange }: { value: PercentileKey; onChange: 
             key={o.key}
             type="button"
             onClick={() => onChange(active ? '' : o.key)}
-            title={`${o.label} - ${o.fullLabel} (${o.range})`}
+            title={`${o.label} - ${o.fullLabel} (${o.range}, ${o.pop} de la population)${o.hint ? ` — ${o.hint}` : ''}`}
             className={`px-2 py-1 rounded text-[10px] font-medium transition ${o.chip} ${o.text} ${active ? 'ring-2 ring-offset-1 ring-gray-700' : 'opacity-55 hover:opacity-100'}`}
           >
             <span className="font-bold">{o.label}</span>
-            <span className="ml-1 opacity-90">{o.fullLabel}</span>
+            <span className="ml-1 opacity-90">{o.hint ?? o.fullLabel}</span>
           </button>
         )
       })}

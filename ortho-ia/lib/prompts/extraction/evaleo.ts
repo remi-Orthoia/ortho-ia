@@ -154,7 +154,7 @@ export const EVALEO_EXTRACT_TOOL: Anthropic.Tool = {
             percentile: {
               type: 'string',
               enum: ['', 'classe_7', 'classe_6', 'classe_5', 'classe_4', 'classe_3', 'classe_2', 'classe_1'],
-              description: 'Classe EVALEO officielle (7 classes) : classe_7 (Tres superieure, >P93), classe_6 (Superieure, P81-P93), classe_5 (Norme superieure, P63-P80), classe_4 (Norme mediane, P39-P62), classe_3 (Norme faible, P21-P38), classe_2 (Fragilite, P7-P20), classe_1 (Pathologique, <P7). Recopier la classe affichee par la plateforme HappyNeuron. Si seul un percentile est donne, convertir : >P93→classe_7, P81-P93→classe_6, P63-P80→classe_5, P39-P62→classe_4, P21-P38→classe_3, P7-P20→classe_2, <P7→classe_1.',
+              description: 'Classe EVALEO officielle (grille 7 classes Launay et al. 2018). Mapping : classe_1 (Pathologique, <P7, rouge), classe_2 (Fragilite, P7-P20, orange), classe_3/classe_4/classe_5 (Norme, P21-P38/P39-P62/P63-P80, verts clair/moyen/fonce — totalisent 60 % de la population), classe_6 (Superieure a la moyenne, P81-P93, bleu clair), classe_7 (Tres superieure, >P93, bleu fonce). Recopier la classe affichee par la plateforme. Si seul un percentile est donne, convertir selon ces bornes. Les 3 classes de norme ne sont PAS sous-etiquetees "basse/mediane/haute" — toutes "Norme".',
             },
             score_brut: { type: 'string', description: 'Score brut tel qu\'affiche, format libre (ex. "23/30", "78", "12,5"). Vide si absent.' },
             temps:      { type: 'string', description: 'Temps en secondes (ou millisecondes pour empan_visuo_attentionnel). Vide si absent.' },
@@ -267,23 +267,30 @@ PDF sur les cles. Exemples :
 - Si une epreuve ne matche AUCUNE cle de l'enum, NE PAS la creer (l'enum est strict).
 
 **percentile** : recopier la **classe EVALEO** affichee par la plateforme
-HappyNeuron, en utilisant la nomenclature officielle de la batterie :
-- Classe 7 (>P93) → \`classe_7\` ("Tres superieure")
-- Classe 6 (P81-P93) → \`classe_6\` ("Superieure")
-- Classe 5 (P63-P80) → \`classe_5\` ("Norme superieure")
-- Classe 4 (P39-P62) → \`classe_4\` ("Norme mediane")
-- Classe 3 (P21-P38) → \`classe_3\` ("Norme faible")
-- Classe 2 (P7-P20) → \`classe_2\` ("Fragilite")
-- Classe 1 (<P7) → \`classe_1\` ("Pathologique")
+HappyNeuron, en utilisant la grille officielle Launay et al. 2018 (7 classes).
+Code couleur officiel : rouge (1), orange (2), vert clair/moyen/fonce (3-5),
+bleu clair (6), bleu fonce (7).
+
+- Classe 7 (>P93, 7 %)        → \`classe_7\` ("Tres superieure")
+- Classe 6 (P81-P93, 13 %)    → \`classe_6\` ("Superieure a la moyenne")
+- Classe 5 (P63-P80, 18 %)    → \`classe_5\` ("Norme")
+- Classe 4 (P39-P62, 24 %)    → \`classe_4\` ("Norme")
+- Classe 3 (P21-P38, 18 %)    → \`classe_3\` ("Norme")
+- Classe 2 (P7-P20, 13 %)     → \`classe_2\` ("Fragilite", zone a risque)
+- Classe 1 (<P7, 7 %)         → \`classe_1\` ("Pathologique")
+
+⚠️ Les classes 3, 4, 5 sont TOUTES "Norme" (60 % de la population). Ne JAMAIS
+les sous-etiqueter "norme faible/mediane/haute" — c'est une fabrication non
+officielle.
 
 Le PDF EVALEO peut presenter la classe sous forme de barre coloree (1-7), de
-nombre, ou de label texte ("Norme mediane", "Pathologique"). Tous ces formats
-mappent sur les 7 classes ci-dessus. Si seul un percentile chiffre est
-disponible, le convertir selon les bornes ci-dessus.
+nombre, ou de label texte ("Pathologique", "Fragilite", "Norme", "Superieure
+a la moyenne", "Tres superieure"). Tous ces formats mappent sur les 7 codes
+ci-dessus. Si seul un percentile chiffre est disponible, convertir selon les
+bornes ci-dessus.
 
 ⚠️ NE PAS utiliser la grille Exalang (Excellent / Moyenne haute / Difficulte
-severe...) — c'est une autre batterie. EVALEO impose ses 7 classes
-officielles.
+severe...) — c'est une autre batterie. EVALEO impose ses 7 classes officielles.
 
 Si la classe n'est pas claire dans le PDF → ''.
 
