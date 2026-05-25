@@ -65,6 +65,16 @@ export type SeuilLabel =
   | 'Zone de fragilité'
   | 'Difficulté'
   | 'Difficulté sévère'
+  // Labels courts pour la palette EVALEO 7 classes officielles (cf.
+  // SEUILS_EVALEO ci-dessous). Le longLabel correspondant intègre la
+  // nomenclature complète "Classe X - <Libellé>".
+  | 'Classe 1'
+  | 'Classe 2'
+  | 'Classe 3'
+  | 'Classe 4'
+  | 'Classe 5'
+  | 'Classe 6'
+  | 'Classe 7'
 
 export type SeuilClinique = {
   label: SeuilLabel
@@ -107,6 +117,45 @@ export const SEUILS: SeuilClinique[] = [
 export function seuilFor(value: number): SeuilClinique {
   for (const s of SEUILS) if (value >= s.min) return s
   return SEUILS[SEUILS.length - 1]
+}
+
+// --------------------- Palette EVALEO 6-15 (7 classes officielles) ---------------------
+//
+// Grille officielle Launay et al. 2018 — voir image livret de cotation.
+// Coloration cellule Word + chip preview UI : rouge (1) / orange (2) /
+// vert clair (3) / vert moyen (4) / vert foncé (5) / bleu clair (6) /
+// bleu foncé (7). Le mapping est :
+//
+//   Classe 1 (<P7)       → rouge      #D32F2F + texte blanc
+//   Classe 2 (P7-P20)    → orange     #F57C00 + texte blanc
+//   Classe 3 (P21-P38)   → vert clair #A5D6A7 + texte vert foncé
+//   Classe 4 (P39-P62)   → vert moyen #66BB6A + texte blanc
+//   Classe 5 (P63-P80)   → vert foncé #2E7D32 + texte blanc
+//   Classe 6 (P81-P93)   → bleu clair #4FC3F7 + texte bleu foncé
+//   Classe 7 (>P93)      → bleu foncé #0288D1 + texte blanc
+//
+// Utilisé UNIQUEMENT pour les bilans EVALEO (registry legendType='evaleo')
+// afin de garder la cohérence avec la légende affichée en tête du document.
+// Tous les autres bilans continuent d'utiliser la palette SEUILS Laurie.
+export const SEUILS_EVALEO: SeuilClinique[] = [
+  { label: 'Classe 7', longLabel: 'Classe 7 - Très supérieure',        min: 94, shading: '0288D1', css: '#0277BD', textColor: 'FFFFFF', range: '> P93' },
+  { label: 'Classe 6', longLabel: 'Classe 6 - Supérieure à la moyenne', min: 81, shading: '4FC3F7', css: '#039BE5',                       range: 'P81 - P93' },
+  { label: 'Classe 5', longLabel: 'Classe 5 - Norme',                   min: 63, shading: '2E7D32', css: '#1B5E20', textColor: 'FFFFFF', range: 'P63 - P80' },
+  { label: 'Classe 4', longLabel: 'Classe 4 - Norme',                   min: 39, shading: '66BB6A', css: '#2E7D32', textColor: 'FFFFFF', range: 'P39 - P62' },
+  { label: 'Classe 3', longLabel: 'Classe 3 - Norme',                   min: 21, shading: 'A5D6A7', css: '#388E3C',                       range: 'P21 - P38' },
+  { label: 'Classe 2', longLabel: 'Classe 2 - Fragilité',               min: 7,  shading: 'F57C00', css: '#E65100', textColor: 'FFFFFF', range: 'P7 - P20' },
+  { label: 'Classe 1', longLabel: 'Classe 1 - Pathologique',            min: 0,  shading: 'D32F2F', css: '#B71C1C', textColor: 'FFFFFF', range: '< P7' },
+]
+
+export function seuilForEvaleo(value: number): SeuilClinique {
+  for (const s of SEUILS_EVALEO) if (value >= s.min) return s
+  return SEUILS_EVALEO[SEUILS_EVALEO.length - 1]
+}
+
+/** Helper : choisit le seuil selon la palette demandee. Generique — toute
+ *  future palette de bilan custom peut etre ajoutee ici. */
+export function pickSeuil(value: number, palette: 'standard' | 'evaleo' = 'standard'): SeuilClinique {
+  return palette === 'evaleo' ? seuilForEvaleo(value) : seuilFor(value)
 }
 
 /**
@@ -309,6 +358,16 @@ export async function generateCRBOWord(payload: WordExportPayload): Promise<Blob
     ? formData.test_utilise
     : (typeof formData.test_utilise === 'string' && formData.test_utilise.trim() ? [formData.test_utilise] : [])
   const preserveOrder = _testListForOrder.some(t => BILAN_REGISTRY[t]?.preserveDomainOrder === true)
+  // legendType pilote a la fois la legende des scores rendue au-dessus du
+  // bloc BILAN ET la palette de coloration cellule (centile + interpretation)
+  // dans les tableaux. Doit etre calcule tot car utilise des le bloc
+  // PAGE 1 RENOUVELLEMENT (~ligne 700) pour les cellules comparatives.
+  const legendType: 'standard' | 'evaleo' = (() => {
+    for (const t of _testListForOrder) {
+      if (BILAN_REGISTRY[t]?.legendType === 'evaleo') return 'evaleo'
+    }
+    return 'standard'
+  })()
   const orderedDomains = hasStructure
     ? (preserveOrder ? structure!.domains : sortDomainsByFamily(structure!.domains))
     : []
@@ -714,8 +773,8 @@ export async function generateCRBOWord(payload: WordExportPayload): Promise<Blob
         }
         compRows.push(new TableRow({ children: [
           createCell(`  ${e.nom}`, { dxa: compCols[0] }), // indentation pour voir que c'est une sous-épreuve du domaine
-          createCell(prevLabel, { dxa: compCols[1], alignment: AlignmentType.CENTER, shading: prev ? getPercentileColor(prev.value) : 'F5F5F5' }),
-          createCell(curLabel, { dxa: compCols[2], alignment: AlignmentType.CENTER, shading: getPercentileColor(e.percentile_value) }),
+          createCell(prevLabel, { dxa: compCols[1], alignment: AlignmentType.CENTER, shading: prev ? pickSeuil(prev.value, legendType).shading : 'F5F5F5' }),
+          createCell(curLabel, { dxa: compCols[2], alignment: AlignmentType.CENTER, shading: pickSeuil(e.percentile_value, legendType).shading }),
           new TableCell({
             width: { size: compCols[3], type: WidthType.DXA },
             children: [new Paragraph({
@@ -811,13 +870,8 @@ export async function generateCRBOWord(payload: WordExportPayload): Promise<Blob
   // EVALEO 6-15 (legendType='evaleo' dans le registry) : grille officielle
   // 7 classes Launay et al. 2018 + textes intro + resume.
   // Autres tests : 6 zones percentiles (SEUILS, refonte 2026-05-ter).
-  const legendType: 'standard' | 'evaleo' = (() => {
-    for (const t of _testListForOrder) {
-      const lt = BILAN_REGISTRY[t]?.legendType
-      if (lt === 'evaleo') return 'evaleo'
-    }
-    return 'standard'
-  })()
+  // `legendType` est calcule en tete de generateCRBOWord (necessaire avant
+  // ce bloc pour la coloration cellule du tableau comparatif renouvellement).
 
   if (isMocaOnly) {
     children.push(
@@ -1102,7 +1156,10 @@ export async function generateCRBOWord(payload: WordExportPayload): Promise<Blob
         ]}),
       ]
       domain.epreuves.forEach((e) => {
-        const seuil = seuilFor(e.percentile_value)
+        // Palette de coloration cellule : EVALEO (7 classes rouge/orange/
+        // verts/bleus) si le test l'impose via registry, sinon defaut Laurie
+        // 6 zones. `legendType` est calcule en tete du document.
+        const seuil = pickSeuil(e.percentile_value, legendType)
         // Cellules épreuve / score / É-T : pas de fond coloré (sobre).
         // Centile et Interprétation : fond couleur de la zone + texte adapté.
         // Interprétation : si Claude a écrit un label custom dans `e.interpretation`

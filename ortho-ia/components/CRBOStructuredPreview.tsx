@@ -3,7 +3,7 @@
 import React from 'react'
 import { Download, Edit, AlertTriangle, Sparkles, BookOpen, Eye, UserCheck } from 'lucide-react'
 import type { CRBOStructure } from '@/lib/prompts'
-import { SEUILS, seuilFor, getPercentileColor, formatPercentileForDisplay } from '@/lib/word-export'
+import { SEUILS, seuilFor, getPercentileColor, formatPercentileForDisplay, seuilForEvaleo } from '@/lib/word-export'
 import ReasoningClinicalDisplay from './ReasoningClinical'
 import RenouvellementComparisonTable from './RenouvellementComparisonTable'
 
@@ -80,6 +80,17 @@ export default function CRBOStructuredPreview({
   bilanDate,
 }: Props) {
   const sev = structure.severite_globale
+
+  // Heuristique : detection EVALEO via le format des interpretations
+  // ("Classe X - <Libelle>"). Impose par le module prompt EVALEO 6-15.
+  // Si vrai, bascule la legende ET la palette des cellules sur la grille
+  // officielle EVALEO 7 classes (rouge/orange/verts/bleus) au lieu de la
+  // grille Exalang 6 zones (Excellent/Moyenne haute/.../Difficulte severe).
+  const isEvaleoStructure = (structure.domains ?? []).some(d =>
+    (d.epreuves ?? []).some(e => /^classe\s*[1-7]\s*[-–]/i.test((e.interpretation ?? '').trim())),
+  )
+  const seuilForCell = (v: number) => isEvaleoStructure ? seuilForEvaleo(v) : seuilFor(v)
+  const colorForCell = (v: number) => seuilForCell(v).shading
 
   const sevColors: Record<string, { bg: string; text: string; ring: string }> = {
     'Léger':      { bg: 'bg-green-100 dark:bg-green-900/30',   text: 'text-green-800 dark:text-green-200',   ring: 'ring-green-300 dark:ring-green-800' },
@@ -175,10 +186,7 @@ export default function CRBOStructuredPreview({
               suit le format EVALEO ("Classe X - ..."), on affiche la grille
               officielle EVALEO 7 classes au lieu de la grille Exalang 6 zones. */}
           {(() => {
-            const isEvaleo = structure.domains.some(d =>
-              d.epreuves.some(e => /^classe\s*[1-7]\s*[-–]/i.test((e.interpretation ?? '').trim())),
-            )
-            if (isEvaleo) {
+            if (isEvaleoStructure) {
               const EVALEO_CLASSES = [
                 { classe: '1', pop: '7 %',  centiles: '< 7',    bg: '#D32F2F', text: '#fff' },
                 { classe: '2', pop: '13 %', centiles: '7-20',   bg: '#F57C00', text: '#fff' },
@@ -273,7 +281,17 @@ export default function CRBOStructuredPreview({
                   </thead>
                   <tbody className="divide-y divide-gray-100 dark:divide-surface-dark-muted/50">
                     {domain.epreuves.map((e, eIdx) => {
-                      const color = getPercentileColor(e.percentile_value)
+                      // Palette adaptee : EVALEO (7 classes rouge/orange/
+                      // verts/bleus) si le bilan utilise la nomenclature
+                      // EVALEO, sinon palette Laurie 6 zones standard.
+                      const color = colorForCell(e.percentile_value)
+                      const seuil = seuilForCell(e.percentile_value)
+                      // Si Claude a ecrit un label custom (typiquement
+                      // "Classe X - <Libelle>" pour EVALEO), on l'affiche
+                      // tel quel. Sinon fallback sur seuil.label.
+                      const interpLabel = (typeof e.interpretation === 'string' && e.interpretation.trim())
+                        ? e.interpretation.trim()
+                        : seuil.label
                       return (
                         <tr key={eIdx} className="hover:bg-gray-50 dark:hover:bg-surface-dark-muted/30">
                           <td className="py-2 pr-3 text-gray-900 dark:text-gray-100">{e.nom}</td>
@@ -283,14 +301,9 @@ export default function CRBOStructuredPreview({
                             {formatPercentileForDisplay(e.percentile, e.percentile_value)}
                           </td>
                           <td className="py-2 pl-2 text-center">
-                            {(() => {
-                              const seuil = seuilFor(e.percentile_value)
-                              return (
-                                <span className="inline-block px-2 py-0.5 rounded text-xs font-semibold" style={{ backgroundColor: '#' + seuil.shading, color: seuil.textColor ? '#' + seuil.textColor : '#000' }}>
-                                  {seuil.label}
-                                </span>
-                              )
-                            })()}
+                            <span className="inline-block px-2 py-0.5 rounded text-xs font-semibold" style={{ backgroundColor: '#' + seuil.shading, color: seuil.textColor ? '#' + seuil.textColor : '#000' }}>
+                              {interpLabel}
+                            </span>
                           </td>
                         </tr>
                       )
