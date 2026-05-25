@@ -368,6 +368,12 @@ export async function generateCRBOWord(payload: WordExportPayload): Promise<Blob
     }
     return 'standard'
   })()
+  // hideEcartTypeColumn : si l'un des tests du bilan l'active (EVALEO 6-15),
+  // on retire la colonne É-T du tableau d'épreuves et on redistribue les
+  // largeurs sur 4 colonnes (Épreuve / Score / Centile / Interprétation).
+  const hideEcartTypeColumn = _testListForOrder.some(
+    (t) => BILAN_REGISTRY[t]?.hideEcartTypeColumn === true,
+  )
   const orderedDomains = hasStructure
     ? (preserveOrder ? structure!.domains : sortDomainsByFamily(structure!.domains))
     : []
@@ -1145,16 +1151,26 @@ export async function generateCRBOWord(payload: WordExportPayload): Promise<Blob
         }),
       )
       // Proportions imposées Laurie : épreuve 45 / score 15 / É-T 12 / centile 13 / interprétation 15
-      const cols = dxaCols([45, 15, 12, 13, 15])
-      const tableRows = [
-        new TableRow({ children: [
-          createCell('Épreuve', { bold: true, dxa: cols[0], shading: 'E8F5E9' }),
-          createCell('Score', { bold: true, dxa: cols[1], shading: 'E8F5E9', alignment: AlignmentType.CENTER }),
-          createCell('É-T', { bold: true, dxa: cols[2], shading: 'E8F5E9', alignment: AlignmentType.CENTER }),
-          createCell('Centile', { bold: true, dxa: cols[3], shading: 'E8F5E9', alignment: AlignmentType.CENTER }),
-          createCell('Interprétation', { bold: true, dxa: cols[4], shading: 'E8F5E9', alignment: AlignmentType.CENTER }),
-        ]}),
-      ]
+      // Variante EVALEO (hideEcartTypeColumn) : 4 colonnes, on redistribue les 12% de É-T
+      // sur Épreuve / Centile / Interprétation.
+      const cols = hideEcartTypeColumn
+        ? dxaCols([50, 17, 15, 18])
+        : dxaCols([45, 15, 12, 13, 15])
+      const headerCells = hideEcartTypeColumn
+        ? [
+            createCell('Épreuve', { bold: true, dxa: cols[0], shading: 'E8F5E9' }),
+            createCell('Score', { bold: true, dxa: cols[1], shading: 'E8F5E9', alignment: AlignmentType.CENTER }),
+            createCell('Centile', { bold: true, dxa: cols[2], shading: 'E8F5E9', alignment: AlignmentType.CENTER }),
+            createCell('Interprétation', { bold: true, dxa: cols[3], shading: 'E8F5E9', alignment: AlignmentType.CENTER }),
+          ]
+        : [
+            createCell('Épreuve', { bold: true, dxa: cols[0], shading: 'E8F5E9' }),
+            createCell('Score', { bold: true, dxa: cols[1], shading: 'E8F5E9', alignment: AlignmentType.CENTER }),
+            createCell('É-T', { bold: true, dxa: cols[2], shading: 'E8F5E9', alignment: AlignmentType.CENTER }),
+            createCell('Centile', { bold: true, dxa: cols[3], shading: 'E8F5E9', alignment: AlignmentType.CENTER }),
+            createCell('Interprétation', { bold: true, dxa: cols[4], shading: 'E8F5E9', alignment: AlignmentType.CENTER }),
+          ]
+      const tableRows = [new TableRow({ children: headerCells })]
       domain.epreuves.forEach((e) => {
         // Palette de coloration cellule : EVALEO (7 classes rouge/orange/
         // verts/bleus) si le test l'impose via registry, sinon defaut Laurie
@@ -1170,13 +1186,21 @@ export async function generateCRBOWord(payload: WordExportPayload): Promise<Blob
         const interpLabel = (typeof e.interpretation === 'string' && e.interpretation.trim())
           ? e.interpretation.trim()
           : seuil.label
-        tableRows.push(new TableRow({ children: [
-          createCell(e.nom, { dxa: cols[0] }),
-          createCell(e.score, { dxa: cols[1], alignment: AlignmentType.CENTER }),
-          createCell(e.et ?? '—', { dxa: cols[2], alignment: AlignmentType.CENTER }),
-          createCell(fmtCentile(e.percentile, e.percentile_value), { dxa: cols[3], alignment: AlignmentType.CENTER, shading: seuil.shading, textColor: seuil.textColor, bold: true }),
-          createCell(interpLabel, { dxa: cols[4], alignment: AlignmentType.CENTER, shading: seuil.shading, textColor: seuil.textColor, bold: true }),
-        ]}))
+        const rowCells = hideEcartTypeColumn
+          ? [
+              createCell(e.nom, { dxa: cols[0] }),
+              createCell(e.score, { dxa: cols[1], alignment: AlignmentType.CENTER }),
+              createCell(fmtCentile(e.percentile, e.percentile_value), { dxa: cols[2], alignment: AlignmentType.CENTER, shading: seuil.shading, textColor: seuil.textColor, bold: true }),
+              createCell(interpLabel, { dxa: cols[3], alignment: AlignmentType.CENTER, shading: seuil.shading, textColor: seuil.textColor, bold: true }),
+            ]
+          : [
+              createCell(e.nom, { dxa: cols[0] }),
+              createCell(e.score, { dxa: cols[1], alignment: AlignmentType.CENTER }),
+              createCell(e.et ?? '—', { dxa: cols[2], alignment: AlignmentType.CENTER }),
+              createCell(fmtCentile(e.percentile, e.percentile_value), { dxa: cols[3], alignment: AlignmentType.CENTER, shading: seuil.shading, textColor: seuil.textColor, bold: true }),
+              createCell(interpLabel, { dxa: cols[4], alignment: AlignmentType.CENTER, shading: seuil.shading, textColor: seuil.textColor, bold: true }),
+            ]
+        tableRows.push(new TableRow({ children: rowCells }))
       })
       children.push(
         new Table({

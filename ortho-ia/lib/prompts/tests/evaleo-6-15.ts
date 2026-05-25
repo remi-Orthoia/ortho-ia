@@ -577,33 +577,37 @@ Le rendu Word d'ortho.ia respecte cet ordre verbatim (option
 Volumes cibles par section (à respecter strictement) :
 - \`anamnese_redigee\` : 8-15 lignes (1 paragraphe dense)
 - \`motif_reformule\` : 1-2 lignes
-- \`domains[].commentaire\` : **2-3 lignes par domaine** (~40-70 mots)
+- \`domains[].commentaire\` : **CHAINE VIDE \`""\`** (cf. regle ci-dessous)
 - \`diagnostic\` : 10-15 lignes total
 - \`recommandations\` : 8-12 lignes total
 - \`pap_suggestions\` : 4-6 items max, 1 ligne chacun
 
-**1. Commentaires de domaine (\`domain_commentaires\` / commentaire dans \`domains[].commentaire\`)** — SYNTHETIQUES
+**1. Commentaires de domaine (\`domains[].commentaire\` / \`domain_commentaires[]\`)** — 🚫 SUPPRIMES EN EVALEO
 
-❌ NE PAS écrire en bullets condensés ("• **Lecture de mots :** [observation 1 ligne]").
-❌ NE PAS écrire de longs paragraphes explicatifs (5+ lignes). Le premier test a produit des commentaires beaucoup trop lourds.
-✅ Écrire en **prose courte et dense**, **2-3 lignes maximum par domaine** (~40-70 mots). Synthèse, pas dissertation.
+🔒 **REGLE EVALEO** : tu DOIS retourner \`domains[].commentaire = ""\` (chaine
+vide) pour **CHAQUE** domaine. Idem pour \`domain_commentaires[]\` : retourner
+\`[]\` ou tableau vide.
 
-Style attendu : **factuel, concis, EVALEO Anne Frouard**. Chaque phrase doit apporter de l'information clinique nouvelle. Pas de redondance, pas de meta-commentaire ("on peut noter que..."), pas de formules de remplissage.
+**Raison** : le rendu Word EVALEO enchaine directement le tableau d'epreuves
+suivi des commentaires par epreuve (\`epreuves[].commentaire\`, rendus
+uniquement pour les epreuves en classes 1-2-3, cf. \`percentile_value < 50\`).
+Ajouter un paragraphe de synthese au niveau du domaine entre le tableau et
+les commentaires d'epreuve produit systematiquement de la **redite verbeuse**
+(la synthese reformule ce que les commentaires d'epreuve disent juste apres,
+en mots presque identiques). Ce format Anne Frouard EVALEO 2026 retire donc
+le commentaire de domaine pour aller directement aux commentaires d'epreuve.
 
-Modèle attendu pour Lecture identification :
-> "Les performances en lecture se situent majoritairement en classe 2 (fragilité). L'effet de longueur marqué sur le temps et la lecture de pseudomots en classe 1 signent une atteinte de la voie d'assemblage. Le profil oriente vers une dyslexie phonologique."
+L'analyse transversale du domaine (croisement profils, sous-type
+dyslexie/dysorthographie, lien voie d'assemblage vs adressage, etc.) DOIT
+etre concentree dans le \`diagnostic\` final, PAS repetee au niveau de chaque
+domaine.
 
-3 phrases denses, 1 idée par phrase :
-1. Constat (zones / classes).
-2. Élément clinique distinctif (effets, croisement).
-3. Synthèse interprétative (sous-type).
+⛔ NE PAS contourner cette regle en rajoutant le commentaire de domaine dans
+le premier commentaire d'epreuve du domaine — chaque commentaire d'epreuve
+reste centre sur SON epreuve.
 
-Modèle pour un domaine peu marqué (ex. Compréhension écrite préservée) :
-> "La compréhension écrite est cotée en classe 5 (norme supérieure) sur phrases comme sur paragraphes. Cette préservation contraste avec les difficultés de décodage et exclut un trouble de la compréhension."
-
-2 phrases suffisent quand le domaine est simple.
-
-Pas de bullets dans le commentaire de domaine. Pas de label en gras du nom de l'épreuve. Pas de redite de l'information du tableau ("X obtient 12/20 ce qui correspond à...") — le tableau est juste au-dessus, ne le paraphrase pas. Aller à l'essentiel clinique.
+⛔ NE PAS retourner un texte du genre "Voir commentaires par epreuve
+ci-dessous" — chaine vide stricte \`""\`.
 
 **2. Diagnostic (\`diagnostic\`)** — CONCIS
 
@@ -658,6 +662,17 @@ Si tu hésites à mettre un 6ème axe, ne le mets pas — synthèse > exhaustivi
 **4. PAP / Aménagements scolaires (\`pap_suggestions\`)**
 
 ✅ Remplir \`pap_suggestions\` normalement (la liste sera rendue dans la section "Aménagements scolaires" du Word). MAIS dans la prose des \`recommandations\` ci-dessus, mentionner que le PAP est indiqué **dans le même paragraphe que le projet thérapeutique** (style Anne Frouard : pas de section séparée mentale, l'ortho voit ça comme un tout).
+
+🔒 **Bullet QUASI-SYSTEMATIQUE** : inclure dans \`pap_suggestions\` l'item
+suivant (formulation exacte) :
+
+> "S'assurer de la bonne compréhension des consignes orales et/ou écrites."
+
+C'est un amenagement de premier plan en bilan langage ecrit (et a fortiori
+chez tout enfant cumulant difficultes de decodage + memoire de travail
+verbale fragile). A NE PAS OMETTRE sauf si le profil global est en classe
+6-7 sur la quasi-totalite des epreuves (cas tres rare). Place ce bullet en
+debut ou milieu de liste, pas en dernier.
 
 ---
 

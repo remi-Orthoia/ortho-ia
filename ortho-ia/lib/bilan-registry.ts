@@ -135,6 +135,13 @@ export interface BilanEntry {
    *    bleus + texte intro Launay et al. + résumé des 7 classes en dessous.
    *  Le drapeau pilote `buildLegendBlock()` de lib/word-export.ts. */
   legendType?: 'standard' | 'evaleo'
+  /** Si true, le tableau d'épreuves rendu dans le Word n'inclut PAS la
+   *  colonne "É-T" (écart-type). EVALEO 6-15 ne présente pas l'écart-type
+   *  dans les CRBO de référence (Justine Peyre, Anne Frouard) — l'analyse
+   *  est portée par la classe sept-classes et le centile. La colonne devient
+   *  4 colonnes (Épreuve / Score / Centile / Interprétation) au lieu de 5,
+   *  avec redistribution des largeurs. Piloté par lib/word-export.ts. */
+  hideEcartTypeColumn?: boolean
 }
 
 // ============================================================================
@@ -241,6 +248,10 @@ export const BILAN_REGISTRY: Record<string, BilanEntry> = {
     // (Pathologique / Fragilite / 3 x Norme / Superieure a la moyenne /
     // Tres superieure), pas la grille Exalang generique.
     legendType: 'evaleo',
+    // EVALEO ne presente pas l'ecart-type dans les CRBO de reference
+    // (Justine Peyre, Anne Frouard) — la lecture clinique passe par la
+    // classe sept-classes et le centile.
+    hideEcartTypeColumn: true,
   },
   'Exalang 3-6': {
     nom: 'Exalang 3-6',
