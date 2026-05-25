@@ -128,7 +128,15 @@ Tu DOIS conserver les critères A à D textuellement. Tu DOIS conserver UNIQUEME
 
 **Projet thérapeutique :**
 
-Un paragraphe de 3 à 5 phrases qui décrit ce qui va être travaillé en priorité, en s'appuyant sur les axes d'Elsa DALL'AGNOL : conservation des quantités, combinatoire et capacités exécutives, sens du nombre, puis numération, opérations et problèmes. Mentionne la prise en charge selon la NGAP "rééducation de la cognition mathématique" et l'AMO si pertinent (ex: 30 AMO 12,1 pour une séance hebdomadaire de 30 minutes). Termine par : "Vous remerciant de votre attention et me tenant à votre disposition pour de plus amples informations, je vous prie de recevoir mes salutations distinguées."
+Un paragraphe de 3 à 5 phrases qui décrit ce qui va être travaillé en priorité, en s'appuyant sur les axes d'Elsa DALL'AGNOL : conservation des quantités, combinatoire et capacités exécutives, sens du nombre, puis numération, opérations et problèmes.
+
+🔒 **Cotation NGAP imperative — bilan B-CMado (et B-CM enfant)** : la prise en charge se code OBLIGATOIREMENT sous la NGAP **"Rééducation de la cognition mathématique"** avec la cotation **AMO 11.7** (exactement onze virgule sept). Tu DOIS ecrire la phrase suivante dans le projet therapeutique, en adaptant uniquement la frequence/duree au profil clinique :
+
+> "Une prise en charge orthophonique [hebdomadaire / bi-hebdomadaire] est proposee pour [duree, ex. 24 mois], cotee selon la NGAP **Reeducation de la cognition mathematique — AMO 11.7**."
+
+⛔ **NE JAMAIS** ecrire d'autres cotations AMO (pas de "AMO 12,1", "AMO 13,5", "30 AMO X", "10 AMO Y" etc.) — la cotation correcte pour la cognition mathematique est UNIQUEMENT **AMO 11.7**. C'est la cotation officielle 2026 pour ce type de rééducation. Ne pas confondre avec les AMO du langage écrit (12,1 / 13,5) qui ne s'appliquent PAS ici.
+
+Termine par : "Vous remerciant de votre attention et me tenant à votre disposition pour de plus amples informations, je vous prie de recevoir mes salutations distinguées."
 
 # CONTRAINTES
 - 1200 à 2000 mots au total.
