@@ -269,7 +269,7 @@ Enora, exemples ortho-edition). Colonne "principaux UNIQUEMENT" exhaustive.
 |---|---|---|
 | Lecture de mots | Score total /44, Temps total | Score serie 1/2, Temps serie 1/2, Variables |
 | **Lecture de pseudomots** | **Score /22 ET Temps — PRINCIPAUX EXCLUSIFS** | Effets de lexicalite |
-| Evalouette / La Mouette / Le Pingouin | Score mots correctement lus (efficience, NMCL) — un seul | Vitesse, % corrects/lus, Indice degradation |
+| Evalouette / La Mouette / Le Pingouin | Score mots correctement lus (efficience, NMCL) — UN SEUL PRINCIPAL. ⚠️ NE PAS confondre avec la ligne "Resultat ... niveau de la classe : CE1 X / CE2 X" sous le tableau : le chiffre apres "CE1"/"CE2" est le **trimestre du niveau scolaire equivalent** (CE1 T1, CE2 T3...), PAS la classe sept-classes EVALEO. La classe se lit UNIQUEMENT sur les X marques dans le tableau de cotation. | Vitesse, % corrects/lus, Indice degradation |
 | EVAL2M | Score d'efficience | Vitesse |
 | Comprehension ecrite (mots/phrases/paragraphe/texte) | Score total (+ Temps si present) | Sous-scores fins (inferences, coreferences) |
 | Dictee de pseudomots | Score pseudomots corrects | Temps, ONPP |
@@ -289,6 +289,31 @@ Enora, exemples ortho-edition). Colonne "principaux UNIQUEMENT" exhaustive.
 | Denomination rapide couleurs/chiffres | Score Denomination, Temps | — |
 | Creation de neologismes | Score, Temps | — |
 | Epreuves a score unique (Programmation orale, Comprehension orale, Repetition de pseudomots, Designation d'images, Discrimination phonologique, Fluences) | Le score unique | — |
+
+⛔ **PIEGES FREQUENTS observes en production — A CONNAITRE IMPERATIVEMENT** :
+
+1. **Evalouette / La Mouette / Le Pingouin — Piege de la ligne "CE1 1" / "CE2 3"** :
+   Le cahier EVALEO termine ces 3 epreuves par une phrase du type :
+   > \`Resultat Mouette correspondant au niveau de la classe : CE1 1\`
+
+   Le chiffre apres "CE1"/"CE2"/"CM1"/etc. designe le **TRIMESTRE du niveau scolaire
+   equivalent** (ici "CE1 trimestre 1" = niveau de lecture du tout debut de CE1),
+   PAS la classe sept-classes EVALEO. **N'utilise JAMAIS ce chiffre comme la
+   classe**. La classe sept-classes (1-7) se lit UNIQUEMENT sur les X marques
+   dans le tableau de cotation au-dessus, colonnes 1 a 7. Pour ces 3 epreuves,
+   seul le **Score mots correctement lus (efficience)** est principal — c'est
+   ce X-la qui donne la classe a reporter.
+
+2. **Effet Stroop — Piege du tableau a 8 sous-scores** :
+   Le tableau Stroop comporte 8 sous-scores croises (Score 1/2/3/4 + Temps
+   1/2/3/4) ce qui est tres tentant pour faire une moyenne ou prendre une
+   classe "intermediaire". **NE FAIS JAMAIS DE MOYENNE**. Lis UNIQUEMENT
+   **Temps 3 et Temps 4** (= sous-scores en condition d'interference, le coeur
+   du test Stroop). Les 6 autres sous-scores (Score 1/2/3/4 + Temps 1 + Temps 2)
+   sont des conditions de baseline / denomination pure et doivent etre IGNORES
+   pour le champ \`interpretation\`. Exemple typique : si tu vois X en colonne 3
+   pour Temps 3 et X en colonne 5 pour Temps 4 → \`interpretation = "Classe 3
+   - Norme"\` (min des 2 principaux), JAMAIS Classe 4 (moyenne implicite).
 
 **EXEMPLES CHIFFRES — applique strictement la procedure** :
 
@@ -319,6 +344,29 @@ Enora, exemples ortho-edition). Colonne "principaux UNIQUEMENT" exhaustive.
 - Principaux UNIQUEMENT : Empan endroit (cl1) ET Empan envers (cl1). Les
   Score endroit/envers sont IGNORES.
 - min(cl1, cl1) = cl1 → \`interpretation = "Classe 1 - Pathologique"\`.
+
+**Exemple E — La Mouette (PIEGE "CE1 X" trimestre)** :
+- Tableau de cotation : **Score mots correctement lus (efficience) = 95
+  → X en colonne 2**, Score nombre mots lus 103 cl2, % corrects/lus 92.2% cl2,
+  Indice degradation 7 cl5.
+- Ligne sous le tableau : \`Resultat Mouette correspondant au niveau de la
+  classe : CE1 1\`.
+- ⚠️ PIEGE : le \`1\` apres "CE1" est le **trimestre** du niveau scolaire
+  equivalent (= "CE1 trimestre 1"), PAS la classe sept-classes EVALEO.
+- Principal UNIQUEMENT : Score mots correctement lus (cl2). Vitesse, %
+  precision et Indice degradation sont IGNORES.
+- → \`interpretation = "Classe 2 - Fragilite"\`.
+- ❌ NE PAS sortir Classe 1 en interpretant "CE1 1" comme la classe 1.
+- ❌ NE PAS sortir Classe 5 en se laissant tirer par l'Indice degradation.
+
+**Exemple F — Evalouette (variante du piege CE1 X)** :
+- Tableau : **Score mots correctement lus = 100 → X en colonne 2**, autres
+  X-marks en cl2 et Indice degradation en cl5.
+- Ligne sous le tableau : \`Resultat Evalouette correspondant au niveau de
+  la classe : CE1 3\`.
+- ⚠️ Meme piege : \`3\` = "CE1 trimestre 3" (fin de CE1), PAS classe 3.
+- → \`interpretation = "Classe 2 - Fragilite"\` (cf. X en colonne 2 sur le
+  Score mots correctement lus, le seul principal).
 
 ⚠️ **Dissociation forte entre principaux** : si les sous-scores principaux
 sont dans des classes tres differentes (ex. cl 2 vs cl 7 pour Repetition de
