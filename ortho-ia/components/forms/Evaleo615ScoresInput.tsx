@@ -881,17 +881,18 @@ export default function Evaleo615ScoresInput({ notes, onNotesChange, onResultats
         </div>
       </div>
 
-      {/* L3 : import PDF EVALEO (rapport HappyNeuron ou scan cahier rempli) */}
+      {/* L3 : import PDF / Word / image EVALEO (rapport HappyNeuron, scan cahier, bilan deja redige) */}
       <div className="rounded-lg border border-sky-200 bg-sky-50/60 p-3">
         <div className="flex items-start justify-between gap-3 flex-wrap">
           <div className="flex items-start gap-2 min-w-0">
             <FileUp size={18} className="text-sky-700 shrink-0 mt-0.5" />
             <div className="text-sm min-w-0">
-              <p className="font-semibold text-sky-900">Importer un PDF EVALEO (optionnel)</p>
+              <p className="font-semibold text-sky-900">Importer un document EVALEO (optionnel)</p>
               <p className="text-sky-800 text-xs mt-0.5 leading-relaxed">
-                Acceptes : rapport de cotation HappyNeuron (PDF), scan du cahier de passation rempli (PDF ou image),
-                document Word/PDF de bilan deja redige. Claude lit le document et pre-remplit niveau, anamnese et
-                scores. Vous pouvez ensuite corriger librement. Max 10 Mo.
+                Acceptes : <strong>PDF</strong> (rapport de cotation HappyNeuron, scan du cahier de passation rempli),
+                <strong> Word .docx</strong> (bilan deja redige), <strong>image PNG/JPEG/WebP</strong>
+                (photo du cahier). Claude lit le document et pre-remplit niveau, anamnese et scores. Vous pouvez
+                ensuite corriger librement. Max 10 Mo.
               </p>
             </div>
           </div>
@@ -899,7 +900,7 @@ export default function Evaleo615ScoresInput({ notes, onNotesChange, onResultats
             <input
               ref={fileInputRef}
               type="file"
-              accept=".pdf,image/png,image/jpeg,image/webp"
+              accept=".pdf,.docx,.doc,application/vnd.openxmlformats-officedocument.wordprocessingml.document,application/msword,image/png,image/jpeg,image/webp"
               onChange={(e) => {
                 const f = e.target.files?.[0]
                 if (f) handleImportFile(f)

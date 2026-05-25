@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server'
 import Anthropic from '@anthropic-ai/sdk'
+import mammoth from 'mammoth'
 import {
   EVALEO_EXTRACT_PROMPT,
   EVALEO_EXTRACT_TOOL,
@@ -13,25 +14,43 @@ import { handleAnthropicError } from '@/lib/anthropic-error'
 /**
  * POST /api/extract-evaleo-pdf
  *
- * Recoit un PDF (rapport de cotation HappyNeuron ou scan cahier rempli) et
- * retourne un objet `EvaleoExtracted` typage strict, pret a pre-remplir le
- * state du form components/forms/Evaleo615ScoresInput.tsx.
+ * Recoit un PDF, une image ou un document Word (.docx) et retourne un objet
+ * `EvaleoExtracted` typage strict, pret a pre-remplir le state du form
+ * components/forms/Evaleo615ScoresInput.tsx.
  *
- * Body : FormData multipart avec champ `file` (PDF unique, max 10 Mo).
+ * Sources acceptees :
+ *  - PDF : rapport de cotation HappyNeuron, scan du cahier rempli → Claude
+ *    Vision document.
+ *  - Image (PNG/JPEG/WebP) : photo du cahier → Claude Vision image.
+ *  - DOCX : bilan deja redige en Word → mammoth extrait le texte brut, Claude
+ *    le structure (memes prompt + tool — pas de bloc vision).
+ *
+ * Body : FormData multipart avec champ `file` (max 10 Mo).
  *
  * Respecte la regle d'isolation CLAUDE.md : cette route est specifique a
  * EVALEO, n'est pas appelee par d'autres bilans. Elle reutilise les
- * utilitaires generiques (withRetry, handleAnthropicError, logger) mais ne
- * les modifie pas.
+ * utilitaires generiques (withRetry, handleAnthropicError, logger, mammoth)
+ * mais ne les modifie pas.
  */
 
 export const maxDuration = 90
 
 const MAX_BYTES = 10 * 1024 * 1024 // 10 Mo
 const PER_FILE_TIMEOUT_MS = 60_000
+const DOCX_TRUNCATE = 80_000 // ~80k chars, large marge sur la limite tokens
 
-function isAcceptableType(mime: string): boolean {
-  return mime.includes('pdf') || mime.includes('image')
+const SUPPORTED_DOCX_MIMES = [
+  'application/vnd.openxmlformats-officedocument.wordprocessingml.document',
+  'application/msword', // .doc legacy — on tente quand meme mammoth, sinon erreur
+]
+
+function detectKind(file: File): 'pdf' | 'image' | 'docx' | 'unknown' {
+  const m = file.type || ''
+  const n = file.name || ''
+  if (m.includes('pdf') || /\.pdf$/i.test(n)) return 'pdf'
+  if (SUPPORTED_DOCX_MIMES.includes(m) || /\.docx?$/i.test(n)) return 'docx'
+  if (m.includes('image')) return 'image'
+  return 'unknown'
 }
 
 export async function POST(request: NextRequest) {
@@ -58,30 +77,88 @@ export async function POST(request: NextRequest) {
     if (file.size > MAX_BYTES) {
       return NextResponse.json({ error: `Fichier trop volumineux (max ${MAX_BYTES / 1024 / 1024} Mo).` }, { status: 400 })
     }
-    if (!isAcceptableType(file.type)) {
-      return NextResponse.json({ error: 'Type de fichier non supporte (PDF ou image uniquement).' }, { status: 400 })
+    const kind = detectKind(file)
+    if (kind === 'unknown') {
+      return NextResponse.json(
+        { error: 'Type de fichier non supporte. Acceptes : PDF, image (PNG/JPEG/WebP), Word (.docx).' },
+        { status: 400 },
+      )
     }
 
     const anthropic = new Anthropic({ apiKey: process.env.ANTHROPIC_API_KEY })
 
-    const bytes = await file.arrayBuffer()
-    const base64 = Buffer.from(bytes).toString('base64')
+    // Construit le bloc de contenu adapte au format.
+    // PDF/image -> bloc vision base64 ; DOCX -> mammoth -> texte injecte dans le prompt.
+    let content: Anthropic.MessageParam['content']
 
-    let contentBlock: Anthropic.DocumentBlockParam | Anthropic.ImageBlockParam
-    if (file.type.includes('pdf')) {
-      contentBlock = {
-        type: 'document',
-        source: { type: 'base64', media_type: 'application/pdf', data: base64 },
-      }
-    } else {
+    if (kind === 'pdf') {
+      const bytes = await file.arrayBuffer()
+      const base64 = Buffer.from(bytes).toString('base64')
+      content = [
+        {
+          type: 'document',
+          source: { type: 'base64', media_type: 'application/pdf', data: base64 },
+        },
+        {
+          type: 'text',
+          text: EVALEO_EXTRACT_PROMPT,
+          cache_control: { type: 'ephemeral' as const },
+        },
+      ]
+    } else if (kind === 'image') {
+      const bytes = await file.arrayBuffer()
+      const base64 = Buffer.from(bytes).toString('base64')
       let imageMediaType: 'image/png' | 'image/jpeg' | 'image/gif' | 'image/webp' = 'image/png'
       if (file.type.includes('jpeg') || file.type.includes('jpg')) imageMediaType = 'image/jpeg'
       else if (file.type.includes('gif')) imageMediaType = 'image/gif'
       else if (file.type.includes('webp')) imageMediaType = 'image/webp'
-      contentBlock = {
-        type: 'image',
-        source: { type: 'base64', media_type: imageMediaType, data: base64 },
+      content = [
+        {
+          type: 'image',
+          source: { type: 'base64', media_type: imageMediaType, data: base64 },
+        },
+        {
+          type: 'text',
+          text: EVALEO_EXTRACT_PROMPT,
+          cache_control: { type: 'ephemeral' as const },
+        },
+      ]
+    } else {
+      // DOCX : mammoth -> texte brut -> bloc texte uniquement.
+      const buffer = Buffer.from(await file.arrayBuffer())
+      let text = ''
+      try {
+        const result = await mammoth.extractRawText({ buffer })
+        text = (result?.value || '').trim()
+      } catch (e: any) {
+        logger.error('extract-evaleo-pdf-mammoth', e)
+        return NextResponse.json(
+          { error: "Le document Word n'a pas pu etre lu. Reessayez avec un PDF." },
+          { status: 422 },
+        )
       }
+      if (!text || text.length < 30) {
+        return NextResponse.json(
+          { error: 'Le document Word est vide ou illisible.' },
+          { status: 422 },
+        )
+      }
+      if (text.length > DOCX_TRUNCATE) {
+        logger.warn(
+          'extract-evaleo-pdf-docx-truncate',
+          `DOCX tronque : ${text.length} -> ${DOCX_TRUNCATE} caracteres`,
+        )
+      }
+      const truncated = text.length > DOCX_TRUNCATE
+        ? text.slice(0, DOCX_TRUNCATE) + '\n\n[... document tronque ...]'
+        : text
+      content = [
+        {
+          type: 'text',
+          text: `${EVALEO_EXTRACT_PROMPT}\n\n## DOCUMENT WORD A ANALYSER (texte extrait via mammoth)\n\n${truncated}`,
+          cache_control: { type: 'ephemeral' as const },
+        },
+      ]
     }
 
     const abortController = new AbortController()
@@ -96,23 +173,11 @@ export async function POST(request: NextRequest) {
             max_tokens: 8192,
             tools: [EVALEO_EXTRACT_TOOL],
             tool_choice: { type: 'tool', name: 'extract_evaleo_results' },
-            messages: [
-              {
-                role: 'user',
-                content: [
-                  contentBlock,
-                  {
-                    type: 'text',
-                    text: EVALEO_EXTRACT_PROMPT,
-                    cache_control: { type: 'ephemeral' as const },
-                  },
-                ],
-              },
-            ],
+            messages: [{ role: 'user', content }],
           },
           { signal: abortController.signal },
         ),
-        { maxAttempts: 3 },
+        { maxAttempts: 3, signal: abortController.signal },
       )
     } finally {
       clearTimeout(timeoutId)
