@@ -120,14 +120,157 @@ interface Section {
   subdomains: SubDomain[]
 }
 
-/** Structure VERBATIM du cahier de passation EVALEO 6-15 (LO + LE + Autres).
- *  Les libellés correspondent aux titres officiels — ne pas reformuler. */
+/** Structure VERBATIM du cahier de passation EVALEO 6-15.
+ *
+ * ORDRE DES SECTIONS — calque sur l'exemple type Justine Peyre (bilan EVALEO
+ * langage ecrit complet) :
+ *   1. Langage Ecrit (Lecture id → Comprehension → Ecriture → Production
+ *      orthographe → Recit ecrit)
+ *   2. Competences sous-jacentes (Inhibition → MdT → Gnosies → Praxies →
+ *      Raisonnement)
+ *   3. Langage Oral (Morphosyntaxe d'abord — cohrent avec Justine qui finit
+ *      le bilan par cette section — puis Phonologie / Metaphonologie /
+ *      Lexique / Recit / Pragmatique pour les bilans LO+LE complets)
+ *
+ * Les libelles correspondent aux titres officiels EVALEO — ne pas reformuler. */
 const SECTIONS: Section[] = [
+  {
+    id: 'le',
+    label: 'Langage Écrit',
+    description: 'Lecture (identification + compréhension), Écriture, Production orthographe, Récit écrit.',
+    subdomains: [
+      {
+        id: 'le_lecture_id',
+        label: 'Lecture identification',
+        description: 'Décodage, voies d\'adressage et d\'assemblage, vitesse de lecture.',
+        epreuves: [
+          { key: 'conv_grapho_phon',    label: 'Conversion Grapho-Phonémique', tag: 'CP' },
+          { key: 'lecture_syllabes',    label: 'Lecture de syllabes',           tag: 'CP-CE1' },
+          { key: 'lecture_mots',        label: 'Lecture de mots',               hint: 'Voie d\'adressage', tag: 'CP 3e trim → 3e' },
+          { key: 'lecture_pseudomots',  label: 'Lecture de pseudomots',         hint: 'Voie d\'assemblage', tag: 'CP 3e trim → 3e' },
+          { key: 'eval2m',              label: 'EVAL2M — Lecture de mots en 2 min', hint: 'Vitesse de lecture', tag: 'CE1 3e trim → 3e' },
+          { key: 'evalouette',          label: 'Evalouette — Lecture de texte non signifiant', hint: 'Décodage pur', tag: 'CP 3e trim → 3e' },
+          { key: 'mouette_test',        label: 'La Mouette — Lecture de texte signifiant (test)', tag: 'CP 3e trim → 3e' },
+          { key: 'pingouin_retest',     label: 'Le Pingouin — Lecture de texte signifiant (retest)', tag: 'CE1 → 3e' },
+        ],
+      },
+      {
+        id: 'le_comprehension',
+        label: 'Lecture compréhension',
+        description: 'Compréhension en lecture vs en écoute, niveaux phrase / paragraphe / texte.',
+        epreuves: [
+          { key: 'comp_ecrite_orale_mots', label: 'Compréhension écrite et orale de mots' },
+          { key: 'comp_ecrite_phrases',    label: 'Compréhension écrite de phrases', tag: 'CP 3e trim → 3e' },
+          { key: 'comp_ecrite_paragraphe', label: 'Compréhension écrite de paragraphe', hint: 'Test + Retest selon niveau' },
+          { key: 'comp_ecrite_texte',      label: 'Compréhension écrite de texte', hint: 'Test + Retest', tag: '6e → 3e' },
+        ],
+      },
+      {
+        id: 'le_ecriture',
+        label: 'Écriture',
+        description: 'Copie, accélération, transcription, buffer graphémique, comportement scripteur.',
+        epreuves: [
+          { key: 'copie_mots',           label: 'Copie de mots',                 tag: 'CP' },
+          { key: 'copie_texte',          label: 'Copie de texte',                tag: 'CE1 → 3e' },
+          { key: 'acceleration_phrase',  label: 'Accélération sur l\'écriture d\'une phrase', tag: 'CE2 → 3e' },
+          { key: 'transcription_buffer', label: 'Transcription & buffer graphémique', tag: 'CP 3e trim → 3e' },
+        ],
+      },
+      {
+        id: 'le_ortho',
+        label: 'Production orthographe',
+        description: 'Dictée à tous les niveaux (syllabes, pseudomots, mots, phrases) + décision orthographique + fluence.',
+        epreuves: [
+          { key: 'dictee_syllabes',     label: 'Dictée de syllabes',     tag: 'CP' },
+          { key: 'dictee_pseudomots',   label: 'Dictée de pseudomots',   hint: 'Voie d\'assemblage en écriture', tag: 'CE2 → 3e' },
+          { key: 'dictee_mots',         label: 'Dictée de mots',         hint: 'Voie d\'adressage / orthographe lexicale', tag: 'CP 3e trim → 3e' },
+          { key: 'fluence_ortho',       label: 'Fluence orthographique', hint: 'Vitesse d\'évocation orthographique' },
+          { key: 'dictee_phrases',      label: 'Dictée de phrases',      hint: 'Orthographe lexicale + grammaticale', tag: 'CE1 3e trim → 3e' },
+          { key: 'decision_ortho',      label: 'Décision orthographique', hint: 'Mémoire orthographique en reconnaissance', tag: 'CE2 → 3e' },
+        ],
+      },
+      {
+        id: 'le_recit',
+        label: 'Récit écrit',
+        description: 'Discours narratif écrit à partir d\'images.',
+        epreuves: [
+          { key: 'recit_ecrit_images', label: 'Récit à l\'écrit à partir d\'une histoire en images', tag: 'CM1 → 3e' },
+        ],
+      },
+    ],
+  },
+  {
+    id: 'autres',
+    label: 'Compétences sous-jacentes',
+    description: 'Visuo-attentionnel & Inhibition, Mémoire à court terme, Gnosies, Praxies, Raisonnement logique.',
+    subdomains: [
+      {
+        id: 'visuo_inhib',
+        label: 'Visuo-attentionnel & Inhibition',
+        description: 'Empan visuo-attentionnel (en ms) + Stroop.',
+        epreuves: [
+          { key: 'empan_visuo_attentionnel', label: 'Empan visuo-attentionnel', hint: 'Fenêtre attentionnelle visuelle — score en MILLISECONDES', tag: 'ms' },
+          { key: 'stroop',                   label: 'Effet Stroop',             hint: 'Inhibition d\'automatismes' },
+        ],
+      },
+      {
+        id: 'mct',
+        label: 'Mémoire à court terme',
+        description: 'Empans verbal et visuo-spatial.',
+        epreuves: [
+          { key: 'rep_chiffres_endroit_envers', label: 'Répétition de chiffres endroit et envers', hint: 'Empan verbal' },
+          { key: 'rep_logatomes',               label: 'Répétition de logatomes',                  hint: 'Boucle phonologique' },
+          { key: 'rappel_item',                 label: 'Rappel — Item' },
+          { key: 'rappel_seriel',               label: 'Rappel — sériel' },
+          { key: 'localisation_jetons',         label: 'Reproduction de localisation de jetons',  hint: 'Mémoire visuo-spatiale' },
+        ],
+      },
+      {
+        id: 'gnosies',
+        label: 'Gnosies',
+        description: 'Discrimination phonologique + gnosies visuelles.',
+        epreuves: [
+          { key: 'discrim_phono',   label: 'Discrimination phonologique', hint: 'Gnosies auditivo-phonologiques' },
+          { key: 'gnosies_visuelles', label: 'Gnosies visuelles de figures' },
+        ],
+      },
+      {
+        id: 'praxies',
+        label: 'Praxies',
+        description: 'Habiletés manuelles, praxies bucco-faciales et linguales.',
+        epreuves: [
+          { key: 'habiletes_manuelles', label: 'Habiletés manuelles et digitales sur imitation' },
+          { key: 'praxies_bucco',       label: 'Praxies bucco-faciales et linguales' },
+        ],
+      },
+      {
+        id: 'raisonnement',
+        label: 'Raisonnement logique',
+        description: 'Inclusion, classification, quantification.',
+        epreuves: [
+          { key: 'inclusion_classification', label: 'Inclusion — Classification' },
+          { key: 'classification',           label: 'Classification' },
+          { key: 'quantification_inclusion', label: 'Quantification de l\'inclusion' },
+        ],
+      },
+    ],
+  },
   {
     id: 'lo',
     label: 'Langage Oral',
-    description: 'Phonologie, Métaphonologie, Lexique-sémantique, Morphosyntaxe, Récit oral, Pragmatique.',
+    description: 'Morphosyntaxe en premier (cf. exemple Justine), puis Phonologie, Métaphonologie, Lexique-sémantique, Récit oral, Pragmatique.',
     subdomains: [
+      {
+        id: 'lo_morpho',
+        label: 'Morphosyntaxe',
+        description: 'Programmation, répétition, compréhension, jugement de grammaticalité.',
+        epreuves: [
+          { key: 'prog_orale_phrases',  label: 'Programmation orale de phrases',  hint: 'Syntaxe expressive' },
+          { key: 'rep_phrases_complexes', label: 'Répétition de phrases complexes', hint: 'MdT + syntaxe' },
+          { key: 'comp_orale_phrases',  label: 'Compréhension orale de phrases',  hint: 'Prédicteur de la compréhension écrite' },
+          { key: 'jugement_grammatical', label: 'Jugement de grammaticalité et reformulation' },
+        ],
+      },
       {
         id: 'lo_phono',
         label: 'Phonologie',
@@ -169,17 +312,6 @@ const SECTIONS: Section[] = [
         ],
       },
       {
-        id: 'lo_morpho',
-        label: 'Morphosyntaxe',
-        description: 'Programmation, répétition, compréhension, jugement de grammaticalité.',
-        epreuves: [
-          { key: 'prog_orale_phrases',  label: 'Programmation orale de phrases',  hint: 'Syntaxe expressive' },
-          { key: 'rep_phrases_complexes', label: 'Répétition de phrases complexes', hint: 'MdT + syntaxe' },
-          { key: 'comp_orale_phrases',  label: 'Compréhension orale de phrases',  hint: 'Prédicteur de la compréhension écrite' },
-          { key: 'jugement_grammatical', label: 'Jugement de grammaticalité et reformulation' },
-        ],
-      },
-      {
         id: 'lo_recit',
         label: 'Récit oral',
         description: 'Discours narratif à partir d\'une histoire en images, compréhension narrative longue.',
@@ -194,127 +326,6 @@ const SECTIONS: Section[] = [
         description: 'Adéquation au contexte — apport unique d\'EVALEO en français.',
         epreuves: [
           { key: 'pragmatique_communication', label: 'Pragmatique et communication', hint: 'Marqueur de trouble de la communication sociale (TCS)' },
-        ],
-      },
-    ],
-  },
-  {
-    id: 'le',
-    label: 'Langage Écrit',
-    description: 'Lecture (identification + compréhension), Écriture, Orthographe, Récit écrit.',
-    subdomains: [
-      {
-        id: 'le_lecture_id',
-        label: 'Lecture identification',
-        description: 'Décodage, voies d\'adressage et d\'assemblage, vitesse de lecture.',
-        epreuves: [
-          { key: 'conv_grapho_phon',    label: 'Conversion Grapho-Phonémique', tag: 'CP' },
-          { key: 'lecture_syllabes',    label: 'Lecture de syllabes',           tag: 'CP-CE1' },
-          { key: 'lecture_mots',        label: 'Lecture de mots',               hint: 'Voie d\'adressage', tag: 'CP 3e trim → 3e' },
-          { key: 'lecture_pseudomots',  label: 'Lecture de pseudomots',         hint: 'Voie d\'assemblage', tag: 'CP 3e trim → 3e' },
-          { key: 'eval2m',              label: 'EVAL2M — Lecture de mots en 2 min', hint: 'Vitesse de lecture', tag: 'CE1 3e trim → 3e' },
-          { key: 'evalouette',          label: 'Evalouette — Lecture de texte non signifiant', hint: 'Décodage pur', tag: 'CP 3e trim → 3e' },
-          { key: 'mouette_test',        label: 'La Mouette — Lecture de texte signifiant (test)', tag: 'CP 3e trim → 3e' },
-          { key: 'pingouin_retest',     label: 'Le Pingouin — Lecture de texte signifiant (retest)', tag: 'CE1 → 3e' },
-        ],
-      },
-      {
-        id: 'le_comprehension',
-        label: 'Lecture compréhension',
-        description: 'Compréhension en lecture vs en écoute, niveaux phrase / paragraphe / texte.',
-        epreuves: [
-          { key: 'comp_ecrite_orale_mots', label: 'Compréhension écrite et orale de mots' },
-          { key: 'comp_ecrite_phrases',    label: 'Compréhension écrite de phrases', tag: 'CP 3e trim → 3e' },
-          { key: 'comp_ecrite_paragraphe', label: 'Compréhension écrite de paragraphe', hint: 'Test + Retest selon niveau' },
-          { key: 'comp_ecrite_texte',      label: 'Compréhension écrite de texte', hint: 'Test + Retest', tag: '6e → 3e' },
-        ],
-      },
-      {
-        id: 'le_ecriture',
-        label: 'Écriture',
-        description: 'Copie, accélération, transcription, buffer graphémique, comportement scripteur.',
-        epreuves: [
-          { key: 'copie_mots',           label: 'Copie de mots',                 tag: 'CP' },
-          { key: 'copie_texte',          label: 'Copie de texte',                tag: 'CE1 → 3e' },
-          { key: 'acceleration_phrase',  label: 'Accélération sur l\'écriture d\'une phrase', tag: 'CE2 → 3e' },
-          { key: 'transcription_buffer', label: 'Transcription & buffer graphémique', tag: 'CP 3e trim → 3e' },
-        ],
-      },
-      {
-        id: 'le_ortho',
-        label: 'Orthographe',
-        description: 'Dictée à tous les niveaux (syllabes, pseudomots, mots, phrases) + décision orthographique + fluence.',
-        epreuves: [
-          { key: 'dictee_syllabes',     label: 'Dictée de syllabes',     tag: 'CP' },
-          { key: 'dictee_pseudomots',   label: 'Dictée de pseudomots',   hint: 'Voie d\'assemblage en écriture', tag: 'CE2 → 3e' },
-          { key: 'dictee_mots',         label: 'Dictée de mots',         hint: 'Voie d\'adressage / orthographe lexicale', tag: 'CP 3e trim → 3e' },
-          { key: 'fluence_ortho',       label: 'Fluence orthographique', hint: 'Vitesse d\'évocation orthographique' },
-          { key: 'dictee_phrases',      label: 'Dictée de phrases',      hint: 'Orthographe lexicale + grammaticale', tag: 'CE1 3e trim → 3e' },
-          { key: 'decision_ortho',      label: 'Décision orthographique', hint: 'Mémoire orthographique en reconnaissance', tag: 'CE2 → 3e' },
-        ],
-      },
-      {
-        id: 'le_recit',
-        label: 'Récit écrit',
-        description: 'Discours narratif écrit à partir d\'images.',
-        epreuves: [
-          { key: 'recit_ecrit_images', label: 'Récit à l\'écrit à partir d\'une histoire en images', tag: 'CM1 → 3e' },
-        ],
-      },
-    ],
-  },
-  {
-    id: 'autres',
-    label: 'Autres',
-    description: 'Gnosies, Visuo-attentionnel, Mémoire à court terme, Praxies, Raisonnement logique.',
-    subdomains: [
-      {
-        id: 'gnosies',
-        label: 'Gnosies',
-        description: 'Discrimination phonologique + gnosies visuelles.',
-        epreuves: [
-          { key: 'discrim_phono',   label: 'Discrimination phonologique', hint: 'Gnosies auditivo-phonologiques' },
-          { key: 'gnosies_visuelles', label: 'Gnosies visuelles de figures' },
-        ],
-      },
-      {
-        id: 'visuo_inhib',
-        label: 'Visuo-attentionnel & Inhibition',
-        description: 'Empan visuo-attentionnel (en ms) + Stroop.',
-        epreuves: [
-          { key: 'empan_visuo_attentionnel', label: 'Empan visuo-attentionnel', hint: 'Fenêtre attentionnelle visuelle — score en MILLISECONDES', tag: 'ms' },
-          { key: 'stroop',                   label: 'Effet Stroop',             hint: 'Inhibition d\'automatismes' },
-        ],
-      },
-      {
-        id: 'mct',
-        label: 'Mémoire à court terme',
-        description: 'Empans verbal et visuo-spatial.',
-        epreuves: [
-          { key: 'rep_chiffres_endroit_envers', label: 'Répétition de chiffres endroit et envers', hint: 'Empan verbal' },
-          { key: 'rep_logatomes',               label: 'Répétition de logatomes',                  hint: 'Boucle phonologique' },
-          { key: 'rappel_item',                 label: 'Rappel — Item' },
-          { key: 'rappel_seriel',               label: 'Rappel — sériel' },
-          { key: 'localisation_jetons',         label: 'Reproduction de localisation de jetons',  hint: 'Mémoire visuo-spatiale' },
-        ],
-      },
-      {
-        id: 'praxies',
-        label: 'Praxies',
-        description: 'Habiletés manuelles, praxies bucco-faciales et linguales.',
-        epreuves: [
-          { key: 'habiletes_manuelles', label: 'Habiletés manuelles et digitales sur imitation' },
-          { key: 'praxies_bucco',       label: 'Praxies bucco-faciales et linguales' },
-        ],
-      },
-      {
-        id: 'raisonnement',
-        label: 'Raisonnement logique',
-        description: 'Inclusion, classification, quantification.',
-        epreuves: [
-          { key: 'inclusion_classification', label: 'Inclusion — Classification' },
-          { key: 'classification',           label: 'Classification' },
-          { key: 'quantification_inclusion', label: 'Quantification de l\'inclusion' },
         ],
       },
     ],
@@ -669,7 +680,11 @@ function ErreursDicteeEditor({
 
 export default function Evaleo615ScoresInput({ notes, onNotesChange, onResultatsChange, onError }: Props) {
   const [state, setState] = useState<State>(emptyState)
-  const [expandedSection, setExpandedSection] = useState<Record<string, boolean>>({ lo: true, le: true, autres: false })
+  // Defaut : LE ouvert (focus principal des bilans EVALEO langage ecrit comme
+  // l'exemple Justine), Competences sous-jacentes ouvert (Stroop / MdT
+  // frequents), LO ferme (Morphosyntaxe + autres LO uniquement si bilan
+  // complet langage oral+ecrit).
+  const [expandedSection, setExpandedSection] = useState<Record<string, boolean>>({ le: true, autres: true, lo: false })
   const [expandedSub, setExpandedSub] = useState<Record<string, boolean>>({})
 
   // L3 : import PDF EVALEO

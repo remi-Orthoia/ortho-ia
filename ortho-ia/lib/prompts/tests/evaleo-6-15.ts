@@ -350,6 +350,74 @@ l'épreuve **Empan visuo-attentionnel** notée en **millisecondes**.
 
 ---
 
+#### 🆕 ORDRE OFFICIEL DES SECTIONS DANS LE CRBO EVALEO (REGLE IMPERATIVE)
+
+L'ordre des sections du CRBO EVALEO est **strictement impose** par les exemples
+de reference (Justine Peyre, Anne Frouard). Tu DOIS produire \`domains[]\` du
+JSON dans cet ordre exact, en n'incluant QUE les sections pour lesquelles
+l'ortho a renseigne au moins une epreuve :
+
+**1. Langage Ecrit** — toujours en premier dans un bilan EVALEO :
+   1.1. **Lecture - Identification de mots ecrits** (Evalouette, Mouette,
+        Pingouin, Lecture de mots, Lecture de pseudomots, EVAL2M, Conversion
+        Grapho-Phonemique, Lecture de syllabes)
+   1.2. **Lecture - Comprehension** (Comprehension ecrite phrases /
+        paragraphe / texte)
+   1.3. **Ecriture** (Copie de mots / Copie de texte / Acceleration phrase /
+        Transcription & buffer graphemique)
+   1.4. **Production orthographe** (Dictee syllabes / pseudomots / mots /
+        phrases / Fluence orthographique / Decision orthographique)
+   1.5. **Recit ecrit** (si applicable)
+
+**2. Competences sous-jacentes / Epreuves sensibles a un trouble** —
+   structurees en sections intitulees "Epreuve sensible a un trouble de
+   l'<X>" ou "Epreuves sensibles a un trouble de <X>" (formulation
+   officielle EVALEO, plurielle si plusieurs epreuves dans la section) :
+   2.1. **Epreuves sensibles a un trouble de l'inhibition / visuo-attentionnel**
+        (Effet Stroop, Empan visuo-attentionnel)
+   2.2. **Epreuves sensibles a un trouble de la memoire a court terme verbale**
+        (Repetition de chiffres endroit envers, Repetition de logatomes,
+        Rappel item, Rappel seriel, Reproduction de localisation de jetons)
+   2.3. **Epreuves sensibles a un trouble des gnosies** (Discrimination
+        phonologique, Gnosies visuelles)
+   2.4. **Epreuves sensibles a un trouble des praxies** (Habiletes manuelles,
+        Praxies bucco-faciales)
+   2.5. **Epreuves sensibles a un trouble du raisonnement logique** (Inclusion,
+        Classification, Quantification)
+
+**3. Langage Oral** — toujours en dernier dans le CRBO EVALEO :
+   3.1. **Morphosyntaxe** (Programmation orale de phrases, Repetition de
+        phrases complexes, Comprehension orale de phrases, Jugement de
+        grammaticalite et reformulation)
+   3.2. **Phonologie** (si renseignee : Repertoire phonetique, Repetition de
+        mots complexes, Repetition de pseudomots, Fluence phonologique,
+        Denomination rapide couleurs/chiffres)
+   3.3. **Metaphonologie** (si renseignee)
+   3.4. **Lexique-semantique** (si renseigne)
+   3.5. **Recit oral** (si renseigne)
+   3.6. **Pragmatique** (si renseignee)
+
+**Logique** : un bilan EVALEO langage ecrit (cas le plus frequent, type
+Justine Peyre) ne contient que les sections 1.x + 2.x + eventuellement
+3.1 (Morphosyntaxe). Un bilan EVALEO langage oral+ecrit complet contient
+toutes les sections dans cet ordre.
+
+**Nommage officiel des sections dans \`domains[].nom\`** :
+- Pour la Lecture : utiliser exactement "Lecture - Identification de mots
+  ecrits" et "Lecture - Comprehension" (avec tiret).
+- Pour les sections sous-jacentes, utiliser exactement "Epreuves sensibles a
+  un trouble de <X>" (pluriel "Epreuves") OU "Epreuve sensible a un trouble
+  de <X>" (singulier si une seule epreuve dans la section).
+- Pour Production orthographe : NE PAS dire "Orthographe" tout court — le
+  libelle officiel EVALEO est "Production orthographe".
+- Sections LO : "Morphosyntaxe", "Phonologie", "Metaphonologie",
+  "Lexique-semantique", "Recit oral", "Pragmatique".
+
+Le rendu Word d'ortho.ia respecte cet ordre verbatim (option
+\`preserveDomainOrder\` du registry — pas de re-tri defensif applique).
+
+---
+
 #### 🆕 FORMAT DE RÉDACTION EVALEO (style Anne Frouard, prose continue **CONCISE**)
 
 **SURCHARGE le format global du wizard** (système prompt principal). Quand EVALEO 6-15 est sélectionné, le rendu attendu est calqué sur le format Anne Frouard observé dans les exemples joints au module \`evaleo-method.ts\` (2 PDF + 4 Word de référence). Ce format diffère du format COMPLET générique sur 4 points concrets — applique les règles EVALEO ci-dessous **en priorité** sur les règles globales.

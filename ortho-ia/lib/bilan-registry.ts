@@ -116,6 +116,17 @@ export interface BilanEntry {
   /** Bilan désactivé temporairement (présent en code mais pas proposé à
    *  la sélection). Utilisé pour Exalang 5-8 (form retiré 2026-05-21). */
   hiddenInUI?: boolean
+  /** Si true, le rendu Word PRÉSERVE l'ordre des `domains[]` produits par le
+   *  LLM au lieu d'appliquer le re-tri défensif par famille
+   *  (oral → écrit → sous-jacent) de `sortDomainsByFamily()`. Pertinent pour
+   *  EVALEO 6-15 dont l'ordre standard officiel est : Lecture identification
+   *  → Lecture compréhension → Écriture → Production orthographe → Récit
+   *  écrit → Inhibition/Visuo-attentionnel → Mémoire CT verbale →
+   *  Morphosyntaxe orale → Phonologie/Métaphonologie → Lexique →
+   *  Récit oral → Pragmatique → Gnosies/Praxies/Raisonnement
+   *  (mix langage écrit en premier, sous-jacents au milieu, langage oral à
+   *  la fin — incompatible avec le tri défensif générique). */
+  preserveDomainOrder?: boolean
 }
 
 // ============================================================================
@@ -214,6 +225,10 @@ export const BILAN_REGISTRY: Record<string, BilanEntry> = {
     scoreSchema: 'percentile',
     wordRenderer: 'standard',
     generateRoute: '/api/generate-crbo',
+    // Ordre EVALEO officiel (cf. exemples Justine Peyre) : LE → sous-jacent →
+    // LO morphosyntaxe → LO autres. Incompatible avec le tri defensif
+    // oral → écrit → sub generic.
+    preserveDomainOrder: true,
   },
   'Exalang 3-6': {
     nom: 'Exalang 3-6',

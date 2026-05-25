@@ -14,6 +14,7 @@
 
 import type { CRBOStructure } from './prompts'
 import { happyNeuronChartToPng, classifyFamily, type ChartGroup, type FamilyKey } from './chart'
+import { BILAN_REGISTRY } from './bilan-registry'
 
 // Ordre canonique des familles cliniques — identique à celui rendu par le
 // graphique HappyNeuron (page 1 du Word). Les sections narratives du CRBO
@@ -296,8 +297,24 @@ export async function generateCRBOWord(payload: WordExportPayload): Promise<Blob
   // Domaines triés selon l'ordre canonique des familles (Langage oral →
   // Langage écrit → Compétences sous-jacentes), aligné avec le graphique
   // HappyNeuron de la page 1. Voir sortDomainsByFamily ci-dessus.
-  const orderedDomains = hasStructure ? sortDomainsByFamily(structure!.domains) : []
-  const orderedPrevDomains = hasPrevious ? sortDomainsByFamily(previousStructure!.domains) : []
+  //
+  // EXCEPTION : si au moins un des tests utilises declare
+  // `preserveDomainOrder: true` dans le registry (cf. EVALEO 6-15 dont
+  // l'ordre standard mixe LE → sous-jacent → LO morphosyntaxe), on PRESERVE
+  // l'ordre des domains[] produits par le LLM tel quel. Mecanisme generique
+  // pilote par le registry — pas de hardcoding test-specific ici.
+  // testList est declare un peu plus bas (utilise aussi pour la detection
+  // MoCA), on le calcule ici de la meme maniere pour eviter le double calcul.
+  const _testListForOrder = Array.isArray(formData.test_utilise)
+    ? formData.test_utilise
+    : (typeof formData.test_utilise === 'string' && formData.test_utilise.trim() ? [formData.test_utilise] : [])
+  const preserveOrder = _testListForOrder.some(t => BILAN_REGISTRY[t]?.preserveDomainOrder === true)
+  const orderedDomains = hasStructure
+    ? (preserveOrder ? structure!.domains : sortDomainsByFamily(structure!.domains))
+    : []
+  const orderedPrevDomains = hasPrevious
+    ? (preserveOrder ? previousStructure!.domains : sortDomainsByFamily(previousStructure!.domains))
+    : []
   // Style "Laurie Berrio" — restructuration de la synthèse en 3 sections plates
   // (DIAGNOSTIC ORTHOPHONIQUE / PROJET THÉRAPEUTIQUE / Aménagements pédagogiques
   // proposés), sans Points forts / Difficultés / Axes / signature.
