@@ -138,9 +138,44 @@ export default function MatriceSection({
     const state: EpreuveState = epreuves[epreuveId] ?? { cells: {}, notes: '' }
     const key = cellKey(sousEpreuve.id, criterion.id)
     const current = state.cells[key] ?? 'gris'
+    const next = cyclePastille(current)
+
+    let newCells: Record<string, PastilleEtat> = { ...state.cells, [key]: next }
+
+    // Cascade green automatique (demande utilisateur 2026-05-26) :
+    // quand une case passe au vert (reussite spontanee), TOUTES les cases
+    // des niveaux INFERIEURS dans la meme sous-epreuve doivent etre vertes
+    // aussi. Logique clinique : si l'enfant reussit a un niveau N, il est
+    // presume reussir aux niveaux < N (classes inferieures). Ca evite a
+    // l'ortho de cocher manuellement les 4-5 niveaux du dessous.
+    //
+    // "Niveaux inferieurs" = niveaux situes APRES dans section.niveaux
+    // (l'ordre du tableau va du haut/plus eleve au bas/moins eleve).
+    if (next === 'vert') {
+      // On part de la derniere ligne couverte par le critere clique (si
+      // rowspan, il faut cascader depuis le bas du rowspan, pas le haut).
+      const lastNiveauId = criterion.niveauIds[criterion.niveauIds.length - 1]
+      const lastIdx = section.niveaux.findIndex((n) => n.id === lastNiveauId)
+      if (lastIdx >= 0) {
+        // Set pour ne pas marquer 2 fois le meme critere (cas rowspan
+        // chevauchant plusieurs niveaux du dessous).
+        const seen = new Set<string>([criterion.id])
+        for (let i = lastIdx + 1; i < section.niveaux.length; i++) {
+          const niv = section.niveaux[i]
+          const action = cellActions.get(`${epreuveId}:${sousEpreuve.id}:${niv.id}`)
+          if (action?.kind === 'criterion' && !seen.has(action.criterion.id)) {
+            seen.add(action.criterion.id)
+            newCells[cellKey(sousEpreuve.id, action.criterion.id)] = 'vert'
+          }
+          // 'continue' = meme critere absorbe par rowspan, deja gere.
+          // 'grise' / 'empty' = pas de critere, on skip.
+        }
+      }
+    }
+
     onCellChange(epreuveId, {
       ...state,
-      cells: { ...state.cells, [key]: cyclePastille(current) },
+      cells: newCells,
     })
   }
 

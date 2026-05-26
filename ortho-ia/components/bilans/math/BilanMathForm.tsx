@@ -554,10 +554,15 @@ export default function BilanMathForm({ grille }: BilanMathFormProps) {
     }
   }
 
-  // ===== Liste des épreuves cotées (pour la section notes/IA en dessous) =====
-  const epreuvesCotees = useMemo(() => {
-    const out: Array<{ sectionLabel: string; epreuveId: string; epreuveLabel: string; color: PastilleEtat }> = []
+  // ===== Liste des épreuves cotées, indexees par section.id =====
+  // Sert au rendu interleaved : matrice de section X suivie des cartes
+  // notes des epreuves cotees de cette section. Demande utilisateur
+  // 2026-05-26 : eviter le bloc "Notes & IA" geant en bas de page,
+  // mieux regroupe les commentaires juste sous la grille concernee.
+  const epreuvesCoteesBySection = useMemo(() => {
+    const out = new Map<string, Array<{ sectionId: string; sectionLabel: string; epreuveId: string; epreuveLabel: string; color: PastilleEtat }>>()
     for (const section of grille.sections) {
+      const items: Array<{ sectionId: string; sectionLabel: string; epreuveId: string; epreuveLabel: string; color: PastilleEtat }> = []
       for (const ep of section.epreuves) {
         const state = draft.epreuves[ep.id]
         if (!state) continue
@@ -565,8 +570,9 @@ export default function BilanMathForm({ grille }: BilanMathFormProps) {
         const hasNotes = state.notes && state.notes.trim().length > 0
         const hasIa = state.iaText && state.iaText.trim().length > 0
         if (color === 'gris' && !hasNotes && !hasIa) continue
-        out.push({ sectionLabel: section.label, epreuveId: ep.id, epreuveLabel: ep.label, color })
+        items.push({ sectionId: section.id, sectionLabel: section.label, epreuveId: ep.id, epreuveLabel: ep.label, color })
       }
+      if (items.length > 0) out.set(section.id, items)
     }
     return out
   }, [grille.sections, draft.epreuves])
@@ -665,45 +671,48 @@ export default function BilanMathForm({ grille }: BilanMathFormProps) {
         <PastilleLegend />
       </div>
 
-      {/* Matrices — une par section */}
-      {grille.sections.map((section) => (
-        <MatriceSection
-          key={section.id}
-          section={section}
-          epreuves={draft.epreuves}
-          interactive
-          onCellChange={handleEpreuveChange}
-        />
-      ))}
-
-      {/* Notes & IA par épreuve cotée */}
-      {epreuvesCotees.length > 0 && (
-        <section style={{ marginTop: 32 }}>
-          <h2 style={{ margin: '0 0 12px', fontSize: 14, fontWeight: 700, color: 'var(--fg-2)', textTransform: 'uppercase', letterSpacing: '0.05em' }}>
-            <MessageSquare size={14} style={{ display: 'inline', marginRight: 6, verticalAlign: -2 }} />
-            Notes &amp; analyse IA par épreuve
-          </h2>
-          <p style={{ margin: '0 0 16px', fontSize: 12, color: 'var(--fg-3)' }}>
-            Les épreuves cotées apparaissent ici. Ajoute des notes libres et génère un paragraphe clinique pour chacune.
-          </p>
-          <div style={{ display: 'flex', flexDirection: 'column', gap: 14 }}>
-            {epreuvesCotees.map((item) => (
-              <EpreuveNotesCard
-                key={item.epreuveId}
-                epreuveId={item.epreuveId}
-                epreuveLabel={item.epreuveLabel}
-                sectionLabel={item.sectionLabel}
-                color={item.color}
-                state={draft.epreuves[item.epreuveId] ?? { cells: {}, notes: '' }}
-                onNotesChange={(notes) => handleNotesChange(item.epreuveId, notes)}
-                onIaTextChange={(t) => handleIaTextChange(item.epreuveId, t)}
-                onGenerate={() => handleGenerateEpreuve(item.epreuveId, item.sectionLabel, item.epreuveLabel)}
-                isGenerating={generatingEpreuveId === item.epreuveId}
-              />
-            ))}
+      {/* Matrices + notes interleaved : chaque section affiche d'abord sa
+          grille, puis les cartes "Notes & IA" des epreuves COTEES de cette
+          section. Ca evite le bloc geant "Notes & analyse IA" en bas qui
+          deconnectait visuellement les commentaires de leur grille
+          d'origine. */}
+      {grille.sections.map((section) => {
+        const sectionItems = epreuvesCoteesBySection.get(section.id) ?? []
+        return (
+          <div key={section.id} style={{ marginBottom: 24 }}>
+            <MatriceSection
+              section={section}
+              epreuves={draft.epreuves}
+              interactive
+              onCellChange={handleEpreuveChange}
+            />
+            {sectionItems.length > 0 && (
+              <div style={{ marginTop: 8, paddingLeft: 8, borderLeft: '2px solid var(--ds-primary-soft, #eef7ee)' }}>
+                <p style={{ margin: '0 0 10px', fontSize: 11, color: 'var(--fg-3)', textTransform: 'uppercase', letterSpacing: '0.05em', fontWeight: 600 }}>
+                  <MessageSquare size={12} style={{ display: 'inline', marginRight: 6, verticalAlign: -1 }} />
+                  Notes &amp; analyse IA — épreuves de cette grille
+                </p>
+                <div style={{ display: 'flex', flexDirection: 'column', gap: 14 }}>
+                  {sectionItems.map((item) => (
+                    <EpreuveNotesCard
+                      key={item.epreuveId}
+                      epreuveId={item.epreuveId}
+                      epreuveLabel={item.epreuveLabel}
+                      sectionLabel={item.sectionLabel}
+                      color={item.color}
+                      state={draft.epreuves[item.epreuveId] ?? { cells: {}, notes: '' }}
+                      onNotesChange={(notes) => handleNotesChange(item.epreuveId, notes)}
+                      onIaTextChange={(t) => handleIaTextChange(item.epreuveId, t)}
+                      onGenerate={() => handleGenerateEpreuve(item.epreuveId, item.sectionLabel, item.epreuveLabel)}
+                      isGenerating={generatingEpreuveId === item.epreuveId}
+                    />
+                  ))}
+                </div>
+              </div>
+            )}
           </div>
-        </section>
-      )}
+        )
+      })}
 
       {/* Footer : avancement + actions */}
       <footer

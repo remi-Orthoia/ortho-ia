@@ -20,11 +20,12 @@
  * incomplet), l'en-tête est partiellement vide mais le reste s'affiche.
  */
 
-import { useEffect, useState } from 'react'
+import { useEffect, useMemo, useState } from 'react'
 import MatriceSection from './MatriceSection'
 import BilanMathCRBORender from './BilanMathCRBORender'
 import { createClient } from '@/lib/supabase'
 import type { BilanMathDraft, GrilleBilan } from '@/lib/bilans/math/types'
+import { splitCrboByGrilleSections } from '@/lib/bilans/math/split-crbo'
 
 interface Props {
   grille: GrilleBilan
@@ -97,6 +98,10 @@ export default function BilanMathWordPreview({ grille, draft, generatedCRBO, bil
   const orthoCpVille = `${profile?.code_postal ?? ''} ${profile?.ville ?? ''}`.trim()
   const age = computeAge(draft.patient.date_naissance)
   const modeLabel = draft.mode === 'renouvellement' ? 'de renouvellement' : 'initial'
+
+  // Decoupe le CRBO genere en head / chunks-par-grille / tail, pour
+  // interleaver les commentaires d'epreuve sous chaque grille.
+  const crboSplit = useMemo(() => splitCrboByGrilleSections(generatedCRBO, grille), [generatedCRBO, grille])
 
   return (
     <div
@@ -184,27 +189,45 @@ export default function BilanMathWordPreview({ grille, draft, generatedCRBO, bil
         • {grille.label} — {grille.description}
       </p>
 
-      {/* Grille coloriée — remplace le tableau Exalang. Une matrice par
-          section de la grille, en lecture seule, conserve les couleurs
-          cotées par l'ortho dans le formulaire. */}
+      {/* Head : Motif / Anamnese / Bilan realise — affiches avant les
+          grilles. Si le split echoue (LLM a emis un format inattendu),
+          crboSplit.head contient l'integralite du texte (fallback safe). */}
+      {crboSplit.head && (
+        <div style={{ marginTop: 12 }}>
+          <BilanMathCRBORender text={crboSplit.head} />
+        </div>
+      )}
+
+      {/* Grille coloriee + commentaires CRBO interleaves par section.
+          Chaque chunk est rendu sous la grille correspondante (matching
+          par keywords sur les H2 markdown). Demande utilisateur 2026-05-26
+          pour rapprocher visuellement les commentaires d'epreuve de leur
+          grille d'origine. */}
       <h2 style={{ margin: '24px 0 12px', fontSize: 14, fontWeight: 700, color: '#2E7D32' }}>
         Résultats détaillés du bilan
       </h2>
       <div style={{ marginBottom: 24 }}>
-        {grille.sections.map((section) => (
-          <MatriceSection
-            key={section.id}
-            section={section}
-            epreuves={draft.epreuves}
-            interactive={false}
-          />
-        ))}
+        {grille.sections.map((section) => {
+          const chunk = crboSplit.bySection.get(section.id)
+          return (
+            <div key={section.id} style={{ marginBottom: 28 }}>
+              <MatriceSection
+                section={section}
+                epreuves={draft.epreuves}
+                interactive={false}
+              />
+              {chunk && (
+                <div style={{ marginTop: 12 }}>
+                  <BilanMathCRBORender text={chunk} />
+                </div>
+              )}
+            </div>
+          )
+        })}
       </div>
 
-      {/* Contenu CRBO généré — markdown rendu en sections vertes. */}
-      <div style={{ marginTop: 24 }}>
-        <BilanMathCRBORender text={generatedCRBO} />
-      </div>
+      {/* Tail : Diagnostic + Projet therapeutique — apres les grilles. */}
+      {crboSplit.tail && <BilanMathCRBORender text={crboSplit.tail} />}
 
       {/* Signature footer */}
       <footer style={{ marginTop: 36, textAlign: 'right', fontStyle: 'italic' }}>

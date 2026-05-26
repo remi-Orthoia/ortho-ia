@@ -28,6 +28,7 @@
 
 import type { BilanMathDraft, GrilleBilan, PastilleEtat } from '@/lib/bilans/math/types'
 import { cellKey } from '@/lib/bilans/math/parent-color'
+import { splitCrboByGrilleSections } from '@/lib/bilans/math/split-crbo'
 
 export interface OrthoProfile {
   prenom?: string | null
@@ -244,9 +245,95 @@ export async function generateBilanMathWord(payload: MathWordExportPayload): Pro
     para([text(`• ${grille.label} — ${grille.description}`)], { after: 200 }),
   )
 
-  // ===== GRILLE COLORIÉE — remplace le tableau Exalang =====
+  // ===== SPLIT CRBO + RENDU INTERLEAVED =====
+  // Le CRBO genere est decoupe par sections de grille (matching par
+  // keywords sur les H2 markdown). On rend dans l'ordre :
+  //   head (Motif / Anamnese / Bilan realise) →
+  //   "Resultats detailles du bilan" + Legende →
+  //   pour chaque section : grille + chunk markdown de cette section →
+  //   tail (Diagnostic / Projet therapeutique)
+  // Demande utilisateur 2026-05-26 : rapprocher visuellement les
+  // commentaires d'epreuve de leur grille d'origine, plutot que de tout
+  // mettre en bloc apres toutes les grilles.
+  const crboSplit = splitCrboByGrilleSections(crboText, grille)
+
+  /**
+   * Parse un fragment markdown du CRBO et pousse les paragraphes / listes
+   * dans `children`. Reprend exactement la logique de l'ancien for-loop
+   * lignes 420-470 (titres, listes, bullets, paragraphes inline-bold).
+   */
+  const renderMarkdownChunk = (chunkText: string) => {
+    if (!chunkText.trim()) return
+    const chunkLines = chunkText.split('\n')
+    let lastWasEmpty = true
+    for (const raw of chunkLines) {
+      const line = raw.replace(/\r$/, '')
+      const t = line.trim()
+      if (!t) {
+        if (!lastWasEmpty) {
+          children.push(para([text('')], { after: 60 }))
+          lastWasEmpty = true
+        }
+        continue
+      }
+      lastWasEmpty = false
+      // **Titre seul**
+      const titleAlone = t.match(/^\*\*([^*]+)\*\*\s*:?\s*$/)
+      if (titleAlone) {
+        children.push(sectionTitle(titleAlone[1].trim()))
+        continue
+      }
+      // **Titre :** suite inline
+      const titleInline = t.match(/^\*\*([^*]+)\*\*\s*[:—-]?\s+(.+)$/)
+      if (titleInline) {
+        children.push(sectionTitle(titleInline[1].trim()))
+        children.push(para(parseBoldRunsAsRuns(titleInline[2].trim(), text), { after: 80 }))
+        continue
+      }
+      // Liste numerotee — vraie liste Word native
+      const numMatch = t.match(/^(\d+)[.)]\s+(.+)$/)
+      if (numMatch) {
+        children.push(new Paragraph({
+          numbering: { reference: 'math-numbered', level: 0 },
+          spacing: { after: 60 },
+          children: parseBoldRunsAsRuns(numMatch[2], text),
+        }))
+        continue
+      }
+      // Liste a puces — vraie liste Word native
+      const bulletMatch = t.match(/^[-*]\s+(.+)$/)
+      if (bulletMatch) {
+        children.push(new Paragraph({
+          numbering: { reference: 'math-bullets', level: 0 },
+          spacing: { after: 40 },
+          children: parseBoldRunsAsRuns(bulletMatch[1], text),
+        }))
+        continue
+      }
+      // Paragraphe normal avec inline bold
+      children.push(para(parseBoldRunsAsRuns(t, text), { after: 80, alignment: AlignmentType.JUSTIFIED }))
+    }
+  }
+
+  // 1. HEAD : Motif / Anamnese / Bilan realise (avant les grilles)
+  renderMarkdownChunk(crboSplit.head)
+
+  // 2. Titre "Resultats detailles du bilan" + Legende couleurs (commune
+  // aux 3 grilles, donc placee une fois avant le bloc grilles).
   children.push(
-    para([text('Résultats détaillés du bilan', { bold: true, color: COLOR_GREEN, size: FONT_SIZE_SECTION })], { before: 300, after: 160 }),
+    para([text('Résultats détaillés du bilan', { bold: true, color: COLOR_GREEN, size: FONT_SIZE_SECTION })], { before: 300, after: 100 }),
+    para(
+      [
+        text('Légende couleurs : ', { bold: true, size: FONT_SIZE_SMALL }),
+        text('vert = réussite spontanée ', { color: COLOR_TEXT.vert, size: FONT_SIZE_SMALL }),
+        text('· ', { size: FONT_SIZE_SMALL }),
+        text('orange = réussite après étayage ', { color: COLOR_TEXT.orange, size: FONT_SIZE_SMALL }),
+        text('· ', { size: FONT_SIZE_SMALL }),
+        text('rouge = échec ', { color: COLOR_TEXT.rouge, size: FONT_SIZE_SMALL }),
+        text('· gris = non coté', { color: COLOR_TEXT.gris, size: FONT_SIZE_SMALL }),
+      ],
+      { after: 200 },
+    ),
   )
 
   for (const section of grille.sections) {
@@ -396,78 +483,15 @@ export async function generateBilanMathWord(payload: MathWordExportPayload): Pro
       ],
     }))
     children.push(para([text('')]))
+
+    // Apres la grille de cette section : on rend le chunk markdown
+    // correspondant (commentaires des epreuves de cette section).
+    const chunk = crboSplit.bySection.get(section.id)
+    if (chunk) renderMarkdownChunk(chunk)
   }
 
-  // Légende de la cotation qualitative — utile sur la 1ère lecture du Word.
-  children.push(
-    para(
-      [
-        text('Légende couleurs : ', { bold: true, size: FONT_SIZE_SMALL }),
-        text('vert = réussite spontanée ', { color: COLOR_TEXT.vert, size: FONT_SIZE_SMALL }),
-        text('· ', { size: FONT_SIZE_SMALL }),
-        text('orange = réussite après étayage ', { color: COLOR_TEXT.orange, size: FONT_SIZE_SMALL }),
-        text('· ', { size: FONT_SIZE_SMALL }),
-        text('rouge = échec ', { color: COLOR_TEXT.rouge, size: FONT_SIZE_SMALL }),
-        text('· gris = non coté', { color: COLOR_TEXT.gris, size: FONT_SIZE_SMALL }),
-      ],
-      { before: 80, after: 220 },
-    ),
-  )
-
-  // ===== CONTENU CRBO MARKDOWN =====
-  // Parse léger : **Titre** sur sa ligne = sous-titre vert; "1." / "- " = listes;
-  // sinon paragraphe normal.
-  const lines = crboText.split('\n')
-  let lastWasEmpty = true
-  for (const raw of lines) {
-    const line = raw.replace(/\r$/, '')
-    const t = line.trim()
-    if (!t) {
-      if (!lastWasEmpty) {
-        children.push(para([text('')], { after: 60 }))
-        lastWasEmpty = true
-      }
-      continue
-    }
-    lastWasEmpty = false
-
-    // **Titre seul**
-    const titleAlone = t.match(/^\*\*([^*]+)\*\*\s*:?\s*$/)
-    if (titleAlone) {
-      children.push(sectionTitle(titleAlone[1].trim()))
-      continue
-    }
-    // **Titre :** suite inline
-    const titleInline = t.match(/^\*\*([^*]+)\*\*\s*[:—-]?\s+(.+)$/)
-    if (titleInline) {
-      children.push(sectionTitle(titleInline[1].trim()))
-      children.push(para(parseBoldRunsAsRuns(titleInline[2].trim(), text), { after: 80 }))
-      continue
-    }
-    // Liste numérotée — vraie liste Word native via numbering.reference
-    // pour que l'ortho puisse editer la liste avec les outils Word standards.
-    const numMatch = t.match(/^(\d+)[.)]\s+(.+)$/)
-    if (numMatch) {
-      children.push(new Paragraph({
-        numbering: { reference: 'math-numbered', level: 0 },
-        spacing: { after: 60 },
-        children: parseBoldRunsAsRuns(numMatch[2], text),
-      }))
-      continue
-    }
-    // Liste à puces — meme principe, vraie liste Word native.
-    const bulletMatch = t.match(/^[-*]\s+(.+)$/)
-    if (bulletMatch) {
-      children.push(new Paragraph({
-        numbering: { reference: 'math-bullets', level: 0 },
-        spacing: { after: 40 },
-        children: parseBoldRunsAsRuns(bulletMatch[1], text),
-      }))
-      continue
-    }
-    // Paragraphe normal avec inline bold
-    children.push(para(parseBoldRunsAsRuns(t, text), { after: 80, alignment: AlignmentType.JUSTIFIED }))
-  }
+  // ===== TAIL CRBO (Diagnostic / Projet therapeutique) — apres les grilles =====
+  renderMarkdownChunk(crboSplit.tail)
 
   // ===== SIGNATURE =====
   children.push(
