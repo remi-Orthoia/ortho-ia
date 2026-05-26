@@ -1544,10 +1544,13 @@ export async function generateCRBOWord(payload: WordExportPayload): Promise<Blob
     }
 
     // ===== AMÉNAGEMENTS =====
-    // Complet : "Aménagements scolaires conseillés", max 6, format
-    //   "Catégorie : description" (catégorie en gras).
-    // Synthétique : "Aménagements pédagogiques proposés", max 10, bullets simples
-    //   (1 phrase à l'infinitif), sans gras, sans préfixe catégorie.
+    // Complet : "Aménagements scolaires conseillés", max 6 bullets.
+    // Synthétique : "Aménagements pédagogiques proposés", max 10 bullets.
+    // Bullets RIGOUREUSEMENT plain text (aucun gras nulle part) — retour
+    // utilisateur 2026-05-26 : l'ancien rendu mettait en gras la partie
+    // avant ":" quand un bullet contenait un deux-points, mais pas les
+    // autres → effet visuel incoherent (un seul bullet en gras au milieu
+    // des autres). Solution : aucun gras conditionnel.
     const papLimit = isSynthetique ? 10 : 6
     const paps = (s.pap_suggestions ?? []).filter(p => p && p.trim().length > 0).slice(0, papLimit)
     if (paps.length > 0) {
@@ -1569,38 +1572,30 @@ export async function generateCRBOWord(payload: WordExportPayload): Promise<Blob
         })],
       }))
       for (const p of paps) {
+        // Strip d'un eventuel prefixe markdown "**Categorie** — description"
+        // (cas legacy ou si l'IA respecte mal le prompt) : on aplatit en
+        // "Categorie : description" en texte normal.
         const legacy = p.trim().match(legacyRegex)
         const detail = legacy ? `${legacy[1].trim()} : ${legacy[2].trim()}` : p.trim()
+        // Synthetique : si "Categorie : description" (prefixe court sans
+        // espace en bout = mot unique), on strip le prefixe pour ne garder
+        // que la description (forme synthetique = phrase a l'infinitif).
+        let display = detail
         if (isSynthetique) {
-          // Robustesse : si l'IA laisse fuiter "Catégorie : ..." malgré le prompt
-          // (cas legacy ou complet réutilisé), on retire le préfixe avant le " : ".
-          // Heuristique : un préfixe de 2-30 chars sans verbe → on le strip.
           const colonIdx = detail.indexOf(':')
           const head = colonIdx >= 0 ? detail.slice(0, colonIdx).trim() : ''
           const tail = colonIdx >= 0 ? detail.slice(colonIdx + 1).trim() : detail
           const looksLikeCategory = head.length > 0 && head.length <= 30 && !/\s/.test(head.split(' ').slice(-1)[0])
-          const cleanItem = looksLikeCategory ? tail : detail
-          children.push(new Paragraph({
-            alignment: AlignmentType.BOTH,
-            indent: { left: 360 },
-            spacing: { after: 50 },
-            children: [new TextRun({ text: `• ${cleanItem}`, size: FONT_SIZE_NORMAL, font: FONT })],
-          }))
-        } else {
-          const colonIdx = detail.indexOf(':')
-          const runs = colonIdx >= 0
-            ? [
-                new TextRun({ text: `• ${detail.slice(0, colonIdx + 1)} `, bold: true, size: FONT_SIZE_NORMAL, font: FONT }),
-                new TextRun({ text: detail.slice(colonIdx + 1).trimStart(), size: FONT_SIZE_NORMAL, font: FONT }),
-              ]
-            : [new TextRun({ text: `• ${detail}`, size: FONT_SIZE_NORMAL, font: FONT })]
-          children.push(new Paragraph({
-            alignment: AlignmentType.BOTH,
-            indent: { left: 360 },
-            spacing: { after: 50 },
-            children: runs,
-          }))
+          if (looksLikeCategory) display = tail
         }
+        // Plain text, sans gras, ni sur le bullet ni sur une partie. Texte
+        // entier en regular weight pour homogeneite visuelle des bullets.
+        children.push(new Paragraph({
+          alignment: AlignmentType.BOTH,
+          indent: { left: 360 },
+          spacing: { after: 50 },
+          children: [new TextRun({ text: `• ${display}`, size: FONT_SIZE_NORMAL, font: FONT })],
+        }))
       }
     }
   } else {
