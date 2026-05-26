@@ -25,7 +25,7 @@ import MatriceSection from './MatriceSection'
 import BilanMathCRBORender from './BilanMathCRBORender'
 import { createClient } from '@/lib/supabase'
 import type { BilanMathDraft, GrilleBilan } from '@/lib/bilans/math/types'
-import { splitCrboByGrilleSections } from '@/lib/bilans/math/split-crbo'
+import { splitCrboByGrilleSections, stripBilanRealiseSection } from '@/lib/bilans/math/split-crbo'
 
 interface Props {
   grille: GrilleBilan
@@ -181,22 +181,40 @@ export default function BilanMathWordPreview({ grille, draft, generatedCRBO, bil
         </tbody>
       </table>
 
-      {/* Tests pratiqués */}
+      {/* Tests pratiqués — inclut la phrase verbatim "Bilan realise avec..."
+          en italique, deplacee ici depuis sa section dediee. Demande
+          utilisateur 2026-05-26 : evite le doublon section "Bilan realise"
+          qui faisait redondance avec le motif/anamnese juste apres. */}
       <h2 style={{ margin: '20px 0 8px', fontSize: 14, fontWeight: 700, color: '#2E7D32' }}>
         Tests pratiqués
       </h2>
-      <p style={{ margin: '0 0 18px' }}>
+      <p style={{ margin: '0 0 8px' }}>
         • {grille.label} — {grille.description}
       </p>
+      <p style={{
+        margin: '0 0 18px',
+        fontStyle: 'italic',
+        fontSize: 12.5,
+        color: '#707070',
+        lineHeight: 1.5,
+        textAlign: 'justify',
+      }}>
+        Bilan réalisé avec des épreuves de manipulations des compétences logiques de la batterie B-LM2,
+        des épreuves numériques du TEDI-MATH, du ZAREKI-R, et des épreuves cliniques.
+        Les compétences sont cotées qualitativement : réussite spontanée, réussite après étayage, échec.
+      </p>
 
-      {/* Head : Motif / Anamnese / Bilan realise — affiches avant les
-          grilles. Si le split echoue (LLM a emis un format inattendu),
-          crboSplit.head contient l'integralite du texte (fallback safe). */}
-      {crboSplit.head && (
-        <div style={{ marginTop: 12 }}>
-          <BilanMathCRBORender text={crboSplit.head} />
-        </div>
-      )}
+      {/* Head : Motif / Anamnese — affiches avant les grilles. La section
+          "Bilan realise" eventuellement presente dans le head est strippee
+          ici car deja rendue sous Tests pratiques ci-dessus. */}
+      {(() => {
+        const cleanHead = stripBilanRealiseSection(crboSplit.head)
+        return cleanHead ? (
+          <div style={{ marginTop: 12 }}>
+            <BilanMathCRBORender text={cleanHead} />
+          </div>
+        ) : null
+      })()}
 
       {/* Grille coloriee + commentaires CRBO interleaves par section.
           Chaque chunk est rendu sous la grille correspondante (matching

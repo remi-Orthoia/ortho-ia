@@ -28,7 +28,7 @@
 
 import type { BilanMathDraft, GrilleBilan, PastilleEtat } from '@/lib/bilans/math/types'
 import { cellKey } from '@/lib/bilans/math/parent-color'
-import { splitCrboByGrilleSections } from '@/lib/bilans/math/split-crbo'
+import { splitCrboByGrilleSections, stripBilanRealiseSection } from '@/lib/bilans/math/split-crbo'
 
 export interface OrthoProfile {
   prenom?: string | null
@@ -251,9 +251,20 @@ export async function generateBilanMathWord(payload: MathWordExportPayload): Pro
   children.push(para([text('')]))
 
   // ===== TESTS PRATIQUÉS =====
+  // Demande utilisateur 2026-05-26 : la phrase verbatim "Bilan realise
+  // avec des epreuves de manipulations..." est rendue ICI sous "Tests
+  // pratiques" (au lieu d'une section dediee "Bilan realise" qui faisait
+  // doublon). Elle est rendue cote rendu (hardcodee), plus depuis le LLM.
   children.push(
     para([text('Tests pratiqués', { bold: true, color: COLOR_GREEN })], { before: 200, after: 100 }),
-    para([text(`• ${grille.label} — ${grille.description}`)], { after: 200 }),
+    para([text(`• ${grille.label} — ${grille.description}`)], { after: 100 }),
+    para(
+      [text(
+        'Bilan réalisé avec des épreuves de manipulations des compétences logiques de la batterie B-LM2, des épreuves numériques du TEDI-MATH, du ZAREKI-R, et des épreuves cliniques. Les compétences sont cotées qualitativement : réussite spontanée, réussite après étayage, échec.',
+        { italic: true, size: FONT_SIZE_SMALL, color: '707070' },
+      )],
+      { after: 200, alignment: AlignmentType.JUSTIFIED },
+    ),
   )
 
   // ===== SPLIT CRBO + RENDU INTERLEAVED =====
@@ -327,7 +338,11 @@ export async function generateBilanMathWord(payload: MathWordExportPayload): Pro
   }
 
   // 1. HEAD : Motif / Anamnese / Bilan realise (avant les grilles)
-  renderMarkdownChunk(crboSplit.head)
+  // Strip toute trace LLM-emitted de la section "Bilan realise" pour eviter
+  // la duplication avec la phrase verbatim rendue sous "Tests pratiques"
+  // (cf. plus haut). Couvre les CRBO legacy generes avant le changement de
+  // prompt + les CRBO recents si le LLM ne suit pas la nouvelle consigne.
+  renderMarkdownChunk(stripBilanRealiseSection(crboSplit.head))
 
   // 2. Titre "Resultats detailles du bilan" + Legende couleurs (commune
   // aux 3 grilles, donc placee une fois avant le bloc grilles).

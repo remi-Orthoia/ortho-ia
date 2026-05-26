@@ -67,6 +67,51 @@ function matchH2Header(line: string): string | null {
 
 const TAIL_KEYWORDS = ['diagnostic', 'projet therapeutique', 'projet']
 
+/**
+ * Supprime la section "**Bilan realise**" (et son contenu jusqu'au prochain
+ * H2) d'un texte markdown. La phrase verbatim "Bilan realise avec des
+ * epreuves de manipulations..." est desormais rendue automatiquement sous
+ * "Tests pratiques" cote renderer (Word + preview), donc on supprime
+ * toute trace LLM-emitted de cette section pour eviter la duplication
+ * sur les CRBO generes avant ce changement OU sur des CRBO recents si le
+ * LLM ne respecte pas l'instruction du prompt.
+ *
+ * Match insensible aux accents et a la variante de titre :
+ *   **Bilan realise**, **Bilan réalisé**, **Bilan réalisé :**, **Bilan**
+ */
+export function stripBilanRealiseSection(text: string): string {
+  if (!text) return text
+  const lines = text.split('\n')
+  const out: string[] = []
+  let skipping = false
+  for (const line of lines) {
+    const header = (() => {
+      let m = line.match(/^\s*\*\*([^*]+)\*\*\s*:?\s*$/)
+      if (m) return m[1].trim().replace(/\s*:\s*$/, '')
+      m = line.match(/^\s*\*\*([^*]+)\*\*\s*[:—–-]\s+.+$/)
+      if (m) return m[1].trim().replace(/\s*:\s*$/, '')
+      return null
+    })()
+    if (header) {
+      const norm = normalize(header)
+      // Detection "Bilan realise" : commence par "bilan realise" ou
+      // "bilan-realise". On evite de matcher "Bilan" tout court (trop large).
+      if (/^bilan\s*realise/i.test(norm)) {
+        skipping = true
+        continue
+      }
+      // Tout autre H2 met fin au skip.
+      if (skipping) {
+        skipping = false
+      }
+    }
+    if (skipping) continue
+    out.push(line)
+  }
+  // Nettoie les paragraphes vides en cascade laisses apres suppression.
+  return out.join('\n').replace(/\n{3,}/g, '\n\n').trim()
+}
+
 export function splitCrboByGrilleSections(crboText: string, grille: GrilleBilan): CrboSplit {
   const empty: CrboSplit = { head: crboText, bySection: new Map(), tail: '' }
   if (!crboText || !grille.sections.length) return empty

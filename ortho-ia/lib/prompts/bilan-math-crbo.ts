@@ -98,15 +98,19 @@ Format markdown : titres de section en **gras**. Lignes vides entre paragraphes.
 
 2. **Anamnèse** — 4 à 8 phrases. Reproduit (en reformulant légèrement) l'anamnèse fournie. Ordre conseillé : développement, ORL, visuel, scolaire, antécédents/rééducations, traits comportementaux notés par l'ortho.
 
-3. **Bilan réalisé** — section OBLIGATOIRE, situee juste apres l'Anamnese. Tu DOIS y inclure VERBATIM la phrase suivante (formulation officielle imposee, **pas de paraphrase**) :
+⛔ **NE PAS PRODUIRE de section "Bilan réalisé"** : la phrase officielle
+"Bilan réalisé avec des épreuves de manipulations des compétences logiques
+de la batterie B-LM2, des épreuves numériques du TEDI-MATH, du ZAREKI-R,
+et des épreuves cliniques. Les compétences sont cotées qualitativement :
+réussite spontanée, réussite après étayage, échec." est rendue
+AUTOMATIQUEMENT par le moteur Word sous la section "Tests pratiqués" en
+en-tete du CRBO. Tu DOIS donc enchainer directement de l'**Anamnèse**
+vers la 1re SECTION DE DOMAINE en majuscules (sans titre intermediaire
+"Bilan réalisé"). Si tu produis cette section, elle sera supprimee
+automatiquement par le filtre cote rendu — mais autant ne pas l'ecrire
+pour gagner des tokens.
 
-> Bilan réalisé avec des épreuves de manipulations des compétences logiques de la batterie B-LM2, des épreuves numériques du TEDI-MATH, du ZAREKI-R, et des épreuves cliniques.
-
-Puis, sur la meme ligne ou en phrase suivante (1 phrase max), tu peux ajouter une mention du mode de cotation qualitative : "Les compétences sont cotées qualitativement : réussite spontanée, réussite après étayage, échec."
-
-⛔ NE PAS modifier le nom des batteries (B-LM2, TEDI-MATH, ZAREKI-R) ni leur ordre. ⛔ NE PAS ajouter d'autres batteries (B-CM, B-CMado restent le nom du **bilan**, pas une batterie source ici). ⛔ NE PAS retirer "et des épreuves cliniques" — c'est la mention legale du complement d'epreuves hors batterie standardisee.
-
-Puis pour CHAQUE domaine présent dans le bilan, une SECTION en gros titre majuscule (ex : **LES COMPÉTENCES LOGIQUES — RAISONNEMENT ET LANGAGE**, **COMPTAGE ET DÉNOMBREMENT**, **SYSTÈME DE NUMÉRATION**, **OPÉRATIONS**, **PROBLÈMES**…). À l'intérieur de chaque section, un sous-titre **EN MAJUSCULES** par épreuve (ex : **CLASSIFICATION :**, **CHAÎNE NUMÉRIQUE :**, **NUMÉRATION :**, **SENS DES OPÉRATIONS :**…), suivi de :
+3. Pour CHAQUE domaine présent dans le bilan, une SECTION en gros titre majuscule (ex : **LES COMPÉTENCES LOGIQUES — RAISONNEMENT ET LANGAGE**, **COMPTAGE ET DÉNOMBREMENT**, **SYSTÈME DE NUMÉRATION**, **OPÉRATIONS**, **PROBLÈMES**…). À l'intérieur de chaque section, un sous-titre **EN MAJUSCULES** par épreuve (ex : **CLASSIFICATION :**, **CHAÎNE NUMÉRIQUE :**, **NUMÉRATION :**, **SENS DES OPÉRATIONS :**…), suivi de :
   - Une phrase rappelant l'OBJECTIF de l'épreuve (ce qu'on cherche à vérifier).
   - 1 à 4 phrases d'OBSERVATION CLINIQUE au présent, ancrées dans ce que les cellules cotées disent : à quel niveau l'épreuve est réussie/échouée, après étayage ou non, citations du patient si l'ortho en a fourni dans les notes.
   - Si une épreuve n'a aucune cellule cotée et pas de notes : mentionner brièvement "Non proposée" (sans inventer).
@@ -269,7 +273,7 @@ export function buildBilanMathCRBOUserPrompt(ctx: BilanMathCRBOContext): string 
   lines.push('---')
   lines.push('')
   lines.push(
-    `Rédige le CRBO ${bilanLabel} en suivant strictement la structure imposée par le système : Motif, Anamnèse, Bilan réalisé, une section par DOMAINE avec sous-titres par ÉPREUVE, Diagnostic orthophonique (DSM-V critères A-D + symptômes 5/6 pertinents), Projet thérapeutique (NGAP + AMO + formule de politesse finale). 1200 à 2000 mots. Reproduis fidèlement les noms de domaines et d'épreuves donnés ci-dessus.`,
+    `Rédige le CRBO ${bilanLabel} en suivant strictement la structure imposée par le système : Motif, Anamnèse, une section par DOMAINE avec sous-titres par ÉPREUVE, Diagnostic orthophonique (DSM-V critères A-D + symptômes 5/6 pertinents), Projet thérapeutique (NGAP + AMO + formule de politesse finale). 1200 à 2000 mots. NE PAS produire de section "Bilan réalisé" — elle est rendue automatiquement sous Tests pratiqués. Reproduis fidèlement les noms de domaines et d'épreuves donnés ci-dessus.`,
   )
   return lines.join('\n')
 }
