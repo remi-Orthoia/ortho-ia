@@ -98,7 +98,13 @@ Format markdown : titres de section en **gras**. Lignes vides entre paragraphes.
 
 2. **Anamnèse** — 4 à 8 phrases. Reproduit (en reformulant légèrement) l'anamnèse fournie. Ordre conseillé : développement, ORL, visuel, scolaire, antécédents/rééducations, traits comportementaux notés par l'ortho.
 
-3. **Bilan réalisé** — UNE phrase indiquant le bilan utilisé et le mode de cotation qualitative. Ex : "Le bilan de cognition mathématique B-CMado a été réalisé avec [Prénom] ; les compétences sont cotées qualitativement (réussite spontanée, réussite après étayage, échec)."
+3. **Bilan réalisé** — section OBLIGATOIRE, situee juste apres l'Anamnese. Tu DOIS y inclure VERBATIM la phrase suivante (formulation officielle imposee, **pas de paraphrase**) :
+
+> Bilan réalisé avec des épreuves de manipulations des compétences logiques de la batterie B-LM2, des épreuves numériques du TEDI-MATH, du ZAREKI-R, et des épreuves cliniques.
+
+Puis, sur la meme ligne ou en phrase suivante (1 phrase max), tu peux ajouter une mention du mode de cotation qualitative : "Les compétences sont cotées qualitativement : réussite spontanée, réussite après étayage, échec."
+
+⛔ NE PAS modifier le nom des batteries (B-LM2, TEDI-MATH, ZAREKI-R) ni leur ordre. ⛔ NE PAS ajouter d'autres batteries (B-CM, B-CMado restent le nom du **bilan**, pas une batterie source ici). ⛔ NE PAS retirer "et des épreuves cliniques" — c'est la mention legale du complement d'epreuves hors batterie standardisee.
 
 Puis pour CHAQUE domaine présent dans le bilan, une SECTION en gros titre majuscule (ex : **LES COMPÉTENCES LOGIQUES — RAISONNEMENT ET LANGAGE**, **COMPTAGE ET DÉNOMBREMENT**, **SYSTÈME DE NUMÉRATION**, **OPÉRATIONS**, **PROBLÈMES**…). À l'intérieur de chaque section, un sous-titre **EN MAJUSCULES** par épreuve (ex : **CLASSIFICATION :**, **CHAÎNE NUMÉRIQUE :**, **NUMÉRATION :**, **SENS DES OPÉRATIONS :**…), suivi de :
   - Une phrase rappelant l'OBJECTIF de l'épreuve (ce qu'on cherche à vérifier).
