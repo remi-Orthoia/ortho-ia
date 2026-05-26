@@ -987,9 +987,7 @@ export default function Evaleo615ScoresInput({
               <p className="text-sky-800 text-xs mt-0.5 leading-relaxed">
                 Format accepte : <strong>PDF uniquement</strong> (rapport de cotation HappyNeuron, scan
                 du cahier de passation rempli, ou bilan deja redige exporte en PDF). Si vous avez un
-                Word, exportez-le en PDF avant import (Fichier &gt; Exporter &gt; PDF). Claude lit le
-                document et pre-remplit niveau, anamnese et scores. Vous pouvez ensuite corriger
-                librement. Max 10 Mo.
+                Word, exportez-le en PDF avant import (Fichier &gt; Exporter &gt; PDF).
               </p>
             </div>
           </div>

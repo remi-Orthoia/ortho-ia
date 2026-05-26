@@ -46,7 +46,7 @@ const ARTICLES: Article[] = [
       <>
         <p>
           Depuis cette semaine, la génération de la synthèse CRBO se fait en streaming SSE.
-          Concrètement : pendant que Claude rédige, vous voyez le texte apparaître progressivement
+          Concrètement : pendant la rédaction, vous voyez le texte apparaître progressivement
           à l&apos;écran, section par section (points forts, difficultés, diagnostic, recommandations).
         </p>
         <p>
@@ -72,8 +72,8 @@ const ARTICLES: Article[] = [
       <>
         <p>
           Nouveau bouton en haut du tableau de bord : <em>« Démarrer en vocal »</em>. Vous cliquez,
-          vous dictez une phrase naturelle, et Whisper + Claude transforment ça en formulaire
-          pré-rempli (prénom, classe, motif, test).
+          vous dictez une phrase naturelle, et nous transformons ça en formulaire pré-rempli
+          (prénom, classe, motif, test).
         </p>
         <p>
           Le système comprend les approximations : <em>« cinquième »</em> → 5ème,
@@ -141,7 +141,7 @@ const ARTICLES: Article[] = [
       <>
         <p>
           Pour la transparence : nous avons corrigé un bug dans la fonction d&apos;anonymisation
-          qui précède chaque envoi à l&apos;API Anthropic. La regex <code>\b</code> (mot-frontière)
+          qui précède chaque envoi à notre moteur IA. La regex <code>\b</code> (mot-frontière)
           en JavaScript ne traite pas correctement les lettres accentuées comme caractères de
           mot — résultat : un prénom comme <em>Émélie</em> en début de phrase n&apos;était
           parfois pas substitué par son token avant transmission.
@@ -153,7 +153,7 @@ const ARTICLES: Article[] = [
         <p>
           <em>Aucune donnée n&apos;a fuité hors UE</em> grâce à cette correction : tous les rendus
           finaux côté Word étaient corrects (rehydration côté serveur), mais le scrub côté
-          anthropic.com pouvait être incomplet. Nous tenions à le partager pour transparence.
+          serveur IA pouvait être incomplet. Nous tenions à le partager pour transparence.
         </p>
       </>
     ),
@@ -169,8 +169,7 @@ const ARTICLES: Article[] = [
         <p>
           Vous pouvez désormais glisser jusqu&apos;à 3 PDFs en même temps lors de l&apos;import des
           résultats. Cas typique : une feuille HappyNeuron Exalang qui tient sur 2 pages.
-          Chaque PDF est analysé séparément par Claude Vision, puis les résultats sont
-          consolidés en un seul JSON.
+          Chaque PDF est analysé séparément, puis les résultats sont consolidés en un seul JSON.
         </p>
         <p>
           En cas de doublon (la même épreuve présente sur 2 PDFs), c&apos;est <strong>le dernier

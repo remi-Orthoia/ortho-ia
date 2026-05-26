@@ -425,7 +425,7 @@ export default function MocaScoresInput({ notes, onNotesChange, onResultatsChang
                 <span className="font-normal text-purple-600 text-xs">(bêta)</span>
               </p>
               <p className="text-purple-700 text-xs mt-0.5">
-                Photographiez ou glissez-déposez la feuille de cotation. Claude Vision lit les 7 scores,
+                Photographiez ou glissez-déposez la feuille de cotation. Nous lisons les 7 scores,
                 la case scolarité, et les annotations en marge. <strong>Relisez systématiquement</strong> avant
                 de générer le CRBO.
               </p>
