@@ -295,7 +295,7 @@ export async function generateCRBOWord(payload: WordExportPayload): Promise<Blob
   const {
     Document, Packer, Paragraph, TextRun, Table, TableRow, TableCell,
     WidthType, BorderStyle, AlignmentType, PageBreak, ShadingType, ImageRun,
-    PageOrientation,
+    PageOrientation, LevelFormat,
   } = await import('docx')
 
   // Police choisie par Laurie : Bookman Old Style. Disponible nativement
@@ -655,8 +655,23 @@ export async function generateCRBOWord(payload: WordExportPayload): Promise<Blob
   // ===== TESTS =====
   children.push(
     new Paragraph({ children: [new TextRun({ text: 'Tests pratiqués', size: FONT_SIZE_NORMAL, font: FONT, color: COLOR_GREEN, bold: true })], spacing: { before: 200 } }),
-    new Paragraph({ children: [new TextRun({ text: `• ${testsText}`, size: FONT_SIZE_NORMAL, font: FONT })], spacing: { after: 200 } }),
   )
+  // Vraie liste a puces Word : 1 bullet par test, l'ortho peut ajouter /
+  // retirer / reformater dans Word avec les outils de liste natifs.
+  {
+    const testArray = Array.isArray(formData.test_utilise)
+      ? formData.test_utilise
+      : (typeof formData.test_utilise === 'string' && formData.test_utilise.trim()
+          ? formData.test_utilise.split(',').map(t => t.trim()).filter(Boolean)
+          : [])
+    testArray.forEach((t, i) => {
+      children.push(new Paragraph({
+        numbering: { reference: 'crbo-bullets', level: 0 },
+        spacing: { after: i === testArray.length - 1 ? 200 : 60 },
+        children: [new TextRun({ text: t, size: FONT_SIZE_NORMAL, font: FONT })],
+      }))
+    })
+  }
 
   // ===== PAGE 1 RENOUVELLEMENT — Bloc comparatif riche =====
   if (hasStructure && hasPrevious) {
@@ -1495,10 +1510,9 @@ export async function generateCRBOWord(payload: WordExportPayload): Promise<Blob
         for (const it of g.items) {
           if (!it || !it.trim()) continue
           children.push(new Paragraph({
-            alignment: AlignmentType.BOTH,
-            indent: { left: 360 },
+            numbering: { reference: 'crbo-bullets', level: 0 },
             spacing: { after: 40 },
-            children: [new TextRun({ text: `• ${it.trim()}`, size: FONT_SIZE_NORMAL, font: FONT })],
+            children: [new TextRun({ text: it.trim(), size: FONT_SIZE_NORMAL, font: FONT })],
           }))
         }
       }
@@ -1529,13 +1543,11 @@ export async function generateCRBOWord(payload: WordExportPayload): Promise<Blob
             size: FONT_SIZE_NORMAL, font: FONT,
           })],
         }))
-        axes.forEach((a, i) => {
+        axes.forEach((a) => {
           children.push(new Paragraph({
-            alignment: AlignmentType.BOTH,
-            indent: { left: 360 },
+            numbering: { reference: 'crbo-numbered', level: 0 },
             spacing: { after: 60 },
             children: [
-              new TextRun({ text: `${i + 1}. `, bold: true, size: FONT_SIZE_NORMAL, font: FONT, color: COLOR_GREEN }),
               new TextRun({ text: a.trim(), size: FONT_SIZE_NORMAL, font: FONT }),
             ],
           }))
@@ -1588,13 +1600,13 @@ export async function generateCRBOWord(payload: WordExportPayload): Promise<Blob
           const looksLikeCategory = head.length > 0 && head.length <= 30 && !/\s/.test(head.split(' ').slice(-1)[0])
           if (looksLikeCategory) display = tail
         }
-        // Plain text, sans gras, ni sur le bullet ni sur une partie. Texte
-        // entier en regular weight pour homogeneite visuelle des bullets.
+        // Plain text, sans gras nulle part, en vraie liste a puces Word
+        // native (numbering.reference) pour que l'ortho puisse editer la
+        // liste avec les outils Word standards (Tab/Maj+Tab, retour ligne).
         children.push(new Paragraph({
-          alignment: AlignmentType.BOTH,
-          indent: { left: 360 },
+          numbering: { reference: 'crbo-bullets', level: 0 },
           spacing: { after: 50 },
-          children: [new TextRun({ text: `• ${display}`, size: FONT_SIZE_NORMAL, font: FONT })],
+          children: [new TextRun({ text: display, size: FONT_SIZE_NORMAL, font: FONT })],
         }))
       }
     }
@@ -1680,6 +1692,39 @@ export async function generateCRBOWord(payload: WordExportPayload): Promise<Blob
   )
 
   const doc = new Document({
+    // Numbering : 2 styles de listes WORD natives (vrais bullets/numerotation).
+    // L'ortho peut donc cliquer-pour-editer ses listes dans Word comme une
+    // liste classique (Tab/Maj+Tab pour indenter, retour ligne pour ajouter
+    // un item, etc.). Auparavant on rendait des "•" comme caractere texte +
+    // espace, ce qui empechait Word de reconnaitre le bloc comme une liste.
+    numbering: {
+      config: [
+        {
+          reference: 'crbo-bullets',
+          levels: [
+            {
+              level: 0,
+              format: LevelFormat.BULLET,
+              text: '•',
+              alignment: AlignmentType.LEFT,
+              style: { paragraph: { indent: { left: 720, hanging: 360 } } },
+            },
+          ],
+        },
+        {
+          reference: 'crbo-numbered',
+          levels: [
+            {
+              level: 0,
+              format: LevelFormat.DECIMAL,
+              text: '%1.',
+              alignment: AlignmentType.LEFT,
+              style: { paragraph: { indent: { left: 720, hanging: 360 } } },
+            },
+          ],
+        },
+      ],
+    },
     sections: [{
       properties: {
         page: {

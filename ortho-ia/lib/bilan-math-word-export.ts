@@ -120,7 +120,7 @@ export async function generateBilanMathWord(payload: MathWordExportPayload): Pro
   const {
     Document, Packer, Paragraph, TextRun, Table, TableRow, TableCell,
     WidthType, BorderStyle, AlignmentType, PageBreak, ShadingType, VerticalMergeType,
-    TableLayoutType,
+    TableLayoutType, LevelFormat,
   } = await import('docx')
 
   const { grille, draft, crboText, profile, bilanDate } = payload
@@ -444,25 +444,25 @@ export async function generateBilanMathWord(payload: MathWordExportPayload): Pro
       children.push(para(parseBoldRunsAsRuns(titleInline[2].trim(), text), { after: 80 }))
       continue
     }
-    // Liste numérotée
+    // Liste numérotée — vraie liste Word native via numbering.reference
+    // pour que l'ortho puisse editer la liste avec les outils Word standards.
     const numMatch = t.match(/^(\d+)[.)]\s+(.+)$/)
     if (numMatch) {
-      children.push(para(
-        [
-          text(`${numMatch[1]}. `, { bold: true, color: COLOR_GREEN }),
-          ...parseBoldRunsAsRuns(numMatch[2], text),
-        ],
-        { after: 60, indent: { left: 360 } },
-      ))
+      children.push(new Paragraph({
+        numbering: { reference: 'math-numbered', level: 0 },
+        spacing: { after: 60 },
+        children: parseBoldRunsAsRuns(numMatch[2], text),
+      }))
       continue
     }
-    // Liste à puces
+    // Liste à puces — meme principe, vraie liste Word native.
     const bulletMatch = t.match(/^[-*]\s+(.+)$/)
     if (bulletMatch) {
-      children.push(para(
-        [text('• ', { bold: true }), ...parseBoldRunsAsRuns(bulletMatch[1], text)],
-        { after: 40, indent: { left: 360 } },
-      ))
+      children.push(new Paragraph({
+        numbering: { reference: 'math-bullets', level: 0 },
+        spacing: { after: 40 },
+        children: parseBoldRunsAsRuns(bulletMatch[1], text),
+      }))
       continue
     }
     // Paragraphe normal avec inline bold
@@ -500,6 +500,37 @@ export async function generateBilanMathWord(payload: MathWordExportPayload): Pro
   // -------- Document final --------
 
   const doc = new Document({
+    // Numbering : 2 listes Word natives (vrais bullets + numerotation) pour
+    // que l'ortho puisse editer ses listes dans Word avec les outils
+    // standards (Tab/Maj+Tab, retour ligne = nouvel item).
+    numbering: {
+      config: [
+        {
+          reference: 'math-bullets',
+          levels: [
+            {
+              level: 0,
+              format: LevelFormat.BULLET,
+              text: '•',
+              alignment: AlignmentType.LEFT,
+              style: { paragraph: { indent: { left: 720, hanging: 360 } } },
+            },
+          ],
+        },
+        {
+          reference: 'math-numbered',
+          levels: [
+            {
+              level: 0,
+              format: LevelFormat.DECIMAL,
+              text: '%1.',
+              alignment: AlignmentType.LEFT,
+              style: { paragraph: { indent: { left: 720, hanging: 360 } } },
+            },
+          ],
+        },
+      ],
+    },
     sections: [{
       properties: { page: { margin: { top: PAGE_MARGIN_DXA, right: PAGE_MARGIN_DXA, bottom: PAGE_MARGIN_DXA, left: PAGE_MARGIN_DXA } } },
       children,
