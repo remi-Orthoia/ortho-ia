@@ -67,8 +67,14 @@ type Block =
   | { kind: 'ordered'; items: string[] }
 
 function parseSections(raw: string): ParsedSection[] {
-  // Une ligne `**Title**` toute seule = nouveau titre de section.
-  // Sinon, ligne fait partie du contenu de la section courante.
+  // Trois formats de titre de section reconnus (alignes sur le parseur Word
+  // dans lib/bilan-math-word-export.ts pour rendre la preview FIDELE) :
+  //   - Format A : `**Title**` (seul sur sa ligne)
+  //   - Format B : `**Title :**` (deux-points dans le gras)
+  //   - Format C : `**Title** : contenu inline` (titre + contenu sur la
+  //     meme ligne) — le contenu inline devient le 1er paragraphe de la
+  //     section, sinon le titre serait perdu et tout finirait en
+  //     paragraphe avec du gras inline.
   const lines = raw.split('\n')
   const sections: ParsedSection[] = []
   let current: ParsedSection | null = null
@@ -83,12 +89,24 @@ function parseSections(raw: string): ParsedSection[] {
 
   for (const rawLine of lines) {
     const line = rawLine.replace(/\r$/, '')
-    const sectionMatch = line.match(/^\s*\*\*([^*]+)\*\*\s*:?\s*$/)
-    if (sectionMatch) {
-      // Flush la section précédente
+    // Format A + B : `**Title**` ou `**Title :**` seul sur la ligne
+    const sectionAlone = line.match(/^\s*\*\*([^*]+)\*\*\s*:?\s*$/)
+    if (sectionAlone) {
       flushBuffer()
       if (current) sections.push(current)
-      current = { title: sectionMatch[1].trim(), blocks: [] }
+      current = { title: sectionAlone[1].trim().replace(/\s*:\s*$/, ''), blocks: [] }
+      continue
+    }
+    // Format C : `**Title** : contenu` ou `**Title** — contenu` — titre +
+    // contenu inline sur la meme ligne. On split en section + premier
+    // paragraphe pour reproduire le rendu Word (sectionTitle + para).
+    const sectionInline = line.match(/^\s*\*\*([^*]+)\*\*\s*[:—–-]\s+(.+)$/)
+    if (sectionInline) {
+      flushBuffer()
+      if (current) sections.push(current)
+      current = { title: sectionInline[1].trim().replace(/\s*:\s*$/, ''), blocks: [] }
+      // Le contenu inline devient le premier paragraphe via le buffer normal.
+      buffer.push(sectionInline[2])
       continue
     }
     buffer.push(line)

@@ -41,6 +41,7 @@ interface OrthoProfile {
   ville: string | null
   telephone: string | null
   email: string | null
+  adeli_rpps: string | null
 }
 
 function formatDateFR(iso: string): string {
@@ -117,7 +118,9 @@ export default function BilanMathWordPreview({ grille, draft, generatedCRBO, bil
         margin: '0 auto',
       }}
     >
-      {/* En-tête cabinet — gauche */}
+      {/* En-tête cabinet — gauche. Doit reproduire fidelement le Word
+          (lib/bilan-math-word-export.ts:186-198), y compris la ligne ADELI/RPPS
+          quand le profil l'a renseignee. */}
       <header style={{ marginBottom: 24 }}>
         <p style={{ margin: 0, fontWeight: 700 }}>{orthoNom || '—'}</p>
         <p style={{ margin: 0 }}>Orthophoniste</p>
@@ -125,6 +128,9 @@ export default function BilanMathWordPreview({ grille, draft, generatedCRBO, bil
         {orthoCpVille && <p style={{ margin: 0 }}>{orthoCpVille}</p>}
         {profile?.telephone && <p style={{ margin: 0 }}>{profile.telephone}</p>}
         {profile?.email && <p style={{ margin: 0 }}>{profile.email}</p>}
+        {profile?.adeli_rpps && profile.adeli_rpps.trim() && (
+          <p style={{ margin: 0 }}>{profile.adeli_rpps.trim()}</p>
+        )}
       </header>
 
       {/* Titre */}
