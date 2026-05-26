@@ -40,6 +40,7 @@ import { createClient } from '@/lib/supabase'
 import type { CRBOStructure, CRBODomain } from '@/lib/prompts'
 import { SEUILS, seuilFor, getPercentileColor, formatPercentileForDisplay } from '@/lib/word-export'
 import { classifyEpreuveFamily, FAMILY_LABEL, FAMILY_ORDER, type FamilyKey } from '@/lib/chart'
+import CRBOStructuredPreview from '@/components/CRBOStructuredPreview'
 import { applyVocabToObject } from '@/lib/vocab-perso'
 import { applyGlossaireToObject } from '@/lib/glossaire'
 import RenouvellementComparisonTable from '@/components/RenouvellementComparisonTable'
@@ -557,6 +558,14 @@ export default function CRBOPreviewPage() {
   const [chainShown, setChainShown] = useState(false)
   const [chainTriggered, setChainTriggered] = useState(false)
 
+  /** Mode d'affichage : 'preview' = aperçu Word WYSIWYG (défaut, demande
+   *  utilisateur 2026-05-26 pour parité UX avec les bilans math), 'edit' =
+   *  ancien layout 2 colonnes avec navigation + édition section par section
+   *  + régénération IA ciblée. L'édition n'est pas supprimée (toujours utile
+   *  pour corriger une section sans tout regénérer), juste mise en mode
+   *  secondaire derrière un toggle. */
+  const [viewMode, setViewMode] = useState<'preview' | 'edit'>('preview')
+
   // Charge le CRBO + le profil ortho au mount. Vocab perso / glossaire
   // appliqués à l'affichage uniquement (on n'écrit pas en DB).
   useEffect(() => {
@@ -991,6 +1000,35 @@ export default function CRBOPreviewPage() {
         </div>
 
         <div className="flex items-center gap-2 shrink-0">
+          {/* Toggle Aperçu / Éditer — affiche le CRBO en mode WYSIWYG Word
+              par défaut, ou bascule sur l'éditeur 2 colonnes pour corriger
+              une section avec régénération IA ciblée. */}
+          <div className="hidden sm:flex items-center gap-1 p-0.5 rounded-lg bg-gray-100">
+            <button
+              onClick={() => setViewMode('preview')}
+              className={`inline-flex items-center gap-1.5 px-2.5 py-1.5 rounded-md text-xs font-medium transition ${
+                viewMode === 'preview'
+                  ? 'bg-white text-primary-700 shadow-sm'
+                  : 'text-gray-600 hover:text-gray-900'
+              }`}
+              title="Aperçu fidèle du document Word à exporter"
+            >
+              <Eye size={13} />
+              Aperçu
+            </button>
+            <button
+              onClick={() => setViewMode('edit')}
+              className={`inline-flex items-center gap-1.5 px-2.5 py-1.5 rounded-md text-xs font-medium transition ${
+                viewMode === 'edit'
+                  ? 'bg-white text-primary-700 shadow-sm'
+                  : 'text-gray-600 hover:text-gray-900'
+              }`}
+              title="Éditer chaque section du CRBO (avec régénération IA ciblée)"
+            >
+              <Edit3 size={13} />
+              Éditer
+            </button>
+          </div>
           <button
             onClick={handlePrintPDF}
             className="inline-flex items-center gap-1.5 px-3 py-2 rounded-lg border border-gray-300 text-gray-700 hover:bg-gray-50 text-sm font-medium transition"
@@ -1009,6 +1047,22 @@ export default function CRBOPreviewPage() {
         </div>
       </div>
 
+      {/* Mode APERCU (defaut) : rendu WYSIWYG Word-style via CRBOStructured-
+          Preview, le meme composant que la page resultats (post-generation).
+          Pas d'edition possible ici, l'ortho clique "Editer" pour basculer. */}
+      {viewMode === 'preview' && structure && (
+        <div className="px-4 max-w-5xl mx-auto">
+          <CRBOStructuredPreview
+            structure={structure}
+            onDownload={handleDownloadWord}
+            previousStructure={previousStructure}
+            previousBilanDate={previousBilanDate}
+            bilanDate={crbo?.bilan_date}
+          />
+        </div>
+      )}
+
+      {viewMode === 'edit' && (
       <div className="px-4 grid grid-cols-1 lg:grid-cols-[280px_1fr] gap-6">
         {/* Colonne gauche : nav par sections */}
         <aside className="hidden lg:block">
@@ -1283,6 +1337,7 @@ export default function CRBOPreviewPage() {
           </div>
         </main>
       </div>
+      )}
 
       <AutoSaveBadge status={saveStatus} lastSavedAt={lastSavedAt} />
 
