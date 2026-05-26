@@ -2504,6 +2504,11 @@ Astuce : tapez /fatigue, /anxiete, /encouragements… pour réutiliser vos formu
                                   onClick={() => {
                                     saveMathBilanHandoff({
                                       target: b.target,
+                                      // Flag fromWizard : indique au BilanMathForm que tout le
+                                      // contexte est deja saisi → masquer Patient/Type/Anamnese
+                                      // blocs pour eviter la duplication de saisie. Demande
+                                      // utilisateur 2026-05-26.
+                                      fromWizard: true,
                                       patient: {
                                         prenom: formData.patient_prenom || '',
                                         nom: formData.patient_nom || '',
@@ -2517,6 +2522,7 @@ Astuce : tapez /fatigue, /anxiete, /encouragements… pour réutiliser vos formu
                                       medecin: {
                                         nom: formData.medecin_nom || '',
                                         tel: formData.medecin_tel || '',
+                                        date_prescription: formData.medecin_date_prescription || '',
                                       },
                                       comportementSeance: formData.comportement_seance || '',
                                       dureeSeanceMinutes: formData.duree_seance_minutes,

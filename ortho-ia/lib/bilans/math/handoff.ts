@@ -31,11 +31,19 @@ export interface MathBilanHandoff {
   bilanMode?: 'initial' | 'renouvellement'
   /** Date du bilan (ISO). Utilisee pour le calcul d'age + affichage Word. */
   bilanDate?: string
-  /** Medecin prescripteur (etape 3 du wizard). */
+  /** Medecin prescripteur (etape 2 du wizard). Inclut date de prescription
+   *  ajoutee 2026-05-26 comme champ obligatoire du wizard. */
   medecin?: {
     nom: string
     tel: string
+    date_prescription?: string
   }
+  /** Flag pose par le wizard pour indiquer que le form math vient de recevoir
+   *  un contexte complet (patient, medecin, motif, anamnese deja saisis aux
+   *  etapes 1-3). Le form masque alors les blocs Patient / Type bilan /
+   *  Anamnese pour eviter la duplication de saisie. False ou absent = acces
+   *  direct au form (sidebar, URL bookmark) → form complet visible. */
+  fromWizard?: boolean
   /** Observations sur le comportement pendant la seance (etape 5 — state of the art). */
   comportementSeance?: string
   /** Duree totale de la seance en minutes (etape 5). */

@@ -73,6 +73,13 @@ export default function BilanMathForm({ grille }: BilanMathFormProps) {
   // exporter (par défaut), 'edit' = textarea brute pour ajuster le markdown.
   const [previewMode, setPreviewMode] = useState<'word' | 'edit'>('word')
   const [isSaving, setIsSaving] = useState(false)
+  // Flag positionne quand l'ortho arrive depuis le wizard /dashboard/nouveau-crbo
+  // (etape 4 → clic "B-CMado" / "B-CM" → handoff avec fromWizard=true). Quand
+  // true, on masque les blocs Patient / Type bilan / Anamnese pour eviter la
+  // duplication de saisie (ces infos sont deja remplies dans le wizard). En
+  // false (acces direct au form via URL ou sidebar), tous les blocs restent
+  // visibles pour permettre une saisie complete. Demande utilisateur 2026-05-26.
+  const [fromWizard, setFromWizard] = useState(false)
 
   // ===== Hydratation localStorage + handoff Nouveau CRBO =====
   // La structure ayant changé (sousEpreuves → cells), les anciens drafts ne
@@ -132,6 +139,11 @@ export default function BilanMathForm({ grille }: BilanMathFormProps) {
         renouvellement: base.renouvellement ?? handoff.renouvellement,
         updatedAt: Date.now(),
       }
+      // Marqueur "vient du wizard" → masque les blocs Patient / Type / Anamnese
+      // pour eviter la duplication de saisie. Persiste dans le component state
+      // (pas dans le draft localStorage : si l'ortho ferme l'onglet puis
+      // revient sur le form, elle reverra les blocs editables normalement).
+      if (handoff.fromWizard) setFromWizard(true)
       clearMathBilanHandoff()
     }
 
@@ -478,6 +490,12 @@ export default function BilanMathForm({ grille }: BilanMathFormProps) {
         toast.error('Session expirée — reconnecte-toi.')
         return
       }
+      // Persistance complete : on inclut TOUS les champs du contexte clinique
+      // (medecin, motif, anamnese, comportement seance, duree seance) qui
+      // etaient auparavant envoyes uniquement au prompt Claude sans etre
+      // sauvegardes en DB. Ca permet de relire le CRBO depuis l'historique
+      // avec son contexte complet, et d'exporter via /api/account/export. Fix
+      // de data integrity 2026-05-26 + demande utilisateur option A.
       const { data: saved, error } = await supabase
         .from('crbos')
         .insert({
@@ -486,10 +504,19 @@ export default function BilanMathForm({ grille }: BilanMathFormProps) {
           patient_nom: draft.patient.nom.trim(),
           patient_ddn: draft.patient.date_naissance || null,
           patient_classe: draft.patient.classe.trim() || null,
-          bilan_date: new Date().toISOString().slice(0, 10),
+          bilan_date: draft.bilanDate || new Date().toISOString().slice(0, 10),
           bilan_type: draft.mode,
           bilan_subtype: grille.id,
           test_utilise: grille.label,
+          // Contexte clinique : injecte depuis le draft (hydrate par wizard
+          // handoff OU saisie directe). NULL si vide pour ne pas polluer la DB.
+          medecin_nom: draft.medecin?.nom?.trim() || null,
+          medecin_tel: draft.medecin?.tel?.trim() || null,
+          medecin_date_prescription: draft.medecin?.date_prescription || null,
+          motif: (draft.motif ?? '').trim() || null,
+          anamnese: (draft.anamnese ?? '').trim() || null,
+          comportement_seance: (draft.comportementSeance ?? '').trim() || null,
+          duree_seance_minutes: draft.dureeSeanceMinutes ?? null,
           resultats: JSON.stringify({
             grilleId: grille.id,
             mode: draft.mode,
@@ -599,73 +626,113 @@ export default function BilanMathForm({ grille }: BilanMathFormProps) {
         />
       </header>
 
-      {/* Patient */}
-      <section
-        style={{
-          marginBottom: 16,
-          padding: 16,
-          background: 'var(--bg-surface-1)',
-          border: '1px solid var(--border-ds)',
-          borderRadius: 12,
-        }}
-      >
-        <h2 style={{ margin: '0 0 12px', fontSize: 14, fontWeight: 700, color: 'var(--fg-2)' }}>
-          Patient
-        </h2>
-        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(180px, 1fr))', gap: 10 }}>
-          <FormField label="Prénom" value={draft.patient.prenom} onChange={(v) => setDraft((d) => ({ ...d, patient: { ...d.patient, prenom: v }, updatedAt: Date.now() }))} />
-          <FormField label="Nom" value={draft.patient.nom} onChange={(v) => setDraft((d) => ({ ...d, patient: { ...d.patient, nom: v }, updatedAt: Date.now() }))} />
-          <FormField label="Date de naissance" type="date" value={draft.patient.date_naissance} onChange={(v) => setDraft((d) => ({ ...d, patient: { ...d.patient, date_naissance: v }, updatedAt: Date.now() }))} />
-          <FormField label="Classe / niveau" placeholder="ex: 6ème, CM1" value={draft.patient.classe} onChange={(v) => setDraft((d) => ({ ...d, patient: { ...d.patient, classe: v }, updatedAt: Date.now() }))} />
-        </div>
-      </section>
+      {fromWizard ? (
+        /* Mode "vient du wizard" : on masque les blocs editables Patient /
+           Type / Anamnese pour eviter la duplication de saisie. On affiche a
+           la place un bandeau recap discret avec un lien pour retourner au
+           wizard si l'ortho veut corriger un champ. Demande utilisateur
+           2026-05-26. */
+        <section
+          style={{
+            marginBottom: 20,
+            padding: 14,
+            background: 'var(--ds-primary-soft, #eef7ee)',
+            border: '1px solid var(--ds-primary-border, #c4e0c4)',
+            borderRadius: 12,
+            display: 'flex',
+            alignItems: 'flex-start',
+            justifyContent: 'space-between',
+            gap: 16,
+          }}
+        >
+          <div style={{ flex: 1, minWidth: 0 }}>
+            <p style={{ margin: 0, fontSize: 13, fontWeight: 600, color: 'var(--ds-primary-hover, #166534)' }}>
+              Contexte repris du Nouveau CRBO
+            </p>
+            <p style={{ margin: '4px 0 0', fontSize: 12.5, color: 'var(--fg-2)', lineHeight: 1.55 }}>
+              <strong>{draft.patient.prenom} {draft.patient.nom}</strong>
+              {draft.patient.classe && ` · ${draft.patient.classe}`}
+              {draft.patient.date_naissance && ` · DDN ${new Date(draft.patient.date_naissance).toLocaleDateString('fr-FR')}`}
+              {' · '}Bilan {draft.mode === 'renouvellement' ? 'de renouvellement' : 'initial'}
+              {draft.medecin?.nom && ` · Dr ${draft.medecin.nom}`}
+            </p>
+            <p style={{ margin: '4px 0 0', fontSize: 11.5, color: 'var(--fg-3)', lineHeight: 1.5 }}>
+              Motif et anamnèse déjà renseignés aux étapes 1-3 du wizard.{' '}
+              <a href="/dashboard/nouveau-crbo" style={{ color: 'var(--ds-primary)', textDecoration: 'underline' }}>
+                Revenir au wizard pour modifier
+              </a>
+            </p>
+          </div>
+        </section>
+      ) : (
+        <>
+          {/* Patient — affiche editable quand acces direct (sidebar / URL). */}
+          <section
+            style={{
+              marginBottom: 16,
+              padding: 16,
+              background: 'var(--bg-surface-1)',
+              border: '1px solid var(--border-ds)',
+              borderRadius: 12,
+            }}
+          >
+            <h2 style={{ margin: '0 0 12px', fontSize: 14, fontWeight: 700, color: 'var(--fg-2)' }}>
+              Patient
+            </h2>
+            <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(180px, 1fr))', gap: 10 }}>
+              <FormField label="Prénom" value={draft.patient.prenom} onChange={(v) => setDraft((d) => ({ ...d, patient: { ...d.patient, prenom: v }, updatedAt: Date.now() }))} />
+              <FormField label="Nom" value={draft.patient.nom} onChange={(v) => setDraft((d) => ({ ...d, patient: { ...d.patient, nom: v }, updatedAt: Date.now() }))} />
+              <FormField label="Date de naissance" type="date" value={draft.patient.date_naissance} onChange={(v) => setDraft((d) => ({ ...d, patient: { ...d.patient, date_naissance: v }, updatedAt: Date.now() }))} />
+              <FormField label="Classe / niveau" placeholder="ex: 6ème, CM1" value={draft.patient.classe} onChange={(v) => setDraft((d) => ({ ...d, patient: { ...d.patient, classe: v }, updatedAt: Date.now() }))} />
+            </div>
+          </section>
 
-      {/* Toggle initial / renouvellement */}
-      <section
-        style={{
-          marginBottom: 20,
-          padding: 16,
-          background: 'var(--bg-surface-1)',
-          border: '1px solid var(--border-ds)',
-          borderRadius: 12,
-        }}
-      >
-        <h2 style={{ margin: '0 0 10px', fontSize: 14, fontWeight: 700, color: 'var(--fg-2)' }}>
-          Type de bilan
-        </h2>
-        <div style={{ display: 'flex', gap: 10, flexWrap: 'wrap' }}>
-          {(['initial', 'renouvellement'] as const).map((mode) => (
-            <button
-              key={mode}
-              type="button"
-              onClick={() => setDraft((d) => ({ ...d, mode, updatedAt: Date.now() }))}
-              style={{
-                padding: '10px 18px',
-                borderRadius: 10,
-                border: draft.mode === mode ? '2px solid var(--ds-primary)' : '1px solid var(--border-ds)',
-                background: draft.mode === mode ? 'var(--ds-primary-soft, #eef7ee)' : 'var(--bg-surface-2)',
-                color: draft.mode === mode ? 'var(--ds-primary-hover, #166534)' : 'var(--fg-2)',
-                fontSize: 14,
-                fontWeight: draft.mode === mode ? 600 : 500,
-                cursor: 'pointer',
-              }}
-            >
-              Bilan {mode === 'initial' ? 'initial' : 'de renouvellement'}
-            </button>
-          ))}
-        </div>
-      </section>
+          {/* Toggle initial / renouvellement */}
+          <section
+            style={{
+              marginBottom: 20,
+              padding: 16,
+              background: 'var(--bg-surface-1)',
+              border: '1px solid var(--border-ds)',
+              borderRadius: 12,
+            }}
+          >
+            <h2 style={{ margin: '0 0 10px', fontSize: 14, fontWeight: 700, color: 'var(--fg-2)' }}>
+              Type de bilan
+            </h2>
+            <div style={{ display: 'flex', gap: 10, flexWrap: 'wrap' }}>
+              {(['initial', 'renouvellement'] as const).map((mode) => (
+                <button
+                  key={mode}
+                  type="button"
+                  onClick={() => setDraft((d) => ({ ...d, mode, updatedAt: Date.now() }))}
+                  style={{
+                    padding: '10px 18px',
+                    borderRadius: 10,
+                    border: draft.mode === mode ? '2px solid var(--ds-primary)' : '1px solid var(--border-ds)',
+                    background: draft.mode === mode ? 'var(--ds-primary-soft, #eef7ee)' : 'var(--bg-surface-2)',
+                    color: draft.mode === mode ? 'var(--ds-primary-hover, #166534)' : 'var(--fg-2)',
+                    fontSize: 14,
+                    fontWeight: draft.mode === mode ? 600 : 500,
+                    cursor: 'pointer',
+                  }}
+                >
+                  Bilan {mode === 'initial' ? 'initial' : 'de renouvellement'}
+                </button>
+              ))}
+            </div>
+          </section>
 
-      {/* Anamnèse + motif. Pré-remplis automatiquement quand l'ortho arrive
-          depuis le Nouveau CRBO (handoff). Toujours affichés pour permettre
-          la saisie directe quand on entre par le menu Bilans. La présence de
-          ces champs alimente le prompt Claude pour orienter le diagnostic. */}
-      <AnamneseBlock
-        motif={draft.motif ?? ''}
-        anamnese={draft.anamnese ?? ''}
-        onMotifChange={(v) => setDraft((d) => ({ ...d, motif: v, updatedAt: Date.now() }))}
-        onAnamneseChange={(v) => setDraft((d) => ({ ...d, anamnese: v, updatedAt: Date.now() }))}
-      />
+          {/* Anamnèse + motif. Affichés en acces direct uniquement, masques
+              quand l'ortho arrive depuis le wizard (ces infos y sont deja). */}
+          <AnamneseBlock
+            motif={draft.motif ?? ''}
+            anamnese={draft.anamnese ?? ''}
+            onMotifChange={(v) => setDraft((d) => ({ ...d, motif: v, updatedAt: Date.now() }))}
+            onAnamneseChange={(v) => setDraft((d) => ({ ...d, anamnese: v, updatedAt: Date.now() }))}
+          />
+        </>
+      )}
 
       <div style={{ marginBottom: 16 }}>
         <PastilleLegend />

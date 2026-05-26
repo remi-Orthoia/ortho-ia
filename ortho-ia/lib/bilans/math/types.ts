@@ -104,8 +104,8 @@ export interface BilanMathDraft {
   motif?: string
   /** Date du bilan (ISO) — handoff depuis l'etape 2 du wizard. */
   bilanDate?: string
-  /** Medecin prescripteur (etape 3 du wizard). */
-  medecin?: { nom: string; tel: string }
+  /** Medecin prescripteur (etape 2 du wizard) + date de prescription. */
+  medecin?: { nom: string; tel: string; date_prescription?: string }
   /** Observations comportement seance (etape 5 du wizard). */
   comportementSeance?: string
   /** Duree totale seance en minutes (etape 5 du wizard). */
