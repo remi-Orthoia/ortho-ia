@@ -30,6 +30,7 @@ function ProfilContent() {
     ville: '',
     telephone: '',
     adeli_rpps: '',
+    statut: '',
   })
   // ===== Section extension Chrome =====
   // userLoaded sert uniquement à afficher la section "Connexion extension Chrome".
@@ -79,6 +80,7 @@ function ProfilContent() {
           ville: data.ville || '',
           telephone: data.telephone || '',
           adeli_rpps: data.adeli_rpps || '',
+          statut: data.statut || '',
         })
         if (data.referral_code) setReferralCode(data.referral_code)
       }
@@ -221,6 +223,7 @@ function ProfilContent() {
         ville: (profile.ville || '').trim(),
         telephone: (profile.telephone || '').trim(),
         adeli_rpps: (profile.adeli_rpps || '').trim() || null,
+        statut: (profile.statut || '').trim() || null,
       }, { onConflict: 'id' })
 
     setSaving(false)
@@ -377,6 +380,18 @@ function ProfilContent() {
           <p className="mt-1 text-xs text-gray-500">
             Reporté en en-tête de chaque CRBO généré. Saisissez tel que vous souhaitez qu&apos;il s&apos;affiche (par ex. <em>N°ADELI : 819102856</em> ou <em>RPPS : 10010002345</em>).
           </p>
+        </div>
+
+        <div>
+          <label className="block text-sm font-medium text-gray-700 mb-1">Mon statut</label>
+          <input
+            type="text"
+            name="statut"
+            value={profile.statut}
+            onChange={handleChange}
+            className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-green-500"
+            placeholder="par ex : Libérale E.I."
+          />
         </div>
 
         <div className="flex items-center gap-4 pt-4 border-t border-gray-200">
