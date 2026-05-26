@@ -819,9 +819,10 @@ export default function Evaleo615ScoresInput({
     lines.push('=== EVALEO 6-15 (Launay, Maeder, Roustit, Touzin — Ortho Édition 2018) ===')
     if (state.niveau) {
       const niveauLabel = NIVEAU_OPTIONS.find(o => o.key === state.niveau)?.label
-      // Trimestre additionnel applicable uniquement aux niveaux non-CP
-      // (CP_1tr et CP_3tr encodent deja le trimestre).
-      const showTrimestre = state.trimestre && !state.niveau.startsWith('CP_')
+      // Trimestre additionnel applicable UNIQUEMENT au CE1 (le CP encode son
+      // trimestre dans le niveau via CP_1tr / CP_3tr ; CE2 et au-dela n'ont
+      // pas de distinction trimestrielle dans l'etalonnage EVALEO).
+      const showTrimestre = state.trimestre && state.niveau === 'CE1'
       lines.push(`Niveau scolaire : ${niveauLabel}${showTrimestre ? ` — ${state.trimestre}` : ''}`)
       lines.push('')
     }
@@ -1029,16 +1030,30 @@ export default function Evaleo615ScoresInput({
         <div className="flex flex-wrap gap-2 items-center">
           <select
             value={state.niveau}
-            onChange={(e) => setState(s => ({ ...s, niveau: e.target.value as State['niveau'] }))}
+            onChange={(e) => {
+              const nextNiveau = e.target.value as State['niveau']
+              setState(s => ({
+                ...s,
+                niveau: nextNiveau,
+                // Reset trimestre si le nouveau niveau ne supporte plus le
+                // selecteur (uniquement CE1 le supporte), pour eviter qu'une
+                // valeur fantome ne fuite dans la serialisation au LLM.
+                trimestre: nextNiveau === 'CE1' ? s.trimestre : '',
+              }))
+            }}
             className="w-full sm:w-72 px-3 py-2 border border-gray-300 rounded text-sm focus:outline-none focus:ring-2 focus:ring-indigo-400"
           >
             {NIVEAU_OPTIONS.map(o => (
               <option key={o.key} value={o.key}>{o.label}</option>
             ))}
           </select>
-          {/* L2 : dropdown trimestre additionnel pour les niveaux non-CP
-              (CP_1tr / CP_3tr l'encodent deja). */}
-          {state.niveau && !state.niveau.startsWith('CP_') && (
+          {/* L2 : dropdown trimestre additionnel UNIQUEMENT pour le CE1
+              (CP encode son trimestre via CP_1tr / CP_3tr dans la liste
+              niveaux). Pour CE2 et au-dela, l'etalonnage EVALEO ne distingue
+              pas les trimestres — pas de selecteur. Seuls le 1er et le 3e
+              trimestre sont proposes (le 2e n'apporte pas d'info clinique
+              dans le CE1 selon les exemples de reference). */}
+          {state.niveau === 'CE1' && (
             <select
               value={state.trimestre}
               onChange={(e) => setState(s => ({ ...s, trimestre: e.target.value as TrimestreKey }))}
@@ -1046,14 +1061,14 @@ export default function Evaleo615ScoresInput({
             >
               <option value="">— trimestre —</option>
               <option value="T1">T1 (oct-dec)</option>
-              <option value="T2">T2 (jan-mars)</option>
               <option value="T3">T3 (avril-juin)</option>
             </select>
           )}
         </div>
         <p className="text-[11px] text-gray-500 mt-1">
-          8 niveaux d&apos;étalonnage officiels EVALEO. Trimestre utilise pour caler l&apos;interpretation
-          des seuils intra-annee (ex. CE1 T1 vs CE1 T3).
+          8 niveaux d&apos;étalonnage officiels EVALEO. Trimestre proposé uniquement
+          pour le CE1 (1er et 3e trimestre), CP encodant deja son trimestre dans
+          la liste des niveaux.
         </p>
       </div>
 

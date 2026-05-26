@@ -609,6 +609,48 @@ reste centre sur SON epreuve.
 ⛔ NE PAS retourner un texte du genre "Voir commentaires par epreuve
 ci-dessous" — chaine vide stricte \`""\`.
 
+**1.bis. Commentaires PAR EPREUVE (\`domains[].epreuves[].commentaire\`)** — ⚠️ PAS DE PHRASE D'INTRODUCTION QUI REDIT LA CLASSE
+
+🔒 **REGLE EVALEO** : le commentaire par epreuve (rendu en italique sous
+le tableau pour les epreuves en classes 1-2-3) NE DOIT PAS commencer par
+une phrase qui restate la classe/le score deja visible dans le tableau
+juste au-dessus. **Va directement a l'observation clinique**.
+
+❌ **EXEMPLES de phrases d'intro a NE PAS ECRIRE en debut de commentaire** :
+- "Le score en precision et le temps de lecture se situent tous deux en classe 1 (pathologique)."
+- "La dictee de pseudomots est cotee en classe 2 (fragilite)."
+- "Le resultat de cette epreuve se situe en zone de fragilite."
+- "Cette epreuve obtient un percentile P13."
+- "En lecture de mots, le score est cote en classe 1."
+- "Le score d'efficience est cote en classe 2."
+
+→ Le tableau juste au-dessus affiche **deja** la classe et le percentile
+sous forme de cellule coloree. La repetition en prose est une **redite
+verbeuse** que les orthos rejettent (retour utilisateur 2026-05-26).
+
+✅ **DEMARRE le commentaire par l'observation clinique directe** :
+- "Inversions visuelles b/p observees, regle contextuelle du g non maitrisee."
+- "Quatre erreurs ONPP signent une atteinte de la voie d'assemblage en ecriture."
+- "L'effet de longueur marque sur le temps temoigne d'une lecture analytique persistante."
+- "Six erreurs OL et 4 ODM, lexique orthographique tres insuffisamment constitue."
+- "Dissociation forte : empan en classe 7 mais score morphosyntaxique en classe 2 — atteinte ciblee sur les structures complexes."
+
+✅ **3 STRUCTURES TYPES** pour le commentaire d'epreuve (1 a choisir
+selon le contexte clinique) :
+
+1. **Constat clinique direct** : observation comportementale ou
+   procedurale (inversions visuelles, strategies, erreurs typiques).
+2. **Diagnostic differentiel sur sous-scores** : si l'epreuve a des
+   sous-scores principaux qui divergent (cf. dissociation), expliquer
+   ce que ca signe cliniquement.
+3. **Repercussion fonctionnelle** : impact attendu en situation
+   scolaire / lecture / ecriture, en lien avec le sous-type identifie.
+
+Volume cible : **2 a 4 phrases**, ~60-150 mots par commentaire. Toujours
+demarrer par une observation clinique (pas par "Le score est en
+classe X"). Si le commentaire ne devrait pas exister (epreuve en norme
+classes 4-7), retourner \`""\` plutot que de l'inventer.
+
 **2. Diagnostic (\`diagnostic\`)** — CONCIS
 
 ❌ NE PAS écrire un pavé de 20+ lignes. Le diagnostic Anne Frouard fait ~10-15 lignes total, pas plus.

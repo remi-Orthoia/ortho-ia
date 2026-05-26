@@ -613,6 +613,11 @@ export default function ResultatsPage() {
   // test (rendrait des barres à 0 ou des valeurs invalides). Le verdict
   // est affiché en clair dans le tableau du formulaire BetlScoresInput.
   const isBetlOnly = testsArray.length === 1 && testsArray[0] === 'BETL'
+  // EVALEO 6-15 : bascule la legende des seuils de la grille Exalang generique
+  // (6 zones Excellent/.../Difficulte severe) vers la grille officielle EVALEO
+  // en 7 classes (Launay, Maeder, Roustit, Touzin 2018). Coherent avec le
+  // rendu Word (legendType='evaleo' dans le registry) et la preview historique.
+  const isEvaleo = testsArray.includes('EVALEO 6-15')
   const skipChart = isMoca || isBetlOnly
   const groups: ChartGroup[] = skipChart ? [] : extracted.domains
     .map(d => ({ name: d.nom, bars: d.epreuves.map(e => ({ label: e.nom, value: e.percentile_value })) }))
@@ -729,8 +734,66 @@ export default function ResultatsPage() {
         </div>
 
         {/* Légende des seuils — masquée pour MoCA (screening cognitif :
-            pas de zones percentile, le tableau MoCA est dépouillé). */}
-        {!isMoca && (
+            pas de zones percentile, le tableau MoCA est dépouillé).
+            EVALEO 6-15 : grille officielle 7 classes (rouge/orange/verts/
+            bleus) au lieu de la grille Exalang 6 zones. */}
+        {!isMoca && isEvaleo && (
+          <div className="space-y-2 text-xs">
+            <p className="text-gray-600 dark:text-gray-400 italic leading-relaxed">
+              Les épreuves sont issues de la batterie EVALEO 6-15 (Launay, Maeder, Roustit, Touzin, 2018).
+              L&apos;analyse repose sur un étalonnage en sept classes.
+            </p>
+            <div className="overflow-x-auto">
+              <table className="border-collapse">
+                <tbody>
+                  <tr>
+                    <td colSpan={2}></td>
+                    <td colSpan={3} className="text-center text-[11px] font-semibold text-gray-700 dark:text-gray-300 border-2 border-gray-700 border-b-0 px-2 py-0.5">Normalité</td>
+                    <td colSpan={2}></td>
+                  </tr>
+                  <tr>
+                    {[
+                      { c: '1', bg: '#D32F2F', fg: '#fff' },
+                      { c: '2', bg: '#F57C00', fg: '#fff' },
+                      { c: '3', bg: '#A5D6A7', fg: '#1B5E20' },
+                      { c: '4', bg: '#66BB6A', fg: '#fff' },
+                      { c: '5', bg: '#2E7D32', fg: '#fff' },
+                      { c: '6', bg: '#4FC3F7', fg: '#0D47A1' },
+                      { c: '7', bg: '#0288D1', fg: '#fff' },
+                    ].map(({ c, bg, fg }) => (
+                      <td key={`c-${c}`} className="font-bold text-center px-3 py-1 border border-gray-300 min-w-[48px]" style={{ backgroundColor: bg, color: fg }}>
+                        {c}
+                      </td>
+                    ))}
+                  </tr>
+                  <tr>
+                    {['7 %', '13 %', '18 %', '24 %', '18 %', '13 %', '7 %'].map((p, i) => (
+                      <td key={`p-${i}`} className="text-center px-2 py-0.5 border border-gray-200 text-gray-600 dark:text-gray-300">{p}</td>
+                    ))}
+                  </tr>
+                  <tr>
+                    {['< 7', '7-20', '21-38', '39-62', '63-80', '81-93', '> 93'].map((v, i) => (
+                      <td key={`v-${i}`} className="text-center px-2 py-0.5 border border-gray-200 text-gray-600 dark:text-gray-300">{v}</td>
+                    ))}
+                  </tr>
+                  <tr>
+                    <td colSpan={2}></td>
+                    <td colSpan={3} className="text-center text-[10px] italic text-gray-600 dark:text-gray-400 border-2 border-gray-700 border-t-0 px-2 py-0.5">60 % de la population</td>
+                    <td colSpan={2}></td>
+                  </tr>
+                </tbody>
+              </table>
+            </div>
+            <ul className="text-[11px] text-gray-700 dark:text-gray-300 space-y-0.5 mt-1">
+              <li>Classe 1 = zone pathologique</li>
+              <li>Classe 2 = zone à risque, « fragilité »</li>
+              <li>Classes 3 - 4 - 5 = norme (représentant 60 % de la population)</li>
+              <li>Classe 6 = zone supérieure à la moyenne</li>
+              <li>Classe 7 = zone très supérieure</li>
+            </ul>
+          </div>
+        )}
+        {!isMoca && !isEvaleo && (
           <div className="flex flex-wrap gap-2 text-xs">
             {SEUILS.map(s => (
               <span key={s.label} className="inline-flex items-center gap-1.5 px-2 py-1 rounded border" style={{ backgroundColor: '#' + s.shading, borderColor: '#' + s.shading, color: s.textColor ? '#' + s.textColor : undefined }}>
