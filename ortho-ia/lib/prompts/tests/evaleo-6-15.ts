@@ -646,18 +646,53 @@ Structure obligatoire (un seul bloc, pas de sous-titres internes) :
 ❌ NE PAS écrire de longues recommandations avec justification clinique par axe — le diagnostic juste au-dessus a déjà fait ce travail.
 ✅ Remplir \`recommandations\` avec un **projet thérapeutique en prose très courte** (1 phrase d'intro + 1 phrase PAP, ~3-4 lignes total) suivi d'**axes en bullets non numérotés courts** (1 ligne par axe, **3-5 axes max**, pas \`1. 2. 3.\`).
 
+🔒 **REGLE IMPERATIVE EVALEO — MENTION AMO OBLIGATOIRE** : la 1re phrase
+des \`recommandations\` (et donc des "Axes therapeutiques" du Word) DOIT
+imperativement inclure la cotation NGAP avec le code AMO. **NE JAMAIS
+omettre cette mention** — c'est une obligation legale pour la prise en
+charge orthophonique remboursee. Le bilan EVALEO est un bilan de
+**langage ecrit et/ou oral**, les cotations NGAP applicables sont :
+
+| Type de trouble identifie | Cotation NGAP |
+|---|---|
+| Trouble du langage ecrit (dyslexie / dysorthographie) | **AMO 12,1** |
+| Trouble du langage oral chez l'enfant | **AMO 13,5** |
+| Trouble du langage oral et ecrit combine | **AMO 13,5** (la plus haute prime) |
+| Trouble du langage neurologique severe | **AMO 13,8** |
+| Bilan / surveillance ponctuelle de la coordination de la prise en charge | **AMO 10,1** |
+
+Choisis la cotation **en coherence avec le diagnostic** que tu viens de
+poser dans la section precedente. Si le diagnostic est "dyslexie-
+dysorthographie" pur, cote **AMO 12,1**. Si TDL isole ou TDL + dyslexie,
+cote **AMO 13,5**.
+
 Structure attendue (volume cible : 8-12 lignes total) :
 
-> "Une prise en charge orthophonique hebdomadaire (30 AMO [12,1 / 10,1 / 5]) est proposée pour 24-36 mois. Un Plan d'Accompagnement Personnalisé (PAP) est indiqué.
+> "Une prise en charge orthophonique [hebdomadaire / bi-hebdomadaire]
+> est proposee pour [12-36] mois, cotee selon la NGAP **AMO [12,1 ou
+> 13,5 ou 13,8] - Reeducation des troubles [du langage ecrit / du
+> langage oral / du langage neurologique]**. Un Plan d'Accompagnement
+> Personnalise (PAP) est indique.
 >
-> Axes thérapeutiques :
+> Axes therapeutiques :
 >   • [axe 1, 1 ligne, ex. "Renforcement de la conscience phonologique"]
 >   • [axe 2, 1 ligne]
 >   • [axe 3, 1 ligne]
 >   • [axe 4 ou 5 si pertinent]"
 
-PAS de paragraphe explicatif sur chaque axe. PAS de répétition du diagnostic.
-Si tu hésites à mettre un 6ème axe, ne le mets pas — synthèse > exhaustivité.
+⛔ **CHECKLIST avant de rendre \`recommandations\`** :
+- [ ] La phrase d'intro mentionne EXPLICITEMENT "AMO" suivi d'un nombre.
+- [ ] La cotation correspond au diagnostic pose au-dessus (pas AMO 11,7
+      qui est reserve au B-CMado / cognition math).
+- [ ] Le PAP est mentionne dans la meme phrase ou la suivante.
+
+Si la phrase d'intro ne contient pas le mot "AMO", **REECRIS-LA**. C'est
+la mention la plus importante du projet therapeutique : sans elle,
+l'orthophoniste ne peut pas justifier la prise en charge a la CPAM.
+
+PAS de paragraphe explicatif sur chaque axe. PAS de repetition du
+diagnostic. Si tu hesites a mettre un 6eme axe, ne le mets pas — synthese
+> exhaustivite.
 
 **4. PAP / Aménagements scolaires (\`pap_suggestions\`)**
 
