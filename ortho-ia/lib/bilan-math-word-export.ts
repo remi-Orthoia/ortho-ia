@@ -75,7 +75,13 @@ const FONT_SIZE_SMALL = 18  // 9pt
 const FONT_SIZE_TITLE = 32  // 16pt
 const FONT_SIZE_SECTION = 24 // 12pt
 const COLOR_GREEN = '2E7D32'
-const TOTAL_DXA = 10466 // A4 portrait, 720 DXA marge × 2
+// A4 portrait : largeur utile = 11906 DXA (210mm) - marges. On utilise des
+// marges resserrees a 567 DXA (1 cm) sur les 4 cotes pour eviter que la
+// grille de cotation (jusqu'a ~9 sous-epreuves par section sur B-CMado +
+// colonne Niveau) ne deborde a droite a l'impression. Cela donne 10772 DXA
+// utiles, ~3% de plus qu'avec les 720 DXA par defaut Office (1,27 cm).
+const TOTAL_DXA = 10772
+const PAGE_MARGIN_DXA = 567
 
 function fmtDateFR(iso: string): string {
   try {
@@ -112,6 +118,7 @@ export async function generateBilanMathWord(payload: MathWordExportPayload): Pro
   const {
     Document, Packer, Paragraph, TextRun, Table, TableRow, TableCell,
     WidthType, BorderStyle, AlignmentType, PageBreak, ShadingType, VerticalMergeType,
+    TableLayoutType,
   } = await import('docx')
 
   const { grille, draft, crboText, profile, bilanDate } = payload
@@ -204,6 +211,7 @@ export async function generateBilanMathWord(payload: MathWordExportPayload): Pro
     children.push(new Table({
       width: { size: TOTAL_DXA, type: WidthType.DXA },
       columnWidths: cols,
+      layout: TableLayoutType.FIXED,
       rows: [
         new TableRow({ children: [
           cell('Prénom :', { width: cols[0] }),
@@ -375,6 +383,7 @@ export async function generateBilanMathWord(payload: MathWordExportPayload): Pro
     children.push(new Table({
       width: { size: TOTAL_DXA, type: WidthType.DXA },
       columnWidths: colWidths,
+      layout: TableLayoutType.FIXED,
       rows: [
         new TableRow({ children: headerRow1Cells, tableHeader: true }),
         new TableRow({ children: headerRow2Cells, tableHeader: true }),
@@ -473,7 +482,7 @@ export async function generateBilanMathWord(payload: MathWordExportPayload): Pro
 
   const doc = new Document({
     sections: [{
-      properties: { page: { margin: { top: 720, right: 720, bottom: 720, left: 720 } } },
+      properties: { page: { margin: { top: PAGE_MARGIN_DXA, right: PAGE_MARGIN_DXA, bottom: PAGE_MARGIN_DXA, left: PAGE_MARGIN_DXA } } },
       children,
     }],
   })
