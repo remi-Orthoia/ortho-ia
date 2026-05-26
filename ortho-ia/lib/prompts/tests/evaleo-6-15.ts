@@ -646,12 +646,23 @@ Structure obligatoire (un seul bloc, pas de sous-titres internes) :
 ❌ NE PAS écrire de longues recommandations avec justification clinique par axe — le diagnostic juste au-dessus a déjà fait ce travail.
 ✅ Remplir \`recommandations\` avec un **projet thérapeutique en prose très courte** (1 phrase d'intro + 1 phrase PAP, ~3-4 lignes total) suivi d'**axes en bullets non numérotés courts** (1 ligne par axe, **3-5 axes max**, pas \`1. 2. 3.\`).
 
-🔒 **REGLE IMPERATIVE EVALEO — MENTION AMO OBLIGATOIRE** : la 1re phrase
-des \`recommandations\` (et donc des "Axes therapeutiques" du Word) DOIT
-imperativement inclure la cotation NGAP avec le code AMO. **NE JAMAIS
-omettre cette mention** — c'est une obligation legale pour la prise en
-charge orthophonique remboursee. Le bilan EVALEO est un bilan de
-**langage ecrit et/ou oral**, les cotations NGAP applicables sont :
+🔒 **REGLE IMPERATIVE EVALEO — MENTION AMO OBLIGATOIRE ET COURTE** : la
+1re phrase des \`recommandations\` (et donc des "Axes therapeutiques" du
+Word) DOIT imperativement inclure la cotation NGAP avec le code AMO.
+**NE JAMAIS omettre cette mention** — c'est une obligation legale pour
+la prise en charge orthophonique remboursee.
+
+🔒 **VOLUME STRICT — mention AMO = 1 phrase / 2 lignes maximum** : la
+mention AMO doit tenir en **UNE SEULE PHRASE** (pas un paragraphe, pas
+2 phrases) et **2 lignes maximum** a l'affichage. NE PAS ajouter de
+justification, d'explication, de commentaire sur le choix de la NGAP,
+ni de paragraphe annexe autour de la cotation. La phrase modele
+ci-dessous respecte deja cette contrainte — recopie-la telle quelle en
+remplissant les crochets, sans rien ajouter avant ni apres dans la
+meme phrase.
+
+Le bilan EVALEO est un bilan de **langage ecrit et/ou oral**, les
+cotations NGAP applicables sont :
 
 | Type de trouble identifie | Cotation NGAP |
 |---|---|

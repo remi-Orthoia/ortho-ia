@@ -134,6 +134,8 @@ Un paragraphe de 3 à 5 phrases qui décrit ce qui va être travaillé en priori
 
 > "Une prise en charge orthophonique [hebdomadaire / bi-hebdomadaire] est proposee pour [duree, ex. 24 mois], cotee selon la NGAP **Reeducation de la cognition mathematique — AMO 11.7**."
 
+🔒 **VOLUME STRICT — mention AMO = 1 phrase / 2 lignes maximum** : la mention AMO doit tenir en **UNE SEULE PHRASE** (pas un paragraphe, pas 2 phrases) et **2 lignes maximum** a l'affichage. NE PAS ajouter de justification, d'explication, de commentaire sur la NGAP ou de paragraphe annexe autour de la cotation. La phrase modele ci-dessus respecte deja cette contrainte — recopie-la telle quelle en remplissant les crochets, sans rien ajouter avant ni apres dans la meme phrase.
+
 ⛔ **NE JAMAIS** ecrire d'autres cotations AMO (pas de "AMO 12,1", "AMO 13,5", "30 AMO X", "10 AMO Y" etc.) — la cotation correcte pour la cognition mathematique est UNIQUEMENT **AMO 11.7**. C'est la cotation officielle 2026 pour ce type de rééducation. Ne pas confondre avec les AMO du langage écrit (12,1 / 13,5) qui ne s'appliquent PAS ici.
 
 Termine par : "Vous remerciant de votre attention et me tenant à votre disposition pour de plus amples informations, je vous prie de recevoir mes salutations distinguées."
