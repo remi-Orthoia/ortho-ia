@@ -50,19 +50,30 @@ export interface MathWordExportPayload {
   bilanDate?: string // ISO YYYY-MM-DD, défaut = aujourd'hui
 }
 
-// Palette pastilles (sync visuelle avec Pastille.tsx + MatriceSection)
-// Volontairement saturée pour print, retour direct sur fond blanc en Word.
+// Palette pastilles — couleurs Word (fond + texte).
+//
+// Retour utilisateur 2026-05-26 : les cellules "rouges" apparaissaient
+// rosees, pas franchement rouges. Cause : on utilisait les tons Material
+// 100 (tres pales), trop proches du beige. On passe sur Tailwind 300 qui
+// est sature moyen et reste lisible avec un texte sombre (les couleurs
+// COLOR_TEXT en 800 gardent le contraste).
+//
+// Hex utilises :
+//   vert  C8E6C9 (Material 100) → 86EFAC (Tailwind green-300)
+//   orange FFE0B2 (Material 100) → FCD34D (Tailwind amber-300)
+//   rouge FFCDD2 (Material 100) → FCA5A5 (Tailwind red-300)
+//   gris  inchange (F3F4F6 = Tailwind gray-100, neutre OK)
 const COLOR_SHADING: Record<PastilleEtat, string | undefined> = {
   gris: 'F3F4F6',
-  vert: 'C8E6C9',
-  orange: 'FFE0B2',
-  rouge: 'FFCDD2',
+  vert: '86EFAC',
+  orange: 'FCD34D',
+  rouge: 'FCA5A5',
 }
 const COLOR_TEXT: Record<PastilleEtat, string> = {
   gris: '6B7280',
-  vert: '1B5E20',
-  orange: 'B45309',
-  rouge: 'B91C1C',
+  vert: '14532D',  // green-900 sombre, contraste fort sur green-300
+  orange: '78350F', // amber-900
+  rouge: '7F1D1D',  // red-900
 }
 const COLOR_LABEL: Record<PastilleEtat, string> = {
   gris: '—',
@@ -382,10 +393,23 @@ export async function generateBilanMathWord(payload: MathWordExportPayload): Pro
     for (const ep of section.epreuves) for (const se of ep.sousEpreuves) flatSousEpreuves.push({ ep, se })
 
     const nCols = 1 + flatSousEpreuves.length
-    const colWidth = Math.floor(TOTAL_DXA / nCols)
-    const colWidths = new Array(nCols).fill(colWidth)
-    // Absorbe l'arrondi sur la dernière colonne.
-    colWidths[nCols - 1] = TOTAL_DXA - colWidth * (nCols - 1)
+    // Largeur fixe pour la colonne Niveau : juste assez pour "Cycle III"
+    // (9 chars) sans casser, et le subLabel quand mergeNiveauxByLabel est OFF.
+    // 1300 DXA ~= 2.3 cm — assez pour "Cycle III (3e trim)" en cas de
+    // sub-label long. Le reste de la largeur est partage equitablement entre
+    // les colonnes sous-epreuves pour eviter les coupures de mots dans les
+    // intitules longs ("DENOMBREMENT", "TRANSCODAGE", "CLASSIFICATIONS").
+    const NIVEAU_COL_DXA = 1300
+    const remainingDXA = TOTAL_DXA - NIVEAU_COL_DXA
+    const subEpreuveColWidth = flatSousEpreuves.length > 0
+      ? Math.floor(remainingDXA / flatSousEpreuves.length)
+      : remainingDXA
+    const colWidths = [NIVEAU_COL_DXA, ...new Array(flatSousEpreuves.length).fill(subEpreuveColWidth)]
+    // Absorbe l'arrondi sur la dernière colonne pour atteindre TOTAL_DXA pile.
+    if (flatSousEpreuves.length > 0) {
+      const sum = colWidths.reduce((a, b) => a + b, 0)
+      colWidths[colWidths.length - 1] += TOTAL_DXA - sum
+    }
 
     // Header row 1 : "Niveau" + label épreuve macro (avec colSpan = nb sous-épreuves)
     const headerRow1Cells: any[] = [
