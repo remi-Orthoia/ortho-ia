@@ -52,6 +52,7 @@ interface CRBO {
   // l'extension de schéma peuvent ne pas les avoir.
   medecin_nom?: string | null
   medecin_tel?: string | null
+  medecin_date_prescription?: string | null
   motif?: string | null
   anamnese?: string | null
   resultats?: string | null
@@ -178,6 +179,7 @@ export default function CRBODetailPage() {
           bilan_type: crbo.bilan_type,
           medecin_nom: crbo.medecin_nom ?? '',
           medecin_tel: crbo.medecin_tel ?? '',
+          medecin_date_prescription: crbo.medecin_date_prescription ?? '',
           motif: crbo.motif ?? '',
           test_utilise: crbo.test_utilise
             ? String(crbo.test_utilise).split(',').map((t: string) => t.trim())

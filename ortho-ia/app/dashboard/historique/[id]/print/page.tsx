@@ -33,6 +33,7 @@ interface CRBO {
   bilan_type: string
   medecin_nom: string | null
   medecin_tel: string | null
+  medecin_date_prescription: string | null
   test_utilise: string | null
   structure_json: CRBOStructure | null
   crbo_genere?: string | null
@@ -261,6 +262,18 @@ export default function PrintCRBOPage() {
               <strong>{crbo.medecin_nom}</strong>
               {crbo.medecin_tel && ` · ${crbo.medecin_tel}`}
             </p>
+            {crbo.medecin_date_prescription && (
+              <p style={{ margin: '4px 0 0', fontSize: 13, color: '#555' }}>
+                Date de prescription :{' '}
+                <strong>
+                  {(() => {
+                    const d = new Date(crbo.medecin_date_prescription)
+                    if (isNaN(d.getTime())) return crbo.medecin_date_prescription
+                    return d.toLocaleDateString('fr-FR', { day: '2-digit', month: '2-digit', year: 'numeric' })
+                  })()}
+                </strong>
+              </p>
+            )}
           </section>
         )}
 

@@ -487,6 +487,7 @@ export default function ResultatsPage() {
             bilan_type: fd.bilan_type,
             medecin_nom: fd.medecin_nom,
             medecin_tel: fd.medecin_tel,
+            medecin_date_prescription: fd.medecin_date_prescription || null,
             motif: fd.motif,
             anamnese: fd.anamnese,
             test_utilise: Array.isArray(fd.test_utilise) ? fd.test_utilise.join(', ') : (fd.test_utilise || ''),

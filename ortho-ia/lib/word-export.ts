@@ -266,6 +266,7 @@ export interface WordExportPayload {
     bilan_type?: string
     medecin_nom?: string
     medecin_tel?: string
+    medecin_date_prescription?: string
     motif?: string
     test_utilise: string[] | string
     anamnese?: string
@@ -581,7 +582,7 @@ export async function generateCRBOWord(payload: WordExportPayload): Promise<Blob
   )
 
   // ===== MÉDECIN =====
-  if (formData.medecin_nom || formData.medecin_tel) {
+  if (formData.medecin_nom || formData.medecin_tel || formData.medecin_date_prescription) {
     // Préfixe "Dr." en dur au rendu Word/PDF. Si l'ortho a déjà saisi
     // "Dr.", "Dr" ou "Docteur" (CRBO legacy ou copie-colle), on évite
     // le doublon. Le nouveau formulaire strip déjà ces préfixes à la
@@ -591,19 +592,41 @@ export async function generateCRBOWord(payload: WordExportPayload): Promise<Blob
     const medecinAffiche = medecinRaw
       ? (/^(?:dr\.?|docteur)\s+/i.test(medecinRaw) ? medecinRaw : `Dr. ${medecinRaw}`)
       : ''
+    // Format date FR : "26/05/2026" depuis "2026-05-26". Tolere absence.
+    const datePrescriptionFR = (() => {
+      const iso = (formData.medecin_date_prescription || '').trim()
+      if (!iso) return ''
+      const d = new Date(iso)
+      if (isNaN(d.getTime())) return iso
+      return d.toLocaleDateString('fr-FR', { day: '2-digit', month: '2-digit', year: 'numeric' })
+    })()
     children.push(
       new Paragraph({ children: [new TextRun({ text: 'Médecin prescripteur', size: FONT_SIZE_NORMAL, font: FONT, color: COLOR_GREEN, bold: true })], spacing: { before: 200 } }),
       (() => {
         const cols = dxaCols([15, 45, 10, 30])
-        return new Table({
-          width: { size: TOTAL_DXA, type: WidthType.DXA },
-          columnWidths: cols,
-          rows: [new TableRow({ children: [
+        const rows = [
+          new TableRow({ children: [
             createCell('Nom :', { dxa: cols[0] }),
             createCell(medecinAffiche, { dxa: cols[1] }),
             createCell('Tél :', { dxa: cols[2] }),
             createCell(formData.medecin_tel || '', { dxa: cols[3] }),
-          ]})],
+          ]}),
+        ]
+        // Ligne supplementaire date de prescription, rendue uniquement si
+        // saisie. Les CRBO crees avant 2026-05-26 n'ont pas ce champ → on
+        // saute la ligne plutot que d'afficher un "Date :" vide.
+        if (datePrescriptionFR) {
+          rows.push(new TableRow({ children: [
+            createCell('Date prescription :', { dxa: cols[0] }),
+            createCell(datePrescriptionFR, { dxa: cols[1] }),
+            createCell('', { dxa: cols[2] }),
+            createCell('', { dxa: cols[3] }),
+          ]}))
+        }
+        return new Table({
+          width: { size: TOTAL_DXA, type: WidthType.DXA },
+          columnWidths: cols,
+          rows,
         })
       })(),
       new Paragraph({ children: [new TextRun({ text: '' })] }),

@@ -100,7 +100,7 @@ const DRAFT_MAX_AGE_MS = 30 * 24 * 60 * 60 * 1000
 /** Motifs de consultation proposés en multi-sélection à l'étape 2.
  *  Le LLM reformule la sélection en 1-2 phrases fluides via la règle
  *  motif_reformule du system-base. */
-const MOTIF_OPTIONS = ['Langage oral', 'Langage écrit', 'Cognitif', 'Maths', 'OMF'] as const
+const MOTIF_OPTIONS = ['Langage oral', 'Langage écrit', 'Langage écrit & oral', 'Cognitif', 'Maths', 'OMF'] as const
 
 /** Parse la chaîne `formData.motif` en tableau d'options sélectionnées.
  *  La chaîne est de la forme "Langage oral, Cognitif". Tolère les espaces
@@ -253,6 +253,7 @@ function NouveauCRBOContent() {
     bilan_type: 'initial',
     medecin_nom: '',
     medecin_tel: '',
+    medecin_date_prescription: '',
     motif: '',
     anamnese: '',
     test_utilise: [],
@@ -438,7 +439,7 @@ function NouveauCRBOContent() {
         try {
           const { data: prevCrbo } = await supabase
             .from('crbos')
-            .select('id, bilan_date, anamnese, structure_json, medecin_nom, medecin_tel, motif, patient_classe, test_utilise')
+            .select('id, bilan_date, anamnese, structure_json, medecin_nom, medecin_tel, medecin_date_prescription, motif, patient_classe, test_utilise')
             .eq('id', renouvellementId)
             .eq('user_id', user.id)
             .maybeSingle()
@@ -462,6 +463,7 @@ function NouveauCRBOContent() {
               anamnese: prev.anamnese || prevCrbo.anamnese || '',
               medecin_nom: prev.medecin_nom || prevCrbo.medecin_nom || '',
               medecin_tel: prev.medecin_tel || prevCrbo.medecin_tel || '',
+              medecin_date_prescription: prev.medecin_date_prescription || prevCrbo.medecin_date_prescription || '',
               motif: prev.motif || prevCrbo.motif || '',
               patient_classe: prev.patient_classe || prevCrbo.patient_classe || '',
               // Pré-coche les tests du bilan précédent (l'ortho décoche si besoin).
@@ -1111,6 +1113,15 @@ function NouveauCRBOContent() {
 
   const nextStep = () => {
     if (currentStep < TOTAL_STEPS) {
+      // Validation explicite par etape — les boutons "Suivant" ne sont pas
+      // submit de form, donc le `required` HTML5 ne se declenche pas seul.
+      if (currentStep === 2) {
+        if (!formData.medecin_date_prescription) {
+          setError('Veuillez renseigner la date de prescription pour continuer.')
+          return
+        }
+      }
+      setError('')
       setCurrentStep(prev => prev + 1)
       playDing() // micro-feedback satisfaisant à chaque étape franchie
       // Le scroll en haut est géré par le useEffect [currentStep] plus haut
@@ -1168,6 +1179,7 @@ function NouveauCRBOContent() {
       bilan_type: 'initial',
       medecin_nom: '',
       medecin_tel: '',
+      medecin_date_prescription: '',
       motif: '',
       anamnese: '',
       elements_stables: '',
@@ -1415,6 +1427,7 @@ function NouveauCRBOContent() {
                 bilan_date: new Date().toISOString().split('T')[0],
                 medecin_nom: '',
                 medecin_tel: '',
+                medecin_date_prescription: '',
                 motif: '',
                 anamnese: '',
                 test_utilise: [],
@@ -2009,6 +2022,17 @@ function NouveauCRBOContent() {
                   onChange={handleChange}
                   className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-green-500"
                   placeholder="05 63 00 00 00"
+                />
+              </div>
+              <div className="sm:col-span-2">
+                <label className="block text-sm font-medium text-gray-700 mb-1">Date de prescription *</label>
+                <input
+                  type="date"
+                  name="medecin_date_prescription"
+                  value={formData.medecin_date_prescription}
+                  onChange={handleChange}
+                  required
+                  className="w-full sm:w-1/2 px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-green-500"
                 />
               </div>
               <div className="sm:col-span-2">

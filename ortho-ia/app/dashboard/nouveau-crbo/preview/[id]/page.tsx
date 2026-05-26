@@ -55,6 +55,7 @@ interface CRBORow {
   bilan_type: 'initial' | 'renouvellement'
   medecin_nom: string | null
   medecin_tel: string | null
+  medecin_date_prescription: string | null
   motif: string | null
   anamnese: string | null
   test_utilise: string | null
@@ -750,6 +751,7 @@ export default function CRBOPreviewPage() {
           bilan_type: crbo.bilan_type,
           medecin_nom: crbo.medecin_nom || '',
           medecin_tel: crbo.medecin_tel || '',
+          medecin_date_prescription: crbo.medecin_date_prescription || '',
           motif: crbo.motif || '',
           anamnese: crbo.anamnese || '',
           test_utilise: crbo.test_utilise

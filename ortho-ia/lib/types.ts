@@ -36,6 +36,7 @@ export interface CRBO {
   bilan_type: 'initial' | 'renouvellement'
   medecin_nom: string
   medecin_tel?: string
+  medecin_date_prescription?: string
   motif: string
   anamnese: string
   test_utilise: string
@@ -66,6 +67,10 @@ export interface CRBOFormData {
   // Étape 3: Médecin & Motif
   medecin_nom: string
   medecin_tel: string
+  /** Date de prescription medicale (ISO YYYY-MM-DD). Champ obligatoire
+   *  au formulaire depuis 2026-05-26. Peut etre vide pour les CRBO
+   *  charges depuis la DB avant cette date (rendu Word tolere le vide). */
+  medecin_date_prescription: string
   motif: string
   
   // Étape 4: Anamnèse
