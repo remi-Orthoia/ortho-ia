@@ -424,24 +424,74 @@ export async function generateBilanMathWord(payload: MathWordExportPayload): Pro
       }),
     )
 
-    // Lignes données : 1 par niveau
+    // Pre-calcul des groupes de niveaux fusionnes verticalement (parite avec
+    // MatriceSection.tsx). Quand section.mergeNiveauxByLabel est actif (cas
+    // B-CMado : Collège×3, Cycle III×2, Cycle II×2), on emet UNE seule cellule
+    // Niveau pour chaque groupe consecutif partageant le meme label, avec
+    // rowSpan = nb de niveaux dans le groupe. Les lignes suivantes du groupe
+    // omettent la cellule Niveau (absorbee par le rowSpan ci-dessus).
+    type NiveauGroup = { firstInGroup: boolean; rowspan: number }
+    const niveauGroups = new Map<string, NiveauGroup>()
+    if (section.mergeNiveauxByLabel) {
+      let i = 0
+      while (i < section.niveaux.length) {
+        const lbl = section.niveaux[i].label
+        let j = i + 1
+        while (j < section.niveaux.length && section.niveaux[j].label === lbl) j++
+        niveauGroups.set(section.niveaux[i].id, { firstInGroup: true, rowspan: j - i })
+        for (let k = i + 1; k < j; k++) {
+          niveauGroups.set(section.niveaux[k].id, { firstInGroup: false, rowspan: 0 })
+        }
+        i = j
+      }
+    } else {
+      for (const niv of section.niveaux) {
+        niveauGroups.set(niv.id, { firstInGroup: true, rowspan: 1 })
+      }
+    }
+
+    // Couleur de fond par cycle (parite avec MatriceSection.tsx). Active si
+    // section.cycleBackgrounds = true. Couleurs alignees sur le design system
+    // Direction A : vert tres clair pour Collège, sable tres clair pour Cycle II.
+    const cycleBackgroundFor = (label: string): string | undefined => {
+      if (!section.cycleBackgrounds) return undefined
+      if (label === 'Collège') return 'EEF2EE'
+      if (label === 'Cycle II') return 'F2EAD8'
+      return undefined // Cycle III ou autre → fallback default
+    }
+
+    // Lignes données : 1 par niveau (sauf cellules Niveau fusionnees absorbees)
     const bodyRows: any[] = []
     for (const niv of section.niveaux) {
-      const nivLabel = niv.subLabel ? `${niv.label} (${niv.subLabel})` : niv.label
-      const rowCells: any[] = [
-        cell(nivLabel, {
+      const group = niveauGroups.get(niv.id) ?? { firstInGroup: true, rowspan: 1 }
+      const cycleBg = cycleBackgroundFor(niv.label)
+      // Quand on fusionne par label, le subLabel ("1"/"2"/"3") est OMIS : on
+      // affiche juste "Collège" plutot que "Collège (1)" / "Collège (2)" / etc.
+      const nivLabel = section.mergeNiveauxByLabel
+        ? niv.label
+        : (niv.subLabel ? `${niv.label} (${niv.subLabel})` : niv.label)
+      const rowCells: any[] = []
+      // Cellule Niveau emise UNIQUEMENT sur la 1ere ligne du groupe (rowSpan).
+      // Sur les lignes suivantes du meme groupe, on omet la cellule : Word
+      // absorbera l'espace via le rowSpan declare au-dessus.
+      if (group.firstInGroup) {
+        rowCells.push(cell(nivLabel, {
           width: colWidths[0],
           bold: true,
           size: FONT_SIZE_SMALL,
           alignment: AlignmentType.CENTER,
-          shading: 'FAFAFA',
-        }),
-      ]
+          shading: cycleBg ?? 'FAFAFA',
+          rowSpan: group.rowspan > 1 ? group.rowspan : undefined,
+        }))
+      }
       flatSousEpreuves.forEach(({ se }, i) => {
         const info = cellMap.get(`${niv.id}|${se.id}`)
         const w = colWidths[1 + i]
         if (!info) {
-          rowCells.push(cell('', { width: w, size: FONT_SIZE_SMALL }))
+          // Cellule vide : applique le fond du cycle si actif, sinon transparent.
+          // Ca demarque visuellement les blocs Collège / Cycle III / Cycle II
+          // a travers la largeur de la grille, parite avec le rendu ecran.
+          rowCells.push(cell('', { width: w, size: FONT_SIZE_SMALL, shading: cycleBg }))
           return
         }
         if (info.kind === 'grise') {
