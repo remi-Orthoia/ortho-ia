@@ -7,6 +7,7 @@ import MatriceSection from './MatriceSection'
 import PastilleLegend from './PastilleLegend'
 import BilanMathCRBORender from './BilanMathCRBORender'
 import BilanMathWordPreview from './BilanMathWordPreview'
+import RenouvellementBlock from './RenouvellementBlock'
 import GenerationLoader from '@/components/GenerationLoader'
 import MicButton from '@/components/MicButton'
 import { useToast } from '@/components/Toast'
@@ -407,6 +408,9 @@ export default function BilanMathForm({ grille }: BilanMathFormProps) {
           }))
 
           return {
+            // ID stable pour matching avec bilanPrecedentEpreuves cote
+            // renouvellement (cle commune draft current + previous).
+            epreuveId: ep.id,
             epreuveLabel: ep.label,
             parentColor,
             cellules,
@@ -547,10 +551,26 @@ export default function BilanMathForm({ grille }: BilanMathFormProps) {
           anamnese: (draft.anamnese ?? '').trim() || null,
           comportement_seance: (draft.comportementSeance ?? '').trim() || null,
           duree_seance_minutes: draft.dureeSeanceMinutes ?? null,
+          // Lien vers le bilan precedent (mode renouvellement). Permet au
+          // re-download depuis historique de JOIN et reconstruire le contexte
+          // d'evolution sans duplication des donnees.
+          bilan_precedent_id: draft.renouvellement?.bilanPrecedentId || null,
           resultats: JSON.stringify({
             grilleId: grille.id,
             mode: draft.mode,
             epreuves: draft.epreuves,
+            // Persistance directe des notes / fichier externe — ne peut pas
+            // venir d'un JOIN car le bilan precedent peut etre externe (PDF).
+            renouvellement: draft.renouvellement
+              ? {
+                  evolutionNotes: draft.renouvellement.evolutionNotes,
+                  elementsStables: draft.renouvellement.elementsStables,
+                  bilanPrecedentDate: draft.renouvellement.bilanPrecedentDate,
+                  bilanPrecedentAnamnese: draft.renouvellement.bilanPrecedentAnamnese,
+                  bilanPrecedentTexteExterne: draft.renouvellement.bilanPrecedentTexteExterne,
+                  bilanPrecedentFilename: draft.renouvellement.bilanPrecedentFilename,
+                }
+              : undefined,
           }),
           crbo_genere: generatedCRBO,
           statut: 'a_relire',
@@ -762,6 +782,15 @@ export default function BilanMathForm({ grille }: BilanMathFormProps) {
             onAnamneseChange={(v) => setDraft((d) => ({ ...d, anamnese: v, updatedAt: Date.now() }))}
           />
         </>
+      )}
+
+      {/* Bloc renouvellement : visible UNIQUEMENT en mode renouvellement.
+          Permet de selectionner un CRBO math precedent depuis l'historique
+          ortho.ia OU d'uploader un PDF/Word externe, et de saisir des notes
+          d'evolution libres. Hydrate draft.renouvellement.* qui sera transmis
+          a l'API generation pour produire un CRBO comparatif. */}
+      {draft.mode === 'renouvellement' && (
+        <RenouvellementBlock grille={grille} draft={draft} setDraft={setDraft} />
       )}
 
       <div style={{ marginBottom: 16 }}>

@@ -110,13 +110,34 @@ export interface BilanMathDraft {
   comportementSeance?: string
   /** Duree totale seance en minutes (etape 5 du wizard). */
   dureeSeanceMinutes?: number
-  /** Donnees specifiques au renouvellement (etape 4 du wizard si renouvellement). */
+  /** Donnees specifiques au renouvellement.
+   *  - Quand un bilan precedent ortho.ia est selectionne via dropdown :
+   *    bilanPrecedentId/Date/Anamnese + bilanPrecedentEpreuves (JSON grille) +
+   *    bilanPrecedentCrboGenere (markdown CRBO) sont remplis depuis la DB.
+   *  - Quand un PDF/Word externe est uploade : bilanPrecedentDate +
+   *    bilanPrecedentTexteExterne (texte extrait par Vision) sont remplis,
+   *    pas de comparaison structuree (table de comparaison vide), seul le
+   *    LLM exploite le texte en prose.
+   *  - evolutionNotes : champ libre de l'ortho pour resumer la trajectoire.
+   *  - elementsStables : champ libre pour les elements anamnese inchanges. */
   renouvellement?: {
     evolutionNotes?: string
     elementsStables?: string
+    /** ID du CRBO precedent (selection dropdown). NULL pour upload externe. */
     bilanPrecedentId?: string
     bilanPrecedentDate?: string
     bilanPrecedentAnamnese?: string
+    /** Cellules grille du bilan precedent (parsed JSON de crbos.resultats).
+     *  Sert au calcul de delta cote API + tableau comparatif au rendu. */
+    bilanPrecedentEpreuves?: Record<string, EpreuveState>
+    /** Texte markdown du CRBO precedent (depuis crbos.crbo_genere). Sert au
+     *  LLM comme contexte prose pour formuler les evolutions. */
+    bilanPrecedentCrboGenere?: string
+    /** Texte brut extrait d'un PDF/Word externe via Vision. Mutuellement
+     *  exclusif avec bilanPrecedentId. */
+    bilanPrecedentTexteExterne?: string
+    /** Nom du fichier uploade (affichage UI seulement). */
+    bilanPrecedentFilename?: string
   }
   epreuves: Record<string, EpreuveState>
   updatedAt: number

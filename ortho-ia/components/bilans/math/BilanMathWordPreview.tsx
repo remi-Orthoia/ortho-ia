@@ -26,6 +26,13 @@ import BilanMathCRBORender from './BilanMathCRBORender'
 import { createClient } from '@/lib/supabase'
 import type { BilanMathDraft, GrilleBilan } from '@/lib/bilans/math/types'
 import { splitCrboByGrilleSections, stripBilanRealiseSection } from '@/lib/bilans/math/split-crbo'
+import {
+  computeEvolutionRows,
+  DIRECTION_SYMBOL,
+  DIRECTION_LABEL,
+  COLOR_LABEL_FR,
+  summarizeEvolution,
+} from '@/lib/bilans/math/compute-evolution'
 
 interface Props {
   grille: GrilleBilan
@@ -224,6 +231,86 @@ export default function BilanMathWordPreview({ grille, draft, generatedCRBO, bil
       <h2 style={{ margin: '24px 0 12px', fontSize: 14, fontWeight: 700, color: '#2E7D32' }}>
         Résultats détaillés du bilan
       </h2>
+
+      {/* Tableau comparatif d'evolution (mode renouvellement uniquement,
+          quand on a les cellules grille du bilan precedent). 1 ligne par
+          epreuve cotee dans au moins un des 2 bilans. */}
+      {draft.mode === 'renouvellement' &&
+        draft.renouvellement?.bilanPrecedentEpreuves &&
+        Object.keys(draft.renouvellement.bilanPrecedentEpreuves).length > 0 && (() => {
+          const rows = computeEvolutionRows(
+            grille,
+            draft.epreuves,
+            draft.renouvellement.bilanPrecedentEpreuves,
+          )
+          if (rows.length === 0) return null
+          const prevDateLabel = draft.renouvellement.bilanPrecedentDate
+            ? formatDateFR(draft.renouvellement.bilanPrecedentDate)
+            : 'bilan précédent'
+          const currDateLabel = draft.bilanDate ? formatDateFR(draft.bilanDate) : 'bilan actuel'
+          const COLOR_BG: Record<string, string> = {
+            gris: '#F3F4F6', vert: '#86EFAC', orange: '#FCD34D', rouge: '#FCA5A5',
+          }
+          const COLOR_TX: Record<string, string> = {
+            gris: '#6B7280', vert: '#14532D', orange: '#78350F', rouge: '#7F1D1D',
+          }
+          const DIR_BG: Record<string, string> = {
+            progres: '#D1FAE5', stable: 'transparent', regression: '#FECACA', nouveau: '#D1FAE5', skipped: 'transparent',
+          }
+          return (
+            <div style={{ marginBottom: 24 }}>
+              <h3 style={{ margin: '0 0 4px', fontSize: 13, fontWeight: 600, color: '#2E7D32' }}>
+                Évolution par épreuve — comparaison avec le bilan du {prevDateLabel}
+              </h3>
+              <p style={{ margin: '0 0 8px', fontSize: 11.5, fontStyle: 'italic', color: '#6B7280' }}>
+                {summarizeEvolution(rows)}
+              </p>
+              <table style={{ width: '100%', borderCollapse: 'collapse', fontSize: 12 }}>
+                <thead>
+                  <tr>
+                    <th style={evolHeaderCell()}>Domaine</th>
+                    <th style={evolHeaderCell()}>Épreuve</th>
+                    <th style={evolHeaderCell()}>Bilan du {prevDateLabel}</th>
+                    <th style={evolHeaderCell()}>Bilan du {currDateLabel}</th>
+                    <th style={evolHeaderCell()}>Évolution</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {rows.map((r, i) => (
+                    <tr key={i}>
+                      <td style={evolBodyCell()}>{r.sectionLabel}</td>
+                      <td style={evolBodyCell()}>{r.epreuveLabel}</td>
+                      <td style={{
+                        ...evolBodyCell(),
+                        background: COLOR_BG[r.previousColor],
+                        color: COLOR_TX[r.previousColor],
+                        textAlign: 'center',
+                      }}>
+                        {COLOR_LABEL_FR[r.previousColor]}
+                      </td>
+                      <td style={{
+                        ...evolBodyCell(),
+                        background: COLOR_BG[r.currentColor],
+                        color: COLOR_TX[r.currentColor],
+                        textAlign: 'center',
+                      }}>
+                        {COLOR_LABEL_FR[r.currentColor]}
+                      </td>
+                      <td style={{
+                        ...evolBodyCell(),
+                        background: DIR_BG[r.direction] ?? 'transparent',
+                        fontWeight: r.direction === 'progres' || r.direction === 'regression' ? 600 : 400,
+                        textAlign: 'center',
+                      }}>
+                        {DIRECTION_SYMBOL[r.direction]} {DIRECTION_LABEL[r.direction]}
+                      </td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            </div>
+          )
+        })()}
       <div style={{ marginBottom: 24 }}>
         {grille.sections.map((section) => {
           const chunk = crboSplit.bySection.get(section.id)
@@ -282,5 +369,26 @@ function cellStyle(opts: { bold?: boolean } = {}): React.CSSProperties {
     fontSize: 12.5,
     fontWeight: opts.bold ? 700 : 400,
     verticalAlign: 'top',
+  }
+}
+
+function evolHeaderCell(): React.CSSProperties {
+  return {
+    border: '1px solid #BBDEFB',
+    background: '#E8F5E9',
+    padding: '6px 8px',
+    fontSize: 11.5,
+    fontWeight: 600,
+    color: '#1F2937',
+    textAlign: 'left',
+  }
+}
+
+function evolBodyCell(): React.CSSProperties {
+  return {
+    border: '1px solid #E5E7EB',
+    padding: '5px 8px',
+    fontSize: 11.5,
+    verticalAlign: 'middle',
   }
 }

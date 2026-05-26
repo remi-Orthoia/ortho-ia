@@ -751,20 +751,53 @@ export default function CRBOPreviewPage() {
         const grille = crbo.bilan_subtype === 'b-cm' ? GRILLE_B_CM : GRILLE_B_CMADO
 
         // Reconstruit le draft a partir des colonnes DB + JSON resultats.
-        // Le draft minimal alimente generateBilanMathWord : patient + grille
-        // + epreuves cotees + markdown CRBO.
         let epreuves: Record<string, any> = {}
         let mode: 'initial' | 'renouvellement' = crbo.bilan_type === 'renouvellement' ? 'renouvellement' : 'initial'
+        let renouvellementMeta: any = null
         try {
           if (crbo.resultats) {
             const parsed = JSON.parse(crbo.resultats)
             if (parsed && typeof parsed === 'object') {
               if (parsed.epreuves) epreuves = parsed.epreuves
               if (parsed.mode === 'initial' || parsed.mode === 'renouvellement') mode = parsed.mode
+              if (parsed.renouvellement) renouvellementMeta = parsed.renouvellement
             }
           }
         } catch {
           // resultats illisible : on rend quand meme avec un draft minimal.
+        }
+
+        // Mode renouvellement : JOIN du bilan precedent pour reconstruire le
+        // contexte d'evolution (epreuves + markdown CRBO precedent).
+        let renouvellementForDraft: any = undefined
+        if (mode === 'renouvellement') {
+          renouvellementForDraft = { ...(renouvellementMeta ?? {}) }
+          if (crbo.bilan_precedent_id) {
+            try {
+              const supabase = createClient()
+              const { data: prev } = await supabase
+                .from('crbos')
+                .select('id, bilan_date, anamnese, resultats, crbo_genere')
+                .eq('id', crbo.bilan_precedent_id)
+                .maybeSingle()
+              if (prev) {
+                renouvellementForDraft.bilanPrecedentId = prev.id
+                renouvellementForDraft.bilanPrecedentDate = prev.bilan_date
+                renouvellementForDraft.bilanPrecedentAnamnese = prev.anamnese || ''
+                renouvellementForDraft.bilanPrecedentCrboGenere = prev.crbo_genere || ''
+                try {
+                  if (prev.resultats) {
+                    const prevParsed = JSON.parse(prev.resultats)
+                    if (prevParsed?.epreuves) {
+                      renouvellementForDraft.bilanPrecedentEpreuves = prevParsed.epreuves
+                    }
+                  }
+                } catch {}
+              }
+            } catch (e) {
+              console.warn('JOIN bilan precedent (preview) failed:', e)
+            }
+          }
         }
 
         const blob = await generateBilanMathWord({
@@ -790,6 +823,7 @@ export default function CRBOPreviewPage() {
               : undefined,
             comportementSeance: crbo.comportement_seance || '',
             dureeSeanceMinutes: crbo.duree_seance_minutes ?? undefined,
+            renouvellement: renouvellementForDraft,
             epreuves,
             updatedAt: Date.now(),
           },

@@ -69,6 +69,13 @@ interface PayloadBody {
     bilanPrecedentId?: string
     bilanPrecedentDate?: string
     bilanPrecedentAnamnese?: string
+    /** Cellules grille du bilan precedent (depuis crbos.resultats JSON). */
+    bilanPrecedentEpreuves?: Record<string, { cells?: Record<string, PastilleEtat>; notes?: string; iaText?: string }>
+    /** Markdown CRBO precedent (depuis crbos.crbo_genere). */
+    bilanPrecedentCrboGenere?: string
+    /** Texte brut extrait d'un PDF/Word externe (Vision OCR). */
+    bilanPrecedentTexteExterne?: string
+    bilanPrecedentFilename?: string
   }
   domaines: Array<{
     domaineLabel: string
@@ -165,6 +172,9 @@ export async function POST(request: NextRequest) {
               .map((s: any) => ({ label: s.label, color: s.color as PastilleEtat }))
           : []
         epreuves.push({
+          // Preserve l'ID d'epreuve pour le matching renouvellement avec
+          // bilanPrecedentEpreuves (key commune draft current/previous).
+          epreuveId: typeof ep.epreuveId === 'string' ? ep.epreuveId : undefined,
           epreuveLabel: ep.epreuveLabel,
           parentColor: ep.parentColor as PastilleEtat,
           cellules,
@@ -248,6 +258,28 @@ export async function POST(request: NextRequest) {
           ? body.renouvellement.bilanPrecedentDate
           : '',
         bilanPrecedentAnamnese: scrubText(body.renouvellement.bilanPrecedentAnamnese ?? '', scrubList) ?? '',
+        // Cellules grille du bilan precedent (parities avec draft.epreuves
+        // pour permettre le calcul de delta par epreuve cote prompt builder).
+        // Les notes / iaText sont nettoyees au passage (peuvent contenir des
+        // prenoms d'autres patients de l'ortho).
+        bilanPrecedentEpreuves: body.renouvellement.bilanPrecedentEpreuves
+          ? Object.fromEntries(
+              Object.entries(body.renouvellement.bilanPrecedentEpreuves as Record<string, { cells?: Record<string, PastilleEtat>; notes?: string; iaText?: string } | undefined>).map(([epId, st]) => [
+                epId,
+                {
+                  cells: st?.cells ?? {},
+                  notes: scrubText(st?.notes ?? '', scrubList) ?? '',
+                  iaText: scrubText(st?.iaText ?? '', scrubList) ?? '',
+                },
+              ]),
+            )
+          : undefined,
+        // Markdown CRBO precedent (texte ortho.ia) : transmis comme contexte
+        // au LLM pour formuler les evolutions sans inventer.
+        bilanPrecedentCrboGenere: scrubText(body.renouvellement.bilanPrecedentCrboGenere ?? '', scrubList) ?? '',
+        // Texte brut extrait d'un PDF/Word externe : alternative au crbo ortho.ia
+        // pour les cas ou l'ortho a un bilan precedent fait ailleurs.
+        bilanPrecedentTexteExterne: scrubText(body.renouvellement.bilanPrecedentTexteExterne ?? '', scrubList) ?? '',
       }
     : undefined
 

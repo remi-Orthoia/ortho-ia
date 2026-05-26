@@ -19,6 +19,38 @@ const COLOR_LABEL: Record<PastilleEtat, string> = {
   rouge: 'échec',
 }
 
+/** Ordre de severite clinique : gris (non cote) < vert (reussite) < orange
+ *  (etayage) < rouge (echec). Pour l'aggregation au niveau epreuve macro,
+ *  on prend la PIRE couleur cotee. */
+const COLOR_SEVERITY: Record<PastilleEtat, number> = { gris: -1, vert: 0, orange: 1, rouge: 2 }
+
+/** Agrege une liste de couleurs cellules en une couleur "epreuve macro" :
+ *  retourne la pire couleur (qui domine cliniquement). Si toutes sont gris,
+ *  retourne gris. Cf. parent-color.ts cote client pour la version typee. */
+function aggregatePrevColor(colors: any[]): PastilleEtat {
+  let worst: PastilleEtat = 'gris'
+  for (const c of colors) {
+    if (typeof c !== 'string') continue
+    if (!(c in COLOR_SEVERITY)) continue
+    if (COLOR_SEVERITY[c as PastilleEtat] > COLOR_SEVERITY[worst]) {
+      worst = c as PastilleEtat
+    }
+  }
+  return worst
+}
+
+/** Calcule le sens d'evolution entre 2 couleurs agregees. Aligne sur
+ *  lib/bilans/math/compute-evolution.ts cote client. */
+function computeDirection(prev: PastilleEtat, curr: PastilleEtat): string {
+  if (prev === 'gris' && curr !== 'gris') return 'nouveau'
+  if (prev !== 'gris' && curr === 'gris') return 'skipped'
+  if (prev === curr) return 'stable'
+  const prevRank = COLOR_SEVERITY[prev]
+  const currRank = COLOR_SEVERITY[curr]
+  if (currRank < prevRank) return 'progres'
+  return 'regression'
+}
+
 /** Description d'une cellule cotée (niveau × test × critère) pour le prompt. */
 export interface CelluleInput {
   niveau: string  // ex: "8 ans (96-98 mo)" ou "CM1" ou "Cycle III 1"
@@ -28,6 +60,10 @@ export interface CelluleInput {
 }
 
 export interface EpreuveInput {
+  /** ID de l'epreuve (cf. GrilleBilan.sections[].epreuves[].id) — sert au
+   *  matching avec bilanPrecedentEpreuves (renouvellement) pour calculer le
+   *  delta d'evolution. Optionnel pour compat ancienne signature. */
+  epreuveId?: string
   epreuveLabel: string
   parentColor: PastilleEtat
   /** Cellules cotées au niveau du critère individuel (nouveau format). */
@@ -66,14 +102,22 @@ export interface BilanMathCRBOContext {
   comportementSeance?: string
   /** Duree totale de la seance en minutes — informatif. */
   dureeSeanceMinutes?: number
-  /** Donnees specifiques renouvellement (etape 4 wizard). Si present, le
-   *  motif et l'anamnese doivent integrer la trajectoire d'evolution et le
-   *  diagnostic doit s'ouvrir sur une phrase de comparaison. */
+  /** Donnees specifiques renouvellement. Si present, le motif et l'anamnese
+   *  doivent integrer la trajectoire d'evolution et le diagnostic doit
+   *  s'ouvrir sur une phrase de comparaison. */
   renouvellement?: {
     evolutionNotes?: string
     elementsStables?: string
     bilanPrecedentDate?: string
     bilanPrecedentAnamnese?: string
+    /** Cellules grille du bilan precedent (parities avec ctx.domaines pour
+     *  permettre au prompt builder de calculer un tableau d'evolution
+     *  structuree par epreuve). */
+    bilanPrecedentEpreuves?: Record<string, { cells?: Record<string, string>; notes?: string; iaText?: string }>
+    /** Markdown du CRBO precedent — contexte prose pour le LLM. */
+    bilanPrecedentCrboGenere?: string
+    /** Texte d'un PDF/Word externe extrait par Vision — alternative au CRBO ortho.ia. */
+    bilanPrecedentTexteExterne?: string
   }
   domaines: DomaineInput[]
 }
@@ -232,13 +276,29 @@ export function buildBilanMathCRBOUserPrompt(ctx: BilanMathCRBOContext): string 
 
   // Bloc renouvellement : trajectoire d'evolution + bilan precedent. Active
   // un traitement specifique cote prompt (Motif rappelle le bilan precedent,
-  // Anamnese mentionne les elements stables, Diagnostic s'ouvre sur la
-  // synthese d'evolution).
+  // Anamnese mentionne les elements stables, sections par epreuve mentionnent
+  // l'evolution, Diagnostic s'ouvre sur la synthese d'evolution).
   const ren = ctx.renouvellement
-  if (ren && (ren.evolutionNotes || ren.elementsStables || ren.bilanPrecedentDate || ren.bilanPrecedentAnamnese)) {
+  const hasRen = ren && (
+    ren.evolutionNotes || ren.elementsStables || ren.bilanPrecedentDate ||
+    ren.bilanPrecedentAnamnese || ren.bilanPrecedentCrboGenere ||
+    ren.bilanPrecedentTexteExterne ||
+    (ren.bilanPrecedentEpreuves && Object.keys(ren.bilanPrecedentEpreuves).length > 0)
+  )
+  if (hasRen && ren) {
     lines.push('## RENOUVELLEMENT — donnees d\'evolution depuis le bilan precedent')
+    lines.push('')
+    lines.push('Ce bilan est un RENOUVELLEMENT. Tu DOIS adapter la redaction sur 3 dimensions :')
+    lines.push('1. **Motif** : commencer par "Renouvellement du bilan de cognition mathématique du [date]" ou equivalent. Indiquer le contexte de la PEC entre les 2 bilans.')
+    lines.push('2. **Sections par épreuve** : pour CHAQUE epreuve cotee a la fois maintenant ET au precedent, ajouter une mention d\'evolution (progres / stagnation / regression). Exemples :')
+    lines.push('   - "Cette epreuve, en echec au bilan initial, est aujourd\'hui reussie spontanement : progres notable apres etayage thrombique."')
+    lines.push('   - "Sur les classifications, [Prenom] etait deja en reussite au bilan initial : performance stable."')
+    lines.push('   - "Sur la chaine numerique, on note une regression : reussite aux niveaux infereurs auparavant, echec maintenant aux memes items — a surveiller."')
+    lines.push('3. **Diagnostic** : s\'ouvrir par une phrase synthetique d\'evolution globale ("Par rapport au bilan du [date], on observe globalement une evolution favorable / contrastee / defavorable sur..."). Garder ensuite les critères DSM-V en notant si le diagnostic est confirme / nuance / retire.')
+    lines.push('')
     if (ren.bilanPrecedentDate) {
       lines.push(`Date du bilan precedent : ${formatDateFR(ren.bilanPrecedentDate)}`)
+      lines.push('')
     }
     if ((ren.bilanPrecedentAnamnese ?? '').trim()) {
       lines.push('Anamnese du bilan precedent (a inclure brievement en rappel) :')
@@ -251,8 +311,58 @@ export function buildBilanMathCRBOUserPrompt(ctx: BilanMathCRBOContext): string 
       lines.push('')
     }
     if ((ren.evolutionNotes ?? '').trim()) {
-      lines.push('Notes d\'evolution depuis le bilan precedent (a synthetiser dans une ouverture du Diagnostic du type "Par rapport au bilan du [date], on observe...") :')
+      lines.push('Notes d\'evolution renseignees par l\'ortho (a integrer dans le Motif et dans la phrase d\'ouverture du Diagnostic) :')
       lines.push((ren.evolutionNotes ?? '').trim())
+      lines.push('')
+    }
+    // ===== Tableau d'evolution par epreuve =====
+    // Si le bilan precedent vient d'un CRBO ortho.ia (cellules grille
+    // structurees), on calcule la matrice de delta par epreuve. Cette
+    // information PERMET au LLM de fact-check sa redaction d'evolution et
+    // d'eviter d'inventer des progres / regressions.
+    if (ren.bilanPrecedentEpreuves && Object.keys(ren.bilanPrecedentEpreuves).length > 0) {
+      lines.push('Tableau d\'evolution par epreuve (couleurs agregees, calcul deterministe) :')
+      lines.push('| Domaine | Epreuve | Bilan precedent | Bilan actuel | Evolution |')
+      lines.push('|---|---|---|---|---|')
+      for (const dom of ctx.domaines) {
+        for (const ep of dom.epreuves) {
+          // Couleur actuelle : ep.parentColor (deja calcule cote client)
+          const currentColor = ep.parentColor
+          // Couleur precedente : agregation des cells du bilan precedent.
+          // Algo simplifie aligne sur epreuveColorFromState : prend la PIRE
+          // (gris < vert < orange < rouge dans l'ordre de "preoccupation"
+          // diagnostique). Pour le tableau d'evolution, on aggrege l'epreuve
+          // entiere depuis ses cellules.
+          // Lookup par epreuveId qui est le meme cote draft (current) et
+          // bilanPrecedentEpreuves (previous) — c'est l'identifiant stable de
+          // la grille (ex. "classifications", "chaine_numerique").
+          const prevEpreuveData = ep.epreuveId
+            ? ren.bilanPrecedentEpreuves?.[ep.epreuveId]
+            : undefined
+          const prevColor = prevEpreuveData?.cells
+            ? aggregatePrevColor(Object.values(prevEpreuveData.cells))
+            : 'gris'
+          if (prevColor === 'gris' && currentColor === 'gris') continue
+          const direction = computeDirection(prevColor, currentColor)
+          lines.push(`| ${dom.domaineLabel} | ${ep.epreuveLabel} | ${prevColor} | ${currentColor} | ${direction} |`)
+        }
+      }
+      lines.push('')
+      lines.push('⚠️ TU DOIS commenter chaque ligne en "progres" ou "regression" de ce tableau dans la section epreuve correspondante. Pour les "stable" sans changement clinique notable, mention breve possible mais pas obligatoire.')
+      lines.push('')
+    }
+    // ===== Texte CRBO precedent (contexte prose) =====
+    if ((ren.bilanPrecedentCrboGenere ?? '').trim()) {
+      lines.push('Texte integral du CRBO precedent (contexte de reference, ne pas recopier) :')
+      lines.push('---')
+      lines.push((ren.bilanPrecedentCrboGenere ?? '').trim().slice(0, 8000))
+      lines.push('---')
+      lines.push('')
+    } else if ((ren.bilanPrecedentTexteExterne ?? '').trim()) {
+      lines.push('Texte du bilan precedent (PDF/Word externe extrait par Vision — peut contenir des typos, a utiliser comme contexte uniquement) :')
+      lines.push('---')
+      lines.push((ren.bilanPrecedentTexteExterne ?? '').trim().slice(0, 8000))
+      lines.push('---')
       lines.push('')
     }
   }

@@ -29,6 +29,13 @@
 import type { BilanMathDraft, GrilleBilan, PastilleEtat } from '@/lib/bilans/math/types'
 import { cellKey } from '@/lib/bilans/math/parent-color'
 import { splitCrboByGrilleSections, stripBilanRealiseSection } from '@/lib/bilans/math/split-crbo'
+import {
+  computeEvolutionRows,
+  DIRECTION_SYMBOL,
+  DIRECTION_LABEL,
+  COLOR_LABEL_FR,
+  summarizeEvolution,
+} from '@/lib/bilans/math/compute-evolution'
 
 export interface OrthoProfile {
   prenom?: string | null
@@ -361,6 +368,99 @@ export async function generateBilanMathWord(payload: MathWordExportPayload): Pro
       { after: 200 },
     ),
   )
+
+  // ===== TABLEAU COMPARATIF EVOLUTION (mode renouvellement uniquement) =====
+  // Si on est en mode renouvellement ET qu'on a les cellules du bilan
+  // precedent (DB ortho.ia OU upload externe avec parsing OK), on calcule
+  // le delta par epreuve et on rend un tableau synthetique avant la grille
+  // actuelle. Granularite : epreuve macro (~15-20 lignes max). 1 ligne par
+  // epreuve cotee dans au moins un des 2 bilans.
+  if (
+    draft.mode === 'renouvellement' &&
+    draft.renouvellement?.bilanPrecedentEpreuves &&
+    Object.keys(draft.renouvellement.bilanPrecedentEpreuves).length > 0
+  ) {
+    const evolutionRows = computeEvolutionRows(
+      grille,
+      draft.epreuves,
+      draft.renouvellement.bilanPrecedentEpreuves,
+    )
+    if (evolutionRows.length > 0) {
+      const prevDateLabel = draft.renouvellement.bilanPrecedentDate
+        ? fmtDateFR(draft.renouvellement.bilanPrecedentDate)
+        : 'bilan précédent'
+      const currDateLabel = draft.bilanDate ? fmtDateFR(draft.bilanDate) : 'bilan actuel'
+      children.push(
+        para(
+          [text(`Évolution par épreuve — comparaison avec le bilan du ${prevDateLabel}`, { bold: true, color: COLOR_GREEN })],
+          { before: 200, after: 80 },
+        ),
+        para(
+          [text(summarizeEvolution(evolutionRows), { italic: true, size: FONT_SIZE_SMALL, color: '707070' })],
+          { after: 120 },
+        ),
+      )
+
+      // Tableau : 5 colonnes — Domaine / Epreuve / Precedent / Actuel / Evolution
+      const evolCols = dxaSplit(TOTAL_DXA, 5)
+      const evolHeader = new TableRow({
+        children: [
+          cell('Domaine', { width: evolCols[0], bold: true, size: FONT_SIZE_SMALL, shading: 'E8F5E9', alignment: AlignmentType.CENTER }),
+          cell('Épreuve', { width: evolCols[1], bold: true, size: FONT_SIZE_SMALL, shading: 'E8F5E9', alignment: AlignmentType.CENTER }),
+          cell(`Bilan du ${prevDateLabel}`, { width: evolCols[2], bold: true, size: FONT_SIZE_SMALL, shading: 'E8F5E9', alignment: AlignmentType.CENTER }),
+          cell(`Bilan du ${currDateLabel}`, { width: evolCols[3], bold: true, size: FONT_SIZE_SMALL, shading: 'E8F5E9', alignment: AlignmentType.CENTER }),
+          cell('Évolution', { width: evolCols[4], bold: true, size: FONT_SIZE_SMALL, shading: 'E8F5E9', alignment: AlignmentType.CENTER }),
+        ],
+        tableHeader: true,
+      })
+      const evolBodyRows = evolutionRows.map((r) => {
+        const prevColorHex = COLOR_SHADING[r.previousColor]
+        const currColorHex = COLOR_SHADING[r.currentColor]
+        const arrow = DIRECTION_SYMBOL[r.direction]
+        const label = DIRECTION_LABEL[r.direction]
+        // Couleur de la cellule "Evolution" selon la direction (vert pour
+        // progres/nouveau, gris pour stable/skipped, rouge pour regression).
+        const evolBg: string | undefined =
+          r.direction === 'progres' || r.direction === 'nouveau' ? 'D1FAE5' :
+          r.direction === 'regression' ? 'FECACA' :
+          undefined
+        return new TableRow({
+          children: [
+            cell(r.sectionLabel, { width: evolCols[0], size: FONT_SIZE_SMALL }),
+            cell(r.epreuveLabel, { width: evolCols[1], size: FONT_SIZE_SMALL }),
+            cell(COLOR_LABEL_FR[r.previousColor], {
+              width: evolCols[2],
+              size: FONT_SIZE_SMALL,
+              shading: prevColorHex,
+              color: COLOR_TEXT[r.previousColor],
+              alignment: AlignmentType.CENTER,
+            }),
+            cell(COLOR_LABEL_FR[r.currentColor], {
+              width: evolCols[3],
+              size: FONT_SIZE_SMALL,
+              shading: currColorHex,
+              color: COLOR_TEXT[r.currentColor],
+              alignment: AlignmentType.CENTER,
+            }),
+            cell(`${arrow} ${label}`, {
+              width: evolCols[4],
+              size: FONT_SIZE_SMALL,
+              shading: evolBg,
+              bold: r.direction === 'progres' || r.direction === 'regression',
+              alignment: AlignmentType.CENTER,
+            }),
+          ],
+        })
+      })
+      children.push(new Table({
+        width: { size: TOTAL_DXA, type: WidthType.DXA },
+        columnWidths: evolCols,
+        layout: TableLayoutType.FIXED,
+        rows: [evolHeader, ...evolBodyRows],
+      }))
+      children.push(para([text('')], { after: 160 }))
+    }
+  }
 
   for (const section of grille.sections) {
     // Titre de section
