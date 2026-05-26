@@ -145,55 +145,136 @@ export default function CRBODetailPage() {
     // Overlay 3D flip pour la génération + download (1500ms garantis).
     playPrintAnimation(1500)
     try {
-      const { downloadCRBOWord } = await import('@/lib/word-export')
+      // ============ BRANCHE MATH (B-CM / B-CMado) ============
+      // Detection via bilan_subtype : route vers le renderer math dedie
+      // (grille coloriee + markdown structure) plutot que le renderer langage
+      // qui produit un Word degrade pour ce sous-type. Fix 2026-05-26.
+      const isMath = crbo.bilan_subtype === 'b-cm' || crbo.bilan_subtype === 'b-cmado'
+      if (isMath) {
+        const { GRILLE_B_CM } = await import('@/lib/bilans/math/grille-b-cm')
+        const { GRILLE_B_CMADO } = await import('@/lib/bilans/math/grille-b-cmado')
+        const { generateBilanMathWord } = await import('@/lib/bilan-math-word-export')
+        const grille = crbo.bilan_subtype === 'b-cm' ? GRILLE_B_CM : GRILLE_B_CMADO
 
-      // Charger bilan précédent si présent (renouvellement)
-      let previousStructure = null
-      let previousBilanDate: string | undefined
-      if (crbo.bilan_precedent_id) {
-        const supabase = createClient()
-        const { data: prev } = await supabase
-          .from('crbos')
-          .select('structure_json, bilan_date')
-          .eq('id', crbo.bilan_precedent_id)
-          .maybeSingle()
-        if (prev) {
-          previousStructure = prev.structure_json
-          previousBilanDate = prev.bilan_date
+        // Reconstruit le draft a partir des colonnes DB + JSON resultats.
+        let epreuves: Record<string, any> = {}
+        let mode: 'initial' | 'renouvellement' = crbo.bilan_type === 'renouvellement' ? 'renouvellement' : 'initial'
+        try {
+          if (crbo.resultats) {
+            const parsed = JSON.parse(crbo.resultats)
+            if (parsed && typeof parsed === 'object') {
+              if (parsed.epreuves) epreuves = parsed.epreuves
+              if (parsed.mode === 'initial' || parsed.mode === 'renouvellement') mode = parsed.mode
+            }
+          }
+        } catch {
+          // resultats illisible : on rend quand meme avec un draft minimal.
         }
-      }
 
-      await downloadCRBOWord({
-        formData: {
-          ortho_nom: profile ? `${profile.prenom} ${profile.nom}` : '',
-          ortho_adresse: profile?.adresse || '',
-          ortho_cp: profile?.code_postal || '',
-          ortho_ville: profile?.ville || '',
-          ortho_tel: profile?.telephone || '',
-          ortho_email: profile?.email || '',
-          ortho_adeli_rpps: profile?.adeli_rpps || '',
-          patient_prenom: crbo.patient_prenom,
-          patient_nom: crbo.patient_nom,
-          patient_ddn: crbo.patient_ddn,
-          patient_classe: crbo.patient_classe,
-          bilan_date: crbo.bilan_date,
-          bilan_type: crbo.bilan_type,
-          medecin_nom: crbo.medecin_nom ?? '',
-          medecin_tel: crbo.medecin_tel ?? '',
-          medecin_date_prescription: crbo.medecin_date_prescription ?? '',
-          motif: crbo.motif ?? '',
-          test_utilise: crbo.test_utilise
-            ? String(crbo.test_utilise).split(',').map((t: string) => t.trim())
-            : [],
-          resultats_manuels: crbo.resultats ?? '',
-        },
-        structure: crbo.structure_json
-          ? applyGlossaireToObject(applyVocabToObject(crbo.structure_json))
-          : null,
-        fallbackCRBO: crbo.crbo_text || crbo.crbo_genere || '',
-        previousStructure,
-        previousBilanDate,
-      })
+        const blob = await generateBilanMathWord({
+          grille,
+          draft: {
+            type: grille.id,
+            mode,
+            patient: {
+              prenom: crbo.patient_prenom || '',
+              nom: crbo.patient_nom || '',
+              date_naissance: crbo.patient_ddn || '',
+              classe: crbo.patient_classe || '',
+            },
+            anamnese: crbo.anamnese || '',
+            motif: crbo.motif || '',
+            bilanDate: crbo.bilan_date,
+            medecin: crbo.medecin_nom
+              ? {
+                  nom: crbo.medecin_nom,
+                  tel: crbo.medecin_tel || '',
+                  date_prescription: crbo.medecin_date_prescription || '',
+                }
+              : undefined,
+            comportementSeance: crbo.comportement_seance || '',
+            dureeSeanceMinutes: crbo.duree_seance_minutes ?? undefined,
+            epreuves,
+            updatedAt: Date.now(),
+          },
+          crboText: crbo.crbo_genere || crbo.crbo_text || '',
+          profile: profile
+            ? {
+                prenom: profile.prenom,
+                nom: profile.nom,
+                adresse: profile.adresse,
+                code_postal: profile.code_postal,
+                ville: profile.ville,
+                telephone: profile.telephone,
+                email: profile.email,
+                adeli_rpps: profile.adeli_rpps ?? null,
+              }
+            : null,
+          bilanDate: crbo.bilan_date,
+        })
+
+        const filename = `CRBO-${grille.label}-${crbo.patient_prenom || 'patient'}-${crbo.patient_nom || ''}-${new Date().toISOString().slice(0, 10)}.docx`
+          .replace(/[^a-zA-Z0-9.-]/g, '_')
+        const url = URL.createObjectURL(blob)
+        const a = document.createElement('a')
+        a.href = url
+        a.download = filename
+        document.body.appendChild(a)
+        a.click()
+        document.body.removeChild(a)
+        URL.revokeObjectURL(url)
+      } else {
+        // ============ BRANCHE LANGAGE (par defaut) ============
+        const { downloadCRBOWord } = await import('@/lib/word-export')
+
+        // Charger bilan précédent si présent (renouvellement)
+        let previousStructure = null
+        let previousBilanDate: string | undefined
+        if (crbo.bilan_precedent_id) {
+          const supabase = createClient()
+          const { data: prev } = await supabase
+            .from('crbos')
+            .select('structure_json, bilan_date')
+            .eq('id', crbo.bilan_precedent_id)
+            .maybeSingle()
+          if (prev) {
+            previousStructure = prev.structure_json
+            previousBilanDate = prev.bilan_date
+          }
+        }
+
+        await downloadCRBOWord({
+          formData: {
+            ortho_nom: profile ? `${profile.prenom} ${profile.nom}` : '',
+            ortho_adresse: profile?.adresse || '',
+            ortho_cp: profile?.code_postal || '',
+            ortho_ville: profile?.ville || '',
+            ortho_tel: profile?.telephone || '',
+            ortho_email: profile?.email || '',
+            ortho_adeli_rpps: profile?.adeli_rpps || '',
+            patient_prenom: crbo.patient_prenom,
+            patient_nom: crbo.patient_nom,
+            patient_ddn: crbo.patient_ddn,
+            patient_classe: crbo.patient_classe,
+            bilan_date: crbo.bilan_date,
+            bilan_type: crbo.bilan_type,
+            medecin_nom: crbo.medecin_nom ?? '',
+            medecin_tel: crbo.medecin_tel ?? '',
+            medecin_date_prescription: crbo.medecin_date_prescription ?? '',
+            motif: crbo.motif ?? '',
+            test_utilise: crbo.test_utilise
+              ? String(crbo.test_utilise).split(',').map((t: string) => t.trim())
+              : [],
+            resultats_manuels: crbo.resultats ?? '',
+          },
+          structure: crbo.structure_json
+            ? applyGlossaireToObject(applyVocabToObject(crbo.structure_json))
+            : null,
+          fallbackCRBO: crbo.crbo_text || crbo.crbo_genere || '',
+          previousStructure,
+          previousBilanDate,
+        })
+      }
 
       // Promotion kanban : a_rediger → a_relire après download Word.
       // On ne régresse jamais un statut déjà avancé (a_relire ou termine).

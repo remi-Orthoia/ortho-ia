@@ -83,6 +83,90 @@ export default function HistoriquePage() {
     // de génération canvas + docx (souvent 1-3s sur gros CRBOs).
     playPrintAnimation(1500)
     try {
+      // ============ BRANCHE MATH (B-CM / B-CMado) ============
+      // Routage vers le renderer math dedie quand bilan_subtype est defini.
+      // Fix 2026-05-26 : avant ce patch, la liste historique appelait le
+      // renderer langage pour TOUS les CRBO, ce qui produisait un Word
+      // degrade pour les bilans math (pas de grille coloriee, markdown brut).
+      const isMath = crbo.bilan_subtype === 'b-cm' || crbo.bilan_subtype === 'b-cmado'
+      if (isMath) {
+        const { GRILLE_B_CM } = await import('@/lib/bilans/math/grille-b-cm')
+        const { GRILLE_B_CMADO } = await import('@/lib/bilans/math/grille-b-cmado')
+        const { generateBilanMathWord } = await import('@/lib/bilan-math-word-export')
+        const grille = crbo.bilan_subtype === 'b-cm' ? GRILLE_B_CM : GRILLE_B_CMADO
+
+        let epreuves: Record<string, any> = {}
+        let mode: 'initial' | 'renouvellement' = crbo.bilan_type === 'renouvellement' ? 'renouvellement' : 'initial'
+        try {
+          if (crbo.resultats) {
+            const parsed = JSON.parse(crbo.resultats)
+            if (parsed && typeof parsed === 'object') {
+              if (parsed.epreuves) epreuves = parsed.epreuves
+              if (parsed.mode === 'initial' || parsed.mode === 'renouvellement') mode = parsed.mode
+            }
+          }
+        } catch {
+          // ignore
+        }
+
+        const blob = await generateBilanMathWord({
+          grille,
+          draft: {
+            type: grille.id,
+            mode,
+            patient: {
+              prenom: crbo.patient_prenom || '',
+              nom: crbo.patient_nom || '',
+              date_naissance: crbo.patient_ddn || '',
+              classe: crbo.patient_classe || '',
+            },
+            anamnese: crbo.anamnese || '',
+            motif: crbo.motif || '',
+            bilanDate: crbo.bilan_date,
+            medecin: crbo.medecin_nom
+              ? {
+                  nom: crbo.medecin_nom,
+                  tel: crbo.medecin_tel || '',
+                  date_prescription: crbo.medecin_date_prescription || '',
+                }
+              : undefined,
+            comportementSeance: crbo.comportement_seance || '',
+            dureeSeanceMinutes: crbo.duree_seance_minutes ?? undefined,
+            epreuves,
+            updatedAt: Date.now(),
+          },
+          crboText: crbo.crbo_genere || crbo.crbo_text || '',
+          profile: profile
+            ? {
+                prenom: profile.prenom,
+                nom: profile.nom,
+                adresse: profile.adresse,
+                code_postal: profile.code_postal,
+                ville: profile.ville,
+                telephone: profile.telephone,
+                email: profile.email,
+                adeli_rpps: profile.adeli_rpps ?? null,
+              }
+            : null,
+          bilanDate: crbo.bilan_date,
+        })
+
+        const filename = `CRBO-${grille.label}-${crbo.patient_prenom || 'patient'}-${crbo.patient_nom || ''}-${new Date().toISOString().slice(0, 10)}.docx`
+          .replace(/[^a-zA-Z0-9.-]/g, '_')
+        const url = URL.createObjectURL(blob)
+        const a = document.createElement('a')
+        a.href = url
+        a.download = filename
+        document.body.appendChild(a)
+        a.click()
+        document.body.removeChild(a)
+        URL.revokeObjectURL(url)
+        playSwoosh()
+        setDownloading(prev => ({ ...prev, [crbo.id]: false }))
+        return
+      }
+
+      // ============ BRANCHE LANGAGE (par defaut) ============
       const { downloadCRBOWord } = await import('@/lib/word-export')
       // Si c'est un renouvellement avec un bilan précédent lié, on charge sa structure
       let previousStructure = null
