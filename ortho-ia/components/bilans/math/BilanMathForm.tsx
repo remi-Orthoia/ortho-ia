@@ -113,37 +113,67 @@ export default function BilanMathForm({ grille }: BilanMathFormProps) {
 
     const handoff = readMathBilanHandoff(grille.id)
     if (handoff) {
-      // Construit (ou enrichit) le draft avec le handoff. On ne remplace QUE
-      // les champs vides : si l'ortho avait déjà avancé sur ce bilan, sa
-      // saisie prime.
-      const base: BilanMathDraft = nextDraft ?? makeEmptyDraft(grille)
-      nextDraft = {
-        ...base,
-        // Le mode bilan vient du wizard (initial/renouvellement). Si l'ortho
-        // avait deja change le mode sur le form math, on prefere sa valeur.
-        mode: base.mode !== 'initial' ? base.mode : (handoff.bilanMode ?? base.mode),
-        patient: {
-          prenom: base.patient.prenom || handoff.patient.prenom,
-          nom: base.patient.nom || handoff.patient.nom,
-          date_naissance: base.patient.date_naissance || handoff.patient.date_naissance,
-          classe: base.patient.classe || handoff.patient.classe,
-        },
-        anamnese: base.anamnese || handoff.anamnese,
-        motif: base.motif || handoff.motif,
-        bilanDate: base.bilanDate || handoff.bilanDate,
-        medecin: base.medecin && (base.medecin.nom || base.medecin.tel)
-          ? base.medecin
-          : handoff.medecin,
-        comportementSeance: base.comportementSeance || handoff.comportementSeance,
-        dureeSeanceMinutes: base.dureeSeanceMinutes ?? handoff.dureeSeanceMinutes,
-        renouvellement: base.renouvellement ?? handoff.renouvellement,
-        updatedAt: Date.now(),
+      if (handoff.fromWizard) {
+        // ⚠️ Bug critique 2026-05-26 : si l'ortho a precedemment travaille
+        // un autre B-CMado, son ancien localStorage draft contenait le
+        // patient/anamnese/grille du precedent. Quand elle revient via le
+        // wizard pour un NOUVEAU patient, l'ancien merge avec `||` faisait
+        // gagner les anciennes valeurs (truthy) sur le handoff frais
+        // (le patient de Laurie 15 ans ecrasait Matuanui 9 ans).
+        //
+        // Solution : quand `fromWizard=true`, le wizard est la SOURCE DE
+        // VERITE et l'ortho commence un NOUVEAU bilan pour ce patient. On
+        // demarre depuis un draft VIDE (makeEmptyDraft) + on injecte UNIQUEMENT
+        // le contexte du handoff. L'ancien draft localStorage est ecrase
+        // au prochain auto-save (deps changed → debounce 400ms).
+        //
+        // ⚠️ ATTENTION : ca jette aussi les epreuves cotees de l'ancien
+        // draft. C'est INTENTIONNEL — sinon on garde une grille a moitie
+        // cotee pour un autre patient. Si l'ortho voulait continuer une
+        // grille en cours, elle ne doit pas re-passer par le wizard.
+        nextDraft = {
+          ...makeEmptyDraft(grille),
+          // Identite patient : 100% du handoff
+          patient: { ...handoff.patient },
+          // Contexte clinique : 100% du handoff
+          anamnese: handoff.anamnese ?? '',
+          motif: handoff.motif ?? '',
+          medecin: handoff.medecin,
+          comportementSeance: handoff.comportementSeance ?? '',
+          dureeSeanceMinutes: handoff.dureeSeanceMinutes,
+          mode: handoff.bilanMode ?? 'initial',
+          bilanDate: handoff.bilanDate,
+          renouvellement: handoff.renouvellement,
+          updatedAt: Date.now(),
+        }
+        setFromWizard(true)
+      } else {
+        const base: BilanMathDraft = nextDraft ?? makeEmptyDraft(grille)
+        // Acces direct au form (sidebar, bookmark, share lien). Pas de
+        // contexte canonique en amont, on merge SOFT : le handoff
+        // n'enrichit que les champs vides du draft existant. C'est le
+        // comportement historique pre-bug-critique.
+        nextDraft = {
+          ...base,
+          mode: base.mode !== 'initial' ? base.mode : (handoff.bilanMode ?? base.mode),
+          patient: {
+            prenom: base.patient.prenom || handoff.patient.prenom,
+            nom: base.patient.nom || handoff.patient.nom,
+            date_naissance: base.patient.date_naissance || handoff.patient.date_naissance,
+            classe: base.patient.classe || handoff.patient.classe,
+          },
+          anamnese: base.anamnese || handoff.anamnese,
+          motif: base.motif || handoff.motif,
+          bilanDate: base.bilanDate || handoff.bilanDate,
+          medecin: base.medecin && (base.medecin.nom || base.medecin.tel)
+            ? base.medecin
+            : handoff.medecin,
+          comportementSeance: base.comportementSeance || handoff.comportementSeance,
+          dureeSeanceMinutes: base.dureeSeanceMinutes ?? handoff.dureeSeanceMinutes,
+          renouvellement: base.renouvellement ?? handoff.renouvellement,
+          updatedAt: Date.now(),
+        }
       }
-      // Marqueur "vient du wizard" → masque les blocs Patient / Type / Anamnese
-      // pour eviter la duplication de saisie. Persiste dans le component state
-      // (pas dans le draft localStorage : si l'ortho ferme l'onglet puis
-      // revient sur le form, elle reverra les blocs editables normalement).
-      if (handoff.fromWizard) setFromWizard(true)
       clearMathBilanHandoff()
     }
 
