@@ -1655,6 +1655,25 @@ export async function generateCRBOWord(payload: WordExportPayload): Promise<Blob
     )
   }
 
+  // ===== MENTION CONFIDENTIALITE (italique, fin de document) =====
+  // Affichee SYSTEMATIQUEMENT sur tous les CRBO (initial, renouvellement,
+  // tous bilans confondus). Formulation officielle reprise des CRBO de
+  // reference (Justine Peyre, Anne Frouard) — secret medical + diffusion
+  // controlee aux seuls responsables legaux et medecin prescripteur.
+  children.push(
+    new Paragraph({
+      alignment: AlignmentType.CENTER,
+      spacing: { before: 400, after: 0 },
+      children: [new TextRun({
+        text: "Document confidentiel soumis au secret médical et légalement réservé en lecture aux seuls responsables légaux et médecin prescripteur, qui en contrôlent la diffusion et l'usage.",
+        size: 16,
+        font: FONT,
+        italics: true,
+        color: '707070',
+      })],
+    }),
+  )
+
   const doc = new Document({
     sections: [{
       properties: {

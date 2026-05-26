@@ -205,6 +205,21 @@ export default function BilanMathWordPreview({ grille, draft, generatedCRBO, bil
         <p style={{ margin: 0 }}>{orthoNom}</p>
         <p style={{ margin: 0, fontSize: 12, color: '#6b7280' }}>Orthophoniste</p>
       </footer>
+
+      {/* Mention de confidentialite — affichee a la fin de chaque CRBO,
+          identique au rendu Word (lib/bilan-math-word-export.ts). */}
+      <p style={{
+        marginTop: 28,
+        textAlign: 'center',
+        fontSize: 11,
+        fontStyle: 'italic',
+        color: '#707070',
+        lineHeight: 1.5,
+      }}>
+        Document confidentiel soumis au secret médical et légalement réservé en lecture
+        aux seuls responsables légaux et médecin prescripteur, qui en contrôlent la
+        diffusion et l&apos;usage.
+      </p>
     </div>
   )
 }

@@ -478,6 +478,20 @@ export async function generateBilanMathWord(payload: MathWordExportPayload): Pro
     }),
   )
 
+  // ===== MENTION CONFIDENTIALITE (italique, fin de document) =====
+  // Idem rendu langage (lib/word-export.ts) : formulation officielle reprise
+  // des CRBO de reference, affichee systematiquement sur tous les bilans.
+  children.push(
+    new Paragraph({
+      alignment: AlignmentType.CENTER,
+      spacing: { before: 400, after: 0 },
+      children: [text(
+        "Document confidentiel soumis au secret médical et légalement réservé en lecture aux seuls responsables légaux et médecin prescripteur, qui en contrôlent la diffusion et l'usage.",
+        { italic: true, color: '707070', size: FONT_SIZE_SMALL },
+      )],
+    }),
+  )
+
   // -------- Document final --------
 
   const doc = new Document({

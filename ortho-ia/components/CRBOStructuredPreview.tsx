@@ -424,6 +424,17 @@ export default function CRBOStructuredPreview({
           {structure.conclusion}
         </p>
       </Section>
+
+      {/* Mention de confidentialite — affichee a la fin de chaque CRBO,
+          identique au rendu Word et au rendu print historique. */}
+      <p
+        className="text-center italic text-xs px-4 mt-2"
+        style={{ color: 'var(--fg-3, #707070)', lineHeight: 1.5 }}
+      >
+        Document confidentiel soumis au secret médical et légalement réservé en lecture
+        aux seuls responsables légaux et médecin prescripteur, qui en contrôlent la
+        diffusion et l&apos;usage.
+      </p>
     </div>
   )
 }

@@ -300,6 +300,20 @@ export default function PrintCRBOPage() {
             {crbo.crbo_genere || '(Contenu CRBO indisponible)'}
           </pre>
         )}
+
+        {/* Mention de confidentialite (italique, bas de document) */}
+        <p style={{
+          marginTop: 28,
+          textAlign: 'center',
+          fontSize: 11,
+          fontStyle: 'italic',
+          color: '#707070',
+          lineHeight: 1.4,
+        }}>
+          Document confidentiel soumis au secret médical et légalement réservé en lecture
+          aux seuls responsables légaux et médecin prescripteur, qui en contrôlent la
+          diffusion et l&apos;usage.
+        </p>
       </main>
     </>
   )
