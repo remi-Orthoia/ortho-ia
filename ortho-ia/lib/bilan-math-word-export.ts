@@ -627,10 +627,12 @@ export async function generateBilanMathWord(payload: MathWordExportPayload): Pro
         const info = cellMap.get(`${niv.id}|${se.id}`)
         const w = colWidths[1 + i]
         if (!info) {
-          // Cellule vide : applique le fond du cycle si actif, sinon transparent.
-          // Ca demarque visuellement les blocs Collège / Cycle III / Cycle II
-          // a travers la largeur de la grille, parite avec le rendu ecran.
-          rowCells.push(cell('', { width: w, size: FONT_SIZE_SMALL, shading: cycleBg }))
+          // Cellule vide : laissee en BLANC (pas de cycleBg).
+          // Demande utilisateur 2026-05-26 : le tint cycle sur les cases vides
+          // creait une "marée de couleur" distrayante. Maintenant uniquement
+          // la cellule Niveau a gauche porte le cycleBg, le corps de la
+          // grille reste sobre.
+          rowCells.push(cell('', { width: w, size: FONT_SIZE_SMALL }))
           return
         }
         if (info.kind === 'grise') {
