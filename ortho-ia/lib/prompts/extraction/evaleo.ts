@@ -387,6 +387,39 @@ complementaire a ignorer pour \`percentile\`.
 Si la classe n'est pas claire dans le PDF → ''.
 
 **score_brut** : tel qu'affiche, format libre. Ex. "23/30", "78%", "12.5".
+
+🔒 **VALIDATION DENOMINATEUR — sois TRES rigoureux sur le "/N"** : le
+denominateur d'un score "X/N" est FIXE par la batterie EVALEO et ne
+varie pas d'un enfant a l'autre. Tu DOIS verifier que le N que tu lis
+sur le PDF correspond a la valeur attendue ci-dessous. Si tu lis un N
+different, RELIS le PDF — c'est tres probablement une mauvaise
+reconnaissance OCR / Vision (par exemple "6" lu comme "10").
+
+| Epreuve EVALEO | Score principal | Denominateur fixe |
+|---|---|---|
+| Dictee de pseudomots | Score pseudomots corrects | **/6** (jamais /10) |
+| Dictee de mots | Score mots corrects | **/18** (CE2 a 3e) |
+| Dictee de phrases | Score mots corrects | **/40** (variable selon niveau, 30-50) |
+| Lecture de mots | Score total | **/44** (22 + 22) |
+| Lecture de mots | Score serie 1 ou serie 2 | **/22** chacune |
+| Lecture de pseudomots | Score | **/22** |
+| Comprehension ecrite de phrases | Score | **/15** ou **/17** selon niveau |
+| Comprehension orale de phrases | Score | **/15** ou **/17** selon niveau |
+| Programmation orale de phrases | Score | **/21** |
+| Repetition de phrases complexes | Score MS | **/15** ou **/16** |
+| Decision orthographique | Score corrects | **/7** |
+| Decision orthographique | Erreurs linguistiques | **/4** |
+| Decision orthographique | Erreurs sur flexions | **/3** |
+| Rappel - Item | Score | **/10** |
+| Repetition de chiffres endroit | Score endroit | **/18** |
+| Repetition de chiffres envers | Score envers | **/18** |
+| Stroop | Score 1 a 4 | **/45** chacun |
+
+⚠️ Si tu lis un denominateur qui n'est PAS dans cette table pour
+l'epreuve correspondante, c'est TRES PROBABLEMENT une erreur de Vision.
+Privilegie le denominateur canonique de la table — l'utilisateur le
+corrigera s'il y a une exception.
+
 **temps** : en secondes (ms pour empan_visuo_attentionnel). Format libre.
 **observation** : reprendre une eventuelle annotation qualitative ortho.
 
