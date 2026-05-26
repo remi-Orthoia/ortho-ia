@@ -396,42 +396,18 @@ function NouveauCRBOContent() {
       // entre orthos qui ont partage ce navigateur avant le fix).
       try { localStorage.removeItem(LEGACY_DRAFT_KEY) } catch {}
 
-      // Reprendre un brouillon s'il y en a un
-      // Skippé si on charge un prefill (les résultats arrivent du screenshot,
-      // pas le brouillon) OU un renouvellement OU une commande vocale
-      // (les données viennent de Whisper+IA, on n'écrase pas).
+      // ⚠️ Auto-restore desactive (demande utilisateur 2026-05-26) :
+      // l'ancien comportement restaurait silencieusement un brouillon
+      // localStorage au montage, ce qui faisait fuiter les donnees du
+      // patient A dans le formulaire du patient B quand l'ortho avait
+      // abandonne un CRBO en cours. Plus de pre-remplissage automatique :
+      // chaque ouverture de /dashboard/nouveau-crbo demarre avec un form
+      // vide (sauf flux explicites : prefill URL, renouvellement, voice
+      // command qui passent par d'autres chemins traites plus bas).
+      // On purge en passant la cle eventuellement laissee par l'ancien
+      // mecanisme, pour nettoyer les comptes deja touches.
       const prefillIdFromUrl = searchParams.get('prefill')
-      try {
-        const raw = localStorage.getItem(scopedKey)
-        if (raw && !patientIdFromUrl && !prefillIdFromUrl && !isRenouvellement && !isVoiceCommand) {
-          const draft = JSON.parse(raw) as {
-            step: number
-            formData: Partial<CRBOFormData>
-            savedAt?: number
-          }
-          const savedAt = draft.savedAt || 0
-          const ageMs = savedAt ? Date.now() - savedAt : 0
-          if (savedAt && ageMs > DRAFT_MAX_AGE_MS) {
-            // Brouillon > 30j : purge silencieuse (abandon presume).
-            try { localStorage.removeItem(scopedKey) } catch {}
-          } else if (draft?.formData) {
-            setFormData(prev => ({ ...prev, ...draft.formData }))
-            setCurrentStep(draft.step || 1)
-            // Banniere visible pour que l'ortho realise que son ancien
-            // brouillon a ete restaure (sinon elle peut ecraser sans s'en
-            // rendre compte un dossier en cours).
-            if (savedAt) {
-              const d = new Date(savedAt)
-              const ageLabel = `${d.toLocaleDateString('fr-FR')} a ${d.toLocaleTimeString('fr-FR', { hour: '2-digit', minute: '2-digit' })}`
-              setPrefillBanner(`📂 Brouillon restaure (etape ${draft.step || 1}) — sauvegarde le ${ageLabel}. Verifiez puis poursuivez.`)
-            } else {
-              setPrefillBanner(`📂 Brouillon restaure a l'etape ${draft.step || 1}. Verifiez puis poursuivez.`)
-            }
-          }
-        }
-      } catch {
-        // brouillon corrompu → on l'ignore
-      }
+      try { localStorage.removeItem(scopedKey) } catch {}
 
       // Pré-remplissage renouvellement : on charge le CRBO précédent en
       // best-effort. Si le fetch échoue, l'ortho voit juste un form normal
@@ -594,35 +570,12 @@ function NouveauCRBOContent() {
     }
   }
 
-  // Auto-save : DEUX mecanismes complementaires.
-  //
-  // BUG corrige : auparavant un setInterval(15s) etait recree a chaque
-  // modif de formData (dependance [formData, currentStep]), donc l'horloge
-  // se reinitialisait a chaque frappe et n'atteignait JAMAIS 15s en
-  // saisie continue. Resultat : aucun auto-save pendant la frappe.
-  //
-  // Nouveau systeme :
-  //  1) Debounce 1.5s : sauvegarde 1.5s apres la derniere modification.
-  //     Capture les arrets naturels entre phrases / champs.
-  //  2) Filet de securite : interval fixe 15s independant des changements,
-  //     via une ref pour eviter de recreer l'interval.
-
-  // Mecanisme 1 : debounce 1.5s
-  useEffect(() => {
-    if (showResult) return
-    const t = setTimeout(() => { persistDraft() }, 1_500)
-    return () => clearTimeout(t)
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [formData, currentStep, showResult])
-
-  // Mecanisme 2 : filet de securite 15s (ref pattern, deps stables)
-  const persistDraftRef = useRef(persistDraft)
-  persistDraftRef.current = persistDraft
-  useEffect(() => {
-    if (showResult) return
-    const id = setInterval(() => { persistDraftRef.current() }, 15_000)
-    return () => clearInterval(id)
-  }, [showResult])
+  // Auto-save desactive (demande utilisateur 2026-05-26) : ecrivait
+  // dans localStorage toutes les 1.5s (debounce) + 15s (interval), ce
+  // qui alimentait l'auto-restore qui fuitait les donnees d'un patient
+  // sur le suivant. Sans restore, l'autosave n'a plus de but — desactive
+  // pour eviter les ecritures inutiles. Le bouton "Sauvegarder et
+  // reprendre plus tard" est egalement retire (cf. plus bas).
 
   // Tick 1s pour rafraîchir le "sauvegardé il y a X s"
   useEffect(() => {
@@ -653,20 +606,12 @@ function NouveauCRBOContent() {
         setError("Ce CRBO vient d'etre genere ou supprime dans un autre onglet — fermez cet onglet pour eviter d'ecraser des donnees.")
         return
       }
-      try {
-        const draft = JSON.parse(e.newValue) as {
-          step: number
-          formData: Partial<CRBOFormData>
-          savedAt?: number
-        }
-        if (draft?.formData) {
-          setFormData(prev => ({ ...prev, ...draft.formData }))
-          if (typeof draft.step === 'number') setCurrentStep(draft.step)
-          if (draft.savedAt) setLastSavedAt(draft.savedAt)
-        }
-      } catch {
-        // Draft corrompu venant d'un autre onglet → on ignore.
-      }
+      // ⚠️ Restauration cross-tab de formData desactivee (2026-05-26) :
+      // l'ancien comportement absorbait silencieusement les changements
+      // localStorage d'autres onglets, ce qui pouvait fuiter les donnees
+      // d'un patient sur le formulaire en cours. Avec l'autosave desactive,
+      // aucun draft ne devrait etre ecrit, mais on bloque defensivement
+      // toute tentative de restauration silencieuse depuis localStorage.
     }
     window.addEventListener('storage', onStorage)
     return () => window.removeEventListener('storage', onStorage)
@@ -1246,8 +1191,9 @@ function NouveauCRBOContent() {
 
       if (!response.ok) {
         if (response.status === 401) {
-          persistDraft()
-          setError('Session expirée. Votre saisie est sauvegardée, vous serez redirigé·e vers la page de connexion.')
+          // Auto-save retire (cf. 2026-05-26 — fuite entre patients).
+          // L'ortho devra resaisir apres reconnexion. Message ajuste.
+          setError('Session expirée. Vous serez redirigé·e vers la page de connexion (la saisie en cours sera perdue).')
           setTimeout(() => {
             router.push(`/auth/login?redirect=${encodeURIComponent('/dashboard/nouveau-crbo')}`)
           }, 2500)
@@ -2388,22 +2334,9 @@ Astuce : tapez /fatigue, /anxiete, /encouragements… pour réutiliser vos formu
               </>
             )}
 
-            {/* Sauvegarde brouillon en fin d'étape 4 — fin de la phase "En séance" */}
-            <div className="bg-blue-50 border border-blue-200 rounded-lg p-4 flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
-              <div>
-                <p className="text-sm font-medium text-blue-900">Pause jusqu'à après la séance ?</p>
-                <p className="text-xs text-blue-700 mt-0.5">
-                  Sauvegardez ce que vous avez saisi. Vous retrouverez tout à votre prochaine connexion.
-                </p>
-              </div>
-              <button
-                type="button"
-                onClick={handleSaveDraft}
-                className="inline-flex items-center justify-center gap-2 px-4 py-2.5 bg-white border border-blue-300 text-blue-700 rounded-lg text-sm font-medium hover:bg-blue-100 transition whitespace-nowrap"
-              >
-                💾 Sauvegarder et reprendre plus tard
-              </button>
-            </div>
+            {/* Bouton "Sauvegarder et reprendre plus tard" retire 2026-05-26 :
+                le mecanisme alimentait l'auto-restore qui faisait fuiter les
+                donnees d'un patient sur le suivant. Cf. handleSaveDraft. */}
           </div>
         )}
 
