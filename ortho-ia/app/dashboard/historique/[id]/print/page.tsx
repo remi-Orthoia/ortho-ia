@@ -47,6 +47,7 @@ interface Profile {
   ville?: string | null
   telephone?: string | null
   email?: string | null
+  adeli_rpps?: string | null
 }
 
 export default function PrintCRBOPage() {
@@ -211,6 +212,11 @@ export default function PrintCRBOPage() {
             <p style={{ margin: 0, fontSize: 12, color: '#4B5563' }}>
               {profile.telephone}{profile.telephone && profile.email ? ' · ' : ''}{profile.email}
             </p>
+            {profile.adeli_rpps && (
+              <p style={{ margin: 0, fontSize: 12, color: '#4B5563' }}>
+                {profile.adeli_rpps}
+              </p>
+            )}
           </header>
         )}
 

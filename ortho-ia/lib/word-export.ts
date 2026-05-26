@@ -258,6 +258,7 @@ export interface WordExportPayload {
     ortho_ville?: string
     ortho_tel?: string
     ortho_email?: string
+    ortho_adeli_rpps?: string
     patient_prenom: string
     patient_nom: string
     patient_ddn?: string
@@ -540,6 +541,15 @@ export async function generateCRBOWord(payload: WordExportPayload): Promise<Blob
     new Paragraph({ children: [new TextRun({ text: `${formData.ortho_cp || ''} ${formData.ortho_ville || ''}`.trim(), size: FONT_SIZE_NORMAL, font: FONT })] }),
     new Paragraph({ children: [new TextRun({ text: formData.ortho_tel || '', size: FONT_SIZE_NORMAL, font: FONT })] }),
     new Paragraph({ children: [new TextRun({ text: formData.ortho_email || '', size: FONT_SIZE_NORMAL, font: FONT })] }),
+  )
+  // Ligne supplementaire numero professionnel — rendue uniquement si saisi
+  // dans le profil. Les comptes anciens sans le champ n'affichent rien.
+  if ((formData.ortho_adeli_rpps || '').trim()) {
+    children.push(
+      new Paragraph({ children: [new TextRun({ text: formData.ortho_adeli_rpps!.trim(), size: FONT_SIZE_NORMAL, font: FONT })] }),
+    )
+  }
+  children.push(
     new Paragraph({ children: [new TextRun({ text: '' })] }),
   )
 

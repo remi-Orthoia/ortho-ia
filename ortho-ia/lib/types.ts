@@ -55,6 +55,10 @@ export interface CRBOFormData {
   ortho_ville: string
   ortho_tel: string
   ortho_email: string
+  /** Numero ADELI ou RPPS de l'orthophoniste, libelle libre. Affiche en
+   *  en-tete de chaque CRBO. Optionnel — tolere vide pour les anciens
+   *  comptes qui n'ont pas saisi le numero. */
+  ortho_adeli_rpps?: string
   
   // Étape 2: Infos patient
   patient_prenom: string

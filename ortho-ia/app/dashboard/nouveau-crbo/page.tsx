@@ -302,6 +302,7 @@ function NouveauCRBOContent() {
         ortho_ville: profile.ville || '',
         ortho_tel: profile.telephone || '',
         ortho_email: profile.email || user.email || '',
+        ortho_adeli_rpps: profile.adeli_rpps || '',
       }))
       setProfileChecked(true)
 

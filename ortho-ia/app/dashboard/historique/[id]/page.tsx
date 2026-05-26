@@ -171,6 +171,7 @@ export default function CRBODetailPage() {
           ortho_ville: profile?.ville || '',
           ortho_tel: profile?.telephone || '',
           ortho_email: profile?.email || '',
+          ortho_adeli_rpps: profile?.adeli_rpps || '',
           patient_prenom: crbo.patient_prenom,
           patient_nom: crbo.patient_nom,
           patient_ddn: crbo.patient_ddn,

@@ -78,7 +78,7 @@ export default function BilanMathWordPreview({ grille, draft, generatedCRBO, bil
         if (!user) return
         const { data } = await supabase
           .from('profiles')
-          .select('prenom, nom, adresse, code_postal, ville, telephone, email')
+          .select('prenom, nom, adresse, code_postal, ville, telephone, email, adeli_rpps')
           .eq('id', user.id)
           .single()
         if (!cancelled) setProfile(data ?? null)

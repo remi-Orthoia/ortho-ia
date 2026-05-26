@@ -65,6 +65,7 @@ interface OrthoProfile {
   ville?: string | null
   telephone?: string | null
   email?: string | null
+  adeli_rpps?: string | null
 }
 
 /** Libellés et classes pour le badge de statut affiché dans chaque ligne. */
@@ -167,7 +168,7 @@ export default function DashboardPage() {
     // Profil ortho (pour le header Word + bandeau salutation)
     const { data: prof } = await supabase
       .from('profiles')
-      .select('prenom, nom, adresse, code_postal, ville, telephone, email')
+      .select('prenom, nom, adresse, code_postal, ville, telephone, email, adeli_rpps')
       .eq('id', user.id)
       .single()
     if (prof) {
@@ -342,6 +343,7 @@ export default function DashboardPage() {
             ortho_ville: profile?.ville || '',
             ortho_tel: profile?.telephone || '',
             ortho_email: profile?.email || '',
+            ortho_adeli_rpps: profile?.adeli_rpps || '',
             patient_prenom: crbo.patient_prenom,
             patient_nom: crbo.patient_nom,
             patient_ddn: crbo.patient_ddn,

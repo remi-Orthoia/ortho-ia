@@ -37,6 +37,8 @@ export interface OrthoProfile {
   ville?: string | null
   telephone?: string | null
   email?: string | null
+  /** Numero ADELI ou RPPS, libelle libre. Affiche en en-tete si rempli. */
+  adeli_rpps?: string | null
 }
 
 export interface MathWordExportPayload {
@@ -190,6 +192,9 @@ export async function generateBilanMathWord(payload: MathWordExportPayload): Pro
   if (orthoCpVille) children.push(para([text(orthoCpVille)]))
   if (profile?.telephone) children.push(para([text(profile.telephone)]))
   if (profile?.email) children.push(para([text(profile.email)]))
+  if (profile?.adeli_rpps && profile.adeli_rpps.trim()) {
+    children.push(para([text(profile.adeli_rpps.trim())]))
+  }
   children.push(para([text('')]))
 
   // ===== TITRE =====
