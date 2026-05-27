@@ -13,6 +13,7 @@ import SnippetTextarea from '@/components/SnippetTextarea'
 import Tooltip from '@/components/Tooltip'
 import ConfettiBurst from '@/components/ConfettiBurst'
 import CRBOStructuredPreview from '@/components/CRBOStructuredPreview'
+import { saveDraftToDb, deleteDraftFromDb } from '@/lib/draft-sync'
 import FileDropZone from '@/components/FileDropZone'
 import ShareCRBOButton from '@/components/ShareCRBOButton'
 import MicButton from '@/components/MicButton'
@@ -395,18 +396,69 @@ function NouveauCRBOContent() {
       // entre orthos qui ont partage ce navigateur avant le fix).
       try { localStorage.removeItem(LEGACY_DRAFT_KEY) } catch {}
 
-      // ⚠️ Auto-restore desactive (demande utilisateur 2026-05-26) :
-      // l'ancien comportement restaurait silencieusement un brouillon
-      // localStorage au montage, ce qui faisait fuiter les donnees du
-      // patient A dans le formulaire du patient B quand l'ortho avait
-      // abandonne un CRBO en cours. Plus de pre-remplissage automatique :
-      // chaque ouverture de /dashboard/nouveau-crbo demarre avec un form
-      // vide (sauf flux explicites : prefill URL, renouvellement, voice
-      // command qui passent par d'autres chemins traites plus bas).
-      // On purge en passant la cle eventuellement laissee par l'ancien
-      // mecanisme, pour nettoyer les comptes deja touches.
+      // Auto-restore SUR DEMANDE EXPLICITE uniquement.
+      // Historique du bug 2026-05-26 : l'ancien comportement restaurait
+      // silencieusement un brouillon localStorage au montage, ce qui faisait
+      // fuiter les donnees du patient A dans le formulaire du patient B
+      // quand l'ortho ouvrait /dashboard/nouveau-crbo pour un nouveau patient.
+      //
+      // Nouvelle regle (2026-05-27) :
+      //  - Ortho clique "Reprendre" sur le bandeau dashboard -> arrive ici
+      //    avec ?reprendre=1 -> on charge le brouillon localStorage.
+      //  - Ortho ouvre /dashboard/nouveau-crbo via sidebar / bookmark / URL
+      //    directe -> on PURGE le brouillon et on demarre frais (anti-fuite
+      //    patient).
+      //
+      // Combinaison reprise + auto-save (15s) = travail jamais perdu sans
+      // friction d'action manuelle, et zero fuite patient.
       const prefillIdFromUrl = searchParams.get('prefill')
-      try { localStorage.removeItem(scopedKey) } catch {}
+      const wantsReprendre = searchParams.get('reprendre') === '1'
+      if (wantsReprendre) {
+        try {
+          // 1. Tente d'abord la DB (filet multi-device). On compare avec
+          //    localStorage et on prend le plus recent — couvre le cas
+          //    "ortho a saisi sur PC A, ferme l'onglet, ouvre sur PC B".
+          const { loadDraftFromDb, pickFreshestSource } = await import('@/lib/draft-sync')
+          const dbDraft = await loadDraftFromDb<{
+            step?: number
+            formData?: CRBOFormData
+            savedAt?: number
+          }>(user.id, 'langage')
+          const raw = localStorage.getItem(scopedKey)
+          let localDraft: { step?: number; formData?: CRBOFormData; savedAt?: number } | null = null
+          if (raw) {
+            try { localDraft = JSON.parse(raw) } catch { localDraft = null }
+          }
+          const source = pickFreshestSource(
+            localDraft?.savedAt ?? null,
+            dbDraft?.updatedAt ?? null,
+          )
+          const draft = source === 'db' && dbDraft ? dbDraft.data : localDraft
+          if (draft && draft.formData) {
+            const savedAt = draft.savedAt || (source === 'db' && dbDraft ? new Date(dbDraft.updatedAt).getTime() : 0)
+            const ageMs = savedAt ? Date.now() - savedAt : 0
+            if (!savedAt || ageMs <= DRAFT_MAX_AGE_MS) {
+              setFormData(prev => ({ ...prev, ...draft.formData! }))
+              if (typeof draft.step === 'number' && draft.step >= 1 && draft.step <= 4) {
+                setCurrentStep(draft.step)
+              }
+              const sourceLabel = source === 'db' ? ' (récupéré depuis votre compte)' : ''
+              setPrefillBanner(`Brouillon repris${sourceLabel}. Vos modifications sont sauvegardées toutes les 15 secondes.`)
+            } else {
+              // Trop ancien -> purge defensif local + DB
+              try { localStorage.removeItem(scopedKey) } catch {}
+            }
+          }
+        } catch {
+          // localStorage corrompu OU DB inaccessible : on ignore et on
+          // demarre frais. L'ortho peut toujours retaper.
+        }
+      } else {
+        // Pas de demande explicite de reprise -> purge defensive locale.
+        // Note : on garde le draft DB pour permettre une reprise multi-device
+        // si l'ortho clique "Reprendre" depuis un autre appareil ensuite.
+        try { localStorage.removeItem(scopedKey) } catch {}
+      }
 
       // Pré-remplissage renouvellement : on charge le CRBO précédent en
       // best-effort. Si le fetch échoue, l'ortho voit juste un form normal
@@ -537,13 +589,21 @@ function NouveauCRBOContent() {
       // sécurisée.
       setSavingFlash(true)
       // savedAt : horodatage pour la banniere de restauration + purge >30j.
-      localStorage.setItem(draftKey, JSON.stringify({
+      const payload = {
         step: currentStep,
         formData: serializable,
         savedAt: Date.now(),
-      }))
+      }
+      localStorage.setItem(draftKey, JSON.stringify(payload))
       setLastSavedAt(Date.now())
       setTimeout(() => setSavingFlash(false), 500)
+      // Sync DB best-effort en background. Si la DB est down, le draft
+      // reste sauve en localStorage et l'ortho ne voit aucune difference.
+      // Lecture du user.id depuis draftKey ('ortho-ia:crbo-draft:{user.id}').
+      const userId = draftKey.split(':').pop() ?? ''
+      if (userId) {
+        saveDraftToDb(userId, 'langage', payload, currentStep).catch(() => null)
+      }
       return true
     } catch (e) {
       setSavingFlash(false)
@@ -569,12 +629,27 @@ function NouveauCRBOContent() {
     }
   }
 
-  // Auto-save desactive (demande utilisateur 2026-05-26) : ecrivait
-  // dans localStorage toutes les 1.5s (debounce) + 15s (interval), ce
-  // qui alimentait l'auto-restore qui fuitait les donnees d'un patient
-  // sur le suivant. Sans restore, l'autosave n'a plus de but — desactive
-  // pour eviter les ecritures inutiles. Le bouton "Sauvegarder et
-  // reprendre plus tard" est egalement retire (cf. plus bas).
+  // Auto-save REACTIVE (2026-05-27) avec scope par user.id + reprise sur
+  // demande explicite (?reprendre=1). Historique : auto-save desactive
+  // 2026-05-26 a cause d'une fuite patient via l'auto-restore silencieux.
+  // Le fix est de coupler la reprise a un parametre URL explicit, et
+  // l'auto-save peut donc reprendre son rythme sans risque.
+  //
+  // Debounce : 15s d'inactivite apres la derniere frappe. Pourquoi pas
+  // moins : ecriture localStorage est synchrone et bloque le main thread
+  // (~5-20ms sur draft volumineux). Debounce court = micro-jank a chaque
+  // frappe. Pourquoi pas plus : si l'ortho ferme l'onglet ou perd sa
+  // session, on veut au pire 15s de perdues, pas 1 min.
+  //
+  // No-op tant que draftKey est null (auth pas resolue) ou que l'onglet
+  // est stale (autre onglet vient de sauvegarder).
+  useEffect(() => {
+    if (!draftKey || staleTab) return
+    const handle = setTimeout(() => {
+      persistDraft()
+    }, 15_000)
+    return () => clearTimeout(handle)
+  }, [formData, currentStep, draftKey, staleTab])
 
   // Tick 1s pour rafraîchir le "sauvegardé il y a X s"
   useEffect(() => {
@@ -1210,8 +1285,23 @@ function NouveauCRBOContent() {
         selectedMedecinId,
       }
       try {
-        sessionStorage.setItem('ortho-ia:crbo-handoff', JSON.stringify(handoff))
+        // Clé scopée par user.id pour eviter qu'un autre onglet (meme user
+        // a 2 sessions, ou poste partage) ne contamine ce handoff. Le
+        // user.id est deja dispose via la session Supabase chargee plus
+        // haut (presence de draftKey scopée = user resolu).
+        const handoffUserId = draftKey?.split(':').pop() ?? ''
+        const handoffKey = handoffUserId
+          ? `ortho-ia:crbo-handoff:${handoffUserId}`
+          : 'ortho-ia:crbo-handoff'
+        sessionStorage.setItem(handoffKey, JSON.stringify(handoff))
+        // Purge l'ancienne clé non-scopée si elle traine (migration douce).
+        try { sessionStorage.removeItem('ortho-ia:crbo-handoff') } catch {}
         if (draftKey) localStorage.removeItem(draftKey)
+        // Purge le draft DB en parallele : le CRBO est en phase 2 (synthesize),
+        // plus besoin du brouillon. Best-effort silencieux.
+        if (handoffUserId) {
+          deleteDraftFromDb(handoffUserId, 'langage').catch(() => null)
+        }
       } catch (e) {
         // Si sessionStorage échoue (mode privé, quota dépassé, navigateur exotique),
         // on NE navigue PAS vers /resultats — sinon la page suivante ne trouve

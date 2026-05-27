@@ -460,7 +460,7 @@ export default function DashboardPage() {
             </p>
           </div>
           <Link
-            href="/dashboard/nouveau-crbo"
+            href="/dashboard/nouveau-crbo?reprendre=1"
             className="px-4 py-2 rounded-lg bg-amber-600 text-white text-sm font-semibold hover:bg-amber-700 whitespace-nowrap shadow-sm"
           >
             Reprendre

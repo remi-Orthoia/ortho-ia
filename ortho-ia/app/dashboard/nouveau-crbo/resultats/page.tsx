@@ -56,7 +56,14 @@ interface Handoff {
   _insertedCrboId?: string | null
 }
 
-const HANDOFF_KEY = 'ortho-ia:crbo-handoff'
+// Clé legacy non-scopée par user (collision possible si 2 onglets de 2 orthos
+// sur le meme navigateur). Conservée pour migration douce.
+const LEGACY_HANDOFF_KEY = 'ortho-ia:crbo-handoff'
+// Construit la cle scopée pour le user courant. Si user.id absent (rare,
+// session perdue entre extract et synthesize), fallback sur la legacy.
+function buildHandoffKey(userId: string | null | undefined): string {
+  return userId ? `ortho-ia:crbo-handoff:${userId}` : LEGACY_HANDOFF_KEY
+}
 
 function HappyNeuronCanvas({ groups, title }: { groups: ChartGroup[]; title: string }) {
   const ref = useRef<HTMLCanvasElement>(null)
@@ -191,6 +198,10 @@ export default function ResultatsPage() {
   const [generating, setGenerating] = useState(false)
   const [error, setError] = useState('')
   const [handoff, setHandoff] = useState<Handoff | null>(null)
+  // Cle handoff scopée par user.id, calculee une fois au mount via le hook
+  // d'hydratation. Utilisee pour les operations sessionStorage suivantes
+  // (idempotence INSERT, cleanup post-succes) afin de garder la coherence.
+  const [handoffKey, setHandoffKey] = useState<string>(LEGACY_HANDOFF_KEY)
   const [anamneseEdit, setAnamneseEdit] = useState('')
   const [motifEdit, setMotifEdit] = useState('')
   const [orthoComments, setOrthoComments] = useState<Record<string, string>>({})
@@ -211,43 +222,69 @@ export default function ResultatsPage() {
   }>(null)
 
   useEffect(() => {
-    try {
-      const raw = sessionStorage.getItem(HANDOFF_KEY)
-      if (!raw) {
-        // Pas de handoff : l'utilisatrice est arrivée ici directement (pas via le form).
-        router.push('/dashboard/nouveau-crbo')
-        return
-      }
-      const data = JSON.parse(raw) as Handoff
-      if (!data.extracted || !data.formData) {
-        router.push('/dashboard/nouveau-crbo')
-        return
-      }
-      setHandoff(data)
-      setAnamneseEdit(data.extracted.anamnese_redigee || '')
-      setMotifEdit(data.extracted.motif_reformule || '')
-      // Pré-remplit les textareas avec la suggestion IA initiale produite en
-      // phase 1. L'ortho peut la valider, modifier ou compléter — la phase 2
-      // reformulera le contenu final en prose pro.
-      const initialComments: Record<string, string> = {}
-      const initialMocaEpreuveComments: Record<string, string> = {}
-      for (const d of data.extracted.domains) {
-        if (d.commentaire?.trim()) initialComments[d.nom] = d.commentaire.trim()
-        // Pré-remplit les commentaires par épreuve (MoCA). L'IA met le
-        // commentaire clinique propre à chaque domaine cognitif dans
-        // épreuve.commentaire — on l'expose à l'ortho pour validation.
-        for (const e of d.epreuves) {
-          if (e.commentaire?.trim()) initialMocaEpreuveComments[e.nom] = e.commentaire.trim()
+    let cancelled = false
+    ;(async () => {
+      try {
+        // Récupère user.id pour scoper la clé handoff (anti-collision entre
+        // 2 onglets / 2 orthos sur le meme navigateur). Migration douce :
+        // si la clé scopée est vide mais la clé legacy a un payload, on
+        // la migre une fois.
+        let userId: string | null = null
+        try {
+          const supabase = createClient()
+          const { data: { user } } = await supabase.auth.getUser()
+          userId = user?.id ?? null
+        } catch {}
+        if (cancelled) return
+        const scopedKey = buildHandoffKey(userId)
+        setHandoffKey(scopedKey)
+        let raw = sessionStorage.getItem(scopedKey)
+        if (!raw && userId) {
+          // Migration : recupere l'ancien handoff non-scopée et migre.
+          const legacy = sessionStorage.getItem(LEGACY_HANDOFF_KEY)
+          if (legacy) {
+            sessionStorage.setItem(scopedKey, legacy)
+            sessionStorage.removeItem(LEGACY_HANDOFF_KEY)
+            raw = legacy
+          }
         }
+        if (!raw) {
+          // Pas de handoff : l'utilisatrice est arrivée ici directement (pas via le form).
+          router.push('/dashboard/nouveau-crbo')
+          return
+        }
+        const data = JSON.parse(raw) as Handoff
+        if (!data.extracted || !data.formData) {
+          router.push('/dashboard/nouveau-crbo')
+          return
+        }
+        setHandoff(data)
+        setAnamneseEdit(data.extracted.anamnese_redigee || '')
+        setMotifEdit(data.extracted.motif_reformule || '')
+        // Pré-remplit les textareas avec la suggestion IA initiale produite en
+        // phase 1. L'ortho peut la valider, modifier ou compléter — la phase 2
+        // reformulera le contenu final en prose pro.
+        const initialComments: Record<string, string> = {}
+        const initialMocaEpreuveComments: Record<string, string> = {}
+        for (const d of data.extracted.domains) {
+          if (d.commentaire?.trim()) initialComments[d.nom] = d.commentaire.trim()
+          // Pré-remplit les commentaires par épreuve (MoCA). L'IA met le
+          // commentaire clinique propre à chaque domaine cognitif dans
+          // épreuve.commentaire — on l'expose à l'ortho pour validation.
+          for (const e of d.epreuves) {
+            if (e.commentaire?.trim()) initialMocaEpreuveComments[e.nom] = e.commentaire.trim()
+          }
+        }
+        setOrthoComments(initialComments)
+        setMocaEpreuveComments(initialMocaEpreuveComments)
+      } catch (e) {
+        console.error('Handoff illisible:', e)
+        router.push('/dashboard/nouveau-crbo')
+      } finally {
+        if (!cancelled) setLoading(false)
       }
-      setOrthoComments(initialComments)
-      setMocaEpreuveComments(initialMocaEpreuveComments)
-    } catch (e) {
-      console.error('Handoff illisible:', e)
-      router.push('/dashboard/nouveau-crbo')
-    } finally {
-      setLoading(false)
-    }
+    })()
+    return () => { cancelled = true }
   }, [router])
 
   const handleCommentChange = (domainName: string, value: string) => {
@@ -518,7 +555,7 @@ export default function ResultatsPage() {
         if (insertedCrboId) {
           try {
             const updated: Handoff = { ...handoff, _insertedCrboId: insertedCrboId }
-            sessionStorage.setItem(HANDOFF_KEY, JSON.stringify(updated))
+            sessionStorage.setItem(handoffKey, JSON.stringify(updated))
             setHandoff(updated)
           } catch (e) {
             console.warn('Handoff idempotence non persisté:', e)
@@ -561,7 +598,7 @@ export default function ResultatsPage() {
       // posés ci-dessus) — c'est l'acte de GÉNÉRATION qui consomme un quota,
       // pas le téléchargement. Le chaînage de bilan se fera depuis le dashboard
       // après que l'ortho ait téléchargé / fermé la preview.
-      sessionStorage.removeItem(HANDOFF_KEY)
+      sessionStorage.removeItem(handoffKey)
       if (insertedCrboId) {
         try {
           sessionStorage.setItem('orthoia.feedback-pending', insertedCrboId)
@@ -583,7 +620,7 @@ export default function ResultatsPage() {
         previousBilanDate: fd.bilan_precedent_date,
       })
       playSwoosh()
-      sessionStorage.removeItem(HANDOFF_KEY)
+      sessionStorage.removeItem(handoffKey)
     } catch (err: any) {
       setError(err?.message || 'Erreur inattendue lors de la génération.')
     } finally {

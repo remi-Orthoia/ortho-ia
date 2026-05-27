@@ -10,6 +10,7 @@ import BilanMathWordPreview from './BilanMathWordPreview'
 import RenouvellementBlock from './RenouvellementBlock'
 import GenerationLoader from '@/components/GenerationLoader'
 import MicButton from '@/components/MicButton'
+import AutoSaveIndicator from '@/components/AutoSaveIndicator'
 import { useToast } from '@/components/Toast'
 import { createClient } from '@/lib/supabase'
 import {
@@ -27,6 +28,7 @@ import type {
 import { readMathBilanHandoff, clearMathBilanHandoff } from '@/lib/bilans/math/handoff'
 import DemoAutofillButton from '@/components/DemoAutofillButton'
 import { buildDemoMathDraft } from '@/lib/demo-autofill'
+import { saveDraftToDb, loadDraftFromDb, deleteDraftFromDb, pickFreshestSource, type DraftKind } from '@/lib/draft-sync'
 
 /**
  * Formulaire complet d'un bilan B-CM / B-CMado en mode MATRICE 2D.
@@ -39,10 +41,18 @@ import { buildDemoMathDraft } from '@/lib/demo-autofill'
  *      notes brutes + bouton "Générer avec l'IA" + texte IA éditable
  *   4. Bouton "Générer le CRBO" + preview du CRBO complet
  *
- * Persistance localStorage par grille.id avec debounce 400ms.
+ * Persistance localStorage scopée par user.id + grille.id avec debounce 400ms.
+ * TTL 30 jours sur les drafts inactifs.
  */
 
+// Cle prefix scoped par user.id + grille.id pour eviter qu'un draft ortho A
+// ecrase celui d'ortho B sur poste partage cabinet. Pattern aligne sur le
+// formulaire CRBO langage (cf. app/dashboard/nouveau-crbo/page.tsx).
 const DRAFT_KEY_PREFIX = 'ortho-ia:bilan-math-draft:'
+// Clef legacy non-scopée par user (cf. commit precedent). On migre une fois
+// puis on purge.
+const LEGACY_DRAFT_KEY_PREFIX = 'ortho-ia:bilan-math-draft:'
+const DRAFT_MAX_AGE_MS = 30 * 24 * 60 * 60 * 1000 // 30 jours, parite avec langage
 
 function makeEmptyDraft(grille: GrilleBilan): BilanMathDraft {
   return {
@@ -59,11 +69,18 @@ interface BilanMathFormProps {
 }
 
 export default function BilanMathForm({ grille }: BilanMathFormProps) {
-  const draftKey = `${DRAFT_KEY_PREFIX}${grille.id}`
   const toast = useToast()
   const router = useRouter()
   const [draft, setDraft] = useState<BilanMathDraft>(() => makeEmptyDraft(grille))
   const [hydrated, setHydrated] = useState(false)
+  // Cle de stockage scoped par user.id + grille.id. Reste null tant que
+  // l'auth n'a pas resolu -> le useEffect d'auto-save no-op sur null,
+  // evite d'ecrire dans une cle generique non-scopée.
+  const [draftKey, setDraftKey] = useState<string | null>(null)
+  // Timestamps pour l'AutoSaveIndicator (parite langage).
+  const [lastSavedAt, setLastSavedAt] = useState<number | null>(null)
+  const [savingPulse, setSavingPulse] = useState(false)
+  const [nowTick, setNowTick] = useState<number>(Date.now())
   const [generatingEpreuveId, setGeneratingEpreuveId] = useState<string | null>(null)
   const [generatedCRBO, setGeneratedCRBO] = useState<string | null>(null)
   const [isGeneratingCRBO, setIsGeneratingCRBO] = useState(false)
@@ -74,6 +91,84 @@ export default function BilanMathForm({ grille }: BilanMathFormProps) {
   // exporter (par défaut), 'edit' = textarea brute pour ajuster le markdown.
   const [previewMode, setPreviewMode] = useState<'word' | 'edit'>('word')
   const [isSaving, setIsSaving] = useState(false)
+
+  // user.id retenu en state pour la sync DB ulterieure (saveDraftToDb).
+  const [currentUserId, setCurrentUserId] = useState<string | null>(null)
+
+  // Charge user.id au mount et calcule la cle de draft scopée. Migration
+  // safe : si un ancien draft non-scopée existe sous l'ancienne cle
+  // `${PREFIX}${grille.id}` ET aucun draft scopée n'existe pour cet user,
+  // on migre une fois puis on purge l'ancienne cle (evite la perte de
+  // donnees lors du deploiement de ce fix).
+  useEffect(() => {
+    let cancelled = false
+    ;(async () => {
+      try {
+        const supabase = createClient()
+        const { data: { user } } = await supabase.auth.getUser()
+        if (cancelled || !user) return
+        setCurrentUserId(user.id)
+        const scopedKey = `${DRAFT_KEY_PREFIX}${user.id}:${grille.id}`
+        const legacyKey = `${LEGACY_DRAFT_KEY_PREFIX}${grille.id}`
+        try {
+          const hasScoped = localStorage.getItem(scopedKey)
+          const legacyRaw = localStorage.getItem(legacyKey)
+          if (!hasScoped && legacyRaw) {
+            // Migration : on suppose que l'ancien draft non-scopée
+            // appartient a cet user (en pratique 99% des cas — l'ancienne
+            // cle non-scopée n'etait utilisée que par un seul user sur le
+            // poste). Si plusieurs orthos ont travaille sur le meme poste,
+            // les drafts plus anciens sont perdus — c'est le bug qu'on
+            // resout.
+            localStorage.setItem(scopedKey, legacyRaw)
+            localStorage.removeItem(legacyKey)
+          }
+        } catch {
+          // localStorage indisponible : on continue, draft restera vide
+        }
+        // Sync DB : si on a un draft plus recent en DB que celui en
+        // localStorage (ortho a saisi sur autre appareil), on le charge.
+        // Best-effort, silencieux en cas d'erreur reseau.
+        try {
+          const dbKind: DraftKind = grille.id === 'b-cm' ? 'math-b-cm' : 'math-b-cmado'
+          const dbDraft = await loadDraftFromDb<BilanMathDraft & { savedAt?: number }>(user.id, dbKind)
+          if (dbDraft && !cancelled) {
+            const localRaw = localStorage.getItem(scopedKey)
+            let localSavedAt: number | null = null
+            if (localRaw) {
+              try {
+                const parsed = JSON.parse(localRaw) as BilanMathDraft & { savedAt?: number }
+                localSavedAt = parsed.savedAt ?? parsed.updatedAt ?? null
+              } catch {}
+            }
+            const source = pickFreshestSource(localSavedAt, dbDraft.updatedAt)
+            if (source === 'db') {
+              // DB plus recente -> on injecte dans localStorage avant
+              // l'hydratation classique. Le useEffect d'hydratation suivant
+              // lira cette version a jour.
+              localStorage.setItem(scopedKey, JSON.stringify(dbDraft.data))
+            }
+          }
+        } catch {
+          // DB inaccessible : on continue avec le localStorage seul
+        }
+        setDraftKey(scopedKey)
+      } catch {
+        // Pas de session : ne pas wirer auto-save, l'ortho ne peut pas
+        // sauver tant qu'elle n'est pas authentifiee (le bouton "Generer"
+        // exigera de toute facon une session).
+      }
+    })()
+    return () => { cancelled = true }
+  }, [grille.id])
+
+  // Tick toutes les 1s pour mettre a jour l'affichage relatif
+  // "il y a Xs" de l'AutoSaveIndicator. Pas de re-render couteux : on
+  // re-render uniquement le composant indicateur.
+  useEffect(() => {
+    const handle = setInterval(() => setNowTick(Date.now()), 1000)
+    return () => clearInterval(handle)
+  }, [])
   // Flag positionne quand l'ortho arrive depuis le wizard /dashboard/nouveau-crbo
   // (etape 4 → clic "B-CMado" / "B-CM" → handoff avec fromWizard=true). Quand
   // true, on masque les blocs Patient / Type bilan / Anamnese pour eviter la
@@ -92,13 +187,25 @@ export default function BilanMathForm({ grille }: BilanMathFormProps) {
   // anamnèse + motif. On le merge dans le draft (sans écraser une valeur déjà
   // saisie) puis on le consomme (clear) pour qu'un retour ultérieur sur ce
   // bilan n'écrase pas la saisie en cours.
+  //
+  // Attente draftKey : tant que l'auth n'a pas resolu, on n'hydrate pas. Ca
+  // evite une double hydratation (vide puis scopée) qui ferait flicker la
+  // grille a l'arrivee depuis le wizard.
   useEffect(() => {
+    if (!draftKey) return
     let nextDraft: BilanMathDraft | null = null
     try {
       const raw = localStorage.getItem(draftKey)
       if (raw) {
-        const parsed = JSON.parse(raw) as BilanMathDraft
-        if (parsed && parsed.type === grille.id && parsed.epreuves) {
+        const parsed = JSON.parse(raw) as BilanMathDraft & { savedAt?: number }
+        // TTL 30 jours : si le draft est inactif depuis trop longtemps, on
+        // l'ignore et on demarre frais. Evite l'accumulation de vieux
+        // drafts en localStorage (limite ~5-10 Mo par origin).
+        const savedAt = parsed.savedAt ?? parsed.updatedAt ?? 0
+        const ageMs = savedAt ? Date.now() - savedAt : 0
+        if (savedAt && ageMs > DRAFT_MAX_AGE_MS) {
+          try { localStorage.removeItem(draftKey) } catch {}
+        } else if (parsed && parsed.type === grille.id && parsed.epreuves) {
           const epreuvesNouveau: Record<string, EpreuveState> = {}
           for (const [epreuveId, state] of Object.entries(parsed.epreuves)) {
             if (state && typeof state === 'object' && 'cells' in state) {
@@ -106,6 +213,7 @@ export default function BilanMathForm({ grille }: BilanMathFormProps) {
             }
           }
           nextDraft = { ...parsed, epreuves: epreuvesNouveau }
+          if (savedAt) setLastSavedAt(savedAt)
         }
       }
     } catch {
@@ -182,18 +290,32 @@ export default function BilanMathForm({ grille }: BilanMathFormProps) {
     setHydrated(true)
   }, [draftKey, grille.id])
 
-  // Persiste à chaque changement (debounce 400ms).
+  // Persiste à chaque changement (debounce 400ms). No-op tant que la clé
+  // scopée par user n'est pas resolue (auth en cours). Met a jour
+  // lastSavedAt pour l'AutoSaveIndicator + pulse "Sauvegarde..." 500ms.
+  // Sync DB best-effort en background (filet multi-device + cache vidé).
   useEffect(() => {
-    if (!hydrated) return
+    if (!hydrated || !draftKey) return
     const handle = setTimeout(() => {
       try {
-        localStorage.setItem(draftKey, JSON.stringify(draft))
+        const payload = { ...draft, savedAt: Date.now() }
+        localStorage.setItem(draftKey, JSON.stringify(payload))
+        // Pulse "Sauvegarde..." visible 500ms puis check "Enregistre il y a Xs".
+        setSavingPulse(true)
+        setTimeout(() => setSavingPulse(false), 500)
+        setLastSavedAt(payload.savedAt)
+        // Sync DB best-effort. Si la DB est down, le draft reste sauve
+        // en localStorage et l'ortho ne voit aucune difference.
+        if (currentUserId) {
+          const dbKind: DraftKind = grille.id === 'b-cm' ? 'math-b-cm' : 'math-b-cmado'
+          saveDraftToDb(currentUserId, dbKind, payload, 0).catch(() => null)
+        }
       } catch {
         // Quota dépassé / navigation privée : pas de fallback.
       }
     }, 400)
     return () => clearTimeout(handle)
-  }, [draft, draftKey, hydrated])
+  }, [draft, draftKey, hydrated, currentUserId, grille.id])
 
   // ===== Mutateurs =====
   const handleEpreuveChange = (epreuveId: string, next: EpreuveState) => {
@@ -583,7 +705,12 @@ export default function BilanMathForm({ grille }: BilanMathFormProps) {
         return
       }
       toast.success('CRBO sauvegardé.')
-      try { localStorage.removeItem(draftKey) } catch {}
+      try { if (draftKey) localStorage.removeItem(draftKey) } catch {}
+      // Purge le draft DB : le CRBO est finalisé, plus besoin du brouillon.
+      if (currentUserId) {
+        const dbKind: DraftKind = grille.id === 'b-cm' ? 'math-b-cm' : 'math-b-cmado'
+        deleteDraftFromDb(currentUserId, dbKind).catch(() => null)
+      }
       router.push(`/dashboard/historique/${saved.id}`)
     } catch (e: any) {
       toast.error(e?.message || 'Erreur lors de la sauvegarde.')
@@ -665,13 +792,23 @@ export default function BilanMathForm({ grille }: BilanMathFormProps) {
           <p style={{ margin: '6px 0 0', fontSize: 14, color: 'var(--fg-3)', lineHeight: 1.5 }}>
             {grille.description}
           </p>
+          {/* Indicateur d'auto-save : visible des le 1er save reussi. Pulse
+              "Sauvegarde..." 500ms a chaque tick d'auto-save puis "Enregistre
+              il y a Xs". Parite avec le formulaire CRBO langage. */}
+          <div style={{ marginTop: 8 }}>
+            <AutoSaveIndicator
+              lastSavedAt={lastSavedAt}
+              nowTick={nowTick}
+              saving={savingPulse}
+            />
+          </div>
         </div>
         {/* Auto-remplissage démo : remplit patient + anamnèse + cellules
             colorées + notes pour tester rapidement la génération du CRBO.
-            Visible uniquement pour demo@ortho-ia.fr. */}
+            Visible uniquement pour demo@ortho-ia.fr ou les nouveaux comptes
+            (0 CRBO en DB) en mode decouverte. */}
         <DemoAutofillButton
           variant="prominent"
-          label="Auto-remplir la démo"
           onFill={() => setDraft(buildDemoMathDraft(grille))}
         />
       </header>
