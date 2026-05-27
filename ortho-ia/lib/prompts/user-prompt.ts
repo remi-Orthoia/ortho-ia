@@ -135,37 +135,36 @@ ${data.comportement_seance}`
 ${data.duree_seance_minutes} minutes`
     : ''
 
-  // Instruction spécifique renouvellement — exigeante sur la qualité de la synthèse d'évolution
+  // Instruction spécifique renouvellement — alignée sur le schema tool
+  // (recommandations = phrase Laurie, resume = 1 phrase courte, etc.)
   const renouvellementInstruction = isRenouvellement ? `
 
 ⚠️ **SPÉCIFICITÉS BILAN DE RENOUVELLEMENT** :
-Ce bilan est un RENOUVELLEMENT. Tu dois impérativement :
+Ce bilan est un RENOUVELLEMENT. Tu dois impérativement, EN RESPECTANT EXACTEMENT le format de chaque champ imposé par le schema (volumes ci-dessous) :
 
-1. **Dans \`anamnese_redigee\`** : rédige un paragraphe court (80-150 mots) qui :
+1. **Dans \`anamnese_redigee\`** (80-150 mots, paragraphe court) :
    - Rappelle brièvement le contexte initial (1-2 phrases : âge au 1er bilan, motif initial, diagnostic posé)
    - Annonce le but du renouvellement et la durée de PEC écoulée
    - Intègre les événements / changements depuis le dernier bilan (classe, suivis, adaptations)
-   - N'RÉPÈTE PAS toute l'anamnèse initiale, elle est connue
+   - NE répète PAS toute l'anamnèse initiale, elle est connue
 
-2. **Dans \`synthese_evolution\`** (OBLIGATOIRE, NE PEUT PAS être null) :
-   - \`resume\` (150-300 mots) : synthèse narrative de l'évolution, impact de la PEC, éléments émergents. Écris comme une ortho qui parle de son patient suivi depuis X mois.
-   - \`domaines_progres\` : liste précise des domaines/épreuves en progression objectivable (+10 points de percentile minimum OU passage d'une catégorie d'interprétation à une meilleure)
-   - \`domaines_stagnation\` : domaines sans évolution notable (± 10 points)
-   - \`domaines_regression\` : domaines en régression avérée (-10 points ou catégorie dégradée)
+2. **Dans \`synthese_evolution\`** (OBLIGATOIRE, NE PEUT PAS être null — c'est le cœur du bilan de renouvellement) :
+   - \`resume\` : UNE SEULE phrase TRÈS COURTE (10-25 mots max) caractérisant globalement l'évolution. Ex : "Évolution globalement favorable après 18 mois de prise en charge, avec une persistance ciblée des difficultés en orthographe." JAMAIS plus d'une phrase, JAMAIS de chiffres de percentile, JAMAIS de mention de rééducation passée — les détails vont dans les listes.
+   - \`domaines_progres\` : liste de bullets COURTS (5-15 mots chacun). Un item par épreuve en progression objectivable (Δ ≥ +10 percentiles OU passage de classe vers une meilleure). Citation nominative obligatoire. Ex : "Métaphonologie : passage de difficulté sévère à zone de fragilité".
+   - \`domaines_stagnation\` : bullets courts pour les épreuves stables (±10 percentiles, même classe d'interprétation).
+   - \`domaines_regression\` : bullets courts pour les épreuves en régression avérée (Δ ≤ -10 OU classe dégradée).
 
-3. **Dans \`diagnostic\`** (200-400 mots) :
-   - PAS de re-diagnostic from scratch
-   - Structure : (a) rappel du diagnostic initial et du pronostic, (b) état actuel du trouble après PEC, (c) analyse de l'EFFICACITÉ de la rééducation, (d) persistance ou évolution des comorbidités
-   - Termine par : diagnostic actualisé (souvent maintenu, parfois compensé, parfois aggravé)
+3. **Dans \`diagnostic\`** (200-400 mots, c'est ici que va l'analyse approfondie de l'évolution) :
+   - PAS de re-diagnostic from scratch — utilise plutôt "trouble [...] PERSISTANT / MAINTENU / COMPENSÉ / AGGRAVÉ" selon l'évolution
+   - Structure : (a) rappel du diagnostic initial, (b) état actuel après PEC, (c) analyse de l'EFFICACITÉ de la rééducation (rythme PEC à maintenir/alléger/intensifier), (d) persistance ou évolution des comorbidités
+   - Termine par le diagnostic actualisé
+   - C'EST LE BON ENDROIT pour discuter rythme PEC, efficacité, persistance — pas dans recommandations.
 
-4. **Dans \`recommandations\`** (150-250 mots) :
-   - Réévaluation du rythme de PEC (maintien / allègement / intensification)
-   - Ajustement des aménagements scolaires (PAP peut devenir PPS si aggravation, ou être allégé si compensation)
-   - Nouveaux bilans complémentaires si pertinent
-   - Axes thérapeutiques à prioriser pour les 6-12 prochains mois
-   - Date de la prochaine réévaluation
+4. **Dans \`recommandations\`** : RESPECTER STRICTEMENT le format imposé Laurie tel que défini dans le schema tool. Le format ne change PAS pour le renouvellement.
 
-5. **Dans \`pap_suggestions\`** : liste les aménagements à **maintenir, ajouter ou retirer** par rapport au PAP précédent.
+5. **Dans \`axes_therapeutiques\`** (max 4 items, 1 ligne chacun) : c'est ici que tu listes les axes à prioriser pour les 6-12 prochains mois. Adapte selon l'évolution (axes maintenus vs nouveaux axes identifiés).
+
+6. **Dans \`pap_suggestions\`** : liste les aménagements scolaires en tenant compte du PAP précédent — formule chaque item comme un AJOUT, un MAINTIEN ou un RETRAIT selon l'évolution (mention explicite recommandée, ex : "Temps : maintien du temps majoré aux évaluations écrites" / "Outils numériques : ajout d'un outil de lecture vocale, non requis au précédent bilan").
 `
     : ''
 

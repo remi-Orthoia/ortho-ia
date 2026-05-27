@@ -194,8 +194,12 @@ export const SYNTHESIZE_TOOL: Anthropic.Tool = {
       recommandations: {
         type: 'string',
         description:
-          "Phrase UNIQUE imposée Laurie : 'Une prise en charge orthophonique est recommandée, et en parallèle la mise en place ou le renforcement des aménagements en classe.' " +
-          "JAMAIS de mention de réévaluation, de nouveau bilan, de délai, de fréquence de séances. JAMAIS d'orientation vers d'autres professionnels.",
+          "Phrase imposée Laurie + (optionnellement) une 2e phrase AMO. " +
+          "PHRASE 1 OBLIGATOIRE (verbatim) : 'Une prise en charge orthophonique est recommandée, et en parallèle la mise en place ou le renforcement des aménagements en classe.' " +
+          "PHRASE 2 OPTIONNELLE (UNE SEULE phrase max, sur les bilans dont le module impose une mention AMO — Exalang 3-6 à 11-15, Lyfac, EVALEO, B-CM, B-CMado) : " +
+          "'La rééducation s'inscrit dans le cadre de la nomenclature AMO [code] ([libellé]).' Code = 8.4 (langage écrit) / 9.4 (langage oral) / 11.7 (cognition mathématique) selon profil dominant. " +
+          "JAMAIS de mention de réévaluation, de nouveau bilan, de délai, de fréquence de séances, ni de paragraphe d'analyse. JAMAIS d'orientation vers d'autres professionnels. " +
+          "Pour un bilan de renouvellement, le format ne change PAS : les détails évolution vont dans synthese_evolution / diagnostic / axes_therapeutiques / pap_suggestions, JAMAIS dans recommandations.",
       },
       axes_therapeutiques: {
         type: 'array',
@@ -312,10 +316,15 @@ const _synthesizeProps = SYNTHESIZE_TOOL.input_schema.properties as Record<strin
 export const CRBO_TOOL: Anthropic.Tool = {
   name: 'generate_crbo',
   description:
-    "Produit un Compte Rendu de Bilan Orthophonique (CRBO) structuré complet en une seule passe. Utilisé pour les flows legacy ; le flow nominal utilise EXTRACT_CRBO_TOOL puis SYNTHESIZE_TOOL.",
+    "Produit un Compte Rendu de Bilan Orthophonique (CRBO) structuré complet en une seule passe. Utilisé pour les flows legacy et les scripts de test ; le flow nominal en prod utilise EXTRACT_CRBO_TOOL puis SYNTHESIZE_TOOL.",
   input_schema: {
     type: 'object',
-    required: ['anamnese_redigee', 'motif_reformule', 'domains', 'diagnostic', 'recommandations', 'conclusion', 'severite_globale', 'comorbidites_detectees', 'pap_suggestions'],
+    required: [
+      'anamnese_redigee', 'motif_reformule', 'domains',
+      'points_forts', 'difficultes_identifiees',
+      'diagnostic', 'recommandations', 'axes_therapeutiques',
+      'conclusion', 'pap_suggestions',
+    ],
     properties: {
       anamnese_redigee: _extractProps.anamnese_redigee as any,
       motif_reformule: _extractProps.motif_reformule as any,
@@ -336,13 +345,17 @@ export const CRBO_TOOL: Anthropic.Tool = {
           },
         },
       },
+      points_forts: _synthesizeProps.points_forts as any,
+      difficultes_identifiees: _synthesizeProps.difficultes_identifiees as any,
       diagnostic: _synthesizeProps.diagnostic as any,
       recommandations: _synthesizeProps.recommandations as any,
+      axes_therapeutiques: _synthesizeProps.axes_therapeutiques as any,
       conclusion: _synthesizeProps.conclusion as any,
       severite_globale: _synthesizeProps.severite_globale as any,
       comorbidites_detectees: _synthesizeProps.comorbidites_detectees as any,
       pap_suggestions: _synthesizeProps.pap_suggestions as any,
       synthese_evolution: _synthesizeProps.synthese_evolution as any,
+      reasoning_clinical: _synthesizeProps.reasoning_clinical as any,
     },
   },
 }
