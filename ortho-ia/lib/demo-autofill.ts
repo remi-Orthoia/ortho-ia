@@ -40,6 +40,59 @@ export function useIsDemoUser(): boolean {
   return isDemo
 }
 
+/**
+ * Hook : décide si le bouton "auto-remplir démo" doit s'afficher pour le user
+ * connecté. Retourne :
+ *  - `show: true` si user demo@ortho-ia.fr (toujours) OU si user actuel n'a
+ *    encore aucun CRBO en DB (discovery mode pour aider les nouvelles ortho
+ *    à voir un exemple avant de saisir leurs propres données).
+ *  - `mode: 'demo' | 'firstTime'` pour adapter le libellé côté composant
+ *    ("Auto-remplir (démo)" vs "Voir un exemple pré-rempli").
+ *
+ * Source de vérité : 1 call auth + 1 count crbos. Évite de spammer les query
+ * en cachant le résultat dans le state du hook.
+ *
+ * Si le user a déjà au moins 1 CRBO, le bouton se cache automatiquement —
+ * on considère qu'il connait l'outil et n'a plus besoin du raccourci démo.
+ */
+export function useShouldShowDemoButton(): { show: boolean; mode: 'demo' | 'firstTime' | 'hidden' } {
+  const [state, setState] = useState<{ show: boolean; mode: 'demo' | 'firstTime' | 'hidden' }>({
+    show: false,
+    mode: 'hidden',
+  })
+  useEffect(() => {
+    let cancelled = false
+    const supabase = createClient()
+    ;(async () => {
+      try {
+        const { data: { user } } = await supabase.auth.getUser()
+        if (!user || cancelled) return
+        const email = (user.email ?? '').toLowerCase().trim()
+        if (email === DEMO_EMAIL) {
+          setState({ show: true, mode: 'demo' })
+          return
+        }
+        // Compter les CRBO du user. Si 0 -> first-time, on affiche en mode
+        // discovery. Sinon on cache.
+        const { count } = await supabase
+          .from('crbos')
+          .select('id', { count: 'exact', head: true })
+          .eq('user_id', user.id)
+        if (cancelled) return
+        if ((count ?? 0) === 0) {
+          setState({ show: true, mode: 'firstTime' })
+        } else {
+          setState({ show: false, mode: 'hidden' })
+        }
+      } catch {
+        // ignore — bouton reste cache, pas de regression UX
+      }
+    })()
+    return () => { cancelled = true }
+  }, [])
+  return state
+}
+
 // ============================================================================
 // Patients démo (réalistes mais fictifs — anonymisation interne)
 // ============================================================================

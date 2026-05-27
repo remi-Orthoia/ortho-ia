@@ -1,5 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { createServerSupabaseClient } from '@/lib/supabase-server'
+import { sendEmail } from '@/lib/email/send'
+import { renderBetaWelcome } from '@/lib/email-templates/beta-welcome'
 
 /**
  * Enregistre le fingerprint d'inscription (IP + user agent + timestamp) sur
@@ -8,6 +10,11 @@ import { createServerSupabaseClient } from '@/lib/supabase-server'
  * route serveur peut la lire depuis les en-têtes du proxy.
  *
  * Loggue aussi un événement 'signup' dans abuse_signals.
+ *
+ * Envoie l'email de bienvenue Ortho.ia (template beta-welcome) via Resend si
+ * RESEND_API_KEY est configurée. Best-effort : si l'envoi echoue (clé absente,
+ * Resend en panne, etc.), le signup réussit quand même — l'email n'est jamais
+ * bloquant.
  *
  * Best-effort : si quelque chose échoue, on ne casse pas le flux d'inscription.
  */
@@ -62,6 +69,37 @@ export async function POST(request: NextRequest) {
       p_event: 'signup',
       p_reason: null,
     }).then(() => null, () => null)
+
+    // Email de bienvenue Ortho.ia — non bloquant. Si l'envoi échoue (clé
+    // Resend absente, domaine non vérifié, etc.) le signup réussit quand
+    // même. On lit le prénom depuis le profile (vient d'être inséré côté
+    // client juste avant cet appel).
+    if (user.email) {
+      try {
+        const { data: freshProf } = await supabase
+          .from('profiles')
+          .select('prenom')
+          .eq('id', user.id)
+          .single()
+        const prenom = (freshProf?.prenom?.trim() || user.email.split('@')[0] || 'là').trim()
+        // URL de login absolue : on utilise l'origin du request pour rester
+        // cohérent entre prod (ortho-ia.com), preview Vercel et dev local.
+        const origin = request.headers.get('origin')
+          ?? process.env.NEXT_PUBLIC_APP_URL
+          ?? 'https://ortho-ia.vercel.app'
+        const loginUrl = `${origin}/auth/login`
+        const { subject, html, text } = renderBetaWelcome({
+          prenom,
+          loginUrl,
+          siteUrl: origin,
+        })
+        // Fire-and-forget : on n'attend pas le résultat pour répondre à
+        // l'utilisateur. L'envoi log lui-même son succès/échec côté serveur.
+        sendEmail({ to: user.email, subject, html, text }).catch(() => null)
+      } catch (mailErr: any) {
+        console.error('[finalize-signup] preparation email:', mailErr?.message?.slice(0, 200))
+      }
+    }
 
     return NextResponse.json({ ok: true })
   } catch (error: any) {

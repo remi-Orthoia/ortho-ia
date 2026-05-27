@@ -102,6 +102,10 @@ export default function DashboardPage() {
     thisMonth: 0,
     timeSaved: 0,
   })
+  // Nombre de patients enregistres dans le carnet — sert a calculer la
+  // checklist d'onboarding (etape "1er patient ajoute"). Charge en parallele
+  // des CRBOs et profile dans fetchData.
+  const [patientCount, setPatientCount] = useState(0)
   const [planLimit, setPlanLimit] = useState<number | null>(10)
   const [feedbackCrboId, setFeedbackCrboId] = useState<string | null>(null)
   const [downloadingId, setDownloadingId] = useState<string | null>(null)
@@ -184,6 +188,14 @@ export default function DashboardPage() {
       .single()
     const unlimited = !sub || sub.crbo_limit === -1 || (sub.plan && sub.plan !== 'free')
     setPlanLimit(unlimited ? null : (sub?.crbo_limit ?? 10))
+
+    // Compte patients — uniquement le count, pas les lignes (perf).
+    // Sert a cocher l'etape 2 de la checklist d'onboarding.
+    const { count: patientsCount } = await supabase
+      .from('patients')
+      .select('id', { count: 'exact', head: true })
+      .eq('user_id', user.id)
+    setPatientCount(patientsCount ?? 0)
 
     // CRBOs (tout charger, tri DB par created_at desc)
     const { data: crbosData } = await supabase
@@ -512,60 +524,120 @@ export default function DashboardPage() {
         </div>
       )}
 
-      {/* Onboarding — visible uniquement si aucun CRBO */}
-      {stats.total === 0 && (
-        <div className="bg-gradient-to-br from-green-50 to-emerald-50 border border-green-200 rounded-2xl p-6 sm:p-8">
-          <div className="flex items-start gap-4">
-            <div className="w-12 h-12 rounded-xl bg-white shadow-sm flex items-center justify-center shrink-0">
-              <FileText className="text-green-600" size={24} />
-            </div>
-            <div className="flex-1">
-              <h3 className="text-xl font-bold text-gray-900">Bienvenue sur Ortho.ia 👋</h3>
-              <p className="mt-2 text-gray-700">
-                Vous êtes à <strong>3 étapes</strong> de votre premier CRBO :
-              </p>
-              <ol className="mt-4 space-y-2 text-sm text-gray-700">
-                <li className="flex items-start gap-2">
-                  <span className="inline-flex items-center justify-center w-5 h-5 rounded-full bg-green-600 text-white text-xs font-bold shrink-0">1</span>
-                  <span>
-                    <Link href="/dashboard/profil" className="text-green-700 font-semibold underline">
-                      Complétez votre profil
-                    </Link>{' '}
-                    (adresse, téléphone, email) — ces infos seront pré-remplies dans chaque CRBO.
+      {/* Checklist d'onboarding — interactive : chaque etape se coche
+          automatiquement selon l'etat reel (profil, patients, CRBO). On masque
+          le bloc des que les 3 etapes sont validees pour ne pas encombrer
+          le dashboard d'un user actif. */}
+      {(() => {
+        // Etat de chaque etape — recalcule a chaque render pour suivre les
+        // updates de profile / patientCount / stats.
+        const profileComplete = !!(
+          profile?.adresse?.trim()
+          && profile?.code_postal?.trim()
+          && profile?.ville?.trim()
+          && profile?.telephone?.trim()
+        )
+        const hasPatient = patientCount > 0
+        const hasFirstCrbo = stats.total > 0
+        const allDone = profileComplete && hasPatient && hasFirstCrbo
+        if (allDone) return null
+
+        const doneCount = [profileComplete, hasPatient, hasFirstCrbo].filter(Boolean).length
+
+        const Step = ({
+          done,
+          label,
+          desc,
+          href,
+        }: { done: boolean; label: string; desc: string; href: string }) => (
+          <li className="flex items-start gap-3">
+            <span
+              className={`inline-flex items-center justify-center w-6 h-6 rounded-full shrink-0 mt-0.5 transition ${
+                done
+                  ? 'bg-green-600 text-white'
+                  : 'bg-white text-green-700 border-2 border-green-300'
+              }`}
+              aria-hidden="true"
+            >
+              {done ? <CheckCircle size={14} /> : null}
+            </span>
+            <span className={`text-sm ${done ? 'text-gray-500 line-through' : 'text-gray-800'}`}>
+              <Link href={href} className={`font-semibold ${done ? 'text-gray-500' : 'text-green-700 hover:underline'}`}>
+                {label}
+              </Link>
+              <span className="ml-1">— {desc}</span>
+            </span>
+          </li>
+        )
+
+        return (
+          <div className="bg-gradient-to-br from-green-50 to-emerald-50 border border-green-200 rounded-2xl p-6 sm:p-8">
+            <div className="flex items-start gap-4">
+              <div className="w-12 h-12 rounded-xl bg-white shadow-sm flex items-center justify-center shrink-0">
+                <FileText className="text-green-600" size={24} />
+              </div>
+              <div className="flex-1">
+                <div className="flex items-baseline gap-3 flex-wrap">
+                  <h3 className="text-xl font-bold text-gray-900">
+                    {doneCount === 0 ? 'Bienvenue sur Ortho.ia 👋' : `Bien joué, ${doneCount}/3 étapes validées`}
+                  </h3>
+                  <span className="text-sm font-medium text-green-700">
+                    {doneCount === 0 && 'À 3 étapes de votre premier CRBO'}
+                    {doneCount === 1 && 'Plus que 2 étapes'}
+                    {doneCount === 2 && 'Une dernière étape, vous y êtes presque'}
                   </span>
-                </li>
-                <li className="flex items-start gap-2">
-                  <span className="inline-flex items-center justify-center w-5 h-5 rounded-full bg-green-600 text-white text-xs font-bold shrink-0">2</span>
-                  <span>
-                    <Link href="/dashboard/patients" className="text-green-700 font-semibold underline">
-                      Ajoutez votre premier patient
-                    </Link>{' '}
-                    dans le carnet — ou créez-le directement au lancement du CRBO.
-                  </span>
-                </li>
-                <li className="flex items-start gap-2">
-                  <span className="inline-flex items-center justify-center w-5 h-5 rounded-full bg-green-600 text-white text-xs font-bold shrink-0">3</span>
-                  <span>
-                    <Link href="/dashboard/nouveau-crbo" className="text-green-700 font-semibold underline">
-                      Créez votre premier CRBO
-                    </Link>{' '}
-                    — 5 étapes guidées, import PDF automatique, génération en 20 sec.
-                  </span>
-                </li>
-              </ol>
-              <div className="mt-6">
-                <Link
-                  href="/dashboard/nouveau-crbo"
-                  className="inline-flex items-center gap-2 bg-green-600 text-white px-5 py-2.5 rounded-xl font-semibold hover:bg-green-700 transition"
-                >
-                  <Plus size={18} />
-                  Démarrer maintenant
-                </Link>
+                </div>
+                {/* Barre de progression visuelle */}
+                <div className="mt-3 h-1.5 w-full max-w-md bg-white/70 rounded-full overflow-hidden">
+                  <div
+                    className="h-full bg-green-600 transition-all duration-500"
+                    style={{ width: `${(doneCount / 3) * 100}%` }}
+                  />
+                </div>
+                <ol className="mt-5 space-y-3">
+                  <Step
+                    done={profileComplete}
+                    label="Complétez votre profil"
+                    desc="adresse, téléphone, email — pré-remplis dans chaque CRBO."
+                    href="/dashboard/profil"
+                  />
+                  <Step
+                    done={hasPatient}
+                    label="Ajoutez votre premier patient"
+                    desc="dans le carnet, ou directement en créant le CRBO."
+                    href="/dashboard/patients"
+                  />
+                  <Step
+                    done={hasFirstCrbo}
+                    label="Créez votre premier CRBO"
+                    desc="5 étapes guidées, import PDF, génération en 20 sec."
+                    href="/dashboard/nouveau-crbo"
+                  />
+                </ol>
+                <div className="mt-6">
+                  <Link
+                    href={
+                      !profileComplete
+                        ? '/dashboard/profil'
+                        : !hasPatient
+                          ? '/dashboard/patients'
+                          : '/dashboard/nouveau-crbo'
+                    }
+                    className="inline-flex items-center gap-2 bg-green-600 text-white px-5 py-2.5 rounded-xl font-semibold hover:bg-green-700 transition"
+                  >
+                    <Plus size={18} />
+                    {!profileComplete
+                      ? 'Compléter mon profil'
+                      : !hasPatient
+                        ? 'Ajouter un patient'
+                        : 'Démarrer mon premier CRBO'}
+                  </Link>
+                </div>
               </div>
             </div>
           </div>
-        </div>
-      )}
+        )
+      })()}
 
       {/* Liste complète des CRBOs — remplace le kanban + les widgets récents */}
       {stats.total > 0 && (
