@@ -431,6 +431,26 @@ export default function CRBOStructuredPreview({
         </Section>
       )}
 
+      {/* Bilans complementaires suggeres — conditionnel : rendu uniquement si
+          le LLM a identifie au moins une orientation pluridisciplinaire. Le
+          champ peut etre absent sur les CRBO legacy (avant ajout du champ),
+          dans ce cas la section ne s'affiche pas — pas de regression. */}
+      {structure.bilans_complementaires && structure.bilans_complementaires.filter(b => b?.trim()).length > 0 && (
+        <Section title="Bilans complémentaires suggérés" color="primary">
+          <p className="text-gray-700 dark:text-gray-300 mb-3 text-sm">
+            Au regard du tableau clinique, les bilans complémentaires suivants pourraient être proposés en complément de la prise en charge orthophonique :
+          </p>
+          <ul className="space-y-2">
+            {structure.bilans_complementaires.filter(b => b?.trim()).map((b, i) => (
+              <li key={i} className="flex items-start gap-2 text-gray-800 dark:text-gray-200">
+                <span className="text-primary-600 dark:text-primary-400 font-bold mt-0.5">→</span>
+                <span>{b.trim()}</span>
+              </li>
+            ))}
+          </ul>
+        </Section>
+      )}
+
       {/* Conclusion */}
       <Section title="Conclusion" color="primary">
         <p className="text-gray-800 dark:text-gray-200 italic text-sm">

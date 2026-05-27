@@ -543,6 +543,7 @@ export async function POST(request: NextRequest) {
                 difficultes_identifiees: rawSynth.difficultes_identifiees || '',
                 axes_therapeutiques: rawSynth.axes_therapeutiques || [],
                 pap_suggestions: rawSynth.pap_suggestions,
+                bilans_complementaires: rawSynth.bilans_complementaires || [],
                 synthese_evolution: rawSynth.synthese_evolution ?? null,
               }
               const rehydrated = rehydrate(tempStruct, reverseMap)
@@ -558,6 +559,7 @@ export async function POST(request: NextRequest) {
                 axes_therapeutiques: rehydrated.axes_therapeutiques ?? [],
                 conclusion: rehydrated.conclusion,
                 pap_suggestions: rehydrated.pap_suggestions ?? [],
+                bilans_complementaires: rehydrated.bilans_complementaires ?? [],
                 domain_commentaires,
                 synthese_evolution: rehydrated.synthese_evolution ?? null,
                 reasoning_clinical: (rawSynth as any).reasoning_clinical ?? null,
@@ -675,6 +677,7 @@ export async function POST(request: NextRequest) {
         difficultes_identifiees: rawSynth.difficultes_identifiees || '',
         axes_therapeutiques: rawSynth.axes_therapeutiques || [],
         pap_suggestions: rawSynth.pap_suggestions,
+        bilans_complementaires: rawSynth.bilans_complementaires || [],
         synthese_evolution: rawSynth.synthese_evolution ?? null,
       }
       const rehydrated = rehydrate(tempStruct, reverseMap)
@@ -692,6 +695,7 @@ export async function POST(request: NextRequest) {
         axes_therapeutiques: rehydrated.axes_therapeutiques ?? [],
         conclusion: rehydrated.conclusion,
         pap_suggestions: rehydrated.pap_suggestions ?? [],
+        bilans_complementaires: rehydrated.bilans_complementaires ?? [],
         domain_commentaires,
         synthese_evolution: rehydrated.synthese_evolution ?? null,
         reasoning_clinical: (rawSynth as any).reasoning_clinical ?? null,

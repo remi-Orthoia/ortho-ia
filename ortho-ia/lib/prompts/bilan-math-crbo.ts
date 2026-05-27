@@ -143,7 +143,8 @@ Le CRBO doit enchaîner EXACTEMENT dans cet ordre, sans étape intermédiaire et
 4. **Diagnostic orthophonique :**
 5. **Projet thérapeutique :** (avec phrase NGAP AMO 11.7)
 6. **Aménagements pédagogiques :** (liste à puces 4-6 items, mêmes règles que les CRBO langage — voir détail plus bas)
-7. Phrase de remerciement et de salutation (sans titre)
+7. **Bilans complémentaires suggérés :** (CONDITIONNEL — 0 à 4 items selon comorbidités observées, omettre la section entière si aucune indication — voir détail plus bas)
+8. Phrase de remerciement et de salutation (sans titre)
 
 Format markdown : titres de section en **gras**. Lignes vides entre paragraphes. Listes à puces UNIQUEMENT dans les critères DSM-V, le projet thérapeutique, et les aménagements pédagogiques. Le CRBO commence directement par "**Motif**" (pas de préambule, pas d'en-tête patient — c'est l'export Word qui s'en charge).
 
@@ -221,6 +222,28 @@ Format **STRICT** de chaque bullet : "**Catégorie** : description concrète." (
 
 ⛔ NE PAS dépasser 6 bullets. NE PAS ajouter d'autres catégories (ex: "Coopération", "Famille"). NE PAS répéter de mentions AMO dans cette section (elles sont dans Projet thérapeutique).
 ⛔ NE PAS ajouter de mention "PAP" ou "PPS" ici : c'est l'orthophoniste qui décide du dispositif administratif avec la famille/école. La section liste UNIQUEMENT des aménagements concrets.
+
+**Bilans complémentaires suggérés :**
+
+Section **CONDITIONNELLE** : à n'inclure QUE si au moins un indice du bilan justifie une orientation pluridisciplinaire. Si l'enfant ne présente aucune comorbidité observable au bilan, **OMETTRE LA SECTION ENTIÈRE** (ne pas écrire le titre, ne pas mettre "Néant", ne rien produire — passer directement à la phrase de remerciement).
+
+Quand la section est incluse : 1 phrase d'intro courte puis une LISTE À PUCES de **2 à 4 items maximum**.
+
+Phrase intro type :
+> "Au regard du tableau clinique, les bilans complémentaires suivants pourraient être proposés en complément de la prise en charge orthophonique :"
+
+Catégories autorisées (1 puce maximum par catégorie, choisir les plus pertinentes) :
+- **Neuropsychologie** : suspicion TDAH, atteinte des fonctions exécutives, mémoire de travail effondrée, fatigabilité majeure, hétérogénéité cognitive marquée.
+- **Psychomotricité** : troubles graphiques, motricité fine ou globale, latéralité, dyspraxie associée (atteinte du dénombrement digital, du subitizing, du dénombrement avec pointage).
+- **Neurovisuel / Orthoptie** : difficultés visuo-spatiales, atteinte du dénombrement de constellations, suspicion DVS, ou bilan visuel non à jour avant rééducation.
+- **Ergothérapie** : adaptation matérielle au quotidien (frise numérique, table de Pythagore), compensation manuelle/numérique pour les apprentissages mathématiques.
+- **Pédopsychiatrie** : signaux anxieux, perte d'estime de soi marquée, anxiété mathématique invalidante, suspicion TSA.
+- **WISC-V / bilan psychométrique** : UNIQUEMENT si suspicion d'hétérogénéité cognitive ou avant tout dispositif PPS/MDPH ; sinon ne pas mentionner.
+
+Format **STRICT** de chaque bullet : "**Catégorie** : justification clinique courte qui pointe l'indice concret du bilan (1 ligne, ~15-25 mots)." Citer un indice du bilan dans la justification (ex : "dénombrement digital atteint", "anxiété mathématique observée", "empan de chiffres inversé déficitaire").
+
+⛔ NE PAS dépasser 4 bullets. NE PAS lister un re-bilan orthophonique. NE PAS lister un bilan ORL sauf si déficit auditif fonctionnellement pertinent observé.
+⛔ NE PAS forcer la section "pour faire bien" — si l'enfant a juste une dyscalculie pure sans comorbidité, OMETTRE la section.
 
 Termine par : "Vous remerciant de votre attention et me tenant à votre disposition pour de plus amples informations, je vous prie de recevoir mes salutations distinguées."
 

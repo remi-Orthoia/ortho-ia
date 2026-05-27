@@ -1627,6 +1627,47 @@ export async function generateCRBOWord(payload: WordExportPayload): Promise<Blob
         }))
       }
     }
+
+    // ===== BILANS COMPLÉMENTAIRES SUGGÉRÉS =====
+    // Section CONDITIONNELLE : rendue uniquement si le LLM a identifié au
+    // moins une orientation pluridisciplinaire pertinente (TDAH suspecté,
+    // empan envers déficitaire, leximétrie sans bilan visuel récent, etc.).
+    // Format identique aux aménagements : titre vert + phrase intro + bullets
+    // natifs Word (crbo-bullets) au format "Catégorie : justification".
+    // Si tableau vide, rien n'est rendu — on évite de surcharger les CRBO
+    // sans comorbidité.
+    const bilansComp = (s.bilans_complementaires ?? [])
+      .filter(b => b && b.trim().length > 0)
+      .slice(0, 4)
+    if (bilansComp.length > 0) {
+      children.push(new Paragraph({
+        children: [new TextRun({
+          text: 'Bilans complémentaires suggérés',
+          bold: true, size: FONT_SIZE_NORMAL, font: FONT, color: COLOR_GREEN,
+        })],
+        spacing: { before: 240, after: 100 },
+      }))
+      children.push(new Paragraph({
+        alignment: AlignmentType.BOTH,
+        spacing: { after: 120 },
+        children: [new TextRun({
+          text: "Au regard du tableau clinique, les bilans complémentaires suivants pourraient être proposés en complément de la prise en charge orthophonique :",
+          size: FONT_SIZE_NORMAL, font: FONT,
+        })],
+      }))
+      const legacyRegex = /^\*\*([^*]+)\*\*\s*[—–-]\s*(.+)$/
+      for (const b of bilansComp) {
+        // Strip eventuel prefixe markdown "**Categorie** — desc" et aplatit
+        // en "Categorie : desc" texte normal (parité avec pap_suggestions).
+        const legacy = b.trim().match(legacyRegex)
+        const display = legacy ? `${legacy[1].trim()} : ${legacy[2].trim()}` : b.trim()
+        children.push(new Paragraph({
+          numbering: { reference: 'crbo-bullets', level: 0 },
+          spacing: { after: 50 },
+          children: [new TextRun({ text: display, size: FONT_SIZE_NORMAL, font: FONT })],
+        }))
+      }
+    }
   } else {
     fallbackCRBO.split('\n').forEach((line) => {
       const t = line.trim()

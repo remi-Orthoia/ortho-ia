@@ -336,9 +336,11 @@ Appelle l'outil \`synthesize_crbo\`. Produis OBLIGATOIREMENT TOUS ces champs, da
 
 7. \`pap_suggestions\` : MAX 6, 1 par catégorie (Temps, Évaluations, Outils numériques, Pédagogie, Environnement, Oral). Format "Catégorie : description". Adapter au profil — pas systématiquement les 6.
 
-8. \`conclusion\` : mention médico-légale "Compte rendu remis en main propre à l'assuré(e) pour servir et faire valoir ce que de droit. (Copie au médecin prescripteur)."
+8. \`bilans_complementaires\` : 0 à 4 items, **CONDITIONNEL**. Tableau VIDE \`[]\` si aucune comorbidité ne ressort. Sinon orientations pluridisciplinaires au format "Catégorie : justification clinique courte qui pointe l'indice du bilan". Catégories : Neuropsychologie (TDAH/exécutif/empan envers < P10/fatigabilité), Psychomotricité (graphisme/motricité/dyspraxie), Neurovisuel (empan visuo-attentionnel/DVS/TVA), Orthoptie (visuel non vérifié + leximétrie), Ergothérapie (dysgraphie sévère/compensation matérielle), ORL (audition non vérifiée + déficit phonologique), Pédopsychiatrie (signaux anxieux/dépressifs/TSA), CRTLA (profil TDL sévère). Trier par priorité clinique. Chaque item DOIT citer un indice concret du bilan. NE PAS lister WISC/psychométrie sauf si lié à TDAH/TSA — sinon ça va dans recommandations.
 
-9. \`synthese_evolution\` : ${isRenouvellement ? 'NON NULL — bilan de renouvellement, comparaison rigoureuse exigée.' : 'null — bilan initial.'}
+9. \`conclusion\` : mention médico-légale "Compte rendu remis en main propre à l'assuré(e) pour servir et faire valoir ce que de droit. (Copie au médecin prescripteur)."
+
+10. \`synthese_evolution\` : ${isRenouvellement ? 'NON NULL — bilan de renouvellement, comparaison rigoureuse exigée.' : 'null — bilan initial.'}
 
 🎯 **Comment utiliser les commentaires qualitatifs ortho** :
    - Pour produire \`domain_commentaires\` (rendu final sous chaque tableau du Word).

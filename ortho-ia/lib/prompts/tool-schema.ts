@@ -157,7 +157,7 @@ export const SYNTHESIZE_TOOL: Anthropic.Tool = {
     required: [
       'points_forts', 'difficultes_identifiees',
       'diagnostic', 'recommandations', 'axes_therapeutiques',
-      'pap_suggestions', 'conclusion', 'domain_commentaires',
+      'pap_suggestions', 'bilans_complementaires', 'conclusion', 'domain_commentaires',
     ],
     properties: {
       domain_commentaires: {
@@ -215,6 +215,17 @@ export const SYNTHESIZE_TOOL: Anthropic.Tool = {
           "RÈGLE TEMPS : toute mention de 'temps majoré' / 'tiers-temps' / 'temps supplémentaire' DOIT inclure dans la même phrase 'et/ou réduire la quantité de données à traiter sur le temps imparti' (alternative équivalente). " +
           "RÈGLE VALORISATION : TOUJOURS inclure un item de catégorie 'Valorisation' sur l'estime de soi — valoriser/féliciter les efforts et les progrès pour soutenir la motivation. " +
           "Exemples : 'Temps : temps majoré aux évaluations écrites, et/ou réduire la quantité de données à traiter sur le temps imparti', 'Valorisation : valoriser et féliciter régulièrement les efforts fournis, mettre en avant les progrès pour soutenir l'estime de soi et la motivation'.",
+        items: { type: 'string' },
+      },
+      bilans_complementaires: {
+        type: 'array',
+        description:
+          "Orientations vers d'autres bilans pluridisciplinaires, **CONDITIONNEL** (0 à 4 items max). Inclure UNIQUEMENT si au moins un indice clinique du tableau justifie l'orientation — JAMAIS systématiquement. Liste VIDE [] si le bilan ne montre aucune comorbidité ni dissociation appelant un autre regard professionnel. " +
+          "Format STRICT par item : 'Catégorie : justification clinique courte (1 ligne, ~15-25 mots) qui pointe l'indice du bilan'. " +
+          "Catégories autorisées : 'Neuropsychologie' (suspicion TDAH, fonctions exécutives, attention/mémoire de travail effondrée < P10, fatigabilité majeure), 'Psychomotricité' (troubles graphiques, motricité fine/globale, latéralité, dyspraxie), 'Neurovisuel' (empan visuo-attentionnel déficitaire, suspicion DVS, hypothèses TVA), 'Orthoptie' (bilan langage écrit sans bilan visuel récent, troubles oculomoteurs, copie déficitaire), 'Ergothérapie' (compensation manuelle/numérique, dysgraphie sévère, adaptation matériel), 'ORL' (audition non vérifiée + déficit phonologique ou comprehension auditive, otites séro-muqueuses récidivantes), 'Pédopsychiatrie' (signaux dépressifs/anxieux, troubles de l'attachement, suspicion TSA), 'CRTLA / Centre référent' (profil TDL sévère, comorbidités multiples à coordonner). " +
+          "RÈGLES ABSOLUES : (1) chaque item DOIT pointer un indice concret du bilan dans la justification (ex: 'empan envers déficitaire'). (2) NE PAS lister 'bilan psychométrique / WISC' ici sauf si lié à TDAH ou TSA — sinon c'est dans recommandations. (3) NE PAS recommander un autre orthophoniste ni un re-bilan orthophonique. (4) Liste TRIÉE par priorité clinique (le plus pertinent en premier). " +
+          "Exemples : " +
+          "['Neuropsychologie : empan envers à P5 + fatigabilité marquée + fluences déficitaires → suspicion de trouble exécutif / TDAH à explorer.', 'Orthoptie : bilan visuel à actualiser, leximétrie déficitaire pouvant aussi traduire un trouble oculomoteur associé.'].",
         items: { type: 'string' },
       },
       conclusion: {
@@ -323,7 +334,7 @@ export const CRBO_TOOL: Anthropic.Tool = {
       'anamnese_redigee', 'motif_reformule', 'domains',
       'points_forts', 'difficultes_identifiees',
       'diagnostic', 'recommandations', 'axes_therapeutiques',
-      'conclusion', 'pap_suggestions',
+      'conclusion', 'pap_suggestions', 'bilans_complementaires',
     ],
     properties: {
       anamnese_redigee: _extractProps.anamnese_redigee as any,
@@ -354,6 +365,7 @@ export const CRBO_TOOL: Anthropic.Tool = {
       severite_globale: _synthesizeProps.severite_globale as any,
       comorbidites_detectees: _synthesizeProps.comorbidites_detectees as any,
       pap_suggestions: _synthesizeProps.pap_suggestions as any,
+      bilans_complementaires: _synthesizeProps.bilans_complementaires as any,
       synthese_evolution: _synthesizeProps.synthese_evolution as any,
       reasoning_clinical: _synthesizeProps.reasoning_clinical as any,
     },
@@ -449,6 +461,8 @@ export interface SynthesizedCRBO {
   conclusion: string
   /** Max 6 aménagements scolaires, format "Catégorie : description". */
   pap_suggestions: string[]
+  /** Orientations bilans complémentaires (neuropsy / psychomot / neurovisuel / orthoptie / ergothérapie / ORL / pédopsy / CRTLA), 0-4 items. Conditionnel : liste vide si aucune comorbidité observée. Format "Catégorie : justification clinique courte". */
+  bilans_complementaires: string[]
   /** Commentaires de domaine reformulés professionnellement (suggestion IA + notes ortho fusionnées). */
   domain_commentaires: { nom: string; commentaire: string }[]
   /** @deprecated — backend uniquement, plus rendu dans le Word. */
@@ -478,6 +492,8 @@ export interface CRBOStructure {
   /** @deprecated — section supprimée. */
   comorbidites_detectees?: string[]
   pap_suggestions?: string[]
+  /** Orientations bilans complémentaires (neuropsy / psychomot / neurovisuel / etc.), 0-4 items. Conditionnel — peut être vide pour les CRBO sans comorbidité. CRBO antérieurs au champ : valeur undefined. */
+  bilans_complementaires?: string[]
   synthese_evolution?: SyntheseEvolution | null
   /** Raisonnement clinique structuré (optionnel — CRBO antérieurs n'en ont pas). */
   reasoning_clinical?: ReasoningClinical | null
