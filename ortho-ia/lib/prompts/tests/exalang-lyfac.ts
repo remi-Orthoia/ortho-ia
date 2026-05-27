@@ -64,8 +64,11 @@ export const exalangLyfac: TestModule = {
 - Faire le point sur les **séquelles** d'un trouble spécifique déjà diagnostiqué (vérifier si les aménagements restent nécessaires).
 
 #### RÈGLES DE CONVERSION (HappyNeuron)
-- Quartiles HappyNeuron : **Q1 → P25, Med → P50, Q3 → P75**. Ne JAMAIS recalculer depuis l'É-T.
+- Quartiles HappyNeuron : **Q1 → P25** (Zone de fragilité, bord inférieur), **Med → P50** (Moyenne haute, bord inférieur), **Q3 → P75** (Moyenne haute, bord supérieur).
 - Valeurs explicites (P5, P10, P90, P95) à utiliser telles quelles.
+- Ne JAMAIS recalculer depuis l'É-T : les normes étalonnées du test priment sur la distribution gaussienne théorique.
+
+Exemple piège classique : "Empan endroit : É-T -1.53, Q1" → Percentile = P25 → Interprétation **Zone de fragilité** (et non "Difficulté sévère" comme le suggérerait l'É-T).
 
 #### SEUILS CLINIQUES (grille 6 zones Laurie, refonte 2026-05-ter)
 - P76-100 : Excellent
@@ -200,5 +203,33 @@ export const exalangLyfac: TestModule = {
 - ✅ Croiser au moins 3 épreuves pour confirmer un trouble persistant.
 - ✅ Formuler des recommandations d'**aménagements aux examens** précises et chiffrées.
 - ✅ Mentionner les **compensations** mises en place par le jeune adulte (stratégies de lecture rapide, recours au correcteur orthographique, etc.).
-- ✅ Orienter vers psy / neuropsy / médecin universitaire si profil non orthophonique.`,
+- ✅ Orienter vers psy / neuropsy / médecin universitaire si profil non orthophonique.
+
+---
+
+#### MODE RENOUVELLEMENT — COMPARAISON STRUCTURÉE
+
+Si un objet 'bilan_precedent_structure' non-null est fourni dans le contexte, ce CRBO devient un **bilan de renouvellement** et DOIT inclure une 'synthese_evolution' rigoureuse, jamais générique.
+
+Méthode obligatoire :
+1. **Matcher nominativement** chaque épreuve actuelle avec son homologue précédent (par libellé). En cas de changement de batterie (Exalang 11-15 vers Lyfac pour passage au lycée/fac), matcher par compétence évaluée (lecture de mots avec lecture de mots, leximétrie avec leximétrie, empan avec empan).
+2. **Convertir Q1/Med/Q3 vers P25/P50/P75** systématiquement AVANT de comparer.
+3. **Calculer le delta percentile** :
+   - Delta >= +10 -> PROGRÈS NET (signaler dans 'synthese_evolution.progres')
+   - Delta entre -10 et +10 -> STAGNATION (signaler dans 'synthese_evolution.stagnation')
+   - Delta <= -10 -> RÉGRESSION (signaler dans 'synthese_evolution.regression')
+4. **Cas particulier Q1 vers Med** : P25 vers P50 = +25, PROGRÈS NET. Idem Med vers Q3.
+5. **Citation nominative obligatoire** : "Leximétrie P25 vers P50 (progrès, 280 mots/min)", PAS "plusieurs progrès observés".
+6. **Spécificité jeune adulte** : à cet âge, les troubles installés sont peu réversibles ; un renouvellement Lyfac vise davantage à **objectiver la stabilité du trouble** pour le maintien des aménagements aux examens qu'à mesurer une rééducation active. Tenir compte de ce contexte dans la formulation de la 'synthese_evolution.resume'.
+7. **Délai entre les bilans** à mentionner explicitement ("Au regard de N mois écoulés depuis le précédent bilan").
+
+#### NOMENCLATURE AMO — Mention OBLIGATOIRE en conclusion
+
+Le CRBO DOIT inclure dans la conclusion 1 phrase (2 lignes max) précisant la nomenclature AMO applicable, OU mentionner explicitement l'absence de PEC active si le bilan vise uniquement à objectiver les aménagements :
+- **AMO 8.4** : rééducation des troubles du langage écrit (dyslexie/dysorthographie persistante).
+- **AMO 9.4** : rééducation des troubles du langage oral (rare à cet âge).
+
+Pour Exalang Lyfac le profil dominant attendu est dyslexie/dysorthographie persistante -> **AMO 8.4** si reprise/maintien de PEC. Si l'évaluation vise uniquement la justification d'aménagements aux examens sans reprise de PEC, mentionner explicitement : "Pas de reprise de prise en charge orthophonique indiquée à ce stade. Le bilan vise à objectiver les aménagements aux examens auprès de la CDAPH / médecine préventive universitaire."
+
+Format attendu pour AMO : "La rééducation s'inscrit dans le cadre de la nomenclature AMO 8.4 (rééducation des troubles du langage écrit)." Une phrase, point.`,
 }

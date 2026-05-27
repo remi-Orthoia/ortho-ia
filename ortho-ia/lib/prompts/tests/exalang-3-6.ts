@@ -29,10 +29,25 @@ export const exalang36: TestModule = {
 
 Population : **maternelle (PS, MS, GS)**. Premier outil HappyNeuron en langage oral, idéal pour les bilans de début de scolarisation et les dépistages de TDL.
 
-#### RÈGLES DE CONVERSION
-- Notation quartiles HappyNeuron : **Q1 → P25, Med → P50, Q3 → P75**.
+#### RÈGLES DE CONVERSION DES PERCENTILES (impératif)
+- Notation quartiles HappyNeuron : **Q1 → P25** (Zone de fragilité, bord inférieur), **Med → P50** (Moyenne haute, bord inférieur), **Q3 → P75** (Moyenne haute, bord supérieur).
 - Valeurs explicites (P5, P10, P90, P95) à utiliser telles quelles.
-- Ne JAMAIS recalculer depuis l'É-T.
+- Ne JAMAIS recalculer depuis l'É-T : les normes étalonnées du test priment sur la distribution gaussienne théorique.
+
+Exemple piège classique : "Boucle phonologique : É-T -1.53, Q1" → Percentile = P25 → Interprétation **Zone de fragilité** (et non "Difficulté sévère" comme le suggérerait l'É-T).
+
+#### SEUILS CLINIQUES (grille 6 zones Laurie, refonte 2026-05-ter)
+
+| Plage percentile | Classe | Couleur |
+|---|---|---|
+| P76 - P100 | Excellent | vert foncé |
+| P50 - P75 (Q3 inclus) | Moyenne haute | vert clair |
+| P26 - P49 | Moyenne basse | jaune |
+| P11 - P25 (Q1 inclus) | Zone de fragilité | orange clair |
+| P6 - P10 | Difficulté | orange foncé |
+| P1 - P5 | Difficulté sévère | rouge |
+
+Exalang n'affiche JAMAIS de bande <P5. Bornes inclusives de part et d'autre (P25 dans Zone de fragilité, P26 dans Moyenne basse, P50 dans Moyenne haute, P75 dans Moyenne haute, P76 dans Excellent).
 
 #### INTERPRÉTATION PAR ÉPREUVE
 
@@ -101,5 +116,32 @@ Population : **maternelle (PS, MS, GS)**. Premier outil HappyNeuron en langage o
 - TDL confirmé : PEC hebdomadaire immédiate, 30 min.
 - Bilan **ORL impératif** à cet âge (otites séro-muqueuses).
 - Coordination PMI, crèche, école maternelle.
-- Suivi préventif au CP (risque de dyslexie).`,
+- Suivi préventif au CP (risque de dyslexie).
+
+---
+
+#### MODE RENOUVELLEMENT — COMPARAISON STRUCTURÉE
+
+Si un objet 'bilan_precedent_structure' non-null est fourni dans le contexte, ce CRBO devient un **bilan de renouvellement** et DOIT inclure une 'synthese_evolution' rigoureuse, jamais générique.
+
+Méthode obligatoire :
+1. **Matcher nominativement** chaque épreuve actuelle avec son homologue précédent (par libellé). En cas de changement de batterie (Exalang 3-6 vers 5-8 pour passage en GS/CP), matcher par compétence (lexique réceptif avec lexique réceptif, métaphonologie avec métaphonologie).
+2. **Convertir Q1/Med/Q3 vers P25/P50/P75** systématiquement AVANT de comparer.
+3. **Calculer le delta percentile** :
+   - Delta >= +10 -> PROGRÈS NET (signaler dans 'synthese_evolution.progres')
+   - Delta entre -10 et +10 -> STAGNATION (signaler dans 'synthese_evolution.stagnation')
+   - Delta <= -10 -> RÉGRESSION (signaler dans 'synthese_evolution.regression')
+4. **Cas particulier Q1 vers Med** : P25 vers P50 = +25, PROGRÈS NET. Idem Med vers Q3.
+5. **Citation nominative obligatoire** : "Lexique réceptif P25 vers P50 (progrès)", PAS "plusieurs progrès observés".
+6. **Délai entre les bilans** à mentionner ("Au regard de N mois de prise en charge / de guidance"). Chez l'enfant en maternelle, tenir compte de la maturation développementale (les progrès spontanés sont attendus avant 5 ans).
+
+#### NOMENCLATURE AMO — Mention OBLIGATOIRE en conclusion
+
+Le CRBO DOIT inclure dans la conclusion 1 phrase (2 lignes max) précisant la nomenclature AMO applicable :
+- **AMO 9.4** : rééducation des troubles du langage oral (TDL, retard simple, troubles articulatoires).
+- **AMO 8.4** : rééducation des troubles du langage écrit (rare à cet âge, sauf prévention pré-CP).
+
+Pour Exalang 3-6 le profil dominant est langage oral -> **AMO 9.4**. Profil avec déficit phonologique sévère pré-CP -> AMO 9.4 (puis transition vers 8.4 si dyslexie confirmée plus tard).
+
+Format attendu : "La rééducation s'inscrit dans le cadre de la nomenclature AMO 9.4 (rééducation des troubles du langage oral)." Une phrase, point.`,
 }

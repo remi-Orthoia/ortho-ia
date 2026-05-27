@@ -61,13 +61,26 @@ Population : enfants du CE2 au CM2 (classe d'âge 8 à 11 ans). Outil le plus ut
 #### RÈGLES DE CONVERSION DES PERCENTILES (impératif)
 
 Les résultats Exalang sont présentés en quartiles :
-- **Q1 → P25** (Normal — pas déficitaire malgré un É-T négatif)
-- **Med / Q2 → P50**
-- **Q3 → P75**
+- **Q1 → P25** (Zone de fragilité — bord inférieur, NE PAS confondre avec Moyenne basse qui commence à P26)
+- **Med / Q2 → P50** (Moyenne haute, bord inférieur)
+- **Q3 → P75** (Moyenne haute, bord supérieur — Q3 inclus)
 - **P5, P10, P90, P95** : valeurs exactes à utiliser telles quelles
 - Ne **JAMAIS** recalculer un percentile depuis l'É-T : les normes étalonnées du test priment sur la distribution gaussienne théorique.
 
-Exemple piège classique : "Boucle phonologique : É-T -1.53, Q1" → Percentile = P25 → Interprétation **Normal** (et non "Déficitaire" comme le suggérerait l'É-T).
+Exemple piège classique : "Boucle phonologique : É-T -1.53, Q1" → Percentile = P25 → Interprétation **Zone de fragilité** (et non "Difficulté sévère" comme le suggérerait l'É-T).
+
+#### SEUILS CLINIQUES (grille 6 zones Laurie, refonte 2026-05-ter)
+
+| Plage percentile | Classe | Couleur |
+|---|---|---|
+| P76 - P100 | Excellent | vert foncé |
+| P50 - P75 (Q3 inclus) | Moyenne haute | vert clair |
+| P26 - P49 | Moyenne basse | jaune |
+| P11 - P25 (Q1 inclus) | Zone de fragilité | orange clair |
+| P6 - P10 | Difficulté | orange foncé |
+| P1 - P5 | Difficulté sévère | rouge |
+
+Exalang n'affiche JAMAIS de bande <P5 ; la valeur minimale est P5 et est incluse dans "Difficulté sévère". Bornes inclusives de part et d'autre (P25 dans Zone de fragilité, P26 dans Moyenne basse, P50 dans Moyenne haute, P75 dans Moyenne haute, P76 dans Excellent).
 
 ---
 
@@ -171,6 +184,33 @@ Exemple piège classique : "Boucle phonologique : É-T -1.53, Q1" → Percentile
 - **Complément calcul** (si co-morbidité dyscalculie) : Examath.
 - **Complément attention / exécutif** : à orienter vers **neuropsychologue** pour NEPSY-II, TEA-Ch, BRIEF (parent/enseignant), CPT-3.
 - **Complément cognitif global** : à orienter vers **psychologue** pour WISC-V (nécessaire avant tout PPS).
+
+---
+
+#### MODE RENOUVELLEMENT — COMPARAISON STRUCTURÉE
+
+Si un objet 'bilan_precedent_structure' non-null est fourni dans le contexte, ce CRBO devient un **bilan de renouvellement** et DOIT inclure une 'synthese_evolution' rigoureuse, jamais générique.
+
+Méthode obligatoire :
+1. **Matcher nominativement** chaque épreuve actuelle avec son homologue dans le bilan précédent (par libellé). En cas de changement de batterie (ex: Exalang 5-8 vers 8-11 pour progression scolaire CE2), matcher par compétence évaluée (lecture de mots avec lecture de mots, métaphonologie avec métaphonologie, etc.).
+2. **Convertir Q1/Med/Q3 vers P25/P50/P75** systématiquement AVANT de comparer (jamais Q comparé à P).
+3. **Calculer le delta percentile** :
+   - Delta >= +10 -> PROGRÈS NET (signaler dans 'synthese_evolution.progres')
+   - Delta entre -10 et +10 -> STAGNATION (signaler dans 'synthese_evolution.stagnation')
+   - Delta <= -10 -> RÉGRESSION (signaler dans 'synthese_evolution.regression')
+4. **Cas particulier Q1 vers Med** : P25 vers P50 = +25, c'est un PROGRÈS NET, jamais "marginal" ni "amélioration modérée". Idem Med vers Q3 (P50 vers P75).
+5. **Citation nominative obligatoire** : écrire "Boucle phonologique P25 vers P50 (progrès)", PAS "plusieurs progrès observés".
+6. **Délai entre les bilans** à mentionner explicitement ("Au regard de N mois de prise en charge"). Si délai < 6 mois sans PEC active, ne pas conclure à une rééducation efficace (effet test/retest).
+
+#### NOMENCLATURE AMO — Mention OBLIGATOIRE en conclusion
+
+Le CRBO DOIT inclure dans la conclusion 1 phrase (2 lignes max) précisant la nomenclature AMO applicable :
+- **AMO 8.4** : rééducation des troubles du langage écrit (dyslexie, dysorthographie).
+- **AMO 9.4** : rééducation des troubles du langage oral (TDL, retard simple).
+
+Pour Exalang 8-11 le profil dominant attendu est dyslexie/dysorthographie -> **AMO 8.4**. Profil mixte (TDL + dyslexie) -> mentionner les deux AMO avec le dominant en premier.
+
+NE PAS faire un paragraphe entier sur l'AMO. Format attendu : "La rééducation s'inscrit dans le cadre de la nomenclature AMO 8.4 (rééducation des troubles du langage écrit)." Une phrase, point.
 
 ---
 

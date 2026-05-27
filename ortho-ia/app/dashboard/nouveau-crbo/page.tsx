@@ -22,7 +22,6 @@ import PredimemScoresInput from '@/components/forms/PredimemScoresInput'
 import ExamathScoresInput from '@/components/forms/ExamathScoresInput'
 import Evaleo615ScoresInput from '@/components/forms/Evaleo615ScoresInput'
 import Evalo26ScoresInput from '@/components/forms/Evalo26ScoresInput'
-import Exalang58ScoresInput from '@/components/forms/Exalang58ScoresInput'
 import Exalang36ScoresInput from '@/components/forms/Exalang36ScoresInput'
 import PrediFexScoresInput from '@/components/forms/PrediFexScoresInput'
 import BecdScoresInput from '@/components/forms/BecdScoresInput'
@@ -2690,12 +2689,6 @@ Astuce : tapez /fatigue, /anxiete, /encouragements… pour réutiliser vos formu
                             onResultatsChange={(v) => handleTestSlotChange('EVALO 2-6', v)}
                           />
                         )}
-                        {test === 'Exalang 5-8' && (
-                          <Exalang58ScoresInput
-                            {...sharedNotesProps}
-                            onResultatsChange={(v) => handleTestSlotChange('Exalang 5-8', v)}
-                          />
-                        )}
                         {test === 'Exalang 3-6' && (
                           <Exalang36ScoresInput
                             {...sharedNotesProps}
@@ -2816,10 +2809,14 @@ Astuce : tapez /fatigue, /anxiete, /encouragements… pour réutiliser vos formu
                   required
                   rows={12}
                   className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-green-500 resize-none font-mono text-sm"
-                  placeholder="Empan auditif endroit : 3/7, É-T : -2.11, P5
+                  placeholder="Notation Exalang : Q1 = P25 (Zone de fragilité), Med = P50 (Moyenne haute), Q3 = P75 (Moyenne haute), P5/P10/P90/P95 = valeur exacte. NE JAMAIS recalculer le percentile depuis l'É-T.
+
+Empan auditif endroit : 3/7, É-T : -2.11, P5
 Empan auditif envers : 3/6, É-T : -0.79, Q3 (P75)
 Métaphonologie - traitement syllabique : 5/11, É-T : -3.32, P5
 Lecture de mots (score) : 15/100, É-T : -6.62, P5
+Lecture de non-mots : 8/20, É-T : -1.20, Q1 (P25)
+Compréhension écrite : 7/10, É-T : -0.50, Med (P50)
 ..."
                 />
 
