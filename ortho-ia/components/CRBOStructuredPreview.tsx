@@ -4,6 +4,7 @@ import React from 'react'
 import { Download, Edit, AlertTriangle, Sparkles, BookOpen, Eye, UserCheck } from 'lucide-react'
 import type { CRBOStructure } from '@/lib/prompts'
 import { SEUILS, seuilFor, getPercentileColor, formatPercentileForDisplay, seuilForEvaleo } from '@/lib/word-export'
+import { BILAN_REGISTRY } from '@/lib/bilan-registry'
 import ReasoningClinicalDisplay from './ReasoningClinical'
 import RenouvellementComparisonTable from './RenouvellementComparisonTable'
 
@@ -22,6 +23,12 @@ interface Props {
   previousBilanDate?: string | null
   /** Date du bilan actuel (ISO ou libre) pour étiqueter la colonne. */
   bilanDate?: string | null
+  /** Liste des tests utilisés (CRBO.test_utilise). Source de vérité pour choisir la
+   *  légende et la palette : aligné sur lib/word-export.ts. Si au moins un test
+   *  a legendType='evaleo' dans le registry, on bascule sur la grille EVALEO
+   *  7 classes ; sinon grille Exalang 6 zones (standard Laurie). Si non fourni,
+   *  on retombe sur l'heuristique "interprétation au format Classe X". */
+  testList?: string[]
 }
 
 /** Rend un texte avec marqueurs Markdown `**gras**`, lignes `**Titre**` = H3, et paragraphes séparés par ligne vide. */
@@ -78,17 +85,23 @@ export default function CRBOStructuredPreview({
   previousStructure,
   previousBilanDate,
   bilanDate,
+  testList,
 }: Props) {
   const sev = structure.severite_globale
 
-  // Heuristique : detection EVALEO via le format des interpretations
-  // ("Classe X - <Libelle>"). Impose par le module prompt EVALEO 6-15.
-  // Si vrai, bascule la legende ET la palette des cellules sur la grille
-  // officielle EVALEO 7 classes (rouge/orange/verts/bleus) au lieu de la
-  // grille Exalang 6 zones (Excellent/Moyenne haute/.../Difficulte severe).
-  const isEvaleoStructure = (structure.domains ?? []).some(d =>
-    (d.epreuves ?? []).some(e => /^classe\s*[1-7]\s*[-–]/i.test((e.interpretation ?? '').trim())),
-  )
+  // Source de verite pour la legende : registry via testList si fourni
+  // (aligne sur lib/word-export.ts ligne 367). Sinon fallback heuristique
+  // "Classe X - ..." dans les interpretations.
+  // Sans testList -> l'ancien comportement reste actif pour les call sites
+  // legacy qui n'ont pas encore ete adaptes.
+  const isEvaleoStructure = (() => {
+    if (testList && testList.length > 0) {
+      return testList.some(t => BILAN_REGISTRY[t]?.legendType === 'evaleo')
+    }
+    return (structure.domains ?? []).some(d =>
+      (d.epreuves ?? []).some(e => /^classe\s*[1-7]\s*[-–]/i.test((e.interpretation ?? '').trim())),
+    )
+  })()
   const seuilForCell = (v: number) => isEvaleoStructure ? seuilForEvaleo(v) : seuilFor(v)
   const colorForCell = (v: number) => seuilForCell(v).shading
 

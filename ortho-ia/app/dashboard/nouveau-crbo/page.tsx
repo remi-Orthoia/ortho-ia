@@ -1322,6 +1322,7 @@ function NouveauCRBOContent() {
                 previousStructure={formData.bilan_precedent_structure ?? null}
                 previousBilanDate={formData.bilan_precedent_date ?? null}
                 bilanDate={formData.bilan_date}
+                testList={formData.test_utilise}
               />
             </>
           ) : (
@@ -1431,6 +1432,7 @@ function NouveauCRBOContent() {
                   previousStructure={formData.bilan_precedent_structure ?? null}
                   previousBilanDate={formData.bilan_precedent_date ?? null}
                   bilanDate={formData.bilan_date}
+                  testList={formData.test_utilise}
                 />
               </div>
             </div>

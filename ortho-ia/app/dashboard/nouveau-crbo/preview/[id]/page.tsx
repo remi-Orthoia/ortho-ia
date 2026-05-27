@@ -1058,6 +1058,7 @@ export default function CRBOPreviewPage() {
             previousStructure={previousStructure}
             previousBilanDate={previousBilanDate}
             bilanDate={crbo?.bilan_date}
+            testList={Array.isArray(crbo?.test_utilise) ? crbo!.test_utilise : (typeof crbo?.test_utilise === 'string' && crbo.test_utilise.trim() ? [crbo.test_utilise] : [])}
           />
         </div>
       )}

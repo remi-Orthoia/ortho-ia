@@ -666,6 +666,7 @@ export default function CRBODetailPage() {
           previousStructure={previousStructure}
           previousBilanDate={previousBilanDate}
           bilanDate={crbo.bilan_date}
+          testList={Array.isArray(crbo.test_utilise) ? crbo.test_utilise : (typeof crbo.test_utilise === 'string' && crbo.test_utilise.trim() ? [crbo.test_utilise] : [])}
         />
       ) : (
         <div className="space-y-4">
@@ -731,6 +732,7 @@ export default function CRBODetailPage() {
                 previousStructure={previousStructure}
                 previousBilanDate={previousBilanDate}
                 bilanDate={crbo.bilan_date}
+                testList={Array.isArray(crbo.test_utilise) ? crbo.test_utilise : (typeof crbo.test_utilise === 'string' && crbo.test_utilise.trim() ? [crbo.test_utilise] : [])}
               />
             </div>
           </div>
