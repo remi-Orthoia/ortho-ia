@@ -294,7 +294,7 @@ export interface WordExportPayload {
 export async function generateCRBOWord(payload: WordExportPayload): Promise<Blob> {
   const {
     Document, Packer, Paragraph, TextRun, Table, TableRow, TableCell,
-    WidthType, BorderStyle, AlignmentType, PageBreak, ShadingType, ImageRun,
+    WidthType, BorderStyle, AlignmentType, ShadingType, ImageRun,
     PageOrientation, LevelFormat,
   } = await import('docx')
 
@@ -451,8 +451,13 @@ export async function generateCRBOWord(payload: WordExportPayload): Promise<Blob
     })
   }
 
-  const createSectionTitle = (text: string, opts: { centered?: boolean } = {}) => new Paragraph({
+  const createSectionTitle = (text: string, opts: { centered?: boolean; pageBreakBefore?: boolean } = {}) => new Paragraph({
     alignment: opts.centered ? AlignmentType.CENTER : AlignmentType.LEFT,
+    // pageBreakBefore: attribut Word natif qui force ce paragraphe à demarrer
+    // une nouvelle page. Pas de paragraphe vide intermediaire (contrairement
+    // a un new PageBreak() dans children) -> evite les pages blanches qui
+    // apparaissaient quand le contenu precedent terminait pile en bas de page.
+    pageBreakBefore: opts.pageBreakBefore,
     children: [new TextRun({ text, bold: true, size: FONT_SIZE_SECTION, font: FONT, color: COLOR_GREEN })],
     spacing: { before: 400, after: 200 },
     border: { bottom: { color: COLOR_GREEN, space: 20, style: BorderStyle.SINGLE, size: 12 } },
@@ -893,14 +898,14 @@ export async function generateCRBOWord(payload: WordExportPayload): Promise<Blob
     }
   }
 
-  children.push(new Paragraph({ children: [new PageBreak()] }))
-
   // ===== ANAMNÈSE — JAMAIS de notes brutes =====
   // Refonte 2026-05 : SUPPRESSION du surlignage bleu pâle des passages
   // édités par l'ortho dans le Word/PDF. Le highlight bleu reste UNIQUEMENT
   // sur la preview HTML côté client (cf. nouveau-crbo/preview/[id]/page.tsx).
   // Le document exporté est propre, sans trace visuelle des édits.
-  children.push(createSectionTitle('ANAMNÈSE'))
+  // pageBreakBefore: force le titre ANAMNESE a demarrer en haut de la
+  // page 2 (sans paragraphe vide intermediaire qui creait des pages blanches).
+  children.push(createSectionTitle('ANAMNÈSE', { pageBreakBefore: true }))
   const anamneseText = hasStructure && structure!.anamnese_redigee?.trim()
     ? structure!.anamnese_redigee.trim()
     : "[À COMPLÉTER — anamnèse non reformulée par l'IA. Reprenez les notes brutes et rédigez un paragraphe fluide.]"
@@ -1357,16 +1362,26 @@ export async function generateCRBOWord(payload: WordExportPayload): Promise<Blob
     }
   }
 
-  children.push(new Paragraph({ children: [new PageBreak()] }))
-
   // ===== SYNTHÈSE / CONCLUSIONS =====
   // En format Complet : titre "SYNTHÈSE ET CONCLUSIONS" + Points forts /
   // Difficultés / Diagnostic / Recommandations / Axes / Aménagements scolaires.
   // En format Synthétique (Laurie) : pas de titre wrapper — chaque sous-bloc
   // (DIAGNOSTIC ORTHOPHONIQUE / PROJET THÉRAPEUTIQUE / Aménagements pédagogiques
   // proposés) est une section à part entière au même niveau que ANAMNÈSE/BILAN.
+  //
+  // Le saut de page vers cette section est porte par pageBreakBefore sur le
+  // PREMIER paragraphe pousse ici (consume une seule fois via le helper
+  // ci-dessous). Pas de paragraphe vide intermediaire -> evite les pages
+  // blanches qui apparaissaient quand le tableau Bilan finissait pile en
+  // bas de page.
+  let synthesePageBreakUsed = false
+  const consumeSynthesePageBreak = (): boolean | undefined => {
+    if (synthesePageBreakUsed) return undefined
+    synthesePageBreakUsed = true
+    return true
+  }
   if (!isSynthetique) {
-    children.push(createSectionTitle('SYNTHÈSE ET CONCLUSIONS'))
+    children.push(createSectionTitle('SYNTHÈSE ET CONCLUSIONS', { pageBreakBefore: consumeSynthesePageBreak() }))
   }
   if (hasStructure) {
     const s = structure!
@@ -1440,8 +1455,9 @@ export async function generateCRBOWord(payload: WordExportPayload): Promise<Blob
         }))
       })
     }
-    const pushBlock = (label: string, content: string) => {
+    const pushBlock = (label: string, content: string, opts: { pageBreakBefore?: boolean } = {}) => {
       children.push(new Paragraph({
+        pageBreakBefore: opts.pageBreakBefore,
         children: [new TextRun({ text: label, bold: true, size: FONT_SIZE_NORMAL, font: FONT, color: COLOR_GREEN })],
         spacing: { before: 240, after: 80 },
       }))
@@ -1472,16 +1488,16 @@ export async function generateCRBOWord(payload: WordExportPayload): Promise<Blob
     // Synthétique : section à part entière "DIAGNOSTIC ORTHOPHONIQUE".
     if (s.diagnostic?.trim()) {
       if (isSynthetique) {
-        children.push(createSectionTitle('DIAGNOSTIC ORTHOPHONIQUE'))
+        children.push(createSectionTitle('DIAGNOSTIC ORTHOPHONIQUE', { pageBreakBefore: consumeSynthesePageBreak() }))
         renderRichContent(s.diagnostic.trim())
       } else if (isMocaOnly) {
         // MoCA = screening, jamais de diagnostic frontal. Le bloc s'intitule
         // "Hypothèse de diagnostic" pour rappeler le statut non-conclusif et
         // protéger l'ortho juridiquement (la MoCA seule n'autorise aucun
         // diagnostic étiologique de démence / MCI / Alzheimer).
-        pushBlock('Hypothèse de diagnostic', s.diagnostic.trim())
+        pushBlock('Hypothèse de diagnostic', s.diagnostic.trim(), { pageBreakBefore: consumeSynthesePageBreak() })
       } else {
-        pushBlock('Diagnostic', s.diagnostic.trim())
+        pushBlock('Diagnostic', s.diagnostic.trim(), { pageBreakBefore: consumeSynthesePageBreak() })
       }
     }
 
@@ -1491,6 +1507,7 @@ export async function generateCRBOWord(payload: WordExportPayload): Promise<Blob
     // Régression — affichées uniquement si non vides.
     if (s.synthese_evolution) {
       children.push(new Paragraph({
+        pageBreakBefore: consumeSynthesePageBreak(),
         children: [new TextRun({ text: "Synthèse d'évolution", bold: true, size: FONT_SIZE_NORMAL, font: FONT, color: '6A1B9A' })],
         spacing: { before: 240, after: 80 },
       }))
