@@ -225,6 +225,14 @@ function NouveauCRBOContent() {
   const [showNewPatientForm, setShowNewPatientForm] = useState(false)
   const [showPatientGrid, setShowPatientGrid] = useState(false)
 
+  // Audit 2026-05-29 (amelioration #2) — suggestion automatique de basculer
+  // en renouvellement quand un bilan precedent existe pour ce patient. Permet
+  // d'eviter que l'ortho cree un nouveau bilan initial alors qu'elle aurait
+  // pu beneficier de la comparaison auto avec son bilan precedent.
+  const [previousCrboHint, setPreviousCrboHint] = useState<{
+    id: string; date: string; test_utilise: string
+  } | null>(null)
+
   // Médecins (banque)
   const [medecins, setMedecins] = useState<Medecin[]>([])
   const [medecinSearch, setMedecinSearch] = useState('')
@@ -868,6 +876,65 @@ function NouveauCRBOContent() {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [formData.bilan_type, selectedPatientId, formData.patient_prenom, formData.patient_nom])
 
+  // Audit 2026-05-29 (amelioration #2) — detection auto d'un CRBO precedent
+  // pour ce patient. Si bilan_type est 'initial' mais qu'il y a un bilan
+  // anterieur en DB, on propose a l'ortho de basculer en renouvellement
+  // via un banner discret. Evite qu'elle oublie de cocher renouvellement
+  // et passe a cote du tableau comparatif auto + synthese_evolution.
+  useEffect(() => {
+    const detectPreviousCrbo = async () => {
+      if (
+        !selectedPatientId ||
+        !formData.patient_prenom?.trim() ||
+        !formData.patient_nom?.trim() ||
+        formData.bilan_type === 'renouvellement'
+      ) {
+        setPreviousCrboHint(null)
+        return
+      }
+      try {
+        const supabase = createClient()
+        const { data: { user } } = await supabase.auth.getUser()
+        if (!user) return
+        const { data } = await supabase
+          .from('crbos')
+          .select('id, bilan_date, test_utilise')
+          .eq('user_id', user.id)
+          .eq('patient_prenom', formData.patient_prenom)
+          .eq('patient_nom', formData.patient_nom)
+          .order('bilan_date', { ascending: false })
+          .limit(1)
+          .maybeSingle()
+        if (data) {
+          setPreviousCrboHint({
+            id: data.id,
+            date: data.bilan_date,
+            test_utilise: typeof data.test_utilise === 'string' ? data.test_utilise : '',
+          })
+        } else {
+          setPreviousCrboHint(null)
+        }
+      } catch {
+        setPreviousCrboHint(null)
+      }
+    }
+    detectPreviousCrbo()
+  }, [selectedPatientId, formData.patient_prenom, formData.patient_nom, formData.bilan_type])
+
+  /** Bascule en mode renouvellement avec le CRBO precedent detecte. Equivalent
+   *  manuel de l'URL ?renouvellement=<crboId>. */
+  const handleSwitchToRenouvellement = () => {
+    if (!previousCrboHint) return
+    setFormData(prev => ({
+      ...prev,
+      bilan_type: 'renouvellement',
+      bilan_precedent_id: previousCrboHint.id,
+    }))
+    // L'effect handleImportPreviousAnamnese chargera la structure complete
+    // au prochain cycle, evitant la duplication de logique.
+    setPreviousCrboHint(null)
+  }
+
   // Upload bilan initial EXTERNE (PDF / Word). Appelle /api/extract-previous-bilan,
   // récupère la structure JSON et la pose dans formData.bilan_precedent_structure
   // pour que le pipeline de génération + le rendu Word comparatif la consomment.
@@ -890,6 +957,14 @@ function NouveauCRBOContent() {
       const fd = new FormData()
       fd.append('file', file)
       if (selectedPatientId) fd.append('patient_id', selectedPatientId)
+      // test_hint (amelioration #1) : permet au serveur de router vers
+      // l'extracteur specifique au test si dispo (ex: EVALEO 6-15 →
+      // EVALEO_EXTRACT_TOOL au lieu du generique). Preserve classes
+      // officielles + effets + erreurs lors de l'import du PDF precedent.
+      const tests = Array.isArray(formData.test_utilise)
+        ? formData.test_utilise.join(', ')
+        : (formData.test_utilise || '')
+      if (tests) fd.append('test_hint', tests)
       const res = await fetch('/api/extract-previous-bilan', { method: 'POST', body: fd })
       const data = await res.json()
       if (!res.ok) {
@@ -1646,6 +1721,39 @@ function NouveauCRBOContent() {
           >
             Changer
           </button>
+        </div>
+      )}
+
+      {/* Suggestion auto bilan precedent (amelioration #2). Visible quand un
+          CRBO antérieur existe pour le même patient + bilan_type=initial.
+          Un clic bascule en renouvellement + l'effect auto-import recupere
+          la structure precedente pour activer le tableau comparatif Word. */}
+      {previousCrboHint && currentStep <= TOTAL_STEPS && (
+        <div className="mb-4 flex items-center justify-between gap-3 flex-wrap bg-amber-50 border border-amber-300 rounded-lg px-4 py-2.5">
+          <div className="flex items-center gap-2 text-sm text-amber-900 min-w-0">
+            <span aria-hidden>💡</span>
+            <span className="leading-snug">
+              <strong>Bilan précédent détecté</strong> pour ce patient ({new Date(previousCrboHint.date).toLocaleDateString('fr-FR')}
+              {previousCrboHint.test_utilise ? ` · ${previousCrboHint.test_utilise.split(',')[0].trim()}` : ''}).
+              Basculer en renouvellement active la comparaison automatique (tableau d&apos;évolution, synthèse progrès/régression).
+            </span>
+          </div>
+          <div className="flex items-center gap-2 shrink-0">
+            <button
+              type="button"
+              onClick={handleSwitchToRenouvellement}
+              className="px-3 py-1.5 bg-amber-600 hover:bg-amber-700 text-white text-xs font-semibold rounded transition whitespace-nowrap"
+            >
+              Basculer en renouvellement
+            </button>
+            <button
+              type="button"
+              onClick={() => setPreviousCrboHint(null)}
+              className="text-xs text-amber-700 hover:text-amber-900 underline decoration-dotted whitespace-nowrap"
+            >
+              Ignorer
+            </button>
+          </div>
         </div>
       )}
 

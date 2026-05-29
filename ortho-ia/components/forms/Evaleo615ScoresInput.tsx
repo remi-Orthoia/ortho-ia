@@ -807,6 +807,81 @@ export default function Evaleo615ScoresInput({
     return c
   }, [state.epreuves])
 
+  /**
+   * Audit 2026-05-29 (amelioration #6) — live preview deltas en mode
+   * renouvellement. Calcule en temps reel les compteurs d'evolution
+   * AVANT la generation du CRBO, pour que l'ortho voit ce qui ressortira
+   * dans le tableau comparatif Word et ajuste sa saisie si besoin.
+   *
+   * Matching epreuve actuelle ↔ precedente : par label lowercased+trimmed.
+   * Si le bilan precedent vient d'un CRBO ortho.ia EVALEO, les labels
+   * matchent exactement (Claude utilise les libelles officiels). Pour
+   * un PDF importe, le matching peut etre fuzzy — couvert par le fix #3
+   * cote word-export.
+   *
+   * Seuil delta ±10 sur percentile_value, identique au calcul cote prompt
+   * Claude et cote rendu Word (lib/word-export.ts:716). Garantit que ce
+   * que l'ortho voit ici = ce qui sortira dans le Word.
+   */
+  const evolutionStats = useMemo(() => {
+    const hasPrev = !!(bilanPrecedentStructure
+      && bilanPrecedentStructure.domains
+      && bilanPrecedentStructure.domains.length > 0)
+    if (!hasPrev) return null
+
+    const prevIndex = new Map<string, number>()
+    for (const d of bilanPrecedentStructure!.domains) {
+      for (const e of d.epreuves) {
+        const pv = typeof e.percentile_value === 'number' ? e.percentile_value : null
+        if (pv != null) prevIndex.set(e.nom.toLowerCase().trim(), pv)
+      }
+    }
+
+    let progres = 0, stable = 0, regression = 0, nouvelles = 0
+    const progresList: string[] = []
+    const regressionList: string[] = []
+    const nouvellesList: string[] = []
+
+    for (const s of SECTIONS) {
+      for (const sd of s.subdomains) {
+        for (const e of sd.epreuves) {
+          const st = state.epreuves[e.key]
+          if (st.non_passee || st.percentile === '') continue
+          const currOpt = PERCENTILE_OPTIONS.find(o => o.key === st.percentile)
+          if (!currOpt) continue
+          const prevValue = prevIndex.get(e.label.toLowerCase().trim())
+          if (prevValue == null) {
+            nouvelles++
+            nouvellesList.push(e.label)
+            continue
+          }
+          const delta = currOpt.value - prevValue
+          if (delta >= 10) {
+            progres++
+            progresList.push(e.label)
+          } else if (delta <= -10) {
+            regression++
+            regressionList.push(e.label)
+          } else {
+            stable++
+          }
+        }
+      }
+    }
+
+    const totalCompared = progres + stable + regression
+    return {
+      progres, stable, regression, nouvelles,
+      progresList, regressionList, nouvellesList,
+      totalCompared,
+      verdict: (() => {
+        if (progres > regression * 2 && progres >= 3) return 'progress' as const
+        if (regression > progres && regression >= 2) return 'regression' as const
+        return 'stable' as const
+      })(),
+    }
+  }, [state.epreuves, bilanPrecedentStructure])
+
   useEffect(() => {
     const anamneseHasData = ANAMNESE_CHAMPS.some(c => state.anamnese[c.key].trim().length > 0)
     const compHasData = comparaisonHasData(state.comparaison)
@@ -1227,6 +1302,79 @@ export default function Evaleo615ScoresInput({
           </div>
         </details>
       </div>
+
+      {/* Live preview deltas (amelioration #6) — visible seulement si un
+          bilan precedent est importe ET que l'ortho a deja saisi des
+          epreuves. Donne un apercu temps reel de ce qui ressortira dans
+          le tableau comparatif Word. Sert d'autodiagnostic : si "0 progres
+          + 0 stable + 0 regression + X nouvelles", c'est que le matching
+          par label ne fonctionne pas (titres differents entre les 2 bilans). */}
+      {evolutionStats && (evolutionStats.totalCompared > 0 || evolutionStats.nouvelles > 0) && (
+        <div className="rounded-lg border border-teal-300 bg-gradient-to-br from-teal-50 to-emerald-50 p-3">
+          <div className="flex items-center justify-between gap-2 mb-2 flex-wrap">
+            <p className="text-xs font-semibold text-teal-900">
+              Évolution prévue dans le CRBO — recalcul live
+            </p>
+            <span className={`text-[10px] font-bold px-2 py-0.5 rounded ${
+              evolutionStats.verdict === 'progress'
+                ? 'bg-green-200 text-green-900'
+                : evolutionStats.verdict === 'regression'
+                  ? 'bg-red-200 text-red-900'
+                  : 'bg-gray-200 text-gray-800'
+            }`}>
+              {evolutionStats.verdict === 'progress'
+                ? '✓ Progression'
+                : evolutionStats.verdict === 'regression'
+                  ? '↓ Régression'
+                  : '≈ Stable'}
+            </span>
+          </div>
+          <div className="flex flex-wrap gap-1.5 mb-2">
+            {evolutionStats.progres > 0 && (
+              <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded text-[11px] font-medium bg-green-100 text-green-800 border border-green-300">
+                <span className="font-bold">↑ {evolutionStats.progres}</span>
+                <span>progrès</span>
+              </span>
+            )}
+            {evolutionStats.stable > 0 && (
+              <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded text-[11px] font-medium bg-gray-100 text-gray-700 border border-gray-300">
+                <span className="font-bold">→ {evolutionStats.stable}</span>
+                <span>stable</span>
+              </span>
+            )}
+            {evolutionStats.regression > 0 && (
+              <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded text-[11px] font-medium bg-red-100 text-red-800 border border-red-300">
+                <span className="font-bold">↓ {evolutionStats.regression}</span>
+                <span>régression</span>
+              </span>
+            )}
+            {evolutionStats.nouvelles > 0 && (
+              <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded text-[11px] font-medium bg-blue-100 text-blue-800 border border-blue-300">
+                <span className="font-bold">✨ {evolutionStats.nouvelles}</span>
+                <span>nouvelle{evolutionStats.nouvelles > 1 ? 's' : ''}</span>
+              </span>
+            )}
+          </div>
+          {evolutionStats.progresList.length > 0 && (
+            <p className="text-[10px] text-green-900 leading-relaxed">
+              <strong>Progrès :</strong> {evolutionStats.progresList.slice(0, 5).join(' · ')}
+              {evolutionStats.progresList.length > 5 ? ` · +${evolutionStats.progresList.length - 5} autres` : ''}
+            </p>
+          )}
+          {evolutionStats.regressionList.length > 0 && (
+            <p className="text-[10px] text-red-900 leading-relaxed mt-0.5">
+              <strong>Régressions :</strong> {evolutionStats.regressionList.slice(0, 5).join(' · ')}
+              {evolutionStats.regressionList.length > 5 ? ` · +${evolutionStats.regressionList.length - 5} autres` : ''}
+            </p>
+          )}
+          {evolutionStats.nouvelles > evolutionStats.totalCompared && evolutionStats.totalCompared <= 2 && (
+            <p className="text-[10px] text-amber-800 mt-1 leading-relaxed bg-amber-50 border border-amber-200 rounded px-1.5 py-0.5">
+              ⚠ Peu d&apos;épreuves matchent entre les 2 bilans ({evolutionStats.totalCompared} comparées vs {evolutionStats.nouvelles} nouvelles).
+              Si la majorité devraient être comparables, vérifiez que les titres d&apos;épreuves du bilan précédent correspondent aux libellés EVALEO officiels.
+            </p>
+          )}
+        </div>
+      )}
 
       {/* Synthèse — repartition par CLASSE EVALEO (7 classes officielles) */}
       {totalSaisies > 0 && (
