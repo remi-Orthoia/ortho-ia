@@ -189,6 +189,23 @@ function NouveauCRBOContent() {
   // Le toast d'erreur quota n'est emis qu'une fois par session — sinon
   // chaque tick 15s spammerait l'ortho avec le meme message.
   const quotaErrorShownRef = useRef(false)
+  // Audit 2026-05-29 (fuite cross-patient) : sur App Router, naviguer entre
+  // /nouveau-crbo?reprendre=1 → /nouveau-crbo (clic sidebar) re-run le
+  // useEffect SANS re-mount du composant. La branche else purgeait
+  // localStorage mais laissait le formData React rempli avec patient A.
+  // On track la presence de params "intent-to-prefill" entre deux runs et
+  // on RESET le formulaire quand on passe de "avec intent" a "sans intent"
+  // — c'est exactement le geste utilisateur "je veux un nouveau bilan".
+  const prevHadIntentParamRef = useRef<boolean>(false)
+  // Skip-once : pour les router.replace internes (cleanup d'URL apres
+  // prefill HappyNeuron) qui ne sont PAS des intentions utilisateur de
+  // commencer un nouveau bilan. Set par le code de prefill juste avant
+  // router.replace, lu et clear au run suivant.
+  const skipResetOnceRef = useRef<boolean>(false)
+  // Track le ?patient= courant pour detecter les transitions A→B et
+  // resetter avant de selectionner le nouveau patient (sinon motif /
+  // anamnese / tests de A se melangent avec patient B via le ...prev).
+  const prevPatientIdRef = useRef<string | null>(null)
   const [importingAnamnese, setImportingAnamnese] = useState(false)
   const [prefillBanner, setPrefillBanner] = useState<string>('')
   // État des accordéons de familles de tests dans l'étape Résultats.
@@ -305,6 +322,45 @@ function NouveauCRBOContent() {
         ortho_adeli_rpps: profile.adeli_rpps || '',
       }))
       setProfileChecked(true)
+
+      // ============ Detection des transitions URL → reset defensif ============
+      // Audit 2026-05-29 : sur App Router, naviguer entre /nouveau-crbo?reprendre=1
+      // et /nouveau-crbo (clic sidebar) re-run le useEffect SANS re-mount. La
+      // branche else purgeait localStorage mais laissait le formData rempli avec
+      // le patient precedent. On detecte ici deux transitions critiques :
+      //  1. intent param → pas d'intent param (ortho clique "Nouveau CRBO")
+      //  2. ?patient=A → ?patient=B (changement de patient depuis URL)
+      // Dans les deux cas on appelle handleResetFormForNewPatient AVANT toute
+      // logique de pre-fill, pour partir d'un state propre.
+      const currentPatientId = searchParams.get('patient')
+      const hasIntentParam = !!(
+        searchParams.get('reprendre') === '1' ||
+        currentPatientId ||
+        searchParams.get('renouvellement') ||
+        searchParams.get('prefill') ||
+        searchParams.get('voice') === '1'
+      )
+      const prevHadIntent = prevHadIntentParamRef.current
+      const skipThisReset = skipResetOnceRef.current
+      // Met a jour les refs AVANT de potentiellement reset (pour eviter
+      // un loop infini si reset declenche un re-render qui re-trigger useEffect).
+      skipResetOnceRef.current = false
+      prevHadIntentParamRef.current = hasIntentParam
+
+      // Transition #1 : intent → no-intent. Skip si juste apres un router.replace
+      // interne (cleanup d'URL post-prefill, pas une intention utilisateur).
+      if (prevHadIntent && !hasIntentParam && !skipThisReset) {
+        handleResetFormForNewPatient()
+      }
+
+      // Transition #2 : ?patient=A → ?patient=B. handleSelectPatient utilise
+      // {...prev} ce qui melange motif/anamnese/tests de A avec B. Reset
+      // explicite avant que handleSelectPatient soit appele plus bas.
+      const prevPatientId = prevPatientIdRef.current
+      prevPatientIdRef.current = currentPatientId
+      if (prevPatientId && currentPatientId && prevPatientId !== currentPatientId) {
+        handleResetFormForNewPatient()
+      }
 
       // Charger les patients
       const { data: patientsData } = await supabase
@@ -547,7 +603,12 @@ function NouveauCRBOContent() {
                 : '📸 Résultats importés depuis HappyNeuron — pensez à cocher le test correspondant.',
           )
 
-          // On nettoie l'URL pour éviter de re-charger au refresh
+          // On nettoie l'URL pour éviter de re-charger au refresh.
+          // skipResetOnceRef : ce router.replace va re-trigger useEffect avec
+          // hasIntentParam=false, ce qui declencherait un reset defensif et
+          // wiperait le prefill HappyNeuron qu'on vient de poser. On signale
+          // au prochain run de SKIP le reset une fois.
+          skipResetOnceRef.current = true
           router.replace('/dashboard/nouveau-crbo')
         }
       }
@@ -1218,6 +1279,30 @@ function NouveauCRBOContent() {
   const handleGenerate = async () => {
     // Anti double-click
     if (generating) return
+
+    // ============ Coherence patient ↔ formulaire (defense in depth) ============
+    // Garde-fou contre les rares cas ou le formData garde des donnees d'un
+    // patient precedent malgre les fixes du useEffect (race condition, bug
+    // futur, etat exotique). Si selectedPatientId pointe vers un patient
+    // existant ET que ses prenom/nom ne matchent pas le form, on bloque
+    // proactivement plutot que de generer un CRBO frankenstein.
+    if (selectedPatientId) {
+      const sel = patients.find(p => p.id === selectedPatientId)
+      if (sel) {
+        const formPrenom = (formData.patient_prenom || '').trim()
+        const formNom = (formData.patient_nom || '').trim()
+        const selPrenom = (sel.prenom || '').trim()
+        const selNom = (sel.nom || '').trim()
+        if (formPrenom !== selPrenom || formNom !== selNom) {
+          setError(
+            `Incoherence detectee : le patient selectionne (${selPrenom} ${selNom}) `
+            + `ne correspond pas aux donnees du formulaire (${formPrenom} ${formNom}). `
+            + `Cliquez "Changer" pour reselectionner, ou videz puis ressaisissez le patient.`,
+          )
+          return
+        }
+      }
+    }
 
     // Validation taille payload — évite erreurs cryptées côté Claude si énorme
     const payloadSize = JSON.stringify(formData).length
