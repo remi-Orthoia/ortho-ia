@@ -465,3 +465,278 @@ present dans le PDF.
 
 Si le PDF n'est PAS un bilan EVALEO (autre test, page blanche, document non
 pertinent), retourne niveau='', trimestre='', anamnese vide, epreuves=[].`
+
+
+// ============================================================================
+// CONVERTER : EvaleoExtracted → CRBOStructure
+// ============================================================================
+// Utilise par la route /api/extract-previous-bilan en mode "renouvellement
+// EVALEO" pour produire une CRBOStructure compatible avec le rendu Word
+// comparatif et le pipeline de generation existant.
+//
+// La CRBOStructure perd certaines specificites EVALEO (effets HappyNeuron
+// detailles, qualification erreurs dictee par compteur), mais elle conserve :
+//  - Les percentile_value (mappes depuis classe_X via medianes officielles)
+//  - Les labels d'epreuves (libelles EVALEO standards, matchent le form)
+//  - Les observations qualitatives + synthese effets/erreurs en commentaire
+// C'est ce dont a besoin le rendu Word renouvellement pour produire son
+// tableau comparatif avec fleches ↑→↓.
+
+/** Mediane de la fourchette de percentiles pour chaque classe EVALEO.
+ *  DOIT etre aligne avec PERCENTILE_OPTIONS dans
+ *  components/forms/Evaleo615ScoresInput.tsx (champ `value`). */
+const CLASSE_TO_PERCENTILE_VALUE: Record<string, number> = {
+  classe_1: 3,
+  classe_2: 13,
+  classe_3: 30,
+  classe_4: 50,
+  classe_5: 71,
+  classe_6: 87,
+  classe_7: 96,
+}
+
+const CLASSE_TO_LABEL: Record<string, string> = {
+  classe_1: 'Classe 1 (Pathologique)',
+  classe_2: 'Classe 2 (Fragilite)',
+  classe_3: 'Classe 3 (Norme)',
+  classe_4: 'Classe 4 (Norme)',
+  classe_5: 'Classe 5 (Norme)',
+  classe_6: 'Classe 6 (Superieure a la moyenne)',
+  classe_7: 'Classe 7 (Tres superieure)',
+}
+
+/** Mapping key EVALEO → domaine narratif pour la CRBOStructure. Aligne sur
+ *  les SECTIONS du form (Langage Oral / Langage Ecrit / Autres) et leurs
+ *  sous-domaines. Les keys non listees tombent dans "Autres". */
+function evaleoKeyToDomainName(key: string): string {
+  // Langage Oral
+  if (['repertoire_phonetique', 'rep_mots_complexes', 'rep_pseudomots',
+       'fluence_phono', 'denom_rapide_couleurs', 'denom_rapide_chiffres',
+       'conscience_articulatoire', 'epiphonologie', 'metaphonologie'].includes(key)) {
+    return 'Phonologie & Metaphonologie (LO)'
+  }
+  if (['denom_lex_phono', 'designation_images', 'prod_termes_gen', 'comp_termes_gen',
+       'fluence_sem', 'fluence_morpho', 'antonymes', 'metaphores_idiomes',
+       'jugement_derivations', 'creation_neologismes'].includes(key)) {
+    return 'Lexique-semantique (LO)'
+  }
+  if (['prog_orale_phrases', 'rep_phrases_complexes', 'comp_orale_phrases',
+       'jugement_grammatical'].includes(key)) {
+    return 'Morphosyntaxe (LO)'
+  }
+  if (['recit_oral_images', 'comp_orale_paragraphe'].includes(key)) {
+    return 'Recit oral (LO)'
+  }
+  if (key === 'pragmatique_communication') return 'Pragmatique (LO)'
+  // Langage Ecrit
+  if (['conv_grapho_phon', 'lecture_syllabes', 'lecture_mots', 'lecture_pseudomots',
+       'eval2m', 'evalouette', 'mouette_test', 'pingouin_retest'].includes(key)) {
+    return 'Lecture identification (LE)'
+  }
+  if (['comp_ecrite_orale_mots', 'comp_ecrite_phrases',
+       'comp_ecrite_paragraphe', 'comp_ecrite_texte'].includes(key)) {
+    return 'Lecture comprehension (LE)'
+  }
+  if (['copie_mots', 'copie_texte', 'acceleration_phrase', 'transcription_buffer'].includes(key)) {
+    return 'Ecriture (LE)'
+  }
+  if (['dictee_syllabes', 'dictee_pseudomots', 'dictee_mots',
+       'fluence_ortho', 'dictee_phrases', 'decision_ortho'].includes(key)) {
+    return 'Production orthographe (LE)'
+  }
+  if (key === 'recit_ecrit_images') return 'Recit ecrit (LE)'
+  // Autres
+  return 'Competences sous-jacentes'
+}
+
+/** Label affiche d'une epreuve EVALEO depuis sa key. Reprend les libelles
+ *  officiels EVALEO 6-15. */
+const EVALEO_KEY_TO_LABEL: Record<string, string> = {
+  // LO Phono
+  repertoire_phonetique: 'Repertoire phonetique',
+  rep_mots_complexes: 'Repetition de mots complexes',
+  rep_pseudomots: 'Repetition de pseudomots',
+  fluence_phono: 'Fluence phonologique',
+  denom_rapide_couleurs: 'Denomination rapide couleurs',
+  denom_rapide_chiffres: 'Denomination rapide chiffres',
+  conscience_articulatoire: 'Conscience articulatoire',
+  epiphonologie: 'Epiphonologie',
+  metaphonologie: 'Metaphonologie',
+  // LO Lexique-sem
+  denom_lex_phono: 'Denomination lexico-phonologique',
+  designation_images: "Designation d'images",
+  prod_termes_gen: 'Production de termes generiques',
+  comp_termes_gen: 'Comprehension de termes generiques',
+  fluence_sem: 'Fluence semantique',
+  fluence_morpho: 'Fluence morphologique',
+  antonymes: 'Antonymes',
+  metaphores_idiomes: 'Metaphores et idiomes',
+  jugement_derivations: 'Jugement de derivations',
+  creation_neologismes: 'Creation de neologismes',
+  // LO Morphosyntaxe
+  prog_orale_phrases: 'Production orale de phrases',
+  rep_phrases_complexes: 'Repetition de phrases complexes',
+  comp_orale_phrases: 'Comprehension orale de phrases',
+  jugement_grammatical: 'Jugement grammatical',
+  // LO Recit
+  recit_oral_images: "Recit oral a partir d'images",
+  comp_orale_paragraphe: 'Comprehension orale de paragraphe',
+  // LO Pragmatique
+  pragmatique_communication: 'Pragmatique de la communication',
+  // LE Lecture id
+  conv_grapho_phon: 'Conversion grapho-phonemique',
+  lecture_syllabes: 'Lecture de syllabes',
+  lecture_mots: 'Lecture de mots',
+  lecture_pseudomots: 'Lecture de pseudomots',
+  eval2m: 'EVAL2M - Lecture de mots en 2 min',
+  evalouette: 'Evalouette - Lecture de texte non signifiant',
+  mouette_test: 'La Mouette - Lecture de texte signifiant (test)',
+  pingouin_retest: 'Le Pingouin - Lecture de texte signifiant (retest)',
+  // LE Comprehension
+  comp_ecrite_orale_mots: 'Comprehension ecrite et orale de mots',
+  comp_ecrite_phrases: 'Comprehension ecrite de phrases',
+  comp_ecrite_paragraphe: 'Comprehension ecrite de paragraphe',
+  comp_ecrite_texte: 'Comprehension ecrite de texte',
+  // LE Ecriture
+  copie_mots: 'Copie de mots',
+  copie_texte: 'Copie de texte',
+  acceleration_phrase: "Acceleration sur l'ecriture d'une phrase",
+  transcription_buffer: 'Transcription & buffer graphemique',
+  // LE Orthographe
+  dictee_syllabes: 'Dictee de syllabes',
+  dictee_pseudomots: 'Dictee de pseudomots',
+  dictee_mots: 'Dictee de mots',
+  fluence_ortho: 'Fluence orthographique',
+  dictee_phrases: 'Dictee de phrases',
+  decision_ortho: 'Decision orthographique',
+  // LE Recit
+  recit_ecrit_images: "Recit a l'ecrit a partir d'images",
+  // Autres
+  discrim_phono: 'Discrimination phonologique',
+  gnosies_visuelles: 'Gnosies visuelles',
+  empan_visuo_attentionnel: 'Empan visuo-attentionnel',
+  stroop: 'Effet Stroop',
+  rep_chiffres_endroit_envers: 'Repetition de chiffres endroit/envers',
+  rep_logatomes: 'Repetition de logatomes',
+  rappel_item: 'Rappel item',
+  rappel_seriel: 'Rappel seriel',
+  localisation_jetons: 'Localisation de jetons',
+  habiletes_manuelles: 'Habiletes manuelles',
+  praxies_bucco: 'Praxies bucco-faciales',
+  inclusion_classification: 'Inclusion/classification',
+  classification: 'Classification',
+  quantification_inclusion: 'Quantification/inclusion',
+}
+
+/** Synthese courte des effets HappyNeuron presents — utilisee comme
+ *  commentaire d'epreuve sur lecture_mots / lecture_pseudomots. */
+function summarizeEffets(effets: NonNullable<EvaleoExtracted['epreuves'][number]['effets']>): string {
+  const labels: string[] = []
+  const fmt = (v: string) => v === 'absent_normal' ? 'absent' : v.replace('_', ' ')
+  if (effets.effet_frequence) labels.push(`frequence=${fmt(effets.effet_frequence)}`)
+  if (effets.effet_consistance) labels.push(`consistance=${fmt(effets.effet_consistance)}`)
+  if (effets.effet_longueur_score) labels.push(`longueur(score)=${fmt(effets.effet_longueur_score)}`)
+  if (effets.effet_longueur_temps) labels.push(`longueur(temps)=${fmt(effets.effet_longueur_temps)}`)
+  if (effets.effet_lexicalite) labels.push(`lexicalite=${fmt(effets.effet_lexicalite)}`)
+  return labels.length > 0 ? `Effets HappyNeuron : ${labels.join(' · ')}.` : ''
+}
+
+/** Synthese courte de la qualification d'erreurs en dictee. */
+function summarizeErreurs(erreurs: NonNullable<EvaleoExtracted['epreuves'][number]['erreurs']>): string {
+  const labels: string[] = []
+  for (const [k, v] of Object.entries(erreurs)) {
+    if (v && v !== '0') labels.push(`${k.toUpperCase()}=${v}`)
+  }
+  return labels.length > 0 ? `Qualification erreurs : ${labels.join(' · ')}.` : ''
+}
+
+/**
+ * Convertit une EvaleoExtracted en CRBOStructure pour usage par le pipeline
+ * generique de renouvellement (rendu Word comparatif, calcul deltas, prompt
+ * Claude). Best-effort : champs absents → vides, l'ortho peut completer.
+ *
+ * @param extracted - sortie de l'extraction EVALEO PDF/DOCX
+ * @returns CRBOStructure compatible avec le rendu Word
+ */
+export function evaleoExtractedToCrboStructure(
+  extracted: EvaleoExtracted,
+): {
+  anamnese_redigee: string
+  domains: Array<{
+    nom: string
+    epreuves: Array<{
+      nom: string
+      score: string
+      et: string | null
+      percentile: string
+      percentile_value: number
+      interpretation: string
+      commentaire?: string
+    }>
+    commentaire: string
+  }>
+  diagnostic: string
+  recommandations: string
+  conclusion: string
+  pap_suggestions: string[]
+} {
+  // Regroupe les epreuves par domaine narratif
+  const byDomain = new Map<string, EvaleoExtracted['epreuves']>()
+  for (const ep of extracted.epreuves) {
+    if (ep.non_passee) continue
+    const dom = evaleoKeyToDomainName(ep.key)
+    const list = byDomain.get(dom) ?? []
+    list.push(ep)
+    byDomain.set(dom, list)
+  }
+
+  const domains = Array.from(byDomain.entries()).map(([nom, eps]) => ({
+    nom,
+    epreuves: eps.map(ep => {
+      const percentileValue = CLASSE_TO_PERCENTILE_VALUE[ep.percentile] ?? 50
+      const interpretation = CLASSE_TO_LABEL[ep.percentile] ?? ''
+      const label = EVALEO_KEY_TO_LABEL[ep.key] ?? ep.key
+      const obsParts: string[] = []
+      if (ep.observation?.trim()) obsParts.push(ep.observation.trim())
+      if (ep.effets) {
+        const s = summarizeEffets(ep.effets)
+        if (s) obsParts.push(s)
+      }
+      if (ep.erreurs) {
+        const s = summarizeErreurs(ep.erreurs)
+        if (s) obsParts.push(s)
+      }
+      return {
+        nom: label,
+        score: ep.score_brut || '',
+        et: null,
+        percentile: ep.percentile,
+        percentile_value: percentileValue,
+        interpretation,
+        commentaire: obsParts.length > 0 ? obsParts.join(' ') : undefined,
+      }
+    }),
+    commentaire: '',
+  }))
+
+  // Anamnese rapide : on concatene les 8 jalons non-vides
+  const anamneseLines: string[] = []
+  const a = extracted.anamnese
+  if (a.antecedents_familiaux?.trim()) anamneseLines.push(`Antecedents familiaux : ${a.antecedents_familiaux.trim()}`)
+  if (a.antecedents_medicaux?.trim()) anamneseLines.push(`Antecedents medicaux : ${a.antecedents_medicaux.trim()}`)
+  if (a.developpement_langage?.trim()) anamneseLines.push(`Developpement du langage : ${a.developpement_langage.trim()}`)
+  if (a.scolarite?.trim()) anamneseLines.push(`Scolarite : ${a.scolarite.trim()}`)
+  if (a.plainte_lecture?.trim()) anamneseLines.push(`Plainte lecture : ${a.plainte_lecture.trim()}`)
+  if (a.plainte_orthographe?.trim()) anamneseLines.push(`Plainte orthographe : ${a.plainte_orthographe.trim()}`)
+  if (a.plainte_graphisme?.trim()) anamneseLines.push(`Plainte graphisme : ${a.plainte_graphisme.trim()}`)
+  if (a.comorbidites_suivi?.trim()) anamneseLines.push(`Comorbidites / suivi : ${a.comorbidites_suivi.trim()}`)
+
+  return {
+    anamnese_redigee: anamneseLines.join('\n'),
+    domains,
+    diagnostic: '',         // pas extrait — laisse vide, l'ortho a deja le bilan precedent
+    recommandations: '',
+    conclusion: '',
+    pap_suggestions: [],
+  }
+}

@@ -10,6 +10,12 @@ import {
   EXTRACT_PROMPT_PDF,
   EXTRACT_PROMPT_DOCX,
 } from '@/lib/prompts/previous-bilan'
+import {
+  EVALEO_EXTRACT_TOOL,
+  EVALEO_EXTRACT_PROMPT,
+  evaleoExtractedToCrboStructure,
+  type EvaleoExtracted,
+} from '@/lib/prompts/extraction/evaleo'
 
 /**
  * Extraction d'un compte-rendu de bilan orthophonique EXTERNE (rédigé en
@@ -83,6 +89,16 @@ export async function POST(request: NextRequest) {
       typeof patientIdRaw === 'string' && /^[0-9a-f-]{36}$/i.test(patientIdRaw)
         ? patientIdRaw
         : null
+    // Audit 2026-05-29 (amelioration #1) — test_hint envoye par le form
+    // permet de router vers l'extraction specifique au test au lieu du
+    // tool generique. Si EVALEO 6-15 est present dans la liste des tests
+    // du bilan en cours, on suppose que le bilan precedent est aussi EVALEO
+    // (cas le plus frequent en renouvellement) et on active l'extraction
+    // riche : classes officielles 1-7, effets HappyNeuron, qualification
+    // erreurs dictee — preserves dans la CRBOStructure finale.
+    const testHintRaw = formData.get('test_hint')
+    const testHint = typeof testHintRaw === 'string' ? testHintRaw : ''
+    const useEvaleoExtractor = testHint.includes('EVALEO 6-15')
 
     if (!file) {
       return NextResponse.json({ error: 'Aucun fichier fourni' }, { status: 400 })
@@ -120,6 +136,7 @@ export async function POST(request: NextRequest) {
     if (isPdf) {
       const bytes = await file.arrayBuffer()
       const base64 = Buffer.from(bytes).toString('base64')
+      const pdfPrompt = useEvaleoExtractor ? EVALEO_EXTRACT_PROMPT : EXTRACT_PROMPT_PDF
       content = [
         {
           type: 'document',
@@ -127,11 +144,11 @@ export async function POST(request: NextRequest) {
         },
         {
           type: 'text',
-          text: EXTRACT_PROMPT_PDF,
+          text: pdfPrompt,
           cache_control: { type: 'ephemeral' as const },
         },
       ]
-      promptText = EXTRACT_PROMPT_PDF
+      promptText = pdfPrompt
     } else {
       // DOCX → mammoth → texte brut.
       const buffer = Buffer.from(await file.arrayBuffer())
@@ -165,7 +182,8 @@ export async function POST(request: NextRequest) {
         )
       }
       const truncated = text.length > TRUNCATE ? text.slice(0, TRUNCATE) + '\n\n[... document tronqué ...]' : text
-      promptText = `${EXTRACT_PROMPT_DOCX}\n\n## DOCUMENT À ANALYSER\n\n${truncated}`
+      const docxPrompt = useEvaleoExtractor ? EVALEO_EXTRACT_PROMPT : EXTRACT_PROMPT_DOCX
+      promptText = `${docxPrompt}\n\n## DOCUMENT À ANALYSER\n\n${truncated}`
       content = [
         {
           type: 'text',
@@ -184,6 +202,12 @@ export async function POST(request: NextRequest) {
     // may take longer than 10 minutes"). On utilise messages.stream().finalMessage()
     // qui rend la même structure qu'un create() classique mais consomme le
     // flux SSE en arrière-plan.
+    // Selection du tool selon le test hint. EVALEO 6-15 → EVALEO_EXTRACT_TOOL
+    // pour preserver les classes officielles + effets + erreurs ; sinon
+    // EXTRACT_PREVIOUS_TOOL generique pour les autres tests.
+    const toolToUse = useEvaleoExtractor ? EVALEO_EXTRACT_TOOL : EXTRACT_PREVIOUS_TOOL
+    const toolName = useEvaleoExtractor ? 'extract_evaleo_results' : 'extract_previous_bilan'
+
     let message
     try {
       message = await withRetry(
@@ -195,8 +219,8 @@ export async function POST(request: NextRequest) {
             // systématiquement les batteries longues, qui ressortaient ensuite
             // marquées "✦ Nouvelle" dans la synthèse comparative.
             max_tokens: 32_768,
-            tools: [EXTRACT_PREVIOUS_TOOL],
-            tool_choice: { type: 'tool', name: 'extract_previous_bilan' },
+            tools: [toolToUse],
+            tool_choice: { type: 'tool', name: toolName },
             messages: [{ role: 'user', content }],
           },
           { signal: abortController.signal },
@@ -224,7 +248,7 @@ export async function POST(request: NextRequest) {
     const toolUseBlock = message.content.find(
       (b): b is Anthropic.ToolUseBlock => b.type === 'tool_use',
     )
-    if (!toolUseBlock || toolUseBlock.name !== 'extract_previous_bilan') {
+    if (!toolUseBlock || toolUseBlock.name !== toolName) {
       return NextResponse.json(
         { error: "Le bilan précédent n'a pas pu être structuré automatiquement." },
         { status: 502 },
@@ -250,7 +274,28 @@ export async function POST(request: NextRequest) {
       diagnostic: string
       amenagements?: string[]
     }
-    const extracted = toolUseBlock.input as ExtractedPreviousBilan
+
+    // Branche EVALEO : convertit le payload EvaleoExtracted en
+    // ExtractedPreviousBilan compatible avec le reste du pipeline.
+    let extracted: ExtractedPreviousBilan
+    if (useEvaleoExtractor) {
+      const evaleoPayload = toolUseBlock.input as EvaleoExtracted
+      const converted = evaleoExtractedToCrboStructure(evaleoPayload)
+      extracted = {
+        bilan_date: '',  // EVALEO extraction ne fournit pas la date — l'ortho la pose manuellement
+        tests_utilises: ['EVALEO 6-15'],
+        anamnese_redigee: converted.anamnese_redigee,
+        domains: converted.domains,
+        diagnostic: converted.diagnostic,
+        amenagements: converted.pap_suggestions,
+      }
+      console.log(
+        `[extract-previous-bilan] EVALEO mode → ${evaleoPayload.epreuves.length} epreuves extraites, ` +
+        `${converted.domains.length} domaines apres regroupement.`,
+      )
+    } else {
+      extracted = toolUseBlock.input as ExtractedPreviousBilan
+    }
 
     const totalEpreuves = (extracted.domains ?? []).reduce(
       (sum, d) => sum + (d.epreuves?.length ?? 0),

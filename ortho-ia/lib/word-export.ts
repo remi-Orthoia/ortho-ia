@@ -289,6 +289,81 @@ export interface WordExportPayload {
   previousBilanDate?: string
 }
 
+// --------------------- Matching fuzzy épreuves (audit 2026-05-29 #3) ---------------------
+//
+// Le tableau comparatif renouvellement matchait les épreuves actuelles ↔
+// précédentes par `nom.toLowerCase().trim()`. Trop strict en pratique :
+// "Lecture de mots" vs "Lecture mots", "Métaphonologie" vs "Metaphonologie",
+// "Dictée de pseudo-mots" vs "Dictée de pseudomots" → no match → marqué à
+// tort "✦ Nouvelle". On ajoute un matching fuzzy (Levenshtein avec garde-fous)
+// qui résout ces faux positifs tout en restant conservateur.
+
+/** Distance de Levenshtein iterative, O(m*n). */
+function levenshteinDist(a: string, b: string): number {
+  if (a === b) return 0
+  if (a.length === 0) return b.length
+  if (b.length === 0) return a.length
+  let prev = Array.from({ length: b.length + 1 }, (_, i) => i)
+  let curr = new Array(b.length + 1).fill(0)
+  for (let i = 1; i <= a.length; i++) {
+    curr[0] = i
+    for (let j = 1; j <= b.length; j++) {
+      const cost = a.charCodeAt(i - 1) === b.charCodeAt(j - 1) ? 0 : 1
+      curr[j] = Math.min(curr[j - 1] + 1, prev[j] + 1, prev[j - 1] + cost)
+    }
+    ;[prev, curr] = [curr, prev]
+  }
+  return prev[b.length]
+}
+
+/** Retire les diacritiques pour comparaison robuste : "Métaphonologie" →
+ *  "metaphonologie". Combine avec lower+trim. */
+function normalizeForMatch(s: string): string {
+  return s
+    .normalize('NFD')
+    .replace(/[̀-ͯ]/g, '')   // diacritiques
+    .replace(/[''`']/g, "'")            // apostrophes
+    .replace(/[-_/]/g, ' ')             // sépare-tirets/slashes
+    .replace(/\s+/g, ' ')               // espaces multiples
+    .trim()
+    .toLowerCase()
+}
+
+/** Cherche dans `prevIndex` la meilleure correspondance pour `currentName`.
+ *  Stratégie : exact match d'abord, puis fuzzy Levenshtein si pas trouvé
+ *  ET si l'écart relatif reste ≤ 25 % de la longueur. */
+function findPrevMatch<T>(
+  prevIndex: Map<string, T>,
+  currentName: string,
+): T | undefined {
+  const normCurrent = normalizeForMatch(currentName)
+  // Exact d'abord (rapide chemin nominal)
+  const exact = prevIndex.get(normCurrent)
+  if (exact !== undefined) return exact
+  // Fuzzy : on parcourt les clés indexées avec contraintes
+  if (normCurrent.length < 5) return undefined  // trop court = trop de bruit
+  const tolerance = Math.max(2, Math.floor(normCurrent.length * 0.25))
+  let bestKey: string | null = null
+  let bestDist = tolerance + 1
+  // Array.from() au lieu de for...of sur l'iterator — necessaire car le
+  // target TS du projet est es3 (cf. tsconfig sans champ target).
+  const keys = Array.from(prevIndex.keys())
+  for (let i = 0; i < keys.length; i++) {
+    const key = keys[i]
+    if (key.length < 5) continue
+    if (Math.abs(key.length - normCurrent.length) > tolerance) continue
+    if (key[0] !== normCurrent[0]) continue   // initiale doit matcher
+    const d = levenshteinDist(key, normCurrent)
+    if (d < bestDist) {
+      bestDist = d
+      bestKey = key
+      if (d === 0) break
+    }
+  }
+  if (bestKey != null) return prevIndex.get(bestKey)
+  return undefined
+}
+
 // --------------------- Générateur principal ---------------------
 
 export async function generateCRBOWord(payload: WordExportPayload): Promise<Blob> {
@@ -694,11 +769,14 @@ export async function generateCRBOWord(payload: WordExportPayload): Promise<Blob
       }))
     }
 
-    // Calcul stats globales d'évolution
+    // Calcul stats globales d'évolution. Index par cle normalisee (deburred
+    // + lower + ponctuation neutralisee) pour que findPrevMatch puisse faire
+    // un fuzzy Levenshtein cote lookup. Couvre "Lecture mots" vs "Lecture de
+    // mots", "Metaphonologie" vs "Métaphonologie", etc.
     const prevIndex = new Map<string, { percentile: string; value: number; domain: string }>()
     for (const d of orderedPrevDomains) {
       for (const e of d.epreuves) {
-        prevIndex.set(e.nom.toLowerCase().trim(), { percentile: e.percentile, value: e.percentile_value, domain: d.nom })
+        prevIndex.set(normalizeForMatch(e.nom), { percentile: e.percentile, value: e.percentile_value, domain: d.nom })
       }
     }
     let progres = 0, stable = 0, regression = 0, nouvelles = 0
@@ -707,7 +785,7 @@ export async function generateCRBOWord(payload: WordExportPayload): Promise<Blob
     const nouvellesList: string[] = []
     for (const d of orderedDomains) {
       for (const e of d.epreuves) {
-        const prev = prevIndex.get(e.nom.toLowerCase().trim())
+        const prev = findPrevMatch(prevIndex, e.nom)
         if (!prev) {
           nouvelles++
           nouvellesList.push(e.nom)
@@ -814,7 +892,7 @@ export async function generateCRBOWord(payload: WordExportPayload): Promise<Blob
       ]}))
 
       for (const e of d.epreuves) {
-        const prev = prevIndex.get(e.nom.toLowerCase().trim())
+        const prev = findPrevMatch(prevIndex, e.nom)
         const prevLabel = prev ? fmtCentile(prev.percentile, prev.value) : '—'
         const curLabel = fmtCentile(e.percentile, e.percentile_value)
         let arrow = '→'
