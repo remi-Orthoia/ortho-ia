@@ -14,6 +14,12 @@ function ProfilContent() {
   const searchParams = useSearchParams()
   const toast = useToast()
   const isIncompleteRedirect = searchParams.get('incomplete') === '1'
+  // Capture si le profil etait initialement incomplet a l'ouverture de la
+  // page. Permet de declencher la redirection vers /nouveau-crbo apres save
+  // meme quand la bêta-testeuse arrive depuis l'onboarding tour ou la
+  // checklist du dashboard (qui ne passent pas ?incomplete=1). Sinon elle
+  // restait coincee sur /profil sans CTA suivant.
+  const [initiallyIncomplete, setInitiallyIncomplete] = useState(false)
   const [showDeleteModal, setShowDeleteModal] = useState(false)
   const [deleteConfirmText, setDeleteConfirmText] = useState('')
   const [deleting, setDeleting] = useState(false)
@@ -84,6 +90,18 @@ function ProfilContent() {
         })
         if (data.referral_code) setReferralCode(data.referral_code)
       }
+
+      // Memorise si les champs obligatoires CRBO etaient deja remplis a
+      // l'ouverture — sinon on considere la session comme un "first setup"
+      // qui doit rediriger vers /nouveau-crbo a la fin.
+      const wasComplete =
+        (data?.prenom || '').trim() &&
+        (data?.nom || '').trim() &&
+        (data?.adresse || '').trim() &&
+        (data?.code_postal || '').trim() &&
+        (data?.ville || '').trim() &&
+        (data?.telephone || '').trim()
+      if (!wasComplete) setInitiallyIncomplete(true)
 
       // ===== Charge les données de parrainage en parallèle =====
       // Filleules : SELECT referrals + lookup des prénoms via une 2e query
@@ -237,14 +255,16 @@ function ProfilContent() {
 
     setSaved(true)
     toast.success('Profil enregistré.')
-    // Si on est arrivé ici depuis le formulaire CRBO (profil incomplet), on
-    // renvoie l'utilisatrice vers le formulaire dès que les champs requis
-    // sont remplis.
+    // Premiere completion du profil (depuis CRBO via ?incomplete=1, depuis
+    // l'onboarding tour ou depuis la checklist dashboard) → redirige vers
+    // le formulaire CRBO des que les champs requis sont remplis. Pour les
+    // mises a jour ulterieures d'un profil deja complet, on ne redirige
+    // pas (l'ortho voulait juste editer un champ).
     const isComplete =
       profile.prenom.trim() && profile.nom.trim() && profile.adresse.trim() &&
       profile.code_postal.trim() && profile.ville.trim() && profile.telephone.trim()
-    if (isIncompleteRedirect && isComplete) {
-      setTimeout(() => router.push('/dashboard/nouveau-crbo'), 800)
+    if ((isIncompleteRedirect || initiallyIncomplete) && isComplete) {
+      setTimeout(() => router.push('/dashboard/nouveau-crbo'), 300)
       return
     }
     setTimeout(() => setSaved(false), 3000)
@@ -260,7 +280,7 @@ function ProfilContent() {
 
   return (
     <div className="max-w-2xl mx-auto space-y-6">
-      {isIncompleteRedirect && (
+      {(isIncompleteRedirect || initiallyIncomplete) && (
         <div className="bg-amber-50 border border-amber-200 rounded-lg px-4 py-3 text-sm text-amber-900 flex items-start gap-3">
           <AlertCircle size={20} className="shrink-0 mt-0.5" />
           <div>
