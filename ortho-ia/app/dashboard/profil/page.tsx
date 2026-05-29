@@ -63,6 +63,16 @@ function ProfilContent() {
   const [refLinkCopied, setRefLinkCopied] = useState(false)
   const [refLinkError, setRefLinkError] = useState('')
 
+  // ===== Section changement d'email =====
+  // Flow Supabase : updateUser({ email: nouveau }) → Supabase envoie un lien
+  // de confirmation sur le NOUVEAU email. L'ortho clique → email actif.
+  // Tant que non confirme, l'email auth.users reste l'ancien.
+  const [emailChangeOpen, setEmailChangeOpen] = useState(false)
+  const [newEmail, setNewEmail] = useState('')
+  const [emailChanging, setEmailChanging] = useState(false)
+  const [emailChangeError, setEmailChangeError] = useState('')
+  const [emailChangeSent, setEmailChangeSent] = useState(false)
+
   useEffect(() => {
     const loadProfile = async () => {
       const supabase = createClient()
@@ -206,6 +216,38 @@ function ProfilContent() {
     setSaved(false)
   }
 
+  /**
+   * Demande Supabase de changer l'email auth.users. Un lien de confirmation
+   * est envoye sur le NOUVEAU email — l'email courant reste actif tant que
+   * la confirmation n'est pas faite. Best practice Supabase.
+   */
+  const handleEmailChange = async () => {
+    setEmailChangeError('')
+    const target = newEmail.trim().toLowerCase()
+    if (!target || !target.includes('@')) {
+      setEmailChangeError('Email invalide.')
+      return
+    }
+    if (target === profile.email.toLowerCase()) {
+      setEmailChangeError('Cet email est deja le votre.')
+      return
+    }
+    setEmailChanging(true)
+    try {
+      const supabase = createClient()
+      const { error } = await supabase.auth.updateUser({ email: target })
+      if (error) {
+        setEmailChangeError(error.message || "Impossible de mettre a jour l'email.")
+        return
+      }
+      setEmailChangeSent(true)
+    } catch (e: any) {
+      setEmailChangeError(e?.message || 'Erreur inattendue.')
+    } finally {
+      setEmailChanging(false)
+    }
+  }
+
   const handleSave = async () => {
     setSaving(true)
 
@@ -326,14 +368,80 @@ function ProfilContent() {
 
         <div>
           <label className="block text-sm font-medium text-gray-700 mb-1">Email</label>
-          <input
-            type="email"
-            name="email"
-            value={profile.email}
-            disabled
-            className="w-full px-4 py-3 border border-gray-200 rounded-lg bg-gray-50 text-gray-500"
-          />
-          <p className="mt-1 text-xs text-gray-500">L'email ne peut pas être modifié</p>
+          <div className="flex items-center gap-2">
+            <input
+              type="email"
+              name="email"
+              value={profile.email}
+              disabled
+              className="flex-1 px-4 py-3 border border-gray-200 rounded-lg bg-gray-50 text-gray-500"
+            />
+            <button
+              type="button"
+              onClick={() => {
+                setEmailChangeOpen(true)
+                setNewEmail('')
+                setEmailChangeError('')
+                setEmailChangeSent(false)
+              }}
+              className="px-3 py-2 text-sm font-medium text-green-700 bg-white border border-green-300 rounded-lg hover:bg-green-50 transition whitespace-nowrap"
+            >
+              Modifier
+            </button>
+          </div>
+          <p className="mt-1 text-xs text-gray-500">
+            Un lien de confirmation sera envoye sur la nouvelle adresse — l'ancienne reste active tant que vous n'avez pas confirme.
+          </p>
+
+          {emailChangeOpen && !emailChangeSent && (
+            <div className="mt-3 p-4 bg-green-50 border border-green-200 rounded-lg">
+              <label className="block text-sm font-medium text-green-900 mb-1">Nouvelle adresse email</label>
+              <input
+                type="email"
+                value={newEmail}
+                onChange={(e) => setNewEmail(e.target.value)}
+                placeholder="nouvelle.adresse@exemple.com"
+                className="w-full px-3 py-2 border border-green-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-green-500"
+              />
+              {emailChangeError && (
+                <p className="mt-2 text-sm text-red-700 flex items-start gap-2">
+                  <AlertCircle size={14} className="shrink-0 mt-0.5" />
+                  <span>{emailChangeError}</span>
+                </p>
+              )}
+              <div className="mt-3 flex items-center gap-2">
+                <button
+                  type="button"
+                  onClick={handleEmailChange}
+                  disabled={emailChanging || !newEmail.trim()}
+                  className="inline-flex items-center gap-2 px-4 py-2 bg-green-600 text-white rounded-lg font-medium hover:bg-green-700 transition disabled:opacity-50"
+                >
+                  {emailChanging ? <><Loader2 className="animate-spin" size={14} /> Envoi…</> : 'Envoyer le lien'}
+                </button>
+                <button
+                  type="button"
+                  onClick={() => setEmailChangeOpen(false)}
+                  disabled={emailChanging}
+                  className="px-3 py-2 text-gray-700 hover:bg-gray-100 rounded-lg text-sm font-medium transition"
+                >
+                  Annuler
+                </button>
+              </div>
+            </div>
+          )}
+
+          {emailChangeSent && (
+            <div className="mt-3 p-3 bg-green-50 border border-green-200 rounded-lg flex items-start gap-2 text-sm text-green-900">
+              <CheckCircle size={18} className="shrink-0 mt-0.5 text-green-600" />
+              <div>
+                <p className="font-semibold">Email de confirmation envoye.</p>
+                <p className="mt-0.5">
+                  Cliquez sur le lien recu a <strong>{newEmail}</strong> pour valider le changement.
+                  Verifiez les spams si vous ne le trouvez pas.
+                </p>
+              </div>
+            </div>
+          )}
         </div>
 
         <div>
@@ -400,6 +508,27 @@ function ProfilContent() {
           <p className="mt-1 text-xs text-gray-500">
             Reporté en en-tête de chaque CRBO généré. Saisissez tel que vous souhaitez qu&apos;il s&apos;affiche (par ex. <em>N°ADELI : 819102856</em> ou <em>RPPS : 10010002345</em>).
           </p>
+          {(() => {
+            // Validation soft : extrait la sequence numerique du champ
+            // (ignore "N°ADELI :", espaces, etc.). ADELI = 9 chiffres,
+            // RPPS = 11 chiffres. Warning non bloquant si != format usuel
+            // — l'ortho peut avoir un cas particulier (numero ancien,
+            // remplacante, etc.), on ne lui coupe pas le save.
+            const raw = profile.adeli_rpps?.trim() || ''
+            if (!raw) return null
+            const digits = raw.replace(/\D/g, '')
+            const isValidLength = digits.length === 9 || digits.length === 11
+            if (isValidLength) return null
+            return (
+              <p className="mt-1 text-xs text-amber-700 flex items-start gap-1">
+                <AlertCircle size={12} className="shrink-0 mt-0.5" />
+                <span>
+                  Format inhabituel ({digits.length} chiffres detectes). ADELI = 9 chiffres, RPPS = 11 chiffres.
+                  Verifiez votre saisie — le numero sera reporte tel quel sur chaque CRBO.
+                </span>
+              </p>
+            )
+          })()}
         </div>
 
         <div>
@@ -816,8 +945,13 @@ function ProfilContent() {
                     if (!res.ok) {
                       throw new Error(data?.error || 'La suppression a échoué.')
                     }
-                    // Redirection vers l'accueil — la session est déjà signée out côté serveur.
-                    router.push('/?account-deleted=1')
+                    // Redirection vers l'accueil. Si la ligne auth.users n'a
+                    // pas pu etre supprimee (service role manquante en
+                    // Vercel), on signale "pending" cote bandeau home pour
+                    // que l'ortho ne soit pas surprise si elle veut se
+                    // reinscrire avec le meme email (response 409 prevue).
+                    const flag = data?.pendingAdminDeletion ? 'pending' : '1'
+                    router.push(`/?account-deleted=${flag}`)
                   } catch (e: any) {
                     setDeleteError(e?.message || 'Erreur inattendue.')
                     setDeleting(false)

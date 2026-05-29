@@ -8,10 +8,13 @@ import Quote from '@/components/landing/Quote'
 import Pricing from '@/components/landing/Pricing'
 import FAQ from '@/components/landing/FAQ'
 import Footer from '@/components/landing/Footer'
+import AccountDeletedBanner from '@/components/AccountDeletedBanner'
 
 export default function HomePage() {
   return (
     <div style={{ minHeight: '100vh', background: 'var(--bg-canvas)', color: 'var(--fg-1)', fontFamily: 'var(--font-body)' }}>
+      {/* Bandeau RGPD post-suppression (visible uniquement avec ?account-deleted=1) */}
+      <AccountDeletedBanner />
       {/* Bandeau Beta — info commerciale conservée de l'ancienne version */}
       <Link
         href="/beta"
