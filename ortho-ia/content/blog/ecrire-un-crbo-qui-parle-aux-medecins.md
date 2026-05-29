@@ -4,6 +4,10 @@ description: "Le compte rendu de bilan orthophonique est aussi lu par des médec
 date: 2026-05-05
 author: "L'équipe Ortho.ia"
 tags: ["CRBO", "rédaction", "pratique"]
+cocon: "redaction-crbo"
+locale: "fr-FR"
+canonicalSlug: "ecrire-un-crbo-qui-parle-aux-medecins"
+isPillar: true
 ---
 
 Le compte rendu de bilan orthophonique n'est pas un document interne. Il sera lu par le médecin prescripteur — qui doit pouvoir s'y retrouver en cinq minutes — par les enseignants, par les familles, et parfois par d'autres professionnels (neuropsy, ergo, pédopsy). Trop souvent, on rédige le CRBO comme si on s'adressait uniquement à une consœur. Le résultat : un document techniquement parfait mais illisible pour la moitié des destinataires.
@@ -37,8 +41,6 @@ Quelques exemples :
 **Les codes Fxxx du DSM ou de la CIM.** Ils ne sont pas attendus dans un CRBO français, ils embrouillent les lecteurs non spécialistes, et ils peuvent même créer de la confusion juridique (ces codes engagent une qualification médicale qui n'est pas du ressort orthophonique).
 
 **Les diagnostics hypothétiques.** Pas de "suspicion de TDAH associé", pas de "à explorer du côté d'un trouble développemental de la coordination". Si vous suspectez quelque chose, dirigez la famille vers le bon professionnel — c'est lui qui posera ou non le diagnostic. Le CRBO n'est pas un lieu d'hypothèse.
-
-**Les tirets en début de phrase.** Stylistiquement, ils donnent un côté machine aux observations. La prose continue rend mieux la nuance clinique.
 
 ## La structure qui marche
 

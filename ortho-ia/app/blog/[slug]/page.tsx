@@ -1,29 +1,38 @@
 import type { Metadata } from 'next'
-import Link from 'next/link'
 import { notFound } from 'next/navigation'
 import Header from '@/components/landing/Header'
 import Footer from '@/components/landing/Footer'
-import { Container } from '@/components/landing/Primitives'
-import { getAllSlugs, getPostBySlug, formatPostDate } from '@/lib/blog'
+import { BlogPostPageContent } from '@/components/blog/pages/BlogPostPageContent'
+import { getAllSlugs, getPostBySlug, getRelatedPosts, getAllPosts } from '@/lib/blog'
+
+const BASE_URL = 'https://ortho-ia.com'
 
 interface PageProps {
   params: { slug: string }
 }
 
 export function generateStaticParams() {
-  return getAllSlugs().map((slug) => ({ slug }))
+  return getAllPosts({ locale: 'fr-FR' }).map((p) => ({ slug: p.slug }))
 }
 
 export function generateMetadata({ params }: PageProps): Metadata {
   try {
     const { meta } = getPostBySlug(params.slug)
-    const canonical = `https://ortho-ia.vercel.app/blog/${meta.slug}`
+    const canonical = `${BASE_URL}/blog/${meta.slug}`
+    const hreflangAlts: Record<string, string> = { 'fr-FR': canonical }
+    if (meta.canonicalSlug) {
+      hreflangAlts['fr-BE'] = `${BASE_URL}/be/blog/${meta.canonicalSlug}`
+      hreflangAlts['fr-CH'] = `${BASE_URL}/ch/blog/${meta.canonicalSlug}`
+    }
     return {
-      title: `${meta.title} — Le Blog Ortho.ia`,
+      title: `${meta.title} — Ortho.ia`,
       description: meta.description,
       authors: [{ name: meta.author }],
       keywords: meta.tags,
-      alternates: { canonical },
+      alternates: {
+        canonical,
+        languages: hreflangAlts,
+      },
       openGraph: {
         title: meta.title,
         description: meta.description,
@@ -31,9 +40,10 @@ export function generateMetadata({ params }: PageProps): Metadata {
         type: 'article',
         locale: 'fr_FR',
         publishedTime: meta.date,
+        modifiedTime: meta.dateModified,
         authors: [meta.author],
         tags: meta.tags,
-        images: meta.coverImage ? [{ url: meta.coverImage }] : undefined,
+        images: meta.coverImage ? [{ url: meta.coverImage, alt: meta.coverAlt ?? meta.title }] : undefined,
       },
       twitter: {
         card: 'summary_large_image',
@@ -56,113 +66,41 @@ export default function BlogPostPage({ params }: PageProps) {
   } catch {
     notFound()
   }
-  const { meta, html } = post
 
-  // JSON-LD pour Google Article — structured data.
+  if (post.meta.locale !== 'fr-FR') notFound()
+
+  const related = getRelatedPosts(post.meta, 3)
+
   const jsonLd = {
     '@context': 'https://schema.org',
-    '@type': 'Article',
-    headline: meta.title,
-    description: meta.description,
-    datePublished: meta.date,
-    author: { '@type': 'Person', name: meta.author },
-    publisher: {
-      '@type': 'Organization',
-      name: 'Ortho.ia',
-      url: 'https://ortho-ia.vercel.app',
-    },
-    image: meta.coverImage ?? undefined,
-    mainEntityOfPage: `https://ortho-ia.vercel.app/blog/${meta.slug}`,
+    '@type': 'BlogPosting',
+    headline: post.meta.title,
+    description: post.meta.description,
+    datePublished: post.meta.date,
+    dateModified: post.meta.dateModified ?? post.meta.date,
+    author: { '@type': 'Person', name: post.meta.author },
+    publisher: { '@type': 'Organization', name: 'Ortho.ia', url: BASE_URL },
+    image: post.meta.coverImage ?? undefined,
+    mainEntityOfPage: `${BASE_URL}/blog/${post.meta.slug}`,
+    keywords: post.meta.tags.join(', '),
+  }
+
+  const breadcrumbLd = {
+    '@context': 'https://schema.org',
+    '@type': 'BreadcrumbList',
+    itemListElement: [
+      { '@type': 'ListItem', position: 1, name: 'Blog', item: `${BASE_URL}/blog` },
+      { '@type': 'ListItem', position: 2, name: post.meta.title, item: `${BASE_URL}/blog/${post.meta.slug}` },
+    ],
   }
 
   return (
-    <div style={{ background: 'var(--bg-canvas)', minHeight: '100vh' }}>
+    <>
       <Header />
-      <main>
-        <article style={{ padding: '64px 0 96px' }}>
-          <Container style={{ maxWidth: 740 }}>
-            <Link
-              href="/blog"
-              style={{
-                display: 'inline-flex', alignItems: 'center', gap: 6,
-                fontSize: 14, color: 'var(--fg-3)', textDecoration: 'none',
-                marginBottom: 24,
-              }}
-            >
-              ← Le Blog
-            </Link>
-
-            {meta.tags.length > 0 && (
-              <div style={{ display: 'inline-flex', gap: 6, flexWrap: 'wrap', marginBottom: 14 }}>
-                {meta.tags.map((t) => (
-                  <span key={t} style={{
-                    background: 'var(--ds-accent-soft)',
-                    color: 'var(--ds-accent-hover)',
-                    padding: '2px 10px', borderRadius: 999,
-                    fontSize: 11, fontWeight: 600, letterSpacing: '0.02em',
-                  }}>{t}</span>
-                ))}
-              </div>
-            )}
-
-            <h1 style={{
-              fontFamily: 'var(--font-display)', fontSize: 'clamp(30px, 5vw, 44px)',
-              fontWeight: 500, lineHeight: 1.15, letterSpacing: '-0.015em',
-              margin: '0 0 16px', color: 'var(--fg-1)', textWrap: 'balance',
-            }}>{meta.title}</h1>
-
-            <p style={{
-              fontSize: 18, lineHeight: 1.55, color: 'var(--fg-2)',
-              margin: '0 0 24px', maxWidth: 640,
-            }}>{meta.description}</p>
-
-            <div style={{
-              display: 'flex', flexWrap: 'wrap', gap: 12, alignItems: 'center',
-              fontSize: 13, color: 'var(--fg-3)', marginBottom: 40,
-              paddingBottom: 24, borderBottom: '1px solid var(--border-ds)',
-            }}>
-              <span>{meta.author}</span>
-              <span aria-hidden="true">·</span>
-              <span>{formatPostDate(meta.date)}</span>
-              <span aria-hidden="true">·</span>
-              <span>{meta.readingTime} min de lecture</span>
-            </div>
-
-            <div
-              className="prose-blog"
-              style={{
-                fontFamily: 'var(--font-body)', fontSize: 17, lineHeight: 1.7,
-                color: 'var(--fg-1)',
-              }}
-              dangerouslySetInnerHTML={{ __html: html }}
-            />
-
-            <div style={{
-              marginTop: 64, paddingTop: 32,
-              borderTop: '1px solid var(--border-ds)',
-              display: 'flex', justifyContent: 'space-between', flexWrap: 'wrap', gap: 16,
-            }}>
-              <Link
-                href="/blog"
-                style={{ fontSize: 14, color: 'var(--ds-primary)', textDecoration: 'none', fontWeight: 500 }}
-              >
-                ← Lire d'autres articles
-              </Link>
-              <Link
-                href="/auth/register"
-                style={{ fontSize: 14, color: 'var(--ds-primary)', textDecoration: 'none', fontWeight: 500 }}
-              >
-                Essayer Ortho.ia gratuitement →
-              </Link>
-            </div>
-          </Container>
-        </article>
-      </main>
+      <BlogPostPageContent post={post} related={related} locale="fr" />
       <Footer />
-      <script
-        type="application/ld+json"
-        dangerouslySetInnerHTML={{ __html: JSON.stringify(jsonLd) }}
-      />
-    </div>
+      <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(jsonLd) }} />
+      <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(breadcrumbLd) }} />
+    </>
   )
 }

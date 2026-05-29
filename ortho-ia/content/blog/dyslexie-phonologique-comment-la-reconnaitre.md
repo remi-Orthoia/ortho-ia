@@ -3,56 +3,46 @@ title: "Dyslexie phonologique : comment la reconnaître en bilan"
 description: "Repérer une dyslexie phonologique sur un bilan orthophonique : critères diagnostiques, dissociations utiles, conséquences scolaires, et ce qu'il faut écrire dans le CRBO."
 date: 2026-05-12
 author: "L'équipe Ortho.ia"
-tags: ["dyslexie", "exalang", "CRBO"]
+tags: ["dyslexie", "phonologie", "bilan"]
+cocon: "redaction-crbo"
+locale: "fr-FR"
+canonicalSlug: "dyslexie-phonologique-comment-la-reconnaitre"
+isPillar: false
 ---
 
-La dyslexie phonologique est la forme la plus fréquente de trouble spécifique du langage écrit. Elle touche la **voie d'assemblage** (le décodage phonologique des mots) tout en laissant relativement préservée la voie d'adressage (la reconnaissance directe des mots connus). Sur le terrain, c'est un profil qu'on rencontre dès le CE1-CE2 et qui devient très visible en CM1 quand la quantité de lecture explose.
+La dyslexie phonologique est la forme la plus fréquente de dyslexie développementale. Elle se caractérise par un déficit spécifique de la voie d'assemblage — la capacité à décoder un mot inconnu lettre par lettre — avec une voie d'adressage (reconnaissance des mots familiers) relativement préservée. En bilan, cela se traduit par un profil dissocié qu'il faut savoir lire.
 
-## Le critère diagnostique principal
+## Les signes en passation
 
-En batterie Exalang (8-11 ou 11-15), un score en **lecture de non-mots** ou de **logatomes écrits** inférieur ou égal au percentile 10, associé à une lecture de mots fréquents proche de la norme, oriente fortement vers une dyslexie phonologique. La dissociation est l'élément clé : ce n'est pas la performance brute qui compte, mais l'écart entre les deux voies.
+L'enfant lit mieux les mots réguliers familiers que les logatomes (mots inventés). C'est la dissociation clé : si un enfant fait 40% d'erreurs en lecture de logatomes mais seulement 10% en lecture de mots familiers, c'est un signal fort en faveur d'une dyslexie phonologique.
 
-Quand on lit "tabloubi" pour la première fois, on ne peut pas l'avoir mémorisé — il faut le décoder phonème par phonème. C'est exactement ce que mesure la lecture de non-mots. Si l'enfant échoue ici alors qu'il décode "maison" correctement, c'est que sa stratégie repose sur la reconnaissance globale plutôt que sur l'assemblage.
+D'autres signes en passation :
+- Nombreuses régularisations de mots irréguliers ("femme" lu "fème", "monsieur" lu "monseur")
+- Temps de réponse très long sur les mots inconnus
+- Erreurs phonémiques plutôt que sémantiques (substitutions de sons, pas de sens)
+- Difficulté marquée en conscience phonémique (segmentation, fusion, suppression)
 
-## La sévérité, en pratique
+## Ce que les batteries révèlent
 
-La grille usuelle, calée sur l'étalonnage Happy Scribe :
+Les batteries comme l'Evalec, la BALE ou l'Exalang explorent la lecture sous plusieurs angles. Pour une dyslexie phonologique, les scores les plus informatifs sont :
 
-| Percentile en lecture non-mots | Sévérité |
-|---|---|
-| P10 à P16 | Forme légère |
-| P5 à P9 | Forme modérée |
-| P2 à P4 | Forme sévère |
-| < P2 | Forme très sévère |
+- **Lecture de logatomes** : l'épreuve la plus discriminante. Un score en zone de difficulté (P10 ou moins) avec des mots réguliers en zone de fragilité (P25) constitue le profil typique.
+- **Conscience phonémique** : épreuves de fusion et de suppression phonémique. Un déficit confirmé ici appuie la composante phonologique.
+- **Vitesse de lecture** : souvent ralentie même sur des mots familiers, car la stratégie d'adressage doit travailler plus fort pour compenser.
 
-Attention au piège classique : **Q1 (P25) n'est PAS en zone déficitaire**, c'est une fragilité. Un enfant en Q1 sur la lecture de non-mots est à surveiller, pas encore à diagnostiquer comme dyslexique sur ce seul indicateur.
+## Ce qu'il faut écrire dans le CRBO
 
-## Les dissociations utiles à observer
+Le diagnostic se formule ainsi dans un CRBO français standard :
 
-Au-delà du seul percentile, plusieurs croisements affinent le diagnostic :
+> **Dyslexie-dysorthographie phonologique d'intensité [légère / modérée / sévère]**, caractérisée par un déficit de la voie d'assemblage phonologique, avec voie d'adressage relativement préservée. Les résultats en lecture de logatomes (Evalec : P[X]) et en conscience phonémique (P[X]) sont significativement inférieurs aux performances en reconnaissance de mots familiers réguliers (P[X]).
 
-- **Lecture de non-mots déficitaire + lecture de mots irréguliers préservée** → voie d'adressage fonctionnelle, profil purement phonologique.
-- **Lecture de non-mots déficitaire + métaphonologie fragile** → cohérence du profil, l'atteinte phonologique est en amont.
-- **Lecture de non-mots déficitaire + lecture de mots irréguliers ALSO déficitaire** → profil mixte, souvent plus sévère.
-- **Empan auditif endroit fragile** → soutien d'une mémoire de travail verbale limitée, qui complique l'apprentissage du décodage.
+Évitez la formulation "trouble spécifique du langage écrit de type phonologique" — elle est correcte mais moins précise dans un contexte de rédaction pour un prescripteur non spécialiste.
 
-## Les conséquences scolaires concrètes à mentionner dans le CRBO
+## Conséquences scolaires à mentionner
 
-C'est la partie qui parle aux familles et aux enseignants. Plutôt que de parler de "déficit de la voie d'assemblage", on décrit :
+Sans ces précisions, le prescripteur et l'enseignant ne sauront pas quoi faire de votre diagnostic. À préciser dans le CRBO :
 
-- Une **lenteur de lecture** importante sur les textes nouveaux ou les énoncés mathématiques.
-- Des **fautes d'orthographe phonétiquement déformées** (les mots ne sont pas seulement mal orthographiés, ils sont mal entendus mentalement).
-- Une **fatigabilité majeure** en fin de journée, le décodage mobilisant énormément d'attention.
-- Une **difficulté à apprendre les leçons** quand elles sont longues à lire silencieusement.
-
-## Ce qu'il faut faire passer dans le diagnostic du CRBO
-
-La formulation que nous recommandons, conforme aux usages français actuels :
-
-> Le profil clinique est compatible avec un trouble spécifique des apprentissages en langage écrit (communément appelé dyslexie-dysorthographie), forme [légère / modérée / sévère], à prédominance phonologique.
-
-Pas de codes Fxxx du DSM ou de la CIM — ils ne sont pas attendus dans un CRBO français et alourdissent le rendu. Pas non plus de mention de comorbidité hypothétique : si un TDAH est suspecté mais non diagnostiqué, on l'évoque dans les recommandations comme orientation vers un bilan neuropsychologique, pas dans le diagnostic.
-
-## En résumé
-
-Repérer une dyslexie phonologique repose sur **la dissociation lecture mots / lecture non-mots**, pas seulement sur un score isolé. La sévérité se déduit du percentile le plus bas sur les épreuves de décodage. Et dans le CRBO, ce qui aide les familles et les enseignants à se mobiliser, ce ne sont pas les pourcentages — ce sont les conséquences scolaires concrètes.
+- Difficulté à lire des mots nouveaux (nouveaux termes en SVT, en histoire, etc.)
+- Orthographe phonétique fréquente (transcription phonème à phonème sans respect des règles)
+- Lenteur en lecture à voix haute qui nuit à la compréhension du texte
+- Fatigue cognitive élevée lors des lectures longues
