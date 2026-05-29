@@ -4,6 +4,7 @@ import { useEffect, useRef, useState } from 'react'
 import { Mic, MicOff, Loader2, Square } from 'lucide-react'
 import { useWhisper } from '@/hooks/useWhisper'
 import { applyGlossaire } from '@/lib/glossaire'
+import { normalizePatientName } from '@/lib/patient-name-normalizer'
 
 interface Props {
   /** Valeur courante du textarea cible. */
@@ -20,6 +21,16 @@ interface Props {
   disabled?: boolean
   /** Callback erreur — affichage typique via parent. */
   onError?: (msg: string) => void
+  /**
+   * Prenom du patient saisi dans le form. Sert a :
+   *  1. Biaiser Whisper via le `prompt` pour qu'il prefere cette orthographe
+   *  2. Normaliser le texte transcrit post-Whisper (Levenshtein) au cas ou
+   *     le biasing n'a pas suffi (ex: prenom rare, voix etouffee).
+   * Optionnel — sans, comportement identique a l'ancien (texte brut Whisper).
+   */
+  patientPrenom?: string
+  /** Nom du patient — meme role que patientPrenom. */
+  patientNom?: string
 }
 
 /**
@@ -35,20 +46,35 @@ export default function MicButton({
   compact = false,
   disabled = false,
   onError,
+  patientPrenom,
+  patientNom,
 }: Props) {
   const [elapsed, setElapsed] = useState(0)
   const startedAt = useRef<number | null>(null)
   const valueRef = useRef(value)
   useEffect(() => { valueRef.current = value }, [value])
 
+  // Contexte envoye a Whisper pour biaiser le decodage vers le prenom/nom
+  // exact du patient. Garde court (< 100 chars) pour ne pas saturer le prompt.
+  const extraContext = ((): string | undefined => {
+    const p = (patientPrenom || '').trim()
+    const n = (patientNom || '').trim()
+    if (!p && !n) return undefined
+    return `Patient: ${[p, n].filter(Boolean).join(' ')}.`
+  })()
+
   const { state, error, start, stop } = useWhisper({
+    extraContext,
     onResult: (text) => {
       if (!text) return
-      // Glossaire CRBO : rattrape les mistranscriptions Whisper sur les
-      // termes spécifiques (ULIS, AESH, Exalang, EVALO...) AVANT que le
-      // texte n'arrive dans le textarea, pour que l'ortho voie déjà le
-      // texte propre et n'ait rien à corriger à la main.
-      const corrected = applyGlossaire(text)
+      // Pipeline de nettoyage post-Whisper :
+      //  1. applyGlossaire : rattrape les termes cliniques (ULIS, AESH,
+      //     Exalang, EVALO...) que Whisper aurait mal transcrits.
+      //  2. normalizePatientName : detecte les variantes phonetiques du
+      //     prenom/nom patient ("Melina" → "Méline") via Levenshtein, en
+      //     filet de securite si le biasing Whisper n'a pas suffi.
+      const afterGlossaire = applyGlossaire(text)
+      const { text: corrected } = normalizePatientName(afterGlossaire, patientPrenom, patientNom)
       const prev = valueRef.current
       const sep = prev && !/\s$/.test(prev) ? ' ' : ''
       onChange((prev + sep + corrected).trim())

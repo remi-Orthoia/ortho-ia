@@ -24,6 +24,18 @@ export interface UseWhisperOptions {
   onResult?: (text: string) => void
   /** Callback appelé sur erreur — reçoit un message lisible. */
   onError?: (message: string) => void
+  /**
+   * Contexte additionnel injecte dans le `prompt` Whisper pour biaiser le
+   * decodage vers certains noms propres / vocabulaire specifique a la
+   * session (ex: prenom et nom du patient saisis dans le formulaire).
+   * Whisper donne un poids fort aux tokens vus dans le prompt → reduit
+   * les mistranscriptions phonetiques sur les prenoms rares.
+   *
+   * Le serveur prepend ce contexte au WHISPER_PROMPT_CONTEXT par defaut.
+   * Garde-le court (< 100 chars) pour ne pas saturer la fenetre prompt
+   * (~244 tokens max cote Whisper-1).
+   */
+  extraContext?: string
 }
 
 /** Verbose log uniquement en dev local. Aide à diagnostiquer en console. */
@@ -147,7 +159,12 @@ export function useWhisper(options: UseWhisperOptions = {}) {
           // pour identifier le format. L'envoyer "audio.webm" alors que le
           // contenu est mp4 (Safari) cause un 400 côté API.
           fd.append('audio', blob, `audio.${ext}`)
-          dlog('POST /api/transcribe', { size: blob.size, name: `audio.${ext}` })
+          // Contexte additionnel (prenom/nom patient, etc.) injecte dans le
+          // prompt Whisper pour biaiser le decodage. Optionnel — l'API gere
+          // l'absence.
+          const ctx = optionsRef.current.extraContext?.trim()
+          if (ctx) fd.append('extraContext', ctx.slice(0, 200))
+          dlog('POST /api/transcribe', { size: blob.size, name: `audio.${ext}`, hasCtx: !!ctx })
           const res = await fetch('/api/transcribe', { method: 'POST', body: fd })
           let data: any = null
           try { data = await res.json() } catch { /* parsable ? */ }

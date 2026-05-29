@@ -51,6 +51,12 @@ export async function POST(request: NextRequest) {
     // Le hook envoie sous la clé `audio`. On accepte aussi `file` (au cas où
     // un autre client utilise la convention OpenAI directe) pour robustesse.
     const audio = (formData.get('audio') ?? formData.get('file')) as Blob | null
+    // Contexte additionnel (prenom/nom patient, etc.) pour biaiser Whisper.
+    // Tronque a 200 chars pour eviter de saturer la fenetre prompt (~244 tokens).
+    const extraContextRaw = formData.get('extraContext')
+    const extraContext = typeof extraContextRaw === 'string'
+      ? extraContextRaw.trim().slice(0, 200)
+      : ''
     if (!audio || typeof (audio as any).arrayBuffer !== 'function') {
       const keys: string[] = []
       formData.forEach((_v, k) => keys.push(k))
@@ -100,7 +106,13 @@ export async function POST(request: NextRequest) {
       // des cahiers de passation (logatomes, homophones type "paon", mots
       // irréguliers type "femme/automne/monsieur") pour que Whisper les
       // reconnaisse même quand l'ortho les cite dans sa dictée.
-      prompt: WHISPER_PROMPT_CONTEXT,
+      //
+      // Si extraContext est fourni (typiquement "Patient: Méline Dupont."),
+      // on le prepend pour que Whisper biaise vers ces noms propres avant
+      // tout autre choix phonetiquement proche.
+      prompt: extraContext
+        ? `${extraContext} ${WHISPER_PROMPT_CONTEXT}`
+        : WHISPER_PROMPT_CONTEXT,
       response_format: 'text',
     })
 
