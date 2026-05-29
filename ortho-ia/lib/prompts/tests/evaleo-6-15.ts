@@ -835,6 +835,28 @@ Quand le bloc inclut une section \`--- Tableau brut du bilan precedent (epreuves
 - "découverte de…" (l'enfant est déjà connu)
 - "découvrir le profil" (on l'a déjà)
 
+**⚠️ NUANCE CHANGEMENT DE NIVEAU SCOLAIRE entre les 2 bilans** (audit 2026-05-29 #4)
+
+Si l'enfant a changé de niveau scolaire entre les 2 bilans (cas typique : bilan précédent en CE1, bilan actuel en CM1 = 2 niveaux d'écart sur ~2 ans de PEC), les seuils EVALEO sont étalonnés différemment :
+- Un percentile P50 en CE1 et un percentile P50 en CM1 NE SONT PAS la même chose en compétence absolue : l'enfant a progressé objectivement (acquis CM1) tout en restant médian sur sa classe d'âge.
+- Donc un "delta" de 0 sur le percentile_value entre 2 niveaux scolaires différents = en réalité une **progression normale** (l'enfant suit sa cohorte). À NE PAS interpréter comme stagnation.
+- Un "delta" négatif (P50 → P30) entre 2 niveaux différents = signal **inquiétant** : l'enfant ne suit plus sa cohorte. À nommer explicitement.
+- Un "delta" positif fort (P50 → P75) entre 2 niveaux différents = **double progrès** (rattrape + dépasse). À valoriser sans surinterpréter (effet plafond possible si proche P95).
+
+Dans le \`synthese_evolution.resume\` et le \`diagnostic\`, mentionne explicitement le changement de niveau quand il est pertinent : "Malgré le passage du CE1 au CM1 entre les 2 bilans, [patient] maintient ses scores en classe 4-5, ce qui traduit une progression effective alignée avec sa cohorte."
+
+Si les 2 bilans sont au **même niveau** (ex: CE1→CE1 ou CM1→CM1, possible si l'enfant a redoublé ou si l'écart est < 1 an), les deltas se lisent à valeur faciale standard.
+
+**⚠️ NUANCE BATTERIES DIFFERENTES entre les 2 bilans** (audit 2026-05-29 #5)
+
+Si le \`Test precedent\` indique un test DIFFERENT d'EVALEO (ex: "Exalang 8-11", "EVALO 6-15", "L2MA-2"), tu DOIS :
+1. Mentionner explicitement dans le \`synthese_evolution.resume\` que l'étalonnage des 2 bilans est différent : "Le bilan précédent ayant été réalisé avec [test], la comparaison directe des percentiles ne peut être faite avec une exactitude absolue ; les évolutions sont à interpréter avec cette réserve méthodologique."
+2. Privilégier dans le \`diagnostic\` les évolutions QUALITATIVES (axes de progrès, profil clinique) plutôt que quantitatives (delta percentile_value).
+3. Si l'écart méthodologique est trop important (tests aux constructions très différentes, ex: vocabulaire EVALEO vs Examath maths), formuler avec la prudence maximale : "Une comparaison fine entre les 2 bilans n'est pas méthodologiquement justifiée ; on s'attache aux évolutions cliniques observables."
+4. Ne JAMAIS prétendre à une comparaison stricte sur le seul critère du percentile_value calculé automatiquement quand les batteries diffèrent.
+
+Si le \`Test precedent\` est explicitement "EVALEO 6-15" (ou si non renseigné mais que les percentile_value ont l'air homogènes), la comparaison directe est valide et tu peux suivre les règles standards 1-8 ci-dessus.
+
 ---
 
 #### 🆕 TRIMESTRE ET FICHE ANAMNÈSE EVALEO (form ortho.ia)
