@@ -1,36 +1,100 @@
 'use client'
 
-import { useState, Suspense } from 'react'
+import { useState, Suspense, useEffect } from 'react'
 import Link from 'next/link'
 import { useRouter, useSearchParams } from 'next/navigation'
-import { Eye, EyeOff, Loader2 } from 'lucide-react'
+import { Eye, EyeOff, Loader2, Mail, CheckCircle } from 'lucide-react'
 import { createClient } from '@/lib/supabase'
 import { AppButton, AppInput, Logo } from '@/components/ui'
+
+/**
+ * Filtre les redirect_to externes. On accepte uniquement les chemins relatifs
+ * commencant par `/` ET ne demarrant pas par `//` (qui sont des URLs sans
+ * scheme et donc externes). Defaut : /dashboard. Protege contre les phishing
+ * via lien "Bienvenue, connectez-vous : ortho-ia.com/auth/login?redirect=...".
+ */
+function sanitizeRedirect(raw: string | null): string {
+  if (!raw) return '/dashboard'
+  if (!raw.startsWith('/') || raw.startsWith('//')) return '/dashboard'
+  return raw
+}
 
 function LoginForm() {
   const router = useRouter()
   const searchParams = useSearchParams()
-  const redirectTo = searchParams.get('redirect') || '/dashboard'
+  const redirectTo = sanitizeRedirect(searchParams.get('redirect'))
+  // Erreur transmise par /auth/callback (lien email expire, invalide, etc.)
+  const callbackError = searchParams.get('error')
   const [email, setEmail] = useState('')
   const [password, setPassword] = useState('')
   const [showPassword, setShowPassword] = useState(false)
   const [loading, setLoading] = useState(false)
-  const [error, setError] = useState('')
+  const [error, setError] = useState(callbackError || '')
+  // Distinction email non confirme : si on detecte cette erreur, on propose
+  // de renvoyer l'email de confirmation au lieu d'un message generique.
+  const [needsConfirmation, setNeedsConfirmation] = useState(false)
+  const [resending, setResending] = useState(false)
+  const [resent, setResent] = useState(false)
+  const [resendCooldownUntil, setResendCooldownUntil] = useState<number>(0)
+  const [, setNowTick] = useState(0)
+
+  // Tick chaque seconde pour rafraichir le compteur cooldown affiche.
+  useEffect(() => {
+    if (resendCooldownUntil === 0) return
+    const id = setInterval(() => setNowTick(n => n + 1), 1000)
+    return () => clearInterval(id)
+  }, [resendCooldownUntil])
+
+  const cooldownSeconds = Math.max(0, Math.ceil((resendCooldownUntil - Date.now()) / 1000))
+
+  const handleResend = async () => {
+    if (!email || cooldownSeconds > 0) return
+    setResending(true)
+    try {
+      const supabase = createClient()
+      await supabase.auth.resend({ type: 'signup', email })
+      setResent(true)
+      setResendCooldownUntil(Date.now() + 60_000)
+    } catch {
+      // Pas de feedback erreur explicite — Supabase ne distingue pas
+      // "email non trouve" pour des raisons de privacy. On affiche "envoye"
+      // dans tous les cas (anti-enumeration).
+      setResent(true)
+      setResendCooldownUntil(Date.now() + 60_000)
+    } finally {
+      setResending(false)
+    }
+  }
 
   const handleLogin = async (e: React.FormEvent) => {
     e.preventDefault()
     setLoading(true)
     setError('')
+    setNeedsConfirmation(false)
+    setResent(false)
 
     try {
       const supabase = createClient()
       const { error } = await supabase.auth.signInWithPassword({ email, password })
       if (error) {
-        setError(
-          error.message.includes('Invalid login credentials')
-            ? 'Email ou mot de passe incorrect'
-            : error.message
-        )
+        // Supabase distingue plusieurs erreurs via le champ `name` et le
+        // message. On veut surtout reperer "email non confirme" pour
+        // proposer le bouton "Renvoyer le lien" plutot que de laisser
+        // l'ortho croire qu'elle a mal tape son mdp.
+        const msg = (error.message || '').toLowerCase()
+        const code = (error as any)?.code || ''
+        if (
+          msg.includes('email not confirmed')
+          || msg.includes('email_not_confirmed')
+          || code === 'email_not_confirmed'
+        ) {
+          setNeedsConfirmation(true)
+          setError("Verifiez votre email pour confirmer votre adresse avant de vous connecter.")
+        } else if (msg.includes('invalid login credentials')) {
+          setError('Email ou mot de passe incorrect.')
+        } else {
+          setError(error.message)
+        }
         return
       }
       router.push(redirectTo)
@@ -97,11 +161,43 @@ function LoginForm() {
 
           {error && (
             <div style={{
-              background: 'var(--ds-danger-soft)', color: 'var(--ds-danger)',
-              padding: '10px 14px', borderRadius: 10,
+              background: needsConfirmation ? 'var(--ds-warning-soft, #FEF3C7)' : 'var(--ds-danger-soft)',
+              color: needsConfirmation ? '#92400E' : 'var(--ds-danger)',
+              padding: '12px 14px', borderRadius: 10,
               fontSize: 13, marginBottom: 14,
+              display: 'flex', flexDirection: 'column', gap: 10,
             }}>
-              {error}
+              <span>{error}</span>
+              {needsConfirmation && (
+                <div style={{ display: 'flex', alignItems: 'center', gap: 10, flexWrap: 'wrap' }}>
+                  {!resent ? (
+                    <button
+                      type="button"
+                      onClick={handleResend}
+                      disabled={resending || cooldownSeconds > 0 || !email}
+                      style={{
+                        display: 'inline-flex', alignItems: 'center', gap: 6,
+                        background: 'white', color: '#92400E',
+                        border: '1px solid rgba(146, 64, 14, 0.3)',
+                        padding: '6px 12px', borderRadius: 8,
+                        fontSize: 12, fontWeight: 600, cursor: 'pointer',
+                        opacity: (resending || cooldownSeconds > 0 || !email) ? 0.6 : 1,
+                      }}
+                    >
+                      {resending
+                        ? <><Loader2 className="animate-spin" size={12} /> Envoi…</>
+                        : cooldownSeconds > 0
+                          ? <>Renvoyer dans {cooldownSeconds}s</>
+                          : <><Mail size={12} /> Renvoyer l'email de confirmation</>}
+                    </button>
+                  ) : (
+                    <span style={{ display: 'inline-flex', alignItems: 'center', gap: 6, fontSize: 12, fontWeight: 600 }}>
+                      <CheckCircle size={14} />
+                      Email envoye — verifiez votre boite (et les spams).
+                    </span>
+                  )}
+                </div>
+              )}
             </div>
           )}
 
