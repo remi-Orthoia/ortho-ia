@@ -25,6 +25,36 @@ function RegisterForm() {
   const [error, setError] = useState('')
   const [success, setSuccess] = useState(false)
   const [referrerPrenom, setReferrerPrenom] = useState<string | null>(null)
+  // Resend de l'email de confirmation depuis l'ecran de succes. Cooldown
+  // 60s pour eviter le spam (Supabase rate-limit aussi cote serveur).
+  const [resending, setResending] = useState(false)
+  const [resent, setResent] = useState(false)
+  const [resendCooldownUntil, setResendCooldownUntil] = useState<number>(0)
+  const [, setNowTick] = useState(0)
+
+  useEffect(() => {
+    if (resendCooldownUntil === 0) return
+    const id = setInterval(() => setNowTick(n => n + 1), 1000)
+    return () => clearInterval(id)
+  }, [resendCooldownUntil])
+
+  const cooldownSeconds = Math.max(0, Math.ceil((resendCooldownUntil - Date.now()) / 1000))
+
+  const handleResend = async () => {
+    if (cooldownSeconds > 0 || !formData.email) return
+    setResending(true)
+    try {
+      const supabase = createClient()
+      await supabase.auth.resend({ type: 'signup', email: formData.email })
+    } catch {
+      // Anti-enumeration : on affiche "envoye" meme si Supabase renvoie une
+      // erreur (souvent rate-limit) — l'ortho retentera apres le cooldown.
+    } finally {
+      setResent(true)
+      setResendCooldownUntil(Date.now() + 60_000)
+      setResending(false)
+    }
+  }
 
   // Au mount : si on a un code de parrainage, on récupère le prénom du
   // parrain pour personnaliser l'écran ("Vous avez été parrainée par X 🌿").
@@ -113,20 +143,44 @@ function RegisterForm() {
           console.warn('referral_code generation failed:', e)
         }
 
-        await supabase.from('profiles').insert({
-          id: data.user.id,
-          email: formData.email,
-          nom: formData.nom,
-          prenom: formData.prenom,
-          referral_code: myReferralCode,
-        })
-        await supabase.from('subscriptions').insert({
-          user_id: data.user.id,
-          plan: 'free',
-          status: 'active',
-          crbo_count: 0,
-          crbo_limit: 3,
-        })
+        // Insert profile + subscription. On surveille les erreurs : si le
+        // profile fail, l'ortho aura un auth.users orphelin et le dashboard
+        // plantera sur .single(). On affiche un message clair plutot que
+        // de laisser passer un "Compte cree" trompeur.
+        // upsert sur profiles : si une ligne pre-existe (rare cas legacy),
+        // on la met a jour plutot que d'echouer sur conflict id.
+        const { error: profErr } = await supabase
+          .from('profiles')
+          .upsert({
+            id: data.user.id,
+            email: formData.email,
+            nom: formData.nom,
+            prenom: formData.prenom,
+            referral_code: myReferralCode,
+          }, { onConflict: 'id' })
+        if (profErr) {
+          console.error('[register] profile insert failed:', profErr.message?.slice(0, 200))
+          setError(
+            "Votre compte a ete cree mais la creation du profil a echoue. "
+            + 'Reessayez la connexion dans une minute, ou contactez le support si le probleme persiste.',
+          )
+          return
+        }
+
+        // Subscription : si elle fail, on laisse le flow se poursuivre — le
+        // dashboard layout fait un upsert defensif. On log pour suivi.
+        const { error: subErr } = await supabase
+          .from('subscriptions')
+          .upsert({
+            user_id: data.user.id,
+            plan: 'free',
+            status: 'active',
+            crbo_count: 0,
+            crbo_limit: 3,
+          }, { onConflict: 'user_id' })
+        if (subErr) {
+          console.warn('[register] subscription insert failed (non-blocking):', subErr.message?.slice(0, 200))
+        }
 
         // Si la nouvelle ortho s'inscrit via un code de parrainage, on
         // crée la relation referrals (status pending — passera en active
@@ -200,12 +254,50 @@ function RegisterForm() {
           }}>
             Compte créé.
           </h2>
-          <p style={{ fontSize: 15, color: 'var(--fg-2)', margin: '0 0 24px', lineHeight: 1.55 }}>
-            Vérifiez votre boîte mail pour confirmer votre adresse, puis connectez-vous.
+          <p style={{ fontSize: 15, color: 'var(--fg-2)', margin: '0 0 8px', lineHeight: 1.55 }}>
+            Verifiez votre boite mail pour confirmer votre adresse, puis connectez-vous.
           </p>
+          <p style={{ fontSize: 13, color: 'var(--fg-3)', margin: '0 0 24px' }}>
+            Email envoye a <strong>{formData.email}</strong>.
+            Pensez a verifier les spams.
+          </p>
+
           <AppButton variant="primary" size="lg" href="/auth/login" style={{ width: '100%', justifyContent: 'center' }}>
-            Aller à la connexion
+            Aller a la connexion
           </AppButton>
+
+          <div style={{
+            marginTop: 18, paddingTop: 18,
+            borderTop: '1px solid var(--border-ds)',
+            fontSize: 13, color: 'var(--fg-3)',
+          }}>
+            Pas recu d'email ?{' '}
+            {!resent ? (
+              <button
+                type="button"
+                onClick={handleResend}
+                disabled={resending || cooldownSeconds > 0 || !formData.email}
+                style={{
+                  background: 'transparent', border: 0, padding: 0,
+                  color: 'var(--fg-link)', cursor: 'pointer',
+                  fontSize: 13, fontWeight: 500,
+                  textDecoration: 'underline',
+                  opacity: (resending || cooldownSeconds > 0) ? 0.6 : 1,
+                }}
+              >
+                {resending
+                  ? 'Envoi…'
+                  : cooldownSeconds > 0
+                    ? `Renvoyer dans ${cooldownSeconds}s`
+                    : 'Renvoyer l\'email'}
+              </button>
+            ) : (
+              <span style={{ display: 'inline-flex', alignItems: 'center', gap: 4, color: 'var(--ds-success)', fontWeight: 500 }}>
+                <CheckCircle size={14} />
+                Email renvoye{cooldownSeconds > 0 ? ` — nouveau renvoi dans ${cooldownSeconds}s` : ''}
+              </span>
+            )}
+          </div>
         </div>
       </div>
     )
