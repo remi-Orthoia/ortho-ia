@@ -2334,6 +2334,8 @@ function NouveauCRBOContent() {
                       value={formData.evolution_notes || ''}
                       onChange={(v) => setFormData(prev => ({ ...prev, evolution_notes: v }))}
                       onError={(msg) => setError(msg)}
+                      patientPrenom={formData.patient_prenom}
+                      patientNom={formData.patient_nom}
                     />
                   </div>
                   <textarea
@@ -2368,6 +2370,8 @@ function NouveauCRBOContent() {
                       value={formData.elements_stables || ''}
                       onChange={(v) => setFormData(prev => ({ ...prev, elements_stables: v }))}
                       onError={(msg) => setError(msg)}
+                      patientPrenom={formData.patient_prenom}
+                      patientNom={formData.patient_nom}
                     />
                   </div>
                   <textarea
@@ -2403,6 +2407,8 @@ function NouveauCRBOContent() {
                       value={formData.anamnese}
                       onChange={(v) => setFormData(prev => ({ ...prev, anamnese: v }))}
                       onError={(msg) => setError(msg)}
+                      patientPrenom={formData.patient_prenom}
+                      patientNom={formData.patient_nom}
                     />
                   </div>
                   <SnippetTextarea
@@ -2988,6 +2994,8 @@ Compréhension écrite : 7/10, É-T : -0.50, Med (P50)
                   value={formData.comportement_seance || ''}
                   onChange={(v) => setFormData(prev => ({ ...prev, comportement_seance: v }))}
                   onError={(msg) => setError(msg)}
+                  patientPrenom={formData.patient_prenom}
+                  patientNom={formData.patient_nom}
                 />
               </div>
               <textarea
@@ -3008,6 +3016,8 @@ Compréhension écrite : 7/10, É-T : -0.50, Med (P50)
                   value={formData.notes_analyse}
                   onChange={(v) => setFormData(prev => ({ ...prev, notes_analyse: v }))}
                   onError={(msg) => setError(msg)}
+                  patientPrenom={formData.patient_prenom}
+                  patientNom={formData.patient_nom}
                 />
               </div>
               <SnippetTextarea

@@ -712,6 +712,8 @@ export default function ResultatsPage() {
             value={anamneseEdit}
             onChange={setAnamneseEdit}
             onError={(msg) => setError(msg)}
+            patientPrenom={fd.patient_prenom}
+            patientNom={fd.patient_nom}
           />
         </div>
         <textarea
@@ -735,6 +737,8 @@ export default function ResultatsPage() {
             value={motifEdit}
             onChange={setMotifEdit}
             onError={(msg) => setError(msg)}
+            patientPrenom={fd.patient_prenom}
+            patientNom={fd.patient_nom}
           />
         </div>
         <textarea
@@ -921,6 +925,8 @@ export default function ResultatsPage() {
                     value={orthoComments[d.nom] || ''}
                     onChange={(v) => handleCommentChange(d.nom, v)}
                     onError={(msg) => setError(msg)}
+                    patientPrenom={fd.patient_prenom}
+                    patientNom={fd.patient_nom}
                   />
                 </div>
                 <textarea
