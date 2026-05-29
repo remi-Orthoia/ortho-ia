@@ -24,6 +24,7 @@ import { Logo } from '@/components/ui'
 import { ToastProvider } from '@/components/Toast'
 import RgpdFooter from '@/components/RgpdFooter'
 import PrintAnimation from '@/components/PrintAnimation'
+import IdleLogout from '@/components/IdleLogout'
 
 interface DashboardLayoutProps {
   children: ReactNode
@@ -47,10 +48,29 @@ export default function DashboardLayout({ children }: DashboardLayoutProps) {
         return
       }
       setUser(user)
-      const [{ data: sub }, { data: count }] = await Promise.all([
-        supabase.from('subscriptions').select('*').eq('user_id', user.id).single(),
+      let [{ data: sub }, { data: count }] = await Promise.all([
+        supabase.from('subscriptions').select('*').eq('user_id', user.id).maybeSingle(),
         supabase.rpc('get_monthly_crbo_count', { p_user_id: user.id }),
       ])
+      // Filet de securite : si l'insert subscriptions de l'inscription a
+      // echoue (RLS / reseau / race avec auth.users), on cree la ligne
+      // manquante a la volee plutot que de laisser le dashboard plante avec
+      // crbo_limit fallback a 10 (vs 3 cote register). Garantit que chaque
+      // user connecte voit son quota free reel.
+      if (!sub) {
+        const { data: newSub } = await supabase
+          .from('subscriptions')
+          .upsert({
+            user_id: user.id,
+            plan: 'free',
+            status: 'active',
+            crbo_count: 0,
+            crbo_limit: 3,
+          }, { onConflict: 'user_id' })
+          .select('*')
+          .maybeSingle()
+        sub = newSub
+      }
       setSubscription(sub)
       setMonthlyCount(typeof count === 'number' ? count : 0)
       setLoading(false)
@@ -91,7 +111,7 @@ export default function DashboardLayout({ children }: DashboardLayoutProps) {
       {/* Quota mensuel — uniquement si plan limité */}
       {subscription && (() => {
         const isUnlimited = subscription.crbo_limit === -1 || (subscription.plan && subscription.plan !== 'free')
-        const limit = isUnlimited ? null : (subscription.crbo_limit ?? 10)
+        const limit = isUnlimited ? null : (subscription.crbo_limit ?? 3)
         const percent = limit ? Math.min(100, Math.round((monthlyCount / limit) * 100)) : 0
         const nearLimit = limit !== null && monthlyCount >= limit - 2 && monthlyCount < limit
         const reached = limit !== null && monthlyCount >= limit
@@ -206,6 +226,9 @@ export default function DashboardLayout({ children }: DashboardLayoutProps) {
 
   return (
     <ToastProvider>
+    {/* Auto-deconnexion apres 60 min d'inactivite — secret medical / cabinet
+        partage. Affiche un overlay "Reconnexion dans 2 min" avant de signOut. */}
+    <IdleLogout />
     {/* Overlay 3D flip déclenché par playPrintAnimation() — mounté une seule
         fois dans le layout, observe body[data-print-animation]. Affiché
         au-dessus de tout (zIndex 9000), masqué automatiquement après 1.5s. */}

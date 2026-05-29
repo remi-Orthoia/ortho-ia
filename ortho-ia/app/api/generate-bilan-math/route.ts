@@ -105,7 +105,7 @@ export async function POST(request: NextRequest) {
     .single()
 
   const isFreePlan = !sub || sub.plan === 'free'
-  const effectiveLimit = sub?.crbo_limit === -1 ? Infinity : (sub?.crbo_limit ?? 10)
+  const effectiveLimit = sub?.crbo_limit === -1 ? Infinity : (sub?.crbo_limit ?? 3)
 
   if (isFreePlan && sub?.status !== 'canceled') {
     const { data: monthlyCount } = await supabase.rpc(

@@ -187,7 +187,7 @@ export default function DashboardPage() {
       .eq('user_id', user.id)
       .single()
     const unlimited = !sub || sub.crbo_limit === -1 || (sub.plan && sub.plan !== 'free')
-    setPlanLimit(unlimited ? null : (sub?.crbo_limit ?? 10))
+    setPlanLimit(unlimited ? null : (sub?.crbo_limit ?? 3))
 
     // Compte patients — uniquement le count, pas les lignes (perf).
     // Sert a cocher l'etape 2 de la checklist d'onboarding.

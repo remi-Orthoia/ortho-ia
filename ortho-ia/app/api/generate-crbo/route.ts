@@ -183,7 +183,7 @@ export async function POST(request: NextRequest) {
     // recalculé à chaque appel depuis `crbos.created_at >= date_trunc('month', NOW())` :
     // reset implicite au 1er du mois, pas de cron nécessaire.
     const isFreePlan = !sub || sub.plan === 'free'
-    const effectiveLimit = sub?.crbo_limit === -1 ? Infinity : (sub?.crbo_limit ?? 10)
+    const effectiveLimit = sub?.crbo_limit === -1 ? Infinity : (sub?.crbo_limit ?? 3)
 
     if (isFreePlan && sub?.status !== 'canceled') {
       const { data: monthlyCount, error: countError } = await supabase.rpc(
