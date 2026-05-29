@@ -47,7 +47,7 @@ export function ArticleCard({ post, locale = 'fr', featured = false }: ArticleCa
               color: 'var(--ds-accent)',
               padding: '3px 10px', borderRadius: 999,
               fontSize: 11, fontWeight: 600,
-            }}>Pilier</span>
+            }}>À lire en premier</span>
           )}
         </div>
 

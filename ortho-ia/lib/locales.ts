@@ -74,7 +74,7 @@ export function getArticlePath(code: LocaleCode, slug: string): string {
   return `${getBlogBasePath(code)}/${slug}`
 }
 
-/** Retourne le chemin du hub cocon selon la locale */
+/** Retourne le chemin du hub thème selon la locale */
 export function getCoconPath(code: LocaleCode, coconId: string): string {
-  return `${getBlogBasePath(code)}/cocon/${coconId}`
+  return `${getBlogBasePath(code)}/theme/${coconId}`
 }

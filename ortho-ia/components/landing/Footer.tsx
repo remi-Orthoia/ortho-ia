@@ -15,10 +15,10 @@ const COLUMNS: Array<{ title: string; links: Array<{ label: string; href: string
   {
     title: 'Ressources',
     links: [
-      { label: 'Le Blog',       href: '/blog' },
+      { label: '📝 Blog',       href: '/blog' },
+      { label: '📚 Glossaire',  href: '/glossaire' },
+      { label: '🛠️ Outils',    href: '/outils' },
       { label: 'FAQ',           href: '/#faq' },
-      { label: 'Témoignages',   href: '/#temoignages' },
-      { label: 'Beta',          href: '/beta' },
     ],
   },
   {

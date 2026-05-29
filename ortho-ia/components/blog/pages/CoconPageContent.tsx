@@ -45,7 +45,7 @@ export function CoconPageContent({ coconId, posts, locale = 'fr' }: CoconPageCon
             </h1>
             <p style={{ fontSize: 17, lineHeight: 1.6, color: 'var(--fg-2)', margin: 0 }}>
               Tous les articles sur le thème <strong>{cocon?.label}</strong>
-              {pillar.length > 0 && " — l'article pilier en tête, suivi des articles de fond."}.
+              {pillar.length > 0 && " — l'article clé en tête, suivi des articles de fond."}.
             </p>
           </section>
 
@@ -59,7 +59,7 @@ export function CoconPageContent({ coconId, posts, locale = 'fr' }: CoconPageCon
                 fontSize: 11, fontWeight: 700, letterSpacing: '0.08em',
                 textTransform: 'uppercase', color: 'var(--fg-3)',
                 margin: '0 0 16px',
-              }}>Article pilier</p>
+              }}>À lire en premier</p>
               <ArticleCard post={pillar[0]} locale={locale} featured />
             </section>
           )}

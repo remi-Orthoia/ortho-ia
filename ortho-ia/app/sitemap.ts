@@ -20,9 +20,9 @@ export default function sitemap(): MetadataRoute.Sitemap {
   ]
 
   const coconRoutes: MetadataRoute.Sitemap = COCONS.flatMap((c) => [
-    { url: `${BASE_URL}/blog/cocon/${c.id}`,    changeFrequency: 'weekly' as const, priority: 0.75 },
-    { url: `${BASE_URL}/be/blog/cocon/${c.id}`, changeFrequency: 'weekly' as const, priority: 0.65 },
-    { url: `${BASE_URL}/ch/blog/cocon/${c.id}`, changeFrequency: 'weekly' as const, priority: 0.65 },
+    { url: `${BASE_URL}/blog/theme/${c.id}`,    changeFrequency: 'weekly' as const, priority: 0.75 },
+    { url: `${BASE_URL}/be/blog/theme/${c.id}`, changeFrequency: 'weekly' as const, priority: 0.65 },
+    { url: `${BASE_URL}/ch/blog/theme/${c.id}`, changeFrequency: 'weekly' as const, priority: 0.65 },
   ])
 
   const frPosts = getAllPosts({ locale: 'fr-FR' }).map((p) => ({

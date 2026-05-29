@@ -60,7 +60,7 @@ export function ArticleHero({ meta, locale = 'fr' }: ArticleHeroProps) {
               color: 'var(--ds-primary)',
               padding: '2px 10px', borderRadius: 999,
               fontSize: 11, fontWeight: 600,
-            }}>{cocon.icon} Pilier {cocon.label}</span>
+            }}>{cocon.icon} À lire en premier — {cocon.label}</span>
           )}
         </div>
       )}
