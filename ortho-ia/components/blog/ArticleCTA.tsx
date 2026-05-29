@@ -9,7 +9,7 @@ interface ArticleCTAProps {
 
 export function ArticleCTA({
   title = 'Générez votre CRBO en 5 minutes',
-  description = "Importez vos résultats de bilan — Ortho.ia rédige le compte rendu complet, prêt à signer. Essai gratuit, sans engagement.",
+  description = "Importez vos résultats de bilan : Ortho.ia rédige le compte rendu complet, prêt à signer. Essai gratuit, sans engagement.",
   ctaLabel = 'Essayer gratuitement',
   ctaHref = '/auth/register',
 }: ArticleCTAProps) {

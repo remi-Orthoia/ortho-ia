@@ -40,7 +40,7 @@ export default function Footer() {
               <Logo variant="light" height={36} withoutTagline />
             </div>
             <p style={{ fontSize: 14, lineHeight: 1.6, color: 'var(--fg-2)', maxWidth: 320, margin: 0 }}>
-              La plume rapide des orthophonistes — pour vous laisser plus de temps avec vos patients.
+              La plume rapide des orthophonistes, pour vous laisser plus de temps avec vos patients.
             </p>
           </div>
           {COLUMNS.map(col => (

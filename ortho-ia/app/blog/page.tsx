@@ -7,12 +7,12 @@ import { getAllPosts } from '@/lib/blog'
 const BASE_URL = 'https://ortho-ia.com'
 
 export const metadata: Metadata = {
-  title: 'Le Blog — Ortho.ia',
+  title: 'Le Blog · Ortho.ia',
   description:
     "Articles pratiques pour orthophonistes : rédaction CRBO, étalonnages, neurosciences cognitives, outils numériques. Par des orthophonistes en exercice.",
   alternates: { canonical: `${BASE_URL}/blog` },
   openGraph: {
-    title: 'Le Blog — Ortho.ia',
+    title: 'Le Blog · Ortho.ia',
     description: "Articles pratiques pour orthophonistes : rédaction CRBO, étalonnages, neurosciences cognitives, outils numériques.",
     url: `${BASE_URL}/blog`,
     type: 'website',

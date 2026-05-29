@@ -19,9 +19,9 @@ export function generateStaticParams() {
 
 export function generateMetadata({ params }: PageProps): Metadata {
   const cocon = getCocon(params.id as CoconId)
-  if (!cocon) return { title: 'Thème introuvable — Ortho.ia' }
+  if (!cocon) return { title: 'Thème introuvable · Ortho.ia' }
   return {
-    title: `${cocon.label} — Blog Ortho.ia Suisse`,
+    title: `${cocon.label} · Blog Ortho.ia Suisse`,
     alternates: { canonical: `${BASE_URL}/ch/blog/cocon/${cocon.id}` },
   }
 }

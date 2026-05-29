@@ -8,12 +8,12 @@ import { getAllTerms } from '@/lib/glossaire-data'
 const BASE_URL = 'https://ortho-ia.com'
 
 export const metadata: Metadata = {
-  title: 'Glossaire orthophonie — Ortho.ia',
+  title: 'Glossaire orthophonie · Ortho.ia',
   description:
     "Définitions précises des termes orthophoniques : CRBO, percentile, dyslexie, boucle phonologique, RAN, MoCA… Rédigées pour les orthophonistes et logopèdes.",
   alternates: { canonical: `${BASE_URL}/glossaire` },
   openGraph: {
-    title: 'Glossaire orthophonie — Ortho.ia',
+    title: 'Glossaire orthophonie · Ortho.ia',
     description: "Définitions des termes clés en orthophonie et logopédie.",
     url: `${BASE_URL}/glossaire`,
     type: 'website',
@@ -60,7 +60,7 @@ export default function GlossairePage() {
               Vocabulaire orthophonique
             </h1>
             <p style={{ fontSize: 17, lineHeight: 1.6, color: 'var(--fg-2)', margin: '0 0 48px', maxWidth: 580 }}>
-              {terms.length} termes définis avec précision clinique — pour rédiger, comprendre,
+              {terms.length} termes définis avec précision clinique, pour rédiger, comprendre
               et transmettre sans ambiguïté.
             </p>
             <GlossaireIndex terms={terms} />

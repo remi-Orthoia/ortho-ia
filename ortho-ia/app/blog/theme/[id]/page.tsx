@@ -19,13 +19,13 @@ export function generateStaticParams() {
 
 export function generateMetadata({ params }: PageProps): Metadata {
   const cocon = getCocon(params.id as CoconId)
-  if (!cocon) return { title: 'Thème introuvable — Ortho.ia' }
+  if (!cocon) return { title: 'Thème introuvable · Ortho.ia' }
   return {
-    title: `${cocon.label} — Blog Ortho.ia`,
+    title: `${cocon.label} · Blog Ortho.ia`,
     description: `Tous les articles Ortho.ia sur le thème "${cocon.label}" : pratique clinique, outils, rédaction.`,
     alternates: { canonical: `${BASE_URL}/blog/cocon/${cocon.id}` },
     openGraph: {
-      title: `${cocon.label} — Blog Ortho.ia`,
+      title: `${cocon.label} · Blog Ortho.ia`,
       url: `${BASE_URL}/blog/cocon/${cocon.id}`,
       type: 'website',
       locale: 'fr_FR',

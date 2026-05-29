@@ -1,7 +1,7 @@
 import { Container } from '@/components/landing/Primitives'
 import { CoconFilter } from '@/components/blog/CoconFilter'
 import { ArticleCard } from '@/components/blog/ArticleCard'
-import { getCocon } from '@/lib/blog-cocons'
+import { getCocon, getLocalizedSubtitle } from '@/lib/blog-cocons'
 import type { CoconId } from '@/lib/blog-cocons'
 import type { PostMeta } from '@/lib/blog'
 import type { LocaleCode } from '@/lib/locales'
@@ -44,8 +44,7 @@ export function CoconPageContent({ coconId, posts, locale = 'fr' }: CoconPageCon
               {cocon?.label}
             </h1>
             <p style={{ fontSize: 17, lineHeight: 1.6, color: 'var(--fg-2)', margin: 0 }}>
-              Tous les articles sur le thème <strong>{cocon?.label}</strong>
-              {pillar.length > 0 && " — l'article clé en tête, suivi des articles de fond."}.
+              {cocon ? getLocalizedSubtitle(cocon.subtitle, locale) : ''}
             </p>
           </section>
 

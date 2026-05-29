@@ -20,7 +20,7 @@ export function generateMetadata({ params }: PageProps): Metadata {
     const { meta } = getPostBySlug(params.slug)
     const canonical = `${BASE_URL}/ch/blog/${meta.slug}`
     return {
-      title: `${meta.title} — Ortho.ia Suisse`,
+      title: `${meta.title} · Ortho.ia Suisse`,
       description: meta.description,
       authors: [{ name: meta.author }],
       alternates: {
@@ -42,7 +42,7 @@ export function generateMetadata({ params }: PageProps): Metadata {
       },
     }
   } catch {
-    return { title: 'Article introuvable — Ortho.ia' }
+    return { title: 'Article introuvable · Ortho.ia' }
   }
 }
 

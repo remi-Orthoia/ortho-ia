@@ -24,7 +24,7 @@ export const GLOSSAIRE_TERMS: GlossaireTerm[] = [
   {
     slug: 'betl',
     label: 'BETL',
-    definition: "Batterie d'Évaluation des Troubles du Langage — batterie normée pour l'évaluation du langage oral et écrit chez l'adulte.",
+    definition: "Batterie d'Évaluation des Troubles du Langage : batterie normée pour l'évaluation du langage oral et écrit chez l'adulte.",
     detail: "La BETL propose des épreuves standardisées couvrant la phonologie, le lexique, la syntaxe et la pragmatique. Les résultats sont exprimés en percentiles ou écarts-types selon la norme de référence.",
     relatedSlugs: ['percentile', 'crbo'],
   },
@@ -45,7 +45,7 @@ export const GLOSSAIRE_TERMS: GlossaireTerm[] = [
   {
     slug: 'crbo',
     label: 'CRBO',
-    definition: "Compte Rendu de Bilan Orthophonique — document médico-légal remis au médecin prescripteur et au patient à l'issue d'un bilan.",
+    definition: "Compte Rendu de Bilan Orthophonique : document médico-légal remis au médecin prescripteur et au patient à l'issue d'un bilan.",
     detail: "Le CRBO est structuré en : anamnèse, motif de consultation, tableau des épreuves avec percentiles, observations par domaine, diagnostic en terminologie française, et recommandations (prise en charge + aménagements scolaires/PAP). Il ne doit pas contenir de codes DSM/CIM ni de diagnostics hypothétiques.",
     relatedSlugs: ['bilan-initial', 'percentile', 'pap'],
   },
@@ -87,14 +87,14 @@ export const GLOSSAIRE_TERMS: GlossaireTerm[] = [
   {
     slug: 'moca',
     label: 'MoCA',
-    definition: "Montreal Cognitive Assessment — test de dépistage des troubles cognitifs légers (MCI) et des démences, en 10-15 minutes.",
+    definition: "Montreal Cognitive Assessment : test de dépistage des troubles cognitifs légers (MCI) et des démences, en 10-15 minutes.",
     detail: "Seuil standard : 26/30. Sous 26, suspicion de déficit cognitif. Le score brut doit être corrigé si niveau d'études ≤ 12 ans (+1 point). Le MoCA évalue : visuospatial, fonctions exécutives, mémoire, attention, langage, abstraction, orientation. Ne pas confondre avec un bilan neuropsychologique complet.",
     relatedSlugs: ['crbo', 'etalonnage'],
   },
   {
     slug: 'ngap',
     label: 'NGAP',
-    definition: "Nomenclature Générale des Actes Professionnels — texte réglementaire fixant les codes et tarifs des actes orthophoniques remboursés en France.",
+    definition: "Nomenclature Générale des Actes Professionnels : texte réglementaire fixant les codes et tarifs des actes orthophoniques remboursés en France.",
     detail: "Les bilans orthophoniques sont cotés AMO (Actes Médicaux et para-Médicaux Orthophonie) : AMO 7,5 (bilan initial), AMO 8,5 (bilan approfondi), AMO 6 (bilan de renouvellement). La valeur de l'AMO est revalorisée périodiquement par convention avec l'Assurance Maladie.",
     relatedSlugs: ['bilan-initial', 'crbo'],
   },
@@ -129,7 +129,7 @@ export const GLOSSAIRE_TERMS: GlossaireTerm[] = [
   {
     slug: 'ran',
     label: 'RAN',
-    definition: "Rapid Automatized Naming — dénomination rapide automatisée d'items visuels (lettres, chiffres, couleurs, objets), prédicteur robuste de la fluidité en lecture.",
+    definition: "Rapid Automatized Naming : dénomination rapide automatisée d'items visuels (lettres, chiffres, couleurs, objets), prédicteur robuste de la fluidité en lecture.",
     detail: "Un RAN lent (> P16) associé à un déficit en conscience phonologique indique un profil de dyslexie à double déficit, de plus mauvais pronostic. Évalué par des épreuves chronométrées (ex. BALE, EVALEC, 4-DX). Se mesure en secondes et erreurs.",
     relatedSlugs: ['dyslexie', 'phonologie'],
   },

@@ -10,7 +10,7 @@ canonicalSlug: "ecrire-un-crbo-qui-parle-aux-medecins"
 isPillar: true
 ---
 
-Le compte rendu de bilan orthophonique n'est pas un document interne. Il sera lu par le médecin prescripteur — qui doit pouvoir s'y retrouver en cinq minutes — par les enseignants, par les familles, et parfois par d'autres professionnels (neuropsy, ergo, pédopsy). Trop souvent, on rédige le CRBO comme si on s'adressait uniquement à une consœur. Le résultat : un document techniquement parfait mais illisible pour la moitié des destinataires.
+Le compte rendu de bilan orthophonique n'est pas un document interne. Il sera lu par le médecin prescripteur (qui doit pouvoir s'y retrouver en cinq minutes), par les enseignants, par les familles, et parfois par d'autres professionnels (neuropsy, ergo, pédopsy). Trop souvent, on rédige le CRBO comme si on s'adressait uniquement à une consœur. Le résultat : un document techniquement parfait mais illisible pour la moitié des destinataires.
 
 ## Le piège du jargon protecteur
 
@@ -40,13 +40,13 @@ Quelques exemples :
 
 **Les codes Fxxx du DSM ou de la CIM.** Ils ne sont pas attendus dans un CRBO français, ils embrouillent les lecteurs non spécialistes, et ils peuvent même créer de la confusion juridique (ces codes engagent une qualification médicale qui n'est pas du ressort orthophonique).
 
-**Les diagnostics hypothétiques.** Pas de "suspicion de TDAH associé", pas de "à explorer du côté d'un trouble développemental de la coordination". Si vous suspectez quelque chose, dirigez la famille vers le bon professionnel — c'est lui qui posera ou non le diagnostic. Le CRBO n'est pas un lieu d'hypothèse.
+**Les diagnostics hypothétiques.** Pas de "suspicion de TDAH associé", pas de "à explorer du côté d'un trouble développemental de la coordination". Si vous suspectez quelque chose, dirigez la famille vers le bon professionnel : c'est lui qui posera ou non le diagnostic. Le CRBO n'est pas un lieu d'hypothèse.
 
 ## La structure qui marche
 
 Ce qui fonctionne bien dans un CRBO médico-légal :
 
-1. **Anamnèse** courte, factuelle, structurée en cinq thèmes (famille, vision/audition, antécédents, scolarité, plainte actuelle) — sans hallucination, sans information non communiquée.
+1. **Anamnèse** courte, factuelle, structurée en cinq thèmes (famille, vision/audition, antécédents, scolarité, plainte actuelle), sans hallucination, sans information non communiquée.
 2. **Motif de consultation** reformulé en une à deux phrases, dans un registre pro.
 3. **Tableau des épreuves** avec percentile et interprétation clinique pour chacune.
 4. **Observation par domaine** : 3-4 phrases qui décrivent qualitativement la performance et terminent par une conséquence scolaire.

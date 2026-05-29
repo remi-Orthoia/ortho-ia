@@ -17,7 +17,7 @@ export function BlogListPageContent({ posts, locale = 'fr', activeCocon }: BlogL
     <div style={{ background: 'var(--bg-canvas)', minHeight: '100vh' }}>
       <main>
         <Container style={{ maxWidth: 900 }}>
-          <BlogHero locale={locale} />
+          <BlogHero />
 
           <div style={{ marginBottom: 32 }}>
             <CoconFilter locale={locale} activeCocon={activeCocon} />

@@ -7,7 +7,7 @@ import { getAllPosts } from '@/lib/blog'
 const BASE_URL = 'https://ortho-ia.com'
 
 export const metadata: Metadata = {
-  title: 'Le Blog — Ortho.ia Suisse',
+  title: 'Le Blog · Ortho.ia Suisse',
   description:
     "Articles pratiques pour logopédistes suisses : rédaction de bilans, étalonnages, neurosciences cognitives, outils numériques.",
   alternates: {
@@ -15,7 +15,7 @@ export const metadata: Metadata = {
     languages: { 'fr-FR': `${BASE_URL}/blog`, 'fr-BE': `${BASE_URL}/be/blog`, 'fr-CH': `${BASE_URL}/ch/blog` },
   },
   openGraph: {
-    title: 'Le Blog — Ortho.ia Suisse',
+    title: 'Le Blog · Ortho.ia Suisse',
     url: `${BASE_URL}/ch/blog`,
     type: 'website',
     locale: 'fr_CH',

@@ -10,7 +10,7 @@ canonicalSlug: "dyslexie-phonologique-comment-la-reconnaitre"
 isPillar: false
 ---
 
-La dyslexie phonologique est la forme la plus fréquente de dyslexie développementale. Elle se caractérise par un déficit spécifique de la voie d'assemblage — la capacité à décoder un mot inconnu lettre par lettre — avec une voie d'adressage (reconnaissance des mots familiers) relativement préservée. En bilan, cela se traduit par un profil dissocié qu'il faut savoir lire.
+La dyslexie phonologique est la forme la plus fréquente de dyslexie développementale. Elle se caractérise par un déficit spécifique de la voie d'assemblage (la capacité à décoder un mot inconnu lettre par lettre), avec une voie d'adressage (reconnaissance des mots familiers) relativement préservée. En bilan, cela se traduit par un profil dissocié qu'il faut savoir lire.
 
 ## Les signes en passation
 
@@ -36,7 +36,7 @@ Le diagnostic se formule ainsi dans un CRBO français standard :
 
 > **Dyslexie-dysorthographie phonologique d'intensité [légère / modérée / sévère]**, caractérisée par un déficit de la voie d'assemblage phonologique, avec voie d'adressage relativement préservée. Les résultats en lecture de logatomes (Evalec : P[X]) et en conscience phonémique (P[X]) sont significativement inférieurs aux performances en reconnaissance de mots familiers réguliers (P[X]).
 
-Évitez la formulation "trouble spécifique du langage écrit de type phonologique" — elle est correcte mais moins précise dans un contexte de rédaction pour un prescripteur non spécialiste.
+Évitez la formulation "trouble spécifique du langage écrit de type phonologique" : correcte, mais moins précise dans un contexte de rédaction pour un prescripteur non spécialiste.
 
 ## Conséquences scolaires à mentionner
 

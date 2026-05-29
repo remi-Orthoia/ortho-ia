@@ -25,7 +25,7 @@ export function generateMetadata({ params }: PageProps): Metadata {
       hreflangAlts['fr-CH'] = `${BASE_URL}/ch/blog/${meta.canonicalSlug}`
     }
     return {
-      title: `${meta.title} — Ortho.ia`,
+      title: `${meta.title} · Ortho.ia`,
       description: meta.description,
       authors: [{ name: meta.author }],
       keywords: meta.tags,
@@ -53,7 +53,7 @@ export function generateMetadata({ params }: PageProps): Metadata {
       },
     }
   } catch {
-    return { title: 'Article introuvable — Ortho.ia' }
+    return { title: 'Article introuvable · Ortho.ia' }
   }
 }
 

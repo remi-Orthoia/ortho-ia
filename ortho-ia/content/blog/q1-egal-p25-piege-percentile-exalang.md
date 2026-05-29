@@ -1,6 +1,6 @@
 ---
 title: "Q1 = P25 : le piège des percentiles Exalang qu'on retrouve dans la moitié des CRBO"
-description: "Pourquoi Q1 dans un protocole Exalang correspond au percentile 25 et NON à une zone de difficulté sévère — et comment éviter l'erreur d'interprétation qui circule dans la moitié des bilans."
+description: "Pourquoi Q1 dans un protocole Exalang correspond au percentile 25 et NON à une zone de difficulté sévère. Comment éviter l'erreur d'interprétation qui circule dans la moitié des bilans."
 date: 2026-05-08
 author: "L'équipe Ortho.ia"
 tags: ["exalang", "percentile", "CRBO"]
@@ -30,7 +30,7 @@ En plus, la bande affichée par l'Exalang correspond à la **borne supérieure**
 
 ## Ce qu'il faut écrire dans le CRBO
 
-Ne jamais recalculer le percentile à partir de l'écart-type. Le manuel Exalang donne la correspondance directe entre la bande affichée et le percentile. Si la bande est "Q1", vous écrivez "percentile P25, zone de fragilité" — point.
+Ne jamais recalculer le percentile à partir de l'écart-type. Le manuel Exalang donne la correspondance directe entre la bande affichée et le percentile. Si la bande est "Q1", vous écrivez "percentile P25, zone de fragilité". Point.
 
 L'erreur classique : on lit "É-T -1.53" dans le protocole, on calcule le percentile correspondant à partir d'une table de loi normale, et on arrive à P6 ou P7. C'est faux. L'Exalang a ses propres normes, qui ne suivent pas une distribution normale parfaite. Le score à retenir est toujours celui de la bande affichée, pas le calcul É-T.
 

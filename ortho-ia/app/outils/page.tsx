@@ -7,12 +7,12 @@ import { OutilCard } from '@/components/blog/OutilCard'
 const BASE_URL = 'https://ortho-ia.com'
 
 export const metadata: Metadata = {
-  title: 'Outils pour orthophonistes — Ortho.ia',
+  title: 'Outils pour orthophonistes · Ortho.ia',
   description:
     "Générateur de CRBO, convertisseur de percentiles Exalang, modèles de PAP… Des outils pratiques pour les orthophonistes et logopèdes.",
   alternates: { canonical: `${BASE_URL}/outils` },
   openGraph: {
-    title: 'Outils pour orthophonistes — Ortho.ia',
+    title: 'Outils pour orthophonistes · Ortho.ia',
     url: `${BASE_URL}/outils`,
     type: 'website',
     locale: 'fr_FR',
@@ -24,7 +24,7 @@ export const dynamic = 'force-static'
 const OUTILS = [
   {
     title: 'Générateur de CRBO',
-    description: "Importez vos résultats de bilan, et Ortho.ia rédige le compte rendu complet en 5 minutes — structuré, cliniquement précis, prêt à signer.",
+    description: "Importez vos résultats de bilan, et Ortho.ia rédige le compte rendu complet en 5 minutes : structuré, cliniquement précis, prêt à signer.",
     icon: '📝',
     status: 'available' as const,
     href: '/auth/register',
@@ -54,7 +54,7 @@ const OUTILS = [
   },
   {
     title: 'Modèles de courrier',
-    description: "Courriers type au médecin prescripteur, aux enseignants, à la MDPH, aux parents — en langage clair, personnalisables en 30 secondes.",
+    description: "Courriers type au médecin prescripteur, aux enseignants, à la MDPH, aux parents. En langage clair, personnalisables en 30 secondes.",
     icon: '✉️',
     status: 'coming-soon' as const,
     tag: 'Bientôt',

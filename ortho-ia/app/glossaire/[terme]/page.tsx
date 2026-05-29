@@ -20,13 +20,13 @@ export function generateStaticParams() {
 
 export function generateMetadata({ params }: PageProps): Metadata {
   const term = getTermBySlug(params.terme)
-  if (!term) return { title: 'Terme introuvable — Ortho.ia' }
+  if (!term) return { title: 'Terme introuvable · Ortho.ia' }
   return {
-    title: `${term.label} — Glossaire Ortho.ia`,
+    title: `${term.label} · Glossaire Ortho.ia`,
     description: term.definition,
     alternates: { canonical: `${BASE_URL}/glossaire/${term.slug}` },
     openGraph: {
-      title: `${term.label} — Glossaire orthophonie`,
+      title: `${term.label} · Glossaire orthophonie`,
       description: term.definition,
       url: `${BASE_URL}/glossaire/${term.slug}`,
       type: 'article',

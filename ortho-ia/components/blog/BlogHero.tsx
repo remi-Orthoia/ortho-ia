@@ -1,14 +1,6 @@
 import { Eyebrow } from '@/components/landing/Primitives'
-import type { LocaleCode } from '@/lib/locales'
-import { LOCALE_CONFIGS } from '@/lib/locales'
 
-interface BlogHeroProps {
-  locale?: LocaleCode
-}
-
-export function BlogHero({ locale = 'fr' }: BlogHeroProps) {
-  const { professionLabel } = LOCALE_CONFIGS[locale]
-
+export function BlogHero() {
   return (
     <section style={{ padding: '80px 0 32px' }}>
       <Eyebrow>Le Blog</Eyebrow>
@@ -33,8 +25,7 @@ export function BlogHero({ locale = 'fr' }: BlogHeroProps) {
         margin: 0,
         maxWidth: 600,
       }}>
-        Pratique clinique, étalonnages, neurosciences cognitives, écriture du CRBO,
-        outils numériques. Par des {professionLabel}s en exercice, sans bullshit.
+        Tous les articles Ortho.ia : rédaction CRBO, logiciels, outils, IA, vie libérale.
       </p>
     </section>
   )
