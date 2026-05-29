@@ -182,6 +182,8 @@ Classe : ${data.patient_classe}
 Date du bilan : ${data.bilan_date_display}
 Type : Bilan ${data.bilan_type}${isRenouvellement ? ' 🔄' : ''}
 
+⚠️ ORTHOGRAPHE DU PATIENT — Utilise EXACTEMENT les placeholders ci-dessus (Prénom + Nom) chaque fois que tu mentionnes le patient dans la prose. Ne paraphrase JAMAIS son nom, ne tente PAS de "corriger" une variante apparente, et n'invente aucune forme alternative — même si l'anamnèse en contient (dictée vocale imparfaite). Les placeholders sont la seule source de vérité.
+
 === MÉDECIN PRESCRIPTEUR ===
 Nom : ${data.medecin_nom}
 Tél : ${data.medecin_tel || 'Non renseigné'}
@@ -299,6 +301,8 @@ Nom : ${data.patient_nom}
 Classe : ${data.patient_classe}
 Date du bilan : ${data.bilan_date_display}
 Type : Bilan ${data.bilan_type}${isRenouvellement ? ' 🔄' : ''}
+
+⚠️ ORTHOGRAPHE DU PATIENT — Utilise EXACTEMENT les placeholders ci-dessus (Prénom + Nom) chaque fois que tu mentionnes le patient dans la prose. Ne paraphrase JAMAIS son nom, ne tente PAS de "corriger" une variante apparente, et n'invente aucune forme alternative — même si l'anamnèse en contient (dictée vocale imparfaite). Les placeholders sont la seule source de vérité.
 
 === MÉDECIN PRESCRIPTEUR ===
 Nom : ${data.medecin_nom}

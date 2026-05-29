@@ -15,6 +15,7 @@ import {
   type SynthesizedCRBO,
 } from '@/lib/prompts'
 import { anonymize, rehydrate, buildScrubList, scrubText, scrubObjectStrings } from '@/lib/anonymizer'
+import { normalizePatientName } from '@/lib/patient-name-normalizer'
 import { createServerSupabaseClient } from '@/lib/supabase-server'
 import { withRetry } from '@/lib/retry'
 import { logger } from '@/lib/logger'
@@ -271,6 +272,28 @@ export async function POST(request: NextRequest) {
       apiKey: process.env.ANTHROPIC_API_KEY,
     })
 
+    // ============ Normalisation orthographe patient (pre-anonymisation) ============
+    // Whisper transcrit phonetiquement → "Méline" du form peut sortir
+    // "Mélina" dans l'anamnese. Sans correction, l'anonymizer cherche
+    // "Méline" et ne trouve pas → "Mélina" file en clair a Claude → CRBO
+    // final melange les deux orthographes. On normalise les champs texte
+    // libres AVANT anonymize() pour que la scrub list matche correctement.
+    const pn = formData.patient_prenom
+    const pno = formData.patient_nom
+    for (const key of ['anamnese', 'motif', 'notes_analyse', 'resultats_manuels',
+      'comportement_seance', 'evolution_notes', 'elements_stables',
+      'bilan_precedent_anamnese'] as const) {
+      const v = (formData as any)[key]
+      if (typeof v === 'string' && v) {
+        const { text: normalized, replacements } = normalizePatientName(v, pn, pno)
+        if (replacements.length > 0) {
+          console.log('[generate-crbo] patient name normalize',
+            { field: key, replacements: replacements.slice(0, 5) })
+          ;(formData as any)[key] = normalized
+        }
+      }
+    }
+
     // ============ Anonymisation RGPD avant envoi API ============
     const { anonymized, reverseMap } = anonymize(formData)
     const s = (v: string | undefined) => v ?? ''
@@ -281,7 +304,16 @@ export async function POST(request: NextRequest) {
     // avec la même liste de tokens que pour formData → la rehydratation post-IA
     // les remettra en clair.
     const scrubList = buildScrubList(formData)
-    const sanitizeFreeText = (t: string | undefined) => scrubText(t, scrubList) ?? ''
+    // sanitizeFreeText : normalize les variantes phonetiques du prenom/nom
+    // patient AVANT le scrub, sinon le scrub ne matche que l'orthographe
+    // canonique et laisse passer "Melina" alors qu'on veut "Méline" (cas
+    // typique des commentaires qualitatifs dictes a la voix ou paraphrases
+    // par Claude en phase extract).
+    const sanitizeFreeText = (t: string | undefined) => {
+      if (!t) return ''
+      const { text: normalized } = normalizePatientName(t, pn, pno)
+      return scrubText(normalized, scrubList) ?? ''
+    }
     const anonymizedExtracted: ExtractedCRBO | undefined = extracted
       ? {
           anamnese_redigee: sanitizeFreeText(extracted.anamnese_redigee),
