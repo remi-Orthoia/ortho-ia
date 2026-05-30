@@ -7,7 +7,7 @@ const COLUMNS: Array<{ title: string; links: Array<{ label: string; href: string
     title: 'Produit',
     links: [
       { label: 'Comment ça marche', href: '/#comment-ca-marche' },
-      { label: 'Tarifs',            href: '/#tarifs' },
+      // { label: 'Tarifs',            href: '/#tarifs' }, // masque 2026-05-30, sera reactive avec la section Pricing
       { label: 'Sécurité & RGPD',   href: '/confidentialite' },
       { label: 'Roadmap',           href: '/roadmap' },
     ],

@@ -6,7 +6,7 @@ import { Logo } from '@/components/ui'
 
 const NAV_LINKS = [
   { label: 'Comment ça marche', href: '/#comment-ca-marche' },
-  { label: 'Tarifs',            href: '/#tarifs' },
+  // { label: 'Tarifs',            href: '/#tarifs' }, // masque 2026-05-30, sera reactive avec la section Pricing
   { label: 'Le Blog',           href: '/blog' },
   { label: 'Témoignages',       href: '/#temoignages' },
   { label: 'FAQ',               href: '/#faq' },

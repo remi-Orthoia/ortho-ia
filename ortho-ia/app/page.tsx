@@ -5,7 +5,9 @@ import Steps from '@/components/landing/Steps'
 import Ambassador from '@/components/landing/Ambassador'
 import Benefits from '@/components/landing/Benefits'
 import Quote from '@/components/landing/Quote'
-import Pricing from '@/components/landing/Pricing'
+// Pricing masque temporairement (2026-05-30) — section conservee dans le
+// repo, sera reactivee telle quelle plus tard. Cf. JSX <Pricing /> ci-dessous.
+import Pricing from '@/components/landing/Pricing' // eslint-disable-line @typescript-eslint/no-unused-vars
 import FAQ from '@/components/landing/FAQ'
 import Footer from '@/components/landing/Footer'
 import AccountDeletedBanner from '@/components/AccountDeletedBanner'
@@ -37,7 +39,7 @@ export default function HomePage() {
         <Ambassador />
         <Benefits />
         <Quote />
-        <Pricing />
+        {/* <Pricing /> — masque temporairement (2026-05-30). A reactiver telle quelle plus tard. */}
         <FAQ />
       </main>
       <Footer />
