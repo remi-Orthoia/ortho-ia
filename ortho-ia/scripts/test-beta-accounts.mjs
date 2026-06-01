@@ -40,6 +40,7 @@ const userArg = args.find(a => a.startsWith('--user='))?.split('=')[1]
 const ACCOUNTS = [
   { name: 'Cindy', email: 'cindydendievel@gmail.com', password: 'Cindy-Ortho-2026' },
   { name: 'Marie-Cécile', email: 'mariececilevermeersch@gmail.com', password: 'Marie-Ortho-2026' },
+  { name: 'Laetitia', email: 'lettys.b@gmail.com', password: 'Laetitia-Ortho-2026' },
 ].filter(a => !userArg || a.name.toLowerCase().includes(userArg.toLowerCase()))
 
 if (ACCOUNTS.length === 0) {
