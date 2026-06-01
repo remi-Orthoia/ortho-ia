@@ -96,6 +96,24 @@ export const LECTURE_MOTS: TestVocabularyList[] = [
       'action', 'main', 'trac', 'bravo', 'gigot', 'contraire', 'juge', 'mer', 'paysanne', 'cil', 'champagne',
     ],
   },
+  {
+    // TODO Exalang 5-8 : le PDF cahier de passation est scanné (OCR illisible).
+    // Les vraies listes "Lecture de mots", "Logatomes" et "Closure de mots"
+    // nécessitent une extraction OCR ou saisie manuelle depuis l'app
+    // Orthomotus. Ce qui suit est extrait des textes de compréhension
+    // narrative présents dans docs/Bilans Sources/exalang-5-8-cahier.txt.
+    test: 'exalang_5_8',
+    epreuve: 'Compréhension de récit & lecture de texte (items narratifs)',
+    items: [
+      // Texte "Les vélos" (épreuve chronométrée, titre)
+      'vélos',
+      // Texte du chat anglais
+      'cabane', 'chat', 'roux', 'journée', 'souris', 'rose', 'dîner', 'fleurs', 'pomme',
+      'chapeau', 'rouge', 'pointu', 'anglais', 'zoo', 'voyage', 'avion', 'maison', 'neuve',
+      // Texte du koala
+      'koala', 'sapin', 'gardien', 'gâteaux', 'chocolats', 'oursons', 'caverne', 'arbres',
+    ],
+  },
 ]
 
 // ============================================================================
@@ -205,6 +223,23 @@ export const DENOMINATION_IMAGES: TestVocabularyList[] = [
 ]
 
 // ============================================================================
+// MOTS À MÉMORISER (rappel libre / différé)
+// ============================================================================
+// Items fixes des protocoles de mémorisation à court/moyen terme. Ces mots
+// sont les mêmes pour tous les patients (protocole standardisé) → l'ortho
+// les cite très souvent dans ses notes ("a rappelé 3/5 mots : visage, église,
+// rouge ; oublié : velours, marguerite").
+
+export const MOTS_A_MEMORISER: TestVocabularyList[] = [
+  {
+    test: 'moca',
+    epreuve: 'MoCA — 5 mots à mémoriser (rappel libre + différé)',
+    // Protocole MoCA v8.3 français officiel (Nasreddine et al.) — invariant
+    items: ['visage', 'velours', 'église', 'marguerite', 'rouge'],
+  },
+]
+
+// ============================================================================
 // MÉTAPHONOLOGIE (mots à manipuler)
 // ============================================================================
 
@@ -231,34 +266,51 @@ export const METAPHONOLOGIE_ITEMS: TestVocabularyList[] = [
 //   3. Mots irréguliers à graphie rare (femme, monsieur, automne, chaos, dolmen, hier)
 //   4. Items dénomination BETL fréquemment rates (œil, écureuil, huître, hippopotame)
 
+/**
+ * Mots-clés CRITIQUES à protéger contre la troncation Whisper.
+ * Whisper-1 (OpenAI) limite le `prompt` à ~224 tokens et tronque depuis le
+ * DÉBUT si on dépasse. On place donc les items les plus difficiles à
+ * deviner (logatomes inventés, pseudomots) en FIN de prompt — c'est la
+ * partie qui survit toujours. Les mots courants/scolaires (qui ont déjà
+ * une chance correcte d'être transcrits sans amorçage) restent en début
+ * et sont sacrifiés s'il y a troncation.
+ *
+ * Ordre = importance croissante (les derniers sont les plus protégés).
+ */
 export const WHISPER_HOT_WORDS: string[] = [
-  // Logatomes Exalang 8-11 répétition
-  'spictoleur', 'us carde', 'gropilloir', 'scoribal', 'castilbaroi', 'stratusforique',
-  'xébracoul', 'tronspircable', 'flimardeur', 'ascoridel', 'topridactil', 'sorgustaclair',
-  // Logatomes Exalang Lyfac
-  'détrabilaire', 'iportamicave', 'saintibolucle', 'gencarmouille', 'rindécourche',
-  'scarbidoule', 'estrabuleuse', 'constrivatoire', 'festivalire', 'champominien',
-  // Pseudomots Exalang 8-11 lecture
-  'plame', 'chaussoire', 'mercadi', 'manoteur', 'camot', 'rapuette', 'mallot',
-  'grubien', 'marabule', 'bradougon', 'chifournaire', 'silantruc', 'versifalu', 'drolamoire',
-  // Pseudomots EVALEO
-  'baban', 'chantigne', 'pondagne', 'bleur', 'druvi', 'podogan', 'foupet', 'tonfraile',
-  'vrotail', 'hortaneur', 'mironche', 'binthéan', 'camblumont',
-  // Pseudomots BIA
-  'nutaleur', 'abiclo', 'chopisfuqué', 'gufissou', 'asdriché', 'glondibu', 'stocbal', 'prichoi',
-  // Homophones et mots irréguliers piégeux (paon→pan, sang→sans, etc.)
-  'paon', 'faon', 'taon', 'sang', 'sans', 'cent', 'sent', 'sceau', 'seau', 'sot',
+  // ⚠️ Section TÊTE (sacrifiable si troncation) — mots courants
+  // Lexique scolaire Exalang à graphie pointue
+  'aiguille', 'crapaud', 'parenthèse', 'aquarelle', 'orchestre', 'baptême', 'euphorie',
+  'généralement', 'condamnation', 'évidemment', 'éclaircir', 'malentendu', 'tellement',
+  'aussitôt', 'autrefois', 'mercredi', 'félicitation', 'sceptique', 'asthme',
+  // Items dénomination BETL fréquemment rates
+  'écureuil', 'squelette', 'araignée', 'huître', 'hippopotame', 'tournevis', 'menottes',
+  'éventail', 'entonnoir', 'artichaut', 'pyramide', 'baignoire',
+  // Mots irréguliers piégeux
   'monsieur', 'messieurs', 'femme', 'femmes', 'automne', 'hier', 'chaos', 'dolmen', 'rhum',
   'oignon', 'œuf', 'œufs', 'œil', 'yeux', 'sœur', 'cœur', 'nœud', 'bœuf',
   'fœtus', 'orchidée', 'pélican', 'chirurgien', 'taupe', 'pirogue', 'pâté', 'gong', 'gîte',
   'doigt', 'doigts', 'sept', 'huit', 'mille', 'million',
-  // Items dénomination BETL fréquemment rates
-  'écureuil', 'squelette', 'araignée', 'huître', 'hippopotame', 'tournevis', 'menottes',
-  'éventail', 'entonnoir', 'artichaut', 'pyramide', 'baignoire',
-  // Exalang lexique scolaire pointu
-  'aiguille', 'crapaud', 'parenthèse', 'aquarelle', 'orchestre', 'baptême', 'euphorie',
-  'généralement', 'condamnation', 'évidemment', 'éclaircir', 'malentendu', 'tellement',
-  'aussitôt', 'autrefois', 'mercredi', 'félicitation', 'sceptique', 'asthme',
+  // MoCA — 5 mots à mémoriser (protocole standardisé, immuables)
+  'visage', 'velours', 'église', 'marguerite',
+  // Homophones piégeux (très fréquents en dictée résultats)
+  'paon', 'faon', 'taon', 'sang', 'sans', 'cent', 'sent', 'sceau', 'seau', 'sot',
+
+  // ⚠️ Section QUEUE (protégée de la troncation) — mots IMPOSSIBLES sans amorçage
+  // Pseudomots BIA (adultes aphasie)
+  'nutaleur', 'abiclo', 'chopisfuqué', 'gufissou', 'asdriché', 'glondibu', 'stocbal', 'prichoi',
+  // Pseudomots EVALEO (CP-3e)
+  'baban', 'chantigne', 'pondagne', 'bleur', 'druvi', 'podogan', 'foupet', 'tonfraile',
+  'vrotail', 'hortaneur', 'mironche', 'binthéan', 'camblumont',
+  // Pseudomots Exalang 8-11 lecture
+  'plame', 'chaussoire', 'mercadi', 'manoteur', 'camot', 'rapuette', 'mallot',
+  'grubien', 'marabule', 'bradougon', 'chifournaire', 'silantruc', 'versifalu', 'drolamoire',
+  // Logatomes Exalang Lyfac (les + critiques — adolescents/adultes)
+  'détrabilaire', 'iportamicave', 'saintibolucle', 'gencarmouille', 'rindécourche',
+  'scarbidoule', 'estrabuleuse', 'constrivatoire', 'festivalire', 'champominien',
+  // Logatomes Exalang 8-11 répétition (LES PLUS CRITIQUES — répétés à l'oral)
+  'spictoleur', 'us carde', 'gropilloir', 'scoribal', 'castilbaroi', 'stratusforique',
+  'xébracoul', 'tronspircable', 'flimardeur', 'ascoridel', 'topridactil', 'sorgustaclair',
 ]
 
 // ============================================================================
@@ -277,6 +329,7 @@ export const ALL_TEST_ITEMS: ReadonlyArray<string> = (() => {
   const buckets: TestVocabularyList[][] = [
     LECTURE_MOTS, LECTURE_NON_MOTS, REPETITION_LOGATOMES,
     DICTEE_MOTS, DENOMINATION_IMAGES, METAPHONOLOGIE_ITEMS,
+    MOTS_A_MEMORISER,
   ]
   for (const bucket of buckets) {
     for (const list of bucket) {
@@ -299,24 +352,38 @@ export const ALL_TEST_ITEMS: ReadonlyArray<string> = (() => {
 })()
 
 /**
- * Phrase d'amorçage Whisper (français) intégrant un sous-ensemble compact
- * du vocabulaire. Conçue pour rester sous la limite ~244 tokens du paramètre
- * `prompt` de l'API Whisper-1 d'OpenAI.
+ * Phrase d'amorçage Whisper (français) optimisée pour la limite stricte
+ * du paramètre `prompt` de l'API Whisper-1 OpenAI :
+ *   - Limite réelle : ~224 tokens (≈ 800-900 chars FR)
+ *   - Comportement si dépassée : Whisper TRONQUE SILENCIEUSEMENT DEPUIS LE DÉBUT
+ *
+ * Stratégie :
+ *   1. Préfixe contextuel ultra-court (les mots "anamnèse, bilan, dyslexie"
+ *      etc. sont déjà connus de Whisper, l'amorçage est inutile).
+ *   2. Sacrifie volontiers les mots courants en début de WHISPER_HOT_WORDS.
+ *   3. Garantit que les LOGATOMES (en fin de WHISPER_HOT_WORDS) sont
+ *      toujours préservés — ce sont les mots impossibles à transcrire
+ *      sans amorçage.
+ *
+ * Mesure du budget : viser ≤ 800 chars pour garder une marge en cas de
+ * `extraContext` prepended ("Patient: <prénom> <nom>." ≈ 30 chars).
  *
  * Importée par `app/api/transcribe/route.ts`.
  */
 export const WHISPER_PROMPT_CONTEXT: string = (() => {
-  // Tronque la liste des mots chauds à ~200 entrées max pour éviter de
-  // déborder la fenêtre du paramètre `prompt`.
-  const hotWordsTrimmed = WHISPER_HOT_WORDS.slice(0, 180).join(', ')
-  return (
-    "Transcription d'une dictée d'orthophoniste pour un compte rendu de bilan orthophonique (CRBO). " +
-    "Vocabulaire clinique : anamnèse, bilan, motif de consultation, langage oral, langage écrit, phonologie, " +
-    "métaphonologie, lexique, syntaxe, conscience phonologique, mémoire de travail, boucle phonologique, " +
-    "dyslexie, dysorthographie, dysphasie, dyspraxie, Exalang, EVALEO, Examath, BETL, BIA, BECD, MoCA, " +
-    "écart-type, percentile, déficitaire, pathologique, normé, Q1, Q3, médiane. " +
-    "Patient, médecin prescripteur, école, classe, CP, CE1, CE2, CM1, CM2, maternelle, 6ème, 5ème, 4ème, 3ème. " +
-    "Items de test fréquemment cités (mots réels, logatomes inventés et homophones piégeux) : " +
-    hotWordsTrimmed + "."
-  )
+  const BUDGET_CHARS = 780 // marge ~ 100 chars sous la limite token réelle
+  const PREFIX = "Dictée d'orthophoniste, bilan (CRBO). Items de test : "
+
+  // On joint depuis la FIN (mots les + critiques) jusqu'à atteindre le budget.
+  // Chaque mot ajouté garantit qu'il survivra à la troncation OpenAI.
+  const words: string[] = []
+  let chars = PREFIX.length + 1 // +1 pour le "." final
+  for (let i = WHISPER_HOT_WORDS.length - 1; i >= 0; i--) {
+    const w = WHISPER_HOT_WORDS[i]
+    const add = w.length + 2 // ", "
+    if (chars + add > BUDGET_CHARS) break
+    words.unshift(w)
+    chars += add
+  }
+  return `${PREFIX}${words.join(', ')}.`
 })()

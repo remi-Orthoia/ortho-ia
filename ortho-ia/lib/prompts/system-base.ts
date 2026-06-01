@@ -4,6 +4,7 @@ import { buildKnowledgeContext } from './knowledge'
 import {
   LECTURE_MOTS, LECTURE_NON_MOTS, REPETITION_LOGATOMES,
   DICTEE_MOTS, DENOMINATION_IMAGES, METAPHONOLOGIE_ITEMS,
+  MOTS_A_MEMORISER,
   type TestVocabularyList,
 } from '@/lib/test-vocabulary'
 
@@ -799,6 +800,7 @@ function buildTestVocabularyHint(tests: string[]): string {
     { label: 'Dictée de mots', lists: DICTEE_MOTS.filter(l => matchesTest(l.test)) },
     { label: "Dénomination d'images", lists: DENOMINATION_IMAGES.filter(l => matchesTest(l.test)) },
     { label: 'Métaphonologie (items support)', lists: METAPHONOLOGIE_ITEMS.filter(l => matchesTest(l.test)) },
+    { label: 'Mots à mémoriser', lists: MOTS_A_MEMORISER.filter(l => matchesTest(l.test)) },
   ].filter(b => b.lists.length > 0)
   if (buckets.length === 0) return ''
   const lines = buckets.map(b => {
