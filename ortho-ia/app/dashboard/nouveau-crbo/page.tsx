@@ -30,6 +30,7 @@ import BiaScoresInput from '@/components/forms/BiaScoresInput'
 import PrediLacScoresInput from '@/components/forms/PrediLacScoresInput'
 import ExalangLyfacScoresInput from '@/components/forms/ExalangLyfacScoresInput'
 import { TESTS_WITH_SPECIFIC_FORM, getComplementarySuggestions, TEST_FAMILIES } from '@/lib/test-pairings'
+import { isBetaDisabled } from '@/lib/bilan-registry'
 import { saveMathBilanHandoff } from '@/lib/bilans/math/handoff'
 import DemoAutofillButton from '@/components/DemoAutofillButton'
 import { DEMO_LANGAGE_FIXTURE } from '@/lib/demo-autofill'
@@ -1133,6 +1134,14 @@ function NouveauCRBOContent() {
 
   const handleTestChange = (test: string) => {
     const wasSelected = formData.test_utilise.includes(test)
+    // Beta : bloquer la sélection des bilans non encore validés. On laisse
+    // toujours la possibilité de DÉSÉLECTIONNER (au cas où un draft contienne
+    // un test devenu disabled depuis), mais pas de cocher un nouveau bilan
+    // bloqué.
+    if (!wasSelected && isBetaDisabled(test)) {
+      toast.info('Ce bilan sera disponible prochainement (validation en cours).')
+      return
+    }
     setFormData(prev => ({
       ...prev,
       test_utilise: prev.test_utilise.includes(test)
@@ -2682,24 +2691,37 @@ Astuce : tapez /fatigue, /anxiete, /encouragements… pour réutiliser vos formu
                   À proposer <strong>avant</strong> un bilan complet pour orienter les épreuves ciblées.
                 </p>
                 <div className="grid sm:grid-cols-2 gap-2">
-                  {TESTS_SCREENING_OPTIONS.map(test => (
-                    <label
-                      key={test}
-                      className={`flex items-center gap-3 p-3 border rounded-lg cursor-pointer transition bg-white ${
-                        formData.test_utilise.includes(test)
-                          ? 'border-amber-500 ring-2 ring-amber-200'
-                          : 'border-amber-200 hover:border-amber-400'
-                      }`}
-                    >
-                      <input
-                        type="checkbox"
-                        checked={formData.test_utilise.includes(test)}
-                        onChange={() => handleTestChange(test)}
-                        className="w-4 h-4 text-amber-600 border-gray-300 rounded focus:ring-amber-500"
-                      />
-                      <span className="text-sm text-gray-700 font-medium">{test}</span>
-                    </label>
-                  ))}
+                  {TESTS_SCREENING_OPTIONS.map(test => {
+                    const checked = formData.test_utilise.includes(test)
+                    const locked = isBetaDisabled(test) && !checked
+                    return (
+                      <label
+                        key={test}
+                        title={locked ? 'Disponible prochainement' : undefined}
+                        className={`flex items-center gap-3 p-3 border rounded-lg transition bg-white ${
+                          locked
+                            ? 'border-gray-200 opacity-50 cursor-not-allowed'
+                            : checked
+                              ? 'border-amber-500 ring-2 ring-amber-200 cursor-pointer'
+                              : 'border-amber-200 hover:border-amber-400 cursor-pointer'
+                        }`}
+                      >
+                        <input
+                          type="checkbox"
+                          checked={checked}
+                          disabled={locked}
+                          onChange={() => handleTestChange(test)}
+                          className="w-4 h-4 text-amber-600 border-gray-300 rounded focus:ring-amber-500"
+                        />
+                        <span className="text-sm text-gray-700 font-medium flex-1">{test}</span>
+                        {locked && (
+                          <span className="text-[10px] uppercase tracking-wide font-semibold text-gray-500 bg-gray-100 px-1.5 py-0.5 rounded">
+                            Bientôt
+                          </span>
+                        )}
+                      </label>
+                    )
+                  })}
                 </div>
               </div>
 
@@ -2758,24 +2780,37 @@ Astuce : tapez /fatigue, /anxiete, /encouragements… pour réutiliser vos formu
                       </button>
                       {isOpen && (
                         <div className="border-t border-gray-100 px-4 py-3 grid sm:grid-cols-2 gap-2">
-                          {familyTests.map((test) => (
-                            <label
-                              key={test}
-                              className={`flex items-center gap-3 p-3 border rounded-lg cursor-pointer transition ${
-                                formData.test_utilise.includes(test)
-                                  ? 'border-green-500 bg-green-50'
-                                  : 'border-gray-300 hover:border-gray-400'
-                              }`}
-                            >
-                              <input
-                                type="checkbox"
-                                checked={formData.test_utilise.includes(test)}
-                                onChange={() => handleTestChange(test)}
-                                className="w-4 h-4 text-green-600 border-gray-300 rounded focus:ring-green-500"
-                              />
-                              <span className="text-sm text-gray-700">{test}</span>
-                            </label>
-                          ))}
+                          {familyTests.map((test) => {
+                            const checked = formData.test_utilise.includes(test)
+                            const locked = isBetaDisabled(test) && !checked
+                            return (
+                              <label
+                                key={test}
+                                title={locked ? 'Disponible prochainement' : undefined}
+                                className={`flex items-center gap-3 p-3 border rounded-lg transition ${
+                                  locked
+                                    ? 'border-gray-200 bg-gray-50 opacity-50 cursor-not-allowed'
+                                    : checked
+                                      ? 'border-green-500 bg-green-50 cursor-pointer'
+                                      : 'border-gray-300 hover:border-gray-400 cursor-pointer'
+                                }`}
+                              >
+                                <input
+                                  type="checkbox"
+                                  checked={checked}
+                                  disabled={locked}
+                                  onChange={() => handleTestChange(test)}
+                                  className="w-4 h-4 text-green-600 border-gray-300 rounded focus:ring-green-500"
+                                />
+                                <span className="text-sm text-gray-700 flex-1">{test}</span>
+                                {locked && (
+                                  <span className="text-[10px] uppercase tracking-wide font-semibold text-gray-500 bg-gray-100 px-1.5 py-0.5 rounded">
+                                    Bientôt
+                                  </span>
+                                )}
+                              </label>
+                            )
+                          })}
                           {isMathFamily && (
                             // Raccourcis vers les parcours dédiés B-CM / B-CMado :
                             // ils naviguent vers une route séparée (cotation qualitative,
@@ -2787,60 +2822,78 @@ Astuce : tapez /fatigue, /anxiete, /encouragements… pour réutiliser vos formu
                               {[
                                 { label: 'B-CM', sub: 'enfant', href: '/dashboard/bilan/b-cm', target: 'b-cm' as const },
                                 { label: 'B-CMado', sub: 'ado', href: '/dashboard/bilan/b-cmado', target: 'b-cmado' as const },
-                              ].map((b) => (
-                                <button
-                                  key={b.label}
-                                  type="button"
-                                  onClick={() => {
-                                    saveMathBilanHandoff({
-                                      target: b.target,
-                                      // Flag fromWizard : indique au BilanMathForm que tout le
-                                      // contexte est deja saisi → masquer Patient/Type/Anamnese
-                                      // blocs pour eviter la duplication de saisie. Demande
-                                      // utilisateur 2026-05-26.
-                                      fromWizard: true,
-                                      patient: {
-                                        prenom: formData.patient_prenom || '',
-                                        nom: formData.patient_nom || '',
-                                        date_naissance: formData.patient_ddn || '',
-                                        classe: formData.patient_classe || '',
-                                      },
-                                      anamnese: formData.anamnese || '',
-                                      motif: formData.motif || '',
-                                      bilanMode: formData.bilan_type === 'renouvellement' ? 'renouvellement' : 'initial',
-                                      bilanDate: formData.bilan_date || '',
-                                      medecin: {
-                                        nom: formData.medecin_nom || '',
-                                        tel: formData.medecin_tel || '',
-                                        date_prescription: formData.medecin_date_prescription || '',
-                                      },
-                                      comportementSeance: formData.comportement_seance || '',
-                                      dureeSeanceMinutes: formData.duree_seance_minutes,
-                                      renouvellement: formData.bilan_type === 'renouvellement'
-                                        ? {
-                                            evolutionNotes: formData.evolution_notes || '',
-                                            elementsStables: formData.elements_stables || '',
-                                            bilanPrecedentId: formData.bilan_precedent_id || '',
-                                            bilanPrecedentDate: formData.bilan_precedent_date || '',
-                                            bilanPrecedentAnamnese: formData.bilan_precedent_anamnese || '',
-                                          }
-                                        : undefined,
-                                    })
-                                    router.push(b.href)
-                                  }}
-                                  className="flex items-center gap-3 p-3 border border-emerald-200 hover:border-emerald-500 hover:bg-emerald-50 rounded-lg transition text-left group"
-                                  title={`Parcours dédié — bilan de cognition mathématique ${b.sub}`}
-                                >
-                                  <Calculator size={16} className="text-emerald-600 shrink-0" />
-                                  <span className="flex-1 min-w-0">
-                                    <span className="block text-sm text-gray-700 font-medium">{b.label}</span>
-                                    <span className="block text-[11px] text-emerald-700">
-                                      Bilan calcul {b.sub} — parcours dédié
+                              ].map((b) => {
+                                const locked = isBetaDisabled(b.label)
+                                return (
+                                  <button
+                                    key={b.label}
+                                    type="button"
+                                    disabled={locked}
+                                    onClick={() => {
+                                      if (locked) {
+                                        toast.info('Ce bilan sera disponible prochainement (validation en cours).')
+                                        return
+                                      }
+                                      saveMathBilanHandoff({
+                                        target: b.target,
+                                        // Flag fromWizard : indique au BilanMathForm que tout le
+                                        // contexte est deja saisi → masquer Patient/Type/Anamnese
+                                        // blocs pour eviter la duplication de saisie. Demande
+                                        // utilisateur 2026-05-26.
+                                        fromWizard: true,
+                                        patient: {
+                                          prenom: formData.patient_prenom || '',
+                                          nom: formData.patient_nom || '',
+                                          date_naissance: formData.patient_ddn || '',
+                                          classe: formData.patient_classe || '',
+                                        },
+                                        anamnese: formData.anamnese || '',
+                                        motif: formData.motif || '',
+                                        bilanMode: formData.bilan_type === 'renouvellement' ? 'renouvellement' : 'initial',
+                                        bilanDate: formData.bilan_date || '',
+                                        medecin: {
+                                          nom: formData.medecin_nom || '',
+                                          tel: formData.medecin_tel || '',
+                                          date_prescription: formData.medecin_date_prescription || '',
+                                        },
+                                        comportementSeance: formData.comportement_seance || '',
+                                        dureeSeanceMinutes: formData.duree_seance_minutes,
+                                        renouvellement: formData.bilan_type === 'renouvellement'
+                                          ? {
+                                              evolutionNotes: formData.evolution_notes || '',
+                                              elementsStables: formData.elements_stables || '',
+                                              bilanPrecedentId: formData.bilan_precedent_id || '',
+                                              bilanPrecedentDate: formData.bilan_precedent_date || '',
+                                              bilanPrecedentAnamnese: formData.bilan_precedent_anamnese || '',
+                                            }
+                                          : undefined,
+                                      })
+                                      router.push(b.href)
+                                    }}
+                                    className={`flex items-center gap-3 p-3 border rounded-lg transition text-left group ${
+                                      locked
+                                        ? 'border-gray-200 bg-gray-50 opacity-50 cursor-not-allowed'
+                                        : 'border-emerald-200 hover:border-emerald-500 hover:bg-emerald-50'
+                                    }`}
+                                    title={locked ? 'Disponible prochainement' : `Parcours dédié — bilan de cognition mathématique ${b.sub}`}
+                                  >
+                                    <Calculator size={16} className={locked ? 'text-gray-400 shrink-0' : 'text-emerald-600 shrink-0'} />
+                                    <span className="flex-1 min-w-0">
+                                      <span className="block text-sm text-gray-700 font-medium">{b.label}</span>
+                                      <span className={`block text-[11px] ${locked ? 'text-gray-500' : 'text-emerald-700'}`}>
+                                        Bilan calcul {b.sub} — parcours dédié
+                                      </span>
                                     </span>
-                                  </span>
-                                  <ArrowUpRight size={14} className="text-gray-400 group-hover:text-emerald-600 shrink-0" />
-                                </button>
-                              ))}
+                                    {locked ? (
+                                      <span className="text-[10px] uppercase tracking-wide font-semibold text-gray-500 bg-gray-100 px-1.5 py-0.5 rounded">
+                                        Bientôt
+                                      </span>
+                                    ) : (
+                                      <ArrowUpRight size={14} className="text-gray-400 group-hover:text-emerald-600 shrink-0" />
+                                    )}
+                                  </button>
+                                )
+                              })}
                             </>
                           )}
                         </div>

@@ -116,6 +116,11 @@ export interface BilanEntry {
   /** Bilan désactivé temporairement (présent en code mais pas proposé à
    *  la sélection). Utilisé pour Exalang 5-8 (form retiré 2026-05-21). */
   hiddenInUI?: boolean
+  /** Bilan verrouillé pendant la beta (visible en UI, non sélectionnable,
+   *  affiché grisé avec badge "Bientôt"). On le débloque au fur et à mesure
+   *  que la qualité des CRBO générés est validée sur ce bilan.
+   *  Validés au 2026-06-01 : Exalang (toutes versions), EVALEO 6-15, B-CMado. */
+  betaDisabled?: boolean
   /** Si true, le rendu Word PRÉSERVE l'ordre des `domains[]` produits par le
    *  LLM au lieu d'appliquer le re-tri défensif par famille
    *  (oral → écrit → sous-jacent) de `sortDomainsByFamily()`. Pertinent pour
@@ -159,6 +164,7 @@ export const BILAN_REGISTRY: Record<string, BilanEntry> = {
   // ===== Screening =====
   'MoCA': {
     nom: 'MoCA',
+    betaDisabled: true,
     label: 'MoCA — Montreal Cognitive Assessment',
     famille: 'screening',
     ageRange: 'adulte / senior',
@@ -173,6 +179,7 @@ export const BILAN_REGISTRY: Record<string, BilanEntry> = {
   // ===== Adulte / Aphasie / Gériatrie =====
   'BETL': {
     nom: 'BETL',
+    betaDisabled: true,
     label: 'BETL — Bilan Évaluation Trouble Lexical',
     famille: 'adulte',
     ageRange: 'adulte',
@@ -184,6 +191,7 @@ export const BILAN_REGISTRY: Record<string, BilanEntry> = {
   },
   'PREDIMEM': {
     nom: 'PREDIMEM',
+    betaDisabled: true,
     famille: 'adulte',
     formPath: 'components/forms/PredimemScoresInput.tsx',
     promptPath: 'lib/prompts/tests/predimem.ts',
@@ -193,6 +201,7 @@ export const BILAN_REGISTRY: Record<string, BilanEntry> = {
   },
   'PrediFex': {
     nom: 'PrediFex',
+    betaDisabled: true,
     famille: 'adulte',
     formPath: 'components/forms/PrediFexScoresInput.tsx',
     promptPath: 'lib/prompts/tests/predifex.ts',
@@ -202,6 +211,7 @@ export const BILAN_REGISTRY: Record<string, BilanEntry> = {
   },
   'PrediLac': {
     nom: 'PrediLac',
+    betaDisabled: true,
     famille: 'adulte',
     formPath: 'components/forms/PrediLacScoresInput.tsx',
     promptPath: 'lib/prompts/tests/predilac.ts',
@@ -211,6 +221,7 @@ export const BILAN_REGISTRY: Record<string, BilanEntry> = {
   },
   'BECD': {
     nom: 'BECD',
+    betaDisabled: true,
     label: 'BECD — Batterie d\'Évaluation Cognitive de la Démence',
     famille: 'adulte',
     formPath: 'components/forms/BecdScoresInput.tsx',
@@ -221,6 +232,7 @@ export const BILAN_REGISTRY: Record<string, BilanEntry> = {
   },
   'BIA': {
     nom: 'BIA',
+    betaDisabled: true,
     label: 'BIA — Bilan Informatisé Aphasie',
     famille: 'adulte',
     formPath: 'components/forms/BiaScoresInput.tsx',
@@ -309,6 +321,7 @@ export const BILAN_REGISTRY: Record<string, BilanEntry> = {
   // ===== Langage oral seul =====
   'EVALO 2-6': {
     nom: 'EVALO 2-6',
+    betaDisabled: true,
     famille: 'langage_oral',
     ageRange: '2-6 ans',
     formPath: 'components/forms/Evalo26ScoresInput.tsx',
@@ -319,6 +332,7 @@ export const BILAN_REGISTRY: Record<string, BilanEntry> = {
   },
   'ELO': {
     nom: 'ELO',
+    betaDisabled: true,
     famille: 'langage_oral',
     formPath: null,
     promptPath: 'lib/prompts/tests/elo.ts',
@@ -328,6 +342,7 @@ export const BILAN_REGISTRY: Record<string, BilanEntry> = {
   },
   'BALE': {
     nom: 'BALE',
+    betaDisabled: true,
     famille: 'langage_oral',
     formPath: null,
     promptPath: 'lib/prompts/tests/bale.ts',
@@ -337,6 +352,7 @@ export const BILAN_REGISTRY: Record<string, BilanEntry> = {
   },
   'N-EEL': {
     nom: 'N-EEL',
+    betaDisabled: true,
     famille: 'langage_oral',
     formPath: null,
     promptPath: 'lib/prompts/tests/n-eel.ts',
@@ -346,6 +362,7 @@ export const BILAN_REGISTRY: Record<string, BilanEntry> = {
   },
   'BILO': {
     nom: 'BILO',
+    betaDisabled: true,
     famille: 'langage_oral',
     formPath: null,
     promptPath: 'lib/prompts/tests/bilo.ts',
@@ -355,6 +372,7 @@ export const BILAN_REGISTRY: Record<string, BilanEntry> = {
   },
   'BELEC': {
     nom: 'BELEC',
+    betaDisabled: true,
     famille: 'langage_ecrit',
     formPath: null,
     promptPath: 'lib/prompts/tests/belec.ts',
@@ -366,6 +384,7 @@ export const BILAN_REGISTRY: Record<string, BilanEntry> = {
   // ===== Maths (cognition mathématique, parcours dédié hors flux CRBO standard) =====
   'B-CM': {
     nom: 'B-CM',
+    betaDisabled: true,
     label: 'B-CM — Bilan de Cognition Mathématique enfant',
     famille: 'math',
     ageRange: 'cycles II-III',
@@ -390,6 +409,7 @@ export const BILAN_REGISTRY: Record<string, BilanEntry> = {
   // ===== Transverse =====
   'Examath': {
     nom: 'Examath',
+    betaDisabled: true,
     famille: 'transverse',
     ageRange: '8-15 ans',
     formPath: 'components/forms/ExamathScoresInput.tsx',
@@ -400,6 +420,7 @@ export const BILAN_REGISTRY: Record<string, BilanEntry> = {
   },
   'OMF / Déglutition': {
     nom: 'OMF / Déglutition',
+    betaDisabled: true,
     famille: 'transverse',
     formPath: null,
     promptPath: 'lib/prompts/tests/omf-deglutition.ts',
@@ -418,6 +439,15 @@ export function getBilan(nom: string): BilanEntry | undefined {
   const entry = BILAN_REGISTRY[nom]
   if (!entry || entry.hiddenInUI) return undefined
   return entry
+}
+
+/** Vrai si le bilan est verrouillé en beta (visible mais non sélectionnable).
+ *  Les bilans inconnus du registry (ex: "Autre") sont aussi considérés
+ *  bloqués pendant la beta pour éviter les saisies hors périmètre validé. */
+export function isBetaDisabled(nom: string): boolean {
+  const entry = BILAN_REGISTRY[nom]
+  if (!entry) return true
+  return entry.betaDisabled === true
 }
 
 /** Vrai si ce bilan a un formulaire structuré dédié. */
