@@ -67,7 +67,6 @@ export default function StepProgress({ currentStep, onStepClick }: Props) {
         {STEPS.map((step, idx) => {
           const isDone = step.index < currentStep
           const isActive = step.index === currentStep
-          const isPast = isDone || isActive
           const isClickable = isDone && !!onStepClick
 
           const buttonBg = isDone || isActive ? 'var(--ds-primary)' : 'var(--bg-surface-2)'
@@ -115,7 +114,7 @@ export default function StepProgress({ currentStep, onStepClick }: Props) {
                     style={{
                       height: '100%',
                       background: 'var(--ds-primary)',
-                      width: isPast ? '100%' : 0,
+                      width: isDone ? '100%' : 0,
                       transition: 'width 500ms var(--ease-out)',
                     }}
                   />
