@@ -141,3 +141,91 @@ export function pickFreshestSource(
   const dbMs = new Date(dbUpdatedAt).getTime()
   return dbMs > localSavedAt ? 'db' : 'local'
 }
+
+/** Aperçu d'un brouillon enrichi pour l'affichage en liste (Historique).
+ *  Couvre les 3 kinds (langage / math-b-cm / math-b-cmado). */
+export interface DraftListItem {
+  kind: DraftKind
+  step: number
+  updatedAt: string
+  /** Prénom du patient extrait du data du draft (peut être vide si l'ortho
+   *  n'a pas encore rempli l'étape 1). */
+  patientPrenom: string
+  patientNom: string
+  /** Date de naissance et classe si renseignées dans le draft, pour matcher
+   *  le rendu de l'historique. */
+  patientDdn?: string
+  patientClasse?: string
+  /** Test/grille utilisé (Exalang 8-11 / B-CM / B-CMado / etc.). Pour les
+   *  drafts langage, valeur extraite de data.formData.test_utilise (string
+   *  ou array). Pour math, dérivée du kind. */
+  testUtilise: string
+  /** URL de reprise selon le kind. */
+  href: string
+}
+
+/**
+ * Liste TOUS les brouillons d'un user (les 3 kinds) avec métadonnées
+ * extraites du payload data — pour affichage dans la page Historique
+ * à côté des CRBO finalisés.
+ * Best-effort : retourne [] si la DB est inaccessible.
+ */
+export async function listDraftsForUser(userId: string): Promise<DraftListItem[]> {
+  try {
+    const supabase = createClient()
+    const { data, error } = await supabase
+      .from('crbo_drafts')
+      .select('kind, data, step, updated_at')
+      .eq('user_id', userId)
+      .order('updated_at', { ascending: false })
+    if (error || !data) return []
+    return data.map((row): DraftListItem => {
+      const kind = row.kind as DraftKind
+      const d = (row.data as any) ?? {}
+      // Extraction patient : structure différente entre langage et math.
+      // - Langage : data.formData.patient_prenom + .patient_nom + .patient_ddn + .patient_classe
+      //             + data.formData.test_utilise (string ou array).
+      // - Math    : data.patient.prenom + .patient.nom + .patient.date_naissance + .patient.classe
+      //             + grille déduite du kind (b-cm → B-CM, b-cmado → B-CMado).
+      let patientPrenom = ''
+      let patientNom = ''
+      let patientDdn: string | undefined
+      let patientClasse: string | undefined
+      let testUtilise = ''
+      let href = '/dashboard/nouveau-crbo'
+      if (kind === 'langage') {
+        const fd = d.formData ?? {}
+        patientPrenom = (fd.patient_prenom ?? '').toString().trim()
+        patientNom = (fd.patient_nom ?? '').toString().trim()
+        patientDdn = fd.patient_ddn || undefined
+        patientClasse = fd.patient_classe || undefined
+        const tests = fd.test_utilise
+        if (Array.isArray(tests)) testUtilise = tests.filter(Boolean).join(', ')
+        else if (typeof tests === 'string') testUtilise = tests
+        href = '/dashboard/nouveau-crbo?reprendre=1'
+      } else if (kind === 'math-b-cm' || kind === 'math-b-cmado') {
+        const p = d.patient ?? {}
+        patientPrenom = (p.prenom ?? '').toString().trim()
+        patientNom = (p.nom ?? '').toString().trim()
+        patientDdn = p.date_naissance || undefined
+        patientClasse = p.classe || undefined
+        testUtilise = kind === 'math-b-cm' ? 'B-CM' : 'B-CMado'
+        href = kind === 'math-b-cm' ? '/dashboard/bilan/b-cm' : '/dashboard/bilan/b-cmado'
+      }
+      return {
+        kind,
+        step: typeof row.step === 'number' ? row.step : 0,
+        updatedAt: row.updated_at as string,
+        patientPrenom,
+        patientNom,
+        patientDdn,
+        patientClasse,
+        testUtilise,
+        href,
+      }
+    })
+  } catch (err: any) {
+    console.warn('[draft-sync] list error:', err?.message?.slice(0, 200))
+    return []
+  }
+}

@@ -3,16 +3,18 @@
 import { useState, useEffect } from 'react'
 import Link from 'next/link'
 import { createClient } from '@/lib/supabase'
-import { FileText, Download, Trash2, Search, Calendar, Loader2, FileDown } from 'lucide-react'
+import { FileText, Download, Trash2, Search, Calendar, Loader2, FileDown, FileEdit } from 'lucide-react'
 import { useToast } from '@/components/Toast'
 import { playSwoosh } from '@/lib/sounds'
 import { playPrintAnimation } from '@/components/PrintAnimation'
 import { applyVocabToObject } from '@/lib/vocab-perso'
 import { applyGlossaireToObject } from '@/lib/glossaire'
+import { listDraftsForUser, deleteDraftFromDb, type DraftListItem } from '@/lib/draft-sync'
 
 export default function HistoriquePage() {
   const toast = useToast()
   const [crbos, setCrbos] = useState<any[]>([])
+  const [drafts, setDrafts] = useState<DraftListItem[]>([])
   const [profile, setProfile] = useState<any>(null)
   const [loading, setLoading] = useState(true)
   const [searchTerm, setSearchTerm] = useState('')
@@ -28,8 +30,10 @@ export default function HistoriquePage() {
 
       if (!user) return
 
-      // Charger le profil en parallèle (pour injection ortho_* au download Word)
-      const [crbosRes, profileRes] = await Promise.all([
+      // Charger en parallèle : CRBOs finalisés, profil (pour injection ortho_*
+      // au download Word), et brouillons en cours (CRBO langage + math) pour
+      // que l'ortho voie ses bilans EN COURS au même endroit que ceux termines.
+      const [crbosRes, profileRes, draftsRes] = await Promise.all([
         supabase
           .from('crbos')
           .select('*')
@@ -37,15 +41,43 @@ export default function HistoriquePage() {
           .order('bilan_date', { ascending: false, nullsFirst: false })
           .order('created_at', { ascending: false }),
         supabase.from('profiles').select('*').eq('id', user.id).single(),
+        listDraftsForUser(user.id),
       ])
 
       if (crbosRes.data) setCrbos(crbosRes.data)
       if (profileRes.data) setProfile(profileRes.data)
+      setDrafts(draftsRes)
       setLoading(false)
     }
 
     fetchCRBOs()
   }, [])
+
+  /** Supprime un brouillon (DB + UI). Le localStorage est purgé par le form
+   *  lui-même au prochain mount (TTL check). */
+  const handleDeleteDraft = async (draft: DraftListItem) => {
+    if (!confirm(`Supprimer le brouillon de ${draft.patientPrenom || 'patient non renseigné'} ${draft.patientNom} ?`)) return
+    const supabase = createClient()
+    const { data: { user } } = await supabase.auth.getUser()
+    if (!user) return
+    const ok = await deleteDraftFromDb(user.id, draft.kind)
+    if (!ok) {
+      toast.error('La suppression du brouillon a échoué. Réessayez.')
+      return
+    }
+    setDrafts(prev => prev.filter(d => d.kind !== draft.kind))
+    // Purge aussi le localStorage côté client pour que la bannière dashboard
+    // ne le ressuscite pas à la prochaine ouverture.
+    try {
+      const prefix = draft.kind === 'langage'
+        ? `ortho-ia:crbo-draft:${user.id}`
+        : draft.kind === 'math-b-cm'
+        ? `ortho-ia:bilan-math-draft:${user.id}:b-cm`
+        : `ortho-ia:bilan-math-draft:${user.id}:b-cmado`
+      localStorage.removeItem(prefix)
+    } catch {}
+    toast.success('Brouillon supprimé.')
+  }
 
   const handleDelete = async (id: string) => {
     if (!confirm('Êtes-vous sûr de vouloir supprimer ce CRBO ?')) return
@@ -258,12 +290,49 @@ export default function HistoriquePage() {
     )
   })
 
+  const filteredDrafts = drafts.filter(d => {
+    const search = searchTerm.toLowerCase().trim()
+    if (!search) return true
+    return (
+      d.patientPrenom.toLowerCase().includes(search) ||
+      d.patientNom.toLowerCase().includes(search) ||
+      d.testUtilise.toLowerCase().includes(search) ||
+      (d.patientClasse?.toLowerCase() ?? '').includes(search)
+    )
+  })
+
+  // Liste combinée triée par date desc — les brouillons (date = updated_at)
+  // remontent naturellement en haut quand ils ont été modifiés récemment.
+  // Format unifié pour le tableau : { isDraft, dateMs, payload }.
+  type RowItem =
+    | { isDraft: false; dateMs: number; crbo: any }
+    | { isDraft: true; dateMs: number; draft: DraftListItem }
+  const combinedRows: RowItem[] = [
+    ...filteredCRBOs.map((crbo): RowItem => ({
+      isDraft: false,
+      dateMs: new Date(crbo.bilan_date || crbo.created_at).getTime(),
+      crbo,
+    })),
+    ...filteredDrafts.map((d): RowItem => ({
+      isDraft: true,
+      dateMs: new Date(d.updatedAt).getTime(),
+      draft: d,
+    })),
+  ].sort((a, b) => b.dateMs - a.dateMs)
+
   return (
     <div className="space-y-6">
       <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
         <div>
           <h1 className="text-2xl font-bold text-gray-900">Historique des CRBO</h1>
-          <p className="mt-1 text-gray-600">{crbos.length} compte(s) rendu(s) généré(s)</p>
+          <p className="mt-1 text-gray-600">
+            {crbos.length} compte{crbos.length > 1 ? 's' : ''} rendu{crbos.length > 1 ? 's' : ''} généré{crbos.length > 1 ? 's' : ''}
+            {drafts.length > 0 && (
+              <span className="text-amber-700 font-medium">
+                {' · '}{drafts.length} brouillon{drafts.length > 1 ? 's' : ''} en cours
+              </span>
+            )}
+          </p>
         </div>
         <Link
           href="/dashboard/nouveau-crbo"
@@ -291,7 +360,7 @@ export default function HistoriquePage() {
         <div className="bg-white rounded-xl border border-gray-200 p-8 text-center">
           <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-green-600 mx-auto"></div>
         </div>
-      ) : filteredCRBOs.length === 0 ? (
+      ) : combinedRows.length === 0 ? (
         <div className="card-modern p-10 text-center">
           <div className="w-20 h-20 bg-gradient-to-br from-primary-50 to-primary-100 dark:from-primary-900/30 dark:to-primary-800/30 rounded-2xl flex items-center justify-center mx-auto mb-5 shadow-card">
             <FileText className="text-primary-600 dark:text-primary-400" size={36} />
@@ -346,77 +415,144 @@ export default function HistoriquePage() {
                 </tr>
               </thead>
               <tbody className="divide-y divide-gray-200">
-                {filteredCRBOs.map((crbo) => (
-                  <tr key={crbo.id} className="hover:bg-gray-50">
-                    <td className="px-6 py-4 whitespace-nowrap">
-                      <div className="flex items-center">
-                        <div className="w-10 h-10 bg-green-100 rounded-full flex items-center justify-center">
-                          <span className="text-green-600 font-semibold">
-                            {(crbo.patient_prenom?.[0] || '?').toUpperCase()}{(crbo.patient_nom?.[0] || '').toUpperCase()}
+                {combinedRows.map((row) => {
+                  if (row.isDraft) {
+                    // Ligne BROUILLON : badge amber, avatar pâle, bouton Reprendre
+                    // au lieu de Download/PDF. Cliquer sur le nom n'ouvre rien
+                    // (pas de CRBO finalisé à voir) — seul le bouton Reprendre.
+                    const d = row.draft
+                    const display = `${d.patientPrenom || 'Patient non renseigné'} ${d.patientNom}`.trim()
+                    const initials = `${(d.patientPrenom?.[0] || '?').toUpperCase()}${(d.patientNom?.[0] || '').toUpperCase()}`
+                    return (
+                      <tr key={`draft-${d.kind}`} className="hover:bg-amber-50 bg-amber-50/30">
+                        <td className="px-6 py-4 whitespace-nowrap">
+                          <div className="flex items-center">
+                            <div className="w-10 h-10 bg-amber-100 rounded-full flex items-center justify-center">
+                              <span className="text-amber-700 font-semibold">{initials}</span>
+                            </div>
+                            <div className="ml-4">
+                              <div className="text-sm font-medium text-gray-900 flex items-center gap-2">
+                                {display}
+                                <span className="inline-flex items-center gap-1 px-1.5 py-0.5 rounded text-[10px] font-semibold uppercase tracking-wide bg-amber-200 text-amber-900">
+                                  📝 Brouillon
+                                </span>
+                              </div>
+                              <div className="text-sm text-gray-500">
+                                {d.patientClasse || '—'}
+                              </div>
+                            </div>
+                          </div>
+                        </td>
+                        <td className="px-6 py-4 whitespace-nowrap">
+                          <span className="text-sm text-gray-900">{d.testUtilise || '—'}</span>
+                        </td>
+                        <td className="px-6 py-4 whitespace-nowrap">
+                          <div className="flex items-center text-sm text-gray-500">
+                            <Calendar size={16} className="mr-2" />
+                            {new Date(d.updatedAt).toLocaleDateString('fr-FR')}
+                          </div>
+                        </td>
+                        <td className="px-6 py-4 whitespace-nowrap">
+                          <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-amber-100 text-amber-900">
+                            En cours
                           </span>
-                        </div>
-                        <div className="ml-4">
-                          <div className="text-sm font-medium text-gray-900">
-                            {crbo.patient_prenom} {crbo.patient_nom}
+                        </td>
+                        <td className="px-6 py-4 whitespace-nowrap text-right">
+                          <div className="flex items-center justify-end gap-2">
+                            <Link
+                              href={d.href}
+                              className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-amber-600 text-white text-xs font-semibold hover:bg-amber-700 transition"
+                              title="Reprendre la rédaction"
+                            >
+                              <FileEdit size={14} />
+                              Reprendre
+                            </Link>
+                            <button
+                              onClick={() => handleDeleteDraft(d)}
+                              className="p-2 text-gray-400 hover:text-red-600 transition"
+                              title="Supprimer le brouillon"
+                            >
+                              <Trash2 size={18} />
+                            </button>
                           </div>
-                          <div className="text-sm text-gray-500">
-                            {crbo.patient_classe || '—'}
+                        </td>
+                      </tr>
+                    )
+                  }
+                  // Ligne CRBO finalisé : comportement existant inchangé.
+                  const crbo = row.crbo
+                  return (
+                    <tr key={crbo.id} className="hover:bg-gray-50">
+                      <td className="px-6 py-4 whitespace-nowrap">
+                        <div className="flex items-center">
+                          <div className="w-10 h-10 bg-green-100 rounded-full flex items-center justify-center">
+                            <span className="text-green-600 font-semibold">
+                              {(crbo.patient_prenom?.[0] || '?').toUpperCase()}{(crbo.patient_nom?.[0] || '').toUpperCase()}
+                            </span>
+                          </div>
+                          <div className="ml-4">
+                            <div className="text-sm font-medium text-gray-900">
+                              {crbo.patient_prenom} {crbo.patient_nom}
+                            </div>
+                            <div className="text-sm text-gray-500">
+                              {crbo.patient_classe || '—'}
+                            </div>
                           </div>
                         </div>
-                      </div>
-                    </td>
-                    <td className="px-6 py-4 whitespace-nowrap">
-                      <span className="text-sm text-gray-900">{crbo.test_utilise || '-'}</span>
-                    </td>
-                    <td className="px-6 py-4 whitespace-nowrap">
-                      <div className="flex items-center text-sm text-gray-500">
-                        <Calendar size={16} className="mr-2" />
-                        {new Date(crbo.created_at).toLocaleDateString('fr-FR')}
-                      </div>
-                    </td>
-                    <td className="px-6 py-4 whitespace-nowrap">
-                      <span className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium ${
-                        crbo.bilan_type === 'initial' 
-                          ? 'bg-blue-100 text-blue-800' 
-                          : 'bg-purple-100 text-purple-800'
-                      }`}>
-                        {crbo.bilan_type === 'initial' ? 'Initial' : 'Renouvellement'}
-                      </span>
-                    </td>
-                    <td className="px-6 py-4 whitespace-nowrap text-right">
-                      <div className="flex items-center justify-end gap-2">
-                        <button
-                          onClick={() => handleDownload(crbo)}
-                          disabled={!!downloading[crbo.id]}
-                          className="p-2 text-gray-400 hover:text-green-600 transition disabled:opacity-50 disabled:cursor-wait"
-                          title={downloading[crbo.id] ? 'Génération en cours…' : 'Télécharger en Word'}
-                          aria-label={downloading[crbo.id] ? 'Génération du Word en cours' : 'Télécharger le CRBO en Word'}
-                        >
-                          {downloading[crbo.id]
-                            ? <Loader2 size={18} className="animate-spin" />
-                            : <Download size={18} />}
-                        </button>
-                        <a
-                          href={`/dashboard/historique/${crbo.id}/print`}
-                          target="_blank"
-                          rel="noopener noreferrer"
-                          className="p-2 text-gray-400 hover:text-blue-600 transition"
-                          title="Exporter en PDF (via aperçu d'impression)"
-                          aria-label="Exporter le CRBO en PDF"
-                        >
-                          <FileDown size={18} />
-                        </a>
-                        <button
-                          onClick={() => handleDelete(crbo.id)}
-                          className="p-2 text-gray-400 hover:text-red-600 transition"
-                          title="Supprimer"
-                        >
-                          <Trash2 size={18} />
-                        </button>
-                      </div>
-                    </td>
-                  </tr>
-                ))}
+                      </td>
+                      <td className="px-6 py-4 whitespace-nowrap">
+                        <span className="text-sm text-gray-900">{crbo.test_utilise || '-'}</span>
+                      </td>
+                      <td className="px-6 py-4 whitespace-nowrap">
+                        <div className="flex items-center text-sm text-gray-500">
+                          <Calendar size={16} className="mr-2" />
+                          {new Date(crbo.created_at).toLocaleDateString('fr-FR')}
+                        </div>
+                      </td>
+                      <td className="px-6 py-4 whitespace-nowrap">
+                        <span className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium ${
+                          crbo.bilan_type === 'initial'
+                            ? 'bg-blue-100 text-blue-800'
+                            : 'bg-purple-100 text-purple-800'
+                        }`}>
+                          {crbo.bilan_type === 'initial' ? 'Initial' : 'Renouvellement'}
+                        </span>
+                      </td>
+                      <td className="px-6 py-4 whitespace-nowrap text-right">
+                        <div className="flex items-center justify-end gap-2">
+                          <button
+                            onClick={() => handleDownload(crbo)}
+                            disabled={!!downloading[crbo.id]}
+                            className="p-2 text-gray-400 hover:text-green-600 transition disabled:opacity-50 disabled:cursor-wait"
+                            title={downloading[crbo.id] ? 'Génération en cours…' : 'Télécharger en Word'}
+                            aria-label={downloading[crbo.id] ? 'Génération du Word en cours' : 'Télécharger le CRBO en Word'}
+                          >
+                            {downloading[crbo.id]
+                              ? <Loader2 size={18} className="animate-spin" />
+                              : <Download size={18} />}
+                          </button>
+                          <a
+                            href={`/dashboard/historique/${crbo.id}/print`}
+                            target="_blank"
+                            rel="noopener noreferrer"
+                            className="p-2 text-gray-400 hover:text-blue-600 transition"
+                            title="Exporter en PDF (via aperçu d'impression)"
+                            aria-label="Exporter le CRBO en PDF"
+                          >
+                            <FileDown size={18} />
+                          </a>
+                          <button
+                            onClick={() => handleDelete(crbo.id)}
+                            className="p-2 text-gray-400 hover:text-red-600 transition"
+                            title="Supprimer"
+                          >
+                            <Trash2 size={18} />
+                          </button>
+                        </div>
+                      </td>
+                    </tr>
+                  )
+                })}
               </tbody>
             </table>
           </div>
