@@ -41,25 +41,28 @@ interface Props {
   onError?: (msg: string) => void
 }
 
-/** Zone HappyNeuron officielle (5 paliers σ). Reportée par l'ortho depuis
- *  son écran HappyNeuron (source de vérité pour le seuil d'alerte
- *  stratifié âge × NSC). */
-type ZoneKey = '' | 'vert_fonce' | 'vert_clair' | 'jaune' | 'orange' | 'rouge'
+/** Zone HappyNeuron officielle PrediFex — 4 paliers σ (manuel p. 17).
+ *  Reportée par l'ortho depuis son écran HappyNeuron (source de vérité
+ *  pour le seuil d'alerte stratifié âge × NSC).
+ *
+ *  Note : le manuel PrediFex définit 4 zones (Vert / Jaune / Orange / Rouge),
+ *  contrairement au manuel PREDIMEM qui en définit 5. On reste fidèle à
+ *  chaque manuel — le seuil bascule vert→jaune est M − 1,5σ (= seuil d'alerte
+ *  officiel). */
+type ZoneKey = '' | 'vert' | 'jaune' | 'orange' | 'rouge'
 
 const ZONES: Array<{ key: Exclude<ZoneKey, ''>; label: string; sigma: string; chipBg: string; chipText: string; chipRing: string }> = [
-  { key: 'vert_fonce', label: 'Vert foncé', sigma: '≥ moyenne', chipBg: 'bg-emerald-600', chipText: 'text-white',     chipRing: 'ring-emerald-700' },
-  { key: 'vert_clair', label: 'Vert clair', sigma: 'M−1σ à M−1,5σ', chipBg: 'bg-emerald-300', chipText: 'text-emerald-900', chipRing: 'ring-emerald-500' },
-  { key: 'jaune',      label: 'Jaune',      sigma: 'M−1,5σ à M−2σ (seuil d\'alerte)', chipBg: 'bg-amber-300',   chipText: 'text-amber-900',   chipRing: 'ring-amber-500' },
-  { key: 'orange',     label: 'Orange',     sigma: 'M−2σ à M−3σ',  chipBg: 'bg-orange-500', chipText: 'text-white',     chipRing: 'ring-orange-600' },
-  { key: 'rouge',      label: 'Rouge',      sigma: '< M−3σ (effondrement)', chipBg: 'bg-red-600',    chipText: 'text-white',     chipRing: 'ring-red-700' },
+  { key: 'vert',   label: 'Vert',   sigma: '≥ M − 1,5σ (norme ou au-dessus)', chipBg: 'bg-emerald-600', chipText: 'text-white',     chipRing: 'ring-emerald-700' },
+  { key: 'jaune',  label: 'Jaune',  sigma: 'M−1,5σ à M−2σ (seuil d\'alerte)', chipBg: 'bg-amber-300',   chipText: 'text-amber-900',  chipRing: 'ring-amber-500' },
+  { key: 'orange', label: 'Orange', sigma: 'M−2σ à M−3σ',                     chipBg: 'bg-orange-500',  chipText: 'text-white',      chipRing: 'ring-orange-600' },
+  { key: 'rouge',  label: 'Rouge',  sigma: '< M−3σ (effondrement)',           chipBg: 'bg-red-600',     chipText: 'text-white',      chipRing: 'ring-red-700' },
 ]
 
 const ZONE_LABEL_CLINIQUE: Record<Exclude<ZoneKey, ''>, string> = {
-  vert_fonce:  'performance préservée',
-  vert_clair:  'performance dans la moyenne basse, à surveiller',
-  jaune:       'fragilité objectivée (seuil d\'alerte)',
-  orange:      'difficulté avérée',
-  rouge:       'effondrement',
+  vert:   'performance préservée',
+  jaune:  'fragilité objectivée (seuil d\'alerte)',
+  orange: 'difficulté avérée',
+  rouge:  'effondrement',
 }
 
 /** Identifiant stable d'une épreuve (utilisé comme clé d'état et dans la
@@ -109,37 +112,43 @@ const EPREUVES: Epreuve[] = [
     key: 'e01_fluences_alternees',
     num: '01',
     label: 'Fluences alternées',
-    description: 'Production alternée de mots entre deux catégories (ex. fruit / animal). Chrono fixe 1 min. Mesure la flexibilité mentale et l\'inhibition d\'une réponse automatique catégorielle.',
+    description: 'Production alternée de mots entre deux catégories. Chrono fixe 1 min. Catégories selon NSC (manuel p. 24, 88) : NSC 1 = Outils / Ustensiles de cuisine ; NSC 2 et 3 = Villes françaises / Pays étrangers. Mesure la flexibilité mentale et l\'inhibition d\'une réponse automatique catégorielle.',
     cible: 'Flexibilité + inhibition',
     subtests: [
       { key: 'score', label: 'Score total', max: 30, hint: '1 pt par mot correct (plafond 30). 2 mots de la même catégorie à la suite = 1 pt seulement.' },
     ],
     rules: [
-      'Consigne : alterner strictement entre les deux catégories pendant 1 min.',
+      'Catégories selon NSC (manuel p. 24, 88) : NSC 1 = Outils / Ustensiles de cuisine ; NSC 2 et NSC 3 = Villes françaises / Pays étrangers.',
+      'Consigne : alterner strictement entre les deux catégories pendant 1 min chronométrée.',
       '1 pt par mot correct, plafond 30. Pas de malus pour erreurs.',
       'Si le sujet donne 2 mots de la même catégorie consécutifs, on ne compte que 1 pt (l\'alternance est rompue).',
+      'Exemples donnés dans la consigne NON comptabilisés s\'ils sont redonnés par le sujet (manuel p. 27).',
+      'Possibilité d\'une "deuxième minute" non comptabilisée, à des fins d\'observation qualitative (manuel p. 25).',
       'Persévérations, mots hors catégorie, paraphrases : noter qualitativement.',
     ],
     interpretation: [
       'Score abaissé + persévérations sur la 1ère catégorie → fragilité de FLEXIBILITÉ (résistance au switch).',
       'Score abaissé sans persévération + lenteur d\'évocation → croiser avec PREDILAC / fluences classiques (peut-être déficit lexical sous-jacent).',
+      'Le manuel (p. 27-28) distingue 4 types de difficulté à observer : compréhension verbale, lexico-sémantique, accès au lexique, processus exécutifs.',
       'À croiser avec épreuves 04 (Une syllabe sur deux) et 09 (Équivalences) pour confirmer un profil flexibilité.',
     ],
-    obsPlaceholder: 'Ex. 18 mots en 1 min. 4 persévérations sur la catégorie « fruits » en début. Reprend après recadrage. Pas d\'erreur catégorielle.',
+    obsPlaceholder: 'Ex. NSC 2, 18 mots en 1 min (10 villes + 8 pays). 4 persévérations sur la catégorie villes en début. Reprend après recadrage. Pas d\'erreur catégorielle.',
   },
   {
     key: 'e02_texte_mettre_ordre',
     num: '02',
     label: 'Texte à mettre en ordre',
-    description: 'Réorganiser des segments de texte présentés en désordre pour reconstituer un récit cohérent. Planification + cohérence textuelle + MdT.',
+    description: '3 textes selon NSC (manuel p. 30, 88) : NSC 1 = Fanny ; NSC 2 = Voilier ; NSC 3 = Molly. Réorganiser des segments de texte présentés en désordre pour reconstituer un récit cohérent. Planification + cohérence textuelle + MdT.',
     cible: 'Planification + MdT',
     subtests: [
-      { key: 'score', label: 'Score total', max: 12, hint: '−2 pt / segment mal placé sans casser la cohérence, −4 pt si casse la cohérence, −3 pt si aide examinateur.' },
+      { key: 'score', label: 'Score total', max: 12, hint: 'Grille balisée 12 / 10 / 8 / 6 / 4 / 0 (manuel p. 32). −2 pt / segment mal placé sans casser cohérence, −4 pt si casse, −3 pt si aide.' },
     ],
     tempsAlerteMinParAge: [4, 5, 7, 11, 18],
     rules: [
+      'Texte selon NSC : Fanny (NSC 1) / Voilier (NSC 2) / Molly (NSC 3).',
       'Présentation des segments en désordre, sujet réorganise sur écran ou papier.',
-      'Cotation : départ /12. −2 pt par segment mal placé sans rupture de cohérence, −4 pt si rupture de cohérence, −3 pt si aide.',
+      'Cotation balisée (manuel p. 32) : 12 / 10 / 8 / 6 / 4 / 0. −2 pt par segment mal placé sans rupture de cohérence, −4 pt si rupture de cohérence, −3 pt si aide.',
+      '⚠️ Plafond temps absolu : on arrête au bout d\'un quart d\'heure (manuel p. 30), au-delà du seuil d\'alerte indicatif par âge.',
       '⚠️ NSC 3 plafonne souvent (12/12, ET=0 pour 18-49 ans dans le manuel) → lire le TEMPS plutôt que le score.',
     ],
     interpretation: [
@@ -153,18 +162,18 @@ const EPREUVES: Epreuve[] = [
     key: 'e03_textes_executifs',
     num: '03',
     label: 'Textes « exécutifs »',
-    description: 'Compréhension de texte exigeante en attention soutenue, inhibition de distracteurs, inférences. 3a = choix du résumé, 3b = ordre des événements (l\'ordre du récit ≠ l\'ordre réel des faits).',
+    description: 'Compréhension de texte exigeante. 3 textes 3a et 3 textes 3b selon NSC (manuel p. 89-90). 3a = choix du résumé. 3b = 5 épisodes à remettre dans l\'ordre réel (≠ ordre narratif).',
     cible: 'Attention + inhibition + inférences',
     subtests: [
       { key: 'resume',  label: '3a Choix du résumé', max: 4, hint: '4 pt bonne réponse OU 0 pt (tout ou rien). Distracteur phonétiquement proche piège la voie superficielle.' },
-      { key: 'ordre',   label: '3b Ordre des événements', max: 6, hint: '−1 pt / épisode mal placé, −2 pt sur les épisodes à astérisque (plus exécutifs), −3 pt si aide.' },
+      { key: 'ordre',   label: '3b Ordre des événements (5 épisodes)', max: 6, hint: '−1 pt / épisode mal placé, −2 pt sur l\'épisode à astérisque (plus exécutif), −3 pt si aide.' },
     ],
     tempsAlerteMinParAge: [5, 6, 8, 10, 15],
     rules: [
-      '3a (résumé) : choisir parmi des résumés candidats — un seul correct sémantiquement, les autres pièges (phonétique, partiel, hors-sujet).',
-      '3b (ordre) : reclasser les épisodes du récit dans l\'ordre RÉEL des faits (≠ ordre narratif du texte qui mélange flashbacks / anticipations).',
-      'Cotation 3a : 4 pt si bon résumé d\'emblée, 0 sinon.',
-      'Cotation 3b : −1 pt par épisode mal placé (−2 pt sur épisodes à astérisque, plus exigeants), −3 pt si aide examinateur.',
+      '3a — Textes selon NSC (manuel p. 89) : Gallon (NSC 1, rép. n°4) / Serin (NSC 2, rép. n°3) / Dépression (NSC 3, rép. n°3). Choisir parmi des résumés candidats — un seul correct sémantiquement, les autres pièges (phonétique, partiel, hors-sujet).',
+      '3b — Textes selon NSC (manuel p. 90) : Dégât des eaux (NSC 1) / Julie (NSC 2) / Jean (NSC 3). Reclasser les 5 épisodes du récit dans l\'ordre RÉEL des faits (≠ ordre narratif du texte qui mélange flashbacks / anticipations).',
+      'Cotation 3a : 4 pt si bon résumé d\'emblée, 0 sinon (tout ou rien).',
+      'Cotation 3b : −1 pt par épisode mal placé, −2 pt sur l\'épisode à astérisque (plus exécutif, varie selon NSC — voir manuel p. 38), −3 pt si aide examinateur.',
     ],
     interpretation: [
       '3a échoué (choisit le distracteur phonétique) → fragilité d\'inhibition / contrôle superficiel.',
@@ -178,18 +187,20 @@ const EPREUVES: Epreuve[] = [
     key: 'e04_syllabe_sur_deux',
     num: '04',
     label: 'Une syllabe sur deux',
-    description: 'Dire à voix haute une syllabe sur deux dans des mots de 2/3/4 syllabes. Inhibition + flexibilité (résister à la prononciation entière du mot).',
+    description: '7 items totaux (manuel p. 45, 90) : items 1-2 mots 2 syl. (Gâteau-Bonjour ; Lancer-Ranger), items 3-5 mots 3 syl. (Chocolat-Boulanger ; Caméra-Cinéma ; Châtiment-Matelot), items 6-7 mots 4 syl. (Rapidement-Procuration ; Poissonnerie-Figuration). Inhibition + flexibilité (résister à la prononciation entière du mot).',
     cible: 'Inhibition + flexibilité',
     subtests: [
-      { key: 'mots_2syl', label: 'Mots 2 syllabes', max: 8,  hint: '4 pt par mot correct. Arrêt après 2 items échoués.' },
-      { key: 'mots_3syl', label: 'Mots 3 syllabes', max: 18, hint: '6 pt par mot correct.' },
-      { key: 'mots_4syl', label: 'Mots 4 syllabes', max: 16, hint: '8 pt par mot correct.' },
+      { key: 'mots_2syl', label: 'Mots 2 syllabes (items 1-2)', max: 8,  hint: '4 pt par mot correct. Arrêt après 2 items consécutivement échoués.' },
+      { key: 'mots_3syl', label: 'Mots 3 syllabes (items 3-5)', max: 18, hint: '6 pt par mot correct.' },
+      { key: 'mots_4syl', label: 'Mots 4 syllabes (items 6-7)', max: 16, hint: '8 pt par mot correct. Consigne examinateur : "n\'en recomposer qu\'un à la fois" (p. 43).' },
     ],
     rules: [
       'Le sujet entend un mot et doit dire une syllabe sur deux (ex. « bateau » → « ba » ou « teau » selon consigne d\'amorçage).',
       'Cotation : 4 pt mot 2 syllabes, 6 pt mot 3 syllabes, 8 pt mot 4 syllabes.',
       'Pénalité : −2 pt par répétition audio demandée par le sujet.',
       'Arrêt : après 2 items consécutivement échoués dans une catégorie.',
+      '⚠️ Consigne examinateur OBLIGATOIRE sur items 6-7 : "conseiller systématiquement au sujet de n\'en recomposer qu\'un à la fois" (manuel p. 43).',
+      '⚠️ Règle "écrire = 0" : si le sujet écrit pour s\'aider, l\'épreuve est considérée comme ÉCHOUÉE et on compte 0, même s\'il parvient à la réaliser (manuel p. 43).',
       'Pas de seuil temps officiel (variabilité trop élevée).',
     ],
     interpretation: [
@@ -203,25 +214,27 @@ const EPREUVES: Epreuve[] = [
     key: 'e05_mise_a_jour',
     num: '05',
     label: 'Mise à jour',
-    description: 'Suivre la dernière information dans une suite (chiffres, syllabes). Le sujet doit oublier les éléments précédents et ne garder que les N derniers — c\'est la mise à jour de la MdT.',
+    description: 'Suivre une suite de chiffres / syllabes et restituer les 3 DERNIERS éléments entendus (mise à jour permanente). Le sujet doit oublier les éléments précédents — c\'est précisément la mise à jour de la MdT.',
     cible: 'Mise à jour MdT',
     subtests: [
-      { key: 'sub_5a_chiffres', label: '5a Chiffres', max: 21, hint: '3 pt par série de 7 chiffres correctement maintenue. −1 pt par chiffre manquant.' },
-      { key: 'sub_5b_syllabes', label: '5b Syllabes', max: 24, hint: '3 pt par série de 8 syllabes correctement maintenue.' },
-      { key: 'sub_5c_stroop',   label: '5c Stroop lettres (OPTIONNEL)', max: 32, hint: 'Déclenché UNIQUEMENT si 5a < 12 OU 5b < 14. NON comptabilisé — analyse qualitative seulement.' },
+      { key: 'sub_5a_chiffres', label: '5a Chiffres', max: 21, hint: '7 séries × 3 pt. −1 pt par chiffre manquant.' },
+      { key: 'sub_5b_syllabes', label: '5b Syllabes', max: 24, hint: '8 séries × 3 pt.' },
+      { key: 'sub_5c_stroop',   label: '5c Stroop lettres (complémentaire)', max: 32, hint: '10+12+10 (JUPON vert, FRAISE rouge, 15879 rouge). Déclenché si 5a < 12 OU 5b < 14 OU abandon. NE fait PAS partie du score d\'épreuve — analyse qualitative.' },
     ],
     rules: [
-      '5a : on dicte une suite de chiffres ; le sujet doit restituer les N derniers (mise à jour permanente).',
+      '⚠️ Consigne sujet (manuel p. 48) : "vous devez redire les 3 derniers chiffres/syllabes entendus" — TOUJOURS 3 derniers, pas un nombre variable.',
+      '5a : on dicte des suites de chiffres ; le sujet restitue les 3 derniers à chaque pause.',
       '5b : même principe sur des syllabes (charge phonologique plus lourde).',
-      '5c (optionnel) : variante Stroop sur lettres colorées — DÉCLENCHÉ uniquement si 5a < 12 ou 5b < 14, ou en cas d\'abandon. Score qualitatif uniquement, NON comptabilisé.',
+      '5c (complémentaire) : variante Stroop sur lettres colorées — DÉCLENCHÉ si 5a < 12 OU 5b < 14 OU abandon en cours. NE fait PAS partie du score d\'épreuve.',
       'Cotation : 3 pt par série correctement maintenue ; −1 pt par chiffre/syllabe manquant.',
+      'Abandon possible (manuel p. 49) : si après 3 items le sujet a répété moins de 4 chiffres/syllabes.',
       'Pas de seuil temps officiel (auto).',
     ],
     interpretation: [
       '5a échoué + 5b OK → fragilité numérique spécifique (rare ; croiser avec ép. 06).',
       '5b nettement plus faible que 5a → surcharge phonologique de la MdT.',
       'Échec parallèle 5a + 5b → fragilité de mise à jour pure (administrateur central), croiser avec ép. 06 (Pb arith) et empan envers classique.',
-      'Erreur type : le sujet répète plus de N chiffres « au cas où » = défaut de mise à jour (ne libère pas les anciens).',
+      'Erreur type : le sujet répète plus de 3 chiffres « au cas où » = défaut de mise à jour (ne libère pas les anciens).',
     ],
     obsPlaceholder: 'Ex. 5a : 18/21, perd 1 chiffre sur les 2 dernières séries. 5b : 16/24, échec sur les séries longues, fatigue audible. 5c non passé (5a et 5b au-dessus du seuil).',
   },
@@ -229,15 +242,17 @@ const EPREUVES: Epreuve[] = [
     key: 'e06_probleme_arith',
     num: '06',
     label: 'Problème arithmétique',
-    description: 'Résolution de problèmes à énoncé verbal. Planification + MdT en numérique. Le calcul lui-même est secondaire — c\'est la lecture/mémorisation/structuration de l\'énoncé qui charge la fonction exécutive.',
+    description: '3 problèmes selon NSC (manuel p. 53, 91) : NSC 1 = La Voiture (essence) ; NSC 2 = Le Restaurant ; NSC 3 = La Fondue. Planification + MdT en numérique. Le calcul est secondaire — c\'est la structuration de l\'énoncé qui charge la fonction exécutive.',
     cible: 'Planification numérique',
     subtests: [
       { key: 'raisonnement', label: 'Raisonnement', max: 6, hint: '−2 pt par erreur de raisonnement ou omission d\'info de l\'énoncé.' },
-      { key: 'calcul',       label: 'Calcul',       max: 4, hint: 'Calcul correct seul vaut ces 4 pts.' },
+      { key: 'calcul',       label: 'Calcul',       max: 4, hint: 'À l\'appréciation de l\'examinateur (manuel p. 54). Calcul chiffré exact = 4 pt.' },
     ],
     tempsAlerteMinParAge: [5, 6, 6, 8, 16],
     rules: [
+      'Problème selon NSC : La Voiture (NSC 1, réponse "26 litres de trop") / Le Restaurant (NSC 2, "15 € le menu") / La Fondue (NSC 3, Gruyère 600g / Comté 600g / Vacherin 300g).',
       'Cotation décomposée : 6 pt pour le raisonnement (lecture + structuration + ordre des opérations) + 4 pt pour le calcul.',
+      'Notes raisonnement et calcul sont à l\'APPRÉCIATION de l\'examinateur (manuel p. 54).',
       'Malus : −2 pt par erreur de raisonnement ou par omission d\'information de l\'énoncé, −3 pt si aide examinateur.',
       'On observe : le sujet RELIT-IL pour mémoriser ? Note-t-il les données ? Saute-t-il directement au calcul ?',
     ],
@@ -252,7 +267,7 @@ const EPREUVES: Epreuve[] = [
     key: 'e07_probleme_luria',
     num: '07',
     label: 'Problème logique « Luria »',
-    description: 'Raisonnement abstrait avec énoncé piégeant — inhibition de la réponse intuitive en faveur d\'une analyse logique. Le piège classique : « avoir X ans de plus que » déclenche un + au lieu d\'un −.',
+    description: '3 problèmes selon NSC (manuel p. 58, 92) : NSC 1 = Léo ; NSC 2 = Cédric & Diane ; NSC 3 = Hélène. Raisonnement abstrait avec énoncé piégeant — inhibition de la réponse intuitive en faveur d\'une analyse logique.',
     cible: 'Raisonnement + inhibition',
     subtests: [
       { key: 'q1', label: 'Question 1', max: 4 },
@@ -262,9 +277,10 @@ const EPREUVES: Epreuve[] = [
     ],
     tempsAlerteMinParAge: [5, 6, 7, 9, 18],
     rules: [
+      'Problème selon NSC : Léo (NSC 1 — Q1=14 ans, Q2=Non, Q3=Oui, Q4=Non) / Cédric & Diane (NSC 2) / Hélène (NSC 3).',
       '4 questions à difficulté croissante. Q1 = 4 pt, Q2 / Q3 / Q4 = 2 pt chacune. Max 10 pt.',
       'Malus : −3 pt si aide examinateur (reformulation de l\'énoncé).',
-      'Piège classique : « avoir X ans de plus que » fait penser à une addition, alors qu\'il faut soustraire. Observer si le sujet tombe dans le piège et se reprend, ou ne se reprend pas.',
+      'Piège textuel exact (manuel p. 60) : "le terme \'plus\' est associé à une opération d\'addition alors que dans la phrase \'avoir 10 ans de plus que\', il faut soustraire les 10 ans quand on calcule l\'année de naissance". Observer si le sujet tombe dans le piège et se reprend, ou ne se reprend pas (sensibilité à l\'interférence, défaut du SAS).',
     ],
     interpretation: [
       'Échec Q1 (la plus facile) → fragilité majeure d\'analyse logique ou de compréhension d\'énoncé.',
@@ -278,48 +294,52 @@ const EPREUVES: Epreuve[] = [
     key: 'e08_sudofex',
     num: '08',
     label: 'Sudofex',
-    description: 'Type sudoku adapté (contenu + couleur). Essai d\'entraînement MIREILLE obligatoire, puis l\'examinateur choisit la grille (Annick / Marie / Guillaume) selon la maîtrise — seule la MEILLEURE grille compte.',
+    description: 'Type sudoku adapté (contenu + couleur). Essai d\'entraînement MIREILLE obligatoire (fait à deux), puis MARIE en entrée par défaut. Annick = repli si MIREILLE pas compris OU > 5 erreurs / abandon sur MARIE. Guillaume = niveau supérieur si MARIE bien réussie. SEULE la MEILLEURE grille compte.',
     cible: 'Inhibition + raisonnement logique en grille',
     subtests: [
-      { key: 'grille_annick',    label: 'Grille Annick (facile)',  max: 8,  hint: 'Niveau d\'entrée — choisi si MIREILLE difficile.' },
-      { key: 'grille_marie',     label: 'Grille Marie (moyen)',    max: 16, hint: 'Effet Stroop : nom de couleur écrit ≠ couleur du stylo.' },
-      { key: 'grille_guillaume', label: 'Grille Guillaume (difficile)', max: 22, hint: 'Le plus exigeant — seul le score de la MEILLEURE grille comptabilisée est rapporté.' },
+      { key: 'grille_annick',    label: 'Grille Annick (repli)',  max: 8,  hint: '0,5 + 0,5 pt par case (contenu + couleur) × 8 cases = 8 pt. Choisie en REPLI si MIREILLE pas compris ou échec sur MARIE.' },
+      { key: 'grille_marie',     label: 'Grille Marie (entrée par défaut)',    max: 16, hint: '1 + 1 pt par case × 8 cases = 16 pt. Mapping mot→couleur FIXE (chaque nom écrit toujours dans la même couleur, manuel p. 64).' },
+      { key: 'grille_guillaume', label: 'Grille Guillaume (niveau supérieur)', max: 22, hint: '1 + 1 pt par case × 11 cases = 22 pt. Mapping mot→couleur VARIABLE (chaque nom n\'est jamais écrit 2× dans la même couleur — effet Stroop MAJORÉ, manuel p. 65).' },
     ],
     tempsAlerteMinParAge: [7, 8, 9, 15, 30],
     rules: [
-      'Essai MIREILLE obligatoire (non scoré) pour vérifier la compréhension de la consigne.',
-      'Selon la maîtrise, l\'examinateur propose UNE des 3 grilles : Annick (facile, /8), Marie (moyenne, /16) ou Guillaume (difficile, /22).',
-      'Cotation : 1-2 pt par case (contenu + couleur scorés séparément).',
+      'Essai MIREILLE obligatoire (non scoré, fait à deux) pour vérifier la compréhension de la consigne.',
+      'PARCOURS : MARIE est l\'entrée par défaut. ANNICK est un REPLI (si MIREILLE pas compris OU > 5 erreurs / abandon sur MARIE — manuel p. 63). GUILLAUME est le niveau supérieur si MARIE bien réussie.',
+      'Cotation : Annick = 0,5 + 0,5 = 1 pt/case × 8 = 8 pt. Marie = 1 + 1 = 2 pt/case × 8 = 16 pt. Guillaume = 1 + 1 = 2 pt/case × 11 = 22 pt.',
+      'Effet Stroop : MARIE = mapping mot→couleur FIXE (effet Stroop léger). GUILLAUME = mapping VARIABLE (effet Stroop majoré). ANNICK = pas d\'effet Stroop.',
       'Aide examinateur : −3 pt si aide partielle, −6 pt si aide majeure.',
-      '⚠️ Reporter le score de la grille effectivement réalisée — c\'est le score qui apparaît dans le logiciel.',
+      '⚠️ Reporter le score de la grille EFFECTIVEMENT réalisée — seule cette grille compte.',
       'Score chiffré à prendre AVEC PRÉCAUTION chez NSC 3 — toujours coupler analyse qualitative.',
     ],
     interpretation: [
       'Le sujet confond couleur du stylo et nom de couleur écrit → effet Stroop = défaut d\'inhibition (croiser avec ép. 04 et 07).',
-      'Échec après MIREILLE (donc grille Annick non tentée ou ratée) → fragilité majeure de raisonnement en grille, orientation vers neuropsy.',
-      'Réussite Guillaume avec temps > seuil → marqueur sub-clinique pour NSC 3.',
+      'Bascule MARIE → ANNICK (échec MARIE) → fragilité majeure de raisonnement en grille, orientation vers neuropsy.',
+      'Réussite GUILLAUME avec temps > seuil → marqueur sub-clinique pour NSC 3.',
+      'Le manuel décrit 6 stratégies de progression typiques (p. 66) à observer pour qualifier la performance.',
       'Croiser avec ép. 09 et 10 pour profil de raisonnement / planification globale.',
     ],
-    obsPlaceholder: 'Ex. MIREILLE OK. Grille Marie choisie : 14/16, 1 erreur de couleur sur la dernière ligne (effet Stroop). Temps 9 min (NSC 3, 55 ans → > seuil 8 min).',
+    obsPlaceholder: 'Ex. MIREILLE OK. MARIE réalisée : 14/16, 1 erreur de couleur sur la dernière ligne (effet Stroop modéré sur mapping fixe). Temps 9 min (NSC 3, 55 ans → > seuil 8 min). GUILLAUME non tentée.',
   },
   {
     key: 'e09_equivalences',
     num: '09',
     label: 'Équivalences',
-    description: 'Raisonnement analogique + inhibition. Essai LUNES obligatoire, puis 4 subtests à difficulté croissante (Formes / Feux / Étoiles / Flèches). Seul le MEILLEUR subtest compte. Nécessite ≥ 10 ans de scolarité.',
+    description: 'Raisonnement analogique + inhibition. Essai LUNES obligatoire (réponses : 6 lunes / 12 nuages / Faux / Faux), puis 4 subtests à difficulté croissante (Formes / Feux / Étoiles / Flèches). Seul le MEILLEUR subtest compte. ⚠️ Si scolarité < 10 ans → renoncer même si LUNES OK (manuel p. 75).',
     cible: 'Raisonnement analogique',
     subtests: [
-      { key: 'sub_formes',  label: 'Formes (facile)',     max: 8,  hint: '2 pt / item.' },
-      { key: 'sub_feux',    label: 'Feux',                max: 12, hint: '2-3 pt / item.' },
-      { key: 'sub_etoiles', label: 'Étoiles',             max: 18, hint: '2-3 pt / item.' },
-      { key: 'sub_fleches', label: 'Flèches (difficile)', max: 20, hint: 'Le plus exigeant — seul le score du MEILLEUR subtest est comptabilisé.' },
+      { key: 'sub_formes',  label: 'Formes (facile)',     max: 8,  hint: '4 items × 2 pt = 8.' },
+      { key: 'sub_feux',    label: 'Feux',                max: 12, hint: '6 items × 2 pt = 12.' },
+      { key: 'sub_etoiles', label: 'Étoiles',             max: 18, hint: '6 items × 3 pt = 18 (manuel p. 74).' },
+      { key: 'sub_fleches', label: 'Flèches (difficile)', max: 20, hint: 'Scoring PROGRESSIF (manuel p. 74) : item 1 = 2 pt, item 2 = 4 pt, item 3 = 6 pt, item 4 = 8 pt. Total 20.' },
     ],
     tempsAlerteMinParAge: [5, 6, 8, 10, 20],
     rules: [
-      'Essai LUNES obligatoire pour vérifier la compréhension. Si LUNES non compris → RENONCER à l\'épreuve (orienter vers ép. 10 Itinéraire).',
-      'Puis 4 subtests à difficulté croissante : Formes (/8) → Feux (/12) → Étoiles (/18) → Flèches (/20).',
-      'Cotation : 2-3 pt par item selon le subtest. Aide examinateur : −3 pt si partielle, −6 pt si majeure.',
-      '⚠️ Nécessite ≥ 10 ans de scolarité. Pour les NSC 1 avec moins, sauter et proposer l\'ép. 10 Itinéraire.',
+      'Essai LUNES obligatoire (réponses : 6 lunes / 12 nuages / Faux / Faux). Si LUNES non compris → RENONCER à l\'épreuve (orienter vers ép. 10 Itinéraire).',
+      '⚠️ SCOLARITÉ PRIME sur LUNES : si scolarité < 10 ans, RENONCER même si LUNES est OK (manuel p. 75).',
+      'Puis 4 subtests à difficulté croissante : Formes (4 items × 2 pt = 8) → Feux (6 × 2 = 12) → Étoiles (6 × 3 = 18) → Flèches (scoring progressif 2/4/6/8, total 20).',
+      'Cotation Flèches : scoring PROGRESSIF (item 1 = 2 pt, item 2 = 4 pt, item 3 = 6 pt, item 4 = 8 pt) — pas un uniforme 2-3 pt/item.',
+      'Aide examinateur : −3 pt si partielle, −6 pt si majeure.',
+      '⚠️ Seul le MEILLEUR subtest est comptabilisé.',
       'Score chiffré à prendre AVEC PRÉCAUTION chez NSC 3 — toujours coupler analyse qualitative.',
     ],
     interpretation: [
@@ -333,18 +353,18 @@ const EPREUVES: Epreuve[] = [
     key: 'e10_itineraire',
     num: '10',
     label: 'Itinéraire',
-    description: 'Planification spatiale + MdT visuo-spatiale. Élaborer un trajet pour rendre visite à plusieurs patients en respectant les contraintes (sens interdits, passage obligé à l\'école et au labo). Ciblée NSC 1 (alternative à l\'ép. 09) et NSC 3 en confirmation.',
+    description: 'Contexte (manuel p. 78) : plan du village de Buxy, une infirmière doit faire des prélèvements à plusieurs patients, passer par l\'école pour son fils et déposer les analyses au labo. Planification spatiale + MdT visuo-spatiale. Ciblée NSC 1 (alternative à l\'ép. 09) et NSC 3 en confirmation.',
     cible: 'Planification spatiale',
     subtests: [
-      { key: 'score', label: 'Score total', max: 20, hint: '2 pt par consigne respectée (passages obligés, sens interdits, ordre logique).' },
+      { key: 'score', label: 'Score total', max: 20, hint: '2 pt par consigne respectée (passages obligés école + labo, sens interdits, ordre logique).' },
     ],
     tempsAlerteMinParAge: [6, 6, 7, 8, 10],
     rules: [
-      'Le sujet doit dessiner un trajet sur une carte pour visiter plusieurs patients, en respectant les passages obligés (école, labo) et les sens interdits.',
+      'Le sujet doit dessiner un trajet sur le plan de Buxy pour visiter plusieurs patients, en respectant les passages obligés (école, labo) et les sens interdits.',
       'Cotation : 2 pt par consigne respectée (max 20 pt).',
       'Malus libre selon l\'aide apportée et la longueur excessive du trajet.',
       '⚠️ Peu sensible chez NSC 3 (compensation par réserve cognitive) — à proposer en CONFIRMATION seulement chez NSC 3 avec déficits ailleurs.',
-      'Particulièrement utile chez NSC 1 incapables de faire l\'ép. 09 Équivalences.',
+      'Particulièrement utile chez NSC 1 incapables de faire l\'ép. 09 Équivalences (alternative recommandée par les auteures).',
     ],
     interpretation: [
       'Suit l\'ordre de la liste des patients au lieu d\'optimiser le trajet → fragilité de planification stratégique.',
@@ -420,7 +440,7 @@ export default function PrediFexScoresInput({ notes, onNotesChange, onResultatsC
   }, [state.epreuves])
 
   const zoneCounts = useMemo(() => {
-    const c: Record<Exclude<ZoneKey, ''>, number> = { vert_fonce: 0, vert_clair: 0, jaune: 0, orange: 0, rouge: 0 }
+    const c: Record<Exclude<ZoneKey, ''>, number> = { vert: 0, jaune: 0, orange: 0, rouge: 0 }
     for (const e of EPREUVES) {
       const st = state.epreuves[e.key]
       if (st.non_passee) continue
@@ -472,14 +492,13 @@ export default function PrediFexScoresInput({ notes, onNotesChange, onResultatsC
       lines.push('')
     }
 
-    const tot = zoneCounts.vert_fonce + zoneCounts.vert_clair + zoneCounts.jaune + zoneCounts.orange + zoneCounts.rouge
+    const tot = zoneCounts.vert + zoneCounts.jaune + zoneCounts.orange + zoneCounts.rouge
     if (tot > 0) {
-      lines.push('--- Synthèse zones HappyNeuron ---')
-      lines.push(`Vert foncé (préservé) : ${zoneCounts.vert_fonce}`)
-      lines.push(`Vert clair (moyenne basse) : ${zoneCounts.vert_clair}`)
-      lines.push(`Jaune (seuil d'alerte) : ${zoneCounts.jaune}`)
-      lines.push(`Orange (difficulté avérée) : ${zoneCounts.orange}`)
-      lines.push(`Rouge (effondrement) : ${zoneCounts.rouge}`)
+      lines.push('--- Synthèse zones HappyNeuron (4 zones manuel PrediFex p. 17) ---')
+      lines.push(`Vert (préservé, ≥ M − 1,5σ) : ${zoneCounts.vert}`)
+      lines.push(`Jaune (seuil d'alerte, M−1,5σ à M−2σ) : ${zoneCounts.jaune}`)
+      lines.push(`Orange (difficulté avérée, M−2σ à M−3σ) : ${zoneCounts.orange}`)
+      lines.push(`Rouge (effondrement, < M−3σ) : ${zoneCounts.rouge}`)
     }
 
     onResultatsChange(lines.join('\n'))
@@ -533,9 +552,9 @@ export default function PrediFexScoresInput({ notes, onNotesChange, onResultatsC
           <p className="font-semibold text-indigo-900">Saisie structurée PrediFex — 10 épreuves de fonctions exécutives</p>
           <p className="text-indigo-700 text-xs mt-0.5 leading-relaxed">
             Pour chaque épreuve, saisissez le score brut par subtest (validation /max), le temps, et reportez la{' '}
-            <strong>zone HappyNeuron</strong> (5 couleurs) directement lue sur le logiciel. Seuil d&apos;alerte officiel : M − 1,5 σ.
-            Population cible : adultes NSC 1 à 3. Cas d&apos;usage prototype : plainte cognitive subjective avec MMS=30 et bilans
-            neuropsy classiques normaux (effet plafond), typique du NSC 3.
+            <strong>zone HappyNeuron</strong> (4 zones — Vert / Jaune / Orange / Rouge — manuel p. 17) directement lue sur le logiciel.
+            Seuil d&apos;alerte officiel : M − 1,5 σ. Population cible : adultes NSC 1 à 3. Cas d&apos;usage prototype :
+            tests classiques normaux malgré plainte cognitive du sujet ou de l&apos;entourage (effet plafond), typique du NSC 3.
           </p>
         </div>
       </div>
@@ -628,6 +647,32 @@ export default function PrediFexScoresInput({ notes, onNotesChange, onResultatsC
           // Alerte conditionnelle 5c (Stroop optionnel)
           const showStroop5cAlert = e.key === 'e05_mise_a_jour' && stroop5cIndique
 
+          // Indicateur du matériel exact selon NSC (manuel) — affiché si NSC saisi.
+          let nscMateriel: string | null = null
+          if (state.nsc) {
+            if (e.key === 'e01_fluences_alternees') {
+              nscMateriel = state.nsc === '1'
+                ? 'Catégories NSC 1 : Outils / Ustensiles de cuisine'
+                : 'Catégories NSC 2 et 3 : Villes françaises / Pays étrangers'
+            } else if (e.key === 'e02_texte_mettre_ordre') {
+              const t = state.nsc === '1' ? 'Fanny' : state.nsc === '2' ? 'Voilier' : 'Molly'
+              nscMateriel = `Texte NSC ${state.nsc} : ${t}`
+            } else if (e.key === 'e03_textes_executifs') {
+              const t3a = state.nsc === '1' ? 'Gallon (rép. n°4)' : state.nsc === '2' ? 'Serin (rép. n°3)' : 'Dépression (rép. n°3)'
+              const t3b = state.nsc === '1' ? 'Dégât des eaux' : state.nsc === '2' ? 'Julie' : 'Jean'
+              nscMateriel = `Textes NSC ${state.nsc} : 3a = ${t3a} ; 3b = ${t3b}`
+            } else if (e.key === 'e06_probleme_arith') {
+              const p = state.nsc === '1' ? 'La Voiture (essence, "26 L de trop")' : state.nsc === '2' ? 'Le Restaurant ("15 € le menu")' : 'La Fondue (600g / 600g / 300g)'
+              nscMateriel = `Problème NSC ${state.nsc} : ${p}`
+            } else if (e.key === 'e07_probleme_luria') {
+              const p = state.nsc === '1' ? 'Léo (Q1 = 14 ans, Q2 = Non, Q3 = Oui, Q4 = Non)' : state.nsc === '2' ? 'Cédric & Diane' : 'Hélène'
+              nscMateriel = `Problème NSC ${state.nsc} : ${p}`
+            }
+          }
+
+          // Alerte conditionnelle ép. 09 — scolarité < 10 ans (NSC 1).
+          const showEquivalencesAlert = e.key === 'e09_equivalences' && state.nsc === '1'
+
           return (
             <div key={e.key} className="rounded-lg border border-gray-200 bg-white p-4">
               <div className="flex items-start justify-between gap-3 flex-wrap mb-2">
@@ -650,6 +695,20 @@ export default function PrediFexScoresInput({ notes, onNotesChange, onResultatsC
 
               {!st.non_passee && (
                 <>
+                  {/* Banner matériel exact selon NSC (pour ép. 01, 02, 03, 06, 07) */}
+                  {nscMateriel && (
+                    <div className="mt-2 px-2 py-1.5 rounded bg-indigo-50 border border-indigo-100 text-[11px] text-indigo-800">
+                      <span className="font-semibold">Matériel sélectionné par HappyNeuron :</span> {nscMateriel}
+                    </div>
+                  )}
+
+                  {/* Alerte ép. 09 — scolarité < 10 ans (NSC 1) */}
+                  {showEquivalencesAlert && (
+                    <div className="mt-2 px-2 py-1.5 rounded bg-amber-50 border border-amber-200 text-[11px] text-amber-900">
+                      <strong>NSC 1 → vérifier scolarité ≥ 10 ans</strong> avant de passer cette épreuve. Si scolarité &lt; 10 ans, renoncer à l&apos;ép. 09 (la scolarité prime sur l&apos;essai LUNES — manuel p. 75) et privilégier l&apos;ép. 10 Itinéraire.
+                    </div>
+                  )}
+
                   {/* Alerte 5c conditionnelle */}
                   {showStroop5cAlert && (
                     <div className="mt-2 px-2 py-1.5 rounded bg-amber-50 border border-amber-200 text-[11px] text-amber-900">

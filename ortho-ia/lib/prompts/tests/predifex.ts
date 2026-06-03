@@ -67,11 +67,28 @@ Toutes les normes PrediFex sont stratifiées :
 
 | NSC | Niveau socio-culturel |
 |-----|------------------------|
-| 1   | scolarité 9-12 ans (CAP, BEP, Brevet, Certificat d'études) — VALIDE, étalonnage présent. ⚠️ épreuve 09 Équivalences nécessite ≥ 10 ans scolarité. |
-| 2   | Bac à Bac+3 inclus |
+| 1   | **≥ 9 ans de scolarité, sans Bac** (CAP, BEP, Brevet, Certificat d'études — manuel p. 16). VALIDE, étalonnage présent. ⚠️ épreuve 09 Équivalences nécessite ≥ 10 ans scolarité — si < 10 ans, renoncer à l'ép. 09 (manuel p. 75) et privilégier l'ép. 10 Itinéraire. |
+| 2   | Bac à Bac+3 inclus (manuel p. 16) |
 | 3   | ≥ Bac+4 (cadre, ingénieur, professions à forte réserve cognitive) — population prototype, attention au plafonnement sur 02/03/06 (lire le temps plutôt que le score) |
 
 **Seuil d'alerte officiel** : score < **moyenne − 1,5 écart-type** du groupe (âge × NSC). Le logiciel HappyNeuron affiche le verdict automatiquement.
+
+#### CRITÈRES D'EXCLUSION (manuel p. 15 — appliqués à l'échantillon de validation, à reporter en clinique)
+
+Avant de proposer PrediFex, vérifier l'absence de :
+- **Bilinguisme** (sujet non francophone natif ou usage prédominant d'une autre langue),
+- **MMSE < 30** (l'effet plancher rend les résultats peu interprétables — PrediFex cible l'effet plafond, pas l'effet plancher),
+- **Pathologie neurologique avérée déjà documentée** (même asymptomatique),
+- **Plainte cognitive du sujet ou de l'entourage formalisée avec autre bilan en cours**.
+
+Si l'un de ces critères est présent, mentionner explicitement la limite dans la synthèse du CRBO.
+
+#### FORMAT DE PASSATION (manuel p. 4, 15)
+
+- **Ordre libre et modulable** : "les épreuves sont indépendantes les unes des autres et certains sujets n'ont pas réalisé la totalité du protocole" (p. 15). Le manuel parle de "combinaisons variées selon les sujets testés, les besoins de l'analyse et les objectifs de l'examinateur" (p. 4).
+- **Fractionnable** sur plusieurs séances.
+- **Pas de durée totale officielle** dans le manuel.
+- **Cas clinique cible** : "tests classiques normaux malgré plainte cognitive du sujet ou de l'entourage" (p. 12) — typiquement un sujet à haute réserve cognitive avec effet plafond.
 
 ---
 
@@ -79,16 +96,16 @@ Toutes les normes PrediFex sont stratifiées :
 
 | N° | Épreuve | Max | Cotation clé | Cible exécutive |
 |----|---------|-----|--------------|------------------|
-| 01 | Fluences alternées | 30 | 1 pt / mot correct, plafond 30. Pas de malus. 2 mots de la même catégorie à la suite = 1 pt seulement. | Flexibilité + inhibition d'une réponse automatique |
-| 02 | Texte à mettre en ordre | 12 | −2 pt / segment mal placé sans casser la cohérence, −4 pt si casse la cohérence, −3 pt si aide examinateur. | Planification + cohérence textuelle + MdT |
-| 03 | Textes « exécutifs » | 10 (4 + 6) | 3a Résumé /4 (tout ou rien). 3b Ordre des événements /6 : −1 pt / épisode mal placé, −2 pt sur épisode à astérisque (plus exécutif), −3 pt si aide. | Compréhension exigeante en attention / inhibition / inférences |
-| 04 | Une syllabe sur deux | 42 (8+18+16) | 4 pt mot 2 syl / 6 pt mot 3 syl / 8 pt mot 4 syl. −2 pt / répétition audio. Arrêt après 2 items échoués. | Inhibition + flexibilité (alternance syllabique) |
-| 05 | Mise à jour | 45 (5a 21 + 5b 24) | 5a Chiffres /21 (3 pt/série, −1 pt par chiffre manquant). 5b Syllabes /24 (3 pt/série). 5c Stroop lettres /32 **optionnel et non comptabilisé** — déclenché uniquement si 5a < 12 ou 5b < 14. | Mise à jour de la MdT |
-| 06 | Problème arithmétique | 10 (6 raisonnement + 4 calcul) | −2 pt / erreur de raisonnement ou omission d'info, −3 pt si aide examinateur. | Planification + MdT en numérique |
-| 07 | Problème logique « Luria » | 10 (4+2+2+2) | 4 pt Q1, 2 pt chacune Q2/Q3/Q4. −3 pt si aide. | Raisonnement abstrait + inhibition (énoncé piégeant « avoir X ans de plus que ») |
-| 08 | Sudofex | 22 | Essai MIREILLE obligatoire (non scoré). Puis examinateur choisit Annick (max 8) / Marie (max 16) / Guillaume (max 22). **Seule la meilleure grille compte.** 1-2 pt / case (contenu + couleur séparés), −3/−6 pt selon aide. | Inhibition + raisonnement logique en grille |
-| 09 | Équivalences | 20 | Essai LUNES obligatoire (non scoré). Si LUNES non compris → renoncer à l'épreuve. Puis subtests : Formes (max 8) / Feux (max 12) / Étoiles (max 18) / Flèches (max 20). **Seul le meilleur subtest compte.** 2-3 pt / item, −3/−6 pt selon aide. Nécessite ≥ 10 ans scolarité. | Raisonnement analogique + inhibition |
-| 10 | Itinéraire | 20 | 2 pt par consigne respectée (passages + sens interdits + école + labo). Malus libre si aide ou trajet trop long. Ciblée pour NSC 1 (alternative à l'ép. 09) et NSC 3 en confirmation. | Planification spatiale + MdT visuo-spatiale |
+| 01 | Fluences alternées | 30 | **Catégories selon NSC (manuel p. 24, 88)** : NSC 1 = Outils / Ustensiles de cuisine ; NSC 2 et NSC 3 = Villes françaises / Pays étrangers. Chrono fixe 1 min. 1 pt / mot correct, plafond 30. Pas de malus. 2 mots de la même catégorie à la suite = 1 pt seulement. Exemples donnés dans la consigne NON comptabilisés s'ils sont redonnés (p. 27). Possibilité d'une "2e minute" non comptabilisée pour observation qualitative (p. 25). | Flexibilité + inhibition d'une réponse automatique |
+| 02 | Texte à mettre en ordre | 12 | **3 textes selon NSC (manuel p. 30, 88)** : NSC 1 = Fanny ; NSC 2 = Voilier ; NSC 3 = Molly. Grille de notation balisée 12 / 10 / 8 / 6 / 4 / 0 (p. 32). Malus : −2 pt / segment mal placé sans casser la cohérence, −4 pt si casse la cohérence, −3 pt si aide examinateur. **Plafond temps absolu : on arrête au bout d'un quart d'heure** (p. 30). | Planification + cohérence textuelle + MdT |
+| 03 | Textes « exécutifs » | 10 (4 + 6) | **3 textes par subtest selon NSC (manuel p. 89-90)** : 3a Résumé — Gallon (NSC 1, rép. n°4) / Serin (NSC 2, rép. n°3) / Dépression (NSC 3, rép. n°3). 3b Ordre des événements (5 épisodes à numéroter) — Dégât des eaux (NSC 1) / Julie (NSC 2) / Jean (NSC 3). 3a /4 : tout ou rien. 3b /6 : −1 pt / épisode mal placé, **−2 pt sur l'épisode à astérisque** (le plus exécutif, varie selon NSC, manuel p. 38), −3 pt si aide. | Compréhension exigeante en attention / inhibition / inférences |
+| 04 | Une syllabe sur deux | 42 (8+18+16) | **7 items totaux (manuel p. 45, 90)** : items 1-2 mots de 2 syl. (Gâteau-Bonjour ; Lancer-Ranger) → 2 × 4 pt = 8 ; items 3-5 mots de 3 syl. (Chocolat-Boulanger ; Caméra-Cinéma ; Châtiment-Matelot) → 3 × 6 pt = 18 ; items 6-7 mots de 4 syl. (Rapidement-Procuration ; Poissonnerie-Figuration) → 2 × 8 pt = 16. −2 pt / répétition audio. **Arrêt après 2 items consécutivement échoués.** **Consigne examinateur obligatoire sur items 6-7** : "ne recomposer qu'un mot à la fois" (p. 43). **Règle "écrire = 0"** : si le sujet écrit pour s'aider, l'épreuve est considérée comme échouée même s'il réussit (p. 43). | Inhibition + flexibilité (alternance syllabique) |
+| 05 | Mise à jour | 45 (5a 21 + 5b 24) | **Consigne : redire les 3 DERNIERS éléments entendus** (manuel p. 47-48). 5a Chiffres /21 (7 séries × 3 pt, −1 pt par chiffre manquant). 5b Syllabes /24 (8 séries × 3 pt). **Abandon possible** : si après 3 items le sujet répète moins de 4 chiffres/syllabes (p. 49). 5c Stroop lettres /32 (10+12+10, JUPON vert / FRAISE rouge / 15879 rouge) **complémentaire (qualitatif, ne fait pas partie du score d'épreuve)** — déclenché si 5a < 12 OU 5b < 14 OU abandon en cours (p. 49). | Mise à jour de la MdT |
+| 06 | Problème arithmétique | 10 (6 raisonnement + 4 calcul) | **3 problèmes selon NSC (manuel p. 53, 91)** : NSC 1 = La Voiture (essence, réponse "26 litres de trop") ; NSC 2 = Le Restaurant (réponse "15 € le menu") ; NSC 3 = La Fondue (Gruyère 600g / Comté 600g / Vacherin 300g). −2 pt / erreur de raisonnement ou omission d'info, −3 pt si aide. **Calcul + raisonnement notés à l'appréciation de l'examinateur** (p. 54). | Planification + MdT en numérique |
+| 07 | Problème logique « Luria » | 10 (4+2+2+2) | **3 problèmes selon NSC (manuel p. 58, 92)** : NSC 1 = Léo (Q1 = 14 ans, Q2 = Non, Q3 = Oui, Q4 = Non) ; NSC 2 = Cédric & Diane ; NSC 3 = Hélène. 4 pt Q1, 2 pt chacune Q2/Q3/Q4. −3 pt si aide. **Piège textuel exact** (manuel p. 60) : *"le terme 'plus' est associé à une opération d'addition alors que dans la phrase 'avoir 10 ans de plus que', il faut soustraire les 10 ans quand on calcule l'année de naissance"*. | Raisonnement abstrait + inhibition |
+| 08 | Sudofex | 22 | Essai MIREILLE obligatoire (non scoré, fait à deux). Puis grille MARIE en entrée par défaut. **ANNICK n'est PAS le point d'entrée par défaut** — c'est un repli si MIREILLE pas compris OU plus de 5 erreurs / abandon sur MARIE (p. 63). **GUILLAUME** = niveau supérieur si MARIE bien réussie. Scoring : Annick = 0,5 (contenu) + 0,5 (couleur) = 1 pt × 8 cases = **8 pt** ; Marie = 1 + 1 = 2 pt × 8 cases = **16 pt** ; Guillaume = 1 + 1 = 2 pt × 11 cases = **22 pt**. **Effet Stroop** : sur MARIE chaque nom de couleur est écrit dans une couleur FIXE (mapping mot→couleur stable, p. 64) ; sur GUILLAUME chaque nom n'est jamais écrit deux fois dans la même couleur (mapping VARIABLE → effet Stroop majoré, p. 65). **Seule la meilleure grille compte** (p. 65). −3 pt aide partielle, −6 pt aide majeure. | Inhibition + raisonnement logique en grille |
+| 09 | Équivalences | 20 | Essai LUNES obligatoire (réponses : 6 lunes / 12 nuages / Faux / Faux). **Si scolarité < 10 ans → renoncer à l'épreuve, même si LUNES est OK** (manuel p. 75 — la scolarité prime sur l'essai). Subtests : Formes (4 items × 2 pt = 8) / Feux (6 items × 2 pt = 12) / Étoiles (6 items × 3 pt = **18**) / Flèches (4 items, scoring **PROGRESSIF** : item 1 = 2 pt, item 2 = 4 pt, item 3 = 6 pt, item 4 = 8 pt, total 20 pt — manuel p. 74, 86). **Seul le meilleur subtest compte.** −3 pt aide partielle, −6 pt aide majeure. | Raisonnement analogique + inhibition |
+| 10 | Itinéraire | 20 | Contexte : plan du village de Buxy, infirmière qui doit faire des prélèvements, passe par école pour son fils, dépose les analyses au labo (manuel p. 78). 2 pt par consigne respectée (passages + sens interdits + école + labo). Malus libre si aide ou trajet trop long. Ciblée pour NSC 1 (alternative à l'ép. 09) et NSC 3 en confirmation seulement (peu sensible chez NSC 3 par effet de compensation). | Planification spatiale + MdT visuo-spatiale |
 
 **Temps d'alerte par tranche d'âge** (minutes — donnés explicitement dans le manuel) :
 
@@ -106,26 +123,28 @@ Toutes les normes PrediFex sont stratifiées :
 
 ---
 
-#### ZONES D'INTERPRÉTATION — Code couleur officiel HappyNeuron
+#### ZONES D'INTERPRÉTATION — Code couleur officiel HappyNeuron PrediFex (p. 17)
 
-| Zone | Bornes | Interprétation clinique |
-|------|--------|--------------------------|
-| Vert foncé | ≥ M | Performance dans la norme ou au-dessus |
-| Vert clair | M − 1σ à M − 1,5σ | Performance correcte, légèrement abaissée |
+⚠️ **Le manuel PrediFex définit 4 zones** (vs 5 zones du manuel PREDIMEM). Citation manuel p. 17 : *"vert quand les performances se situent dans la norme ou au-dessus de celle-ci, jaune quand les performances se situent entre la moyenne moins un écart-type et demi et la moyenne moins deux écarts-types, orange pour des résultats qui se situent entre la moyenne moins deux écarts-types et la moyenne moins trois écarts types, et rouge pour des résultats effondrés (à partir de la moyenne moins trois écarts-types)"*.
+
+| Zone | Bornes officielles | Interprétation clinique |
+|------|--------------------|--------------------------|
+| Vert | ≥ M − 1,5σ | Performance dans la norme ou au-dessus |
 | Jaune | M − 1,5σ à M − 2σ | **Seuil d'alerte officiel** — fragilité installée |
 | Orange | M − 2σ à M − 3σ | Difficulté avérée |
 | Rouge | < M − 3σ | Effondrement, difficulté sévère |
 
-**Vocabulaire à utiliser dans le CRBO** :
-- Vert foncé → "performance préservée"
-- Vert clair → "performance dans la moyenne basse, à surveiller"
-- Jaune → "fragilité objectivée"
+**Vocabulaire à utiliser dans le CRBO** (paraphrase clinique ortho.ia, le manuel HappyNeuron ne prescrit pas de vocabulaire officiel autre que "norme ou au-dessus" / "seuil d'alerte" / "effondrés") :
+- Vert → "performance préservée"
+- Jaune → "fragilité objectivée (seuil d'alerte)"
 - Orange → "difficulté avérée"
 - Rouge → "effondrement"
 
 ---
 
 #### CROISEMENTS D'ÉPREUVES — Profils exécutifs attendus
+
+*Note : la typologie en 6 profils numérotés ci-dessous est une **SYNTHÈSE OPÉRATIONNELLE ortho.ia** dérivée des sections "Analyse" épreuve par épreuve du manuel — le manuel HappyNeuron ne nomme PAS de profils numérotés. Le manuel insiste sur "la cohérence d'ensemble ou la discordance" (p. 18) et propose un "histogramme regroupant tous les résultats" (p. 18) ; il décrit pour chaque épreuve plusieurs types de difficulté à observer mais ne propose pas de typologie clinique fermée.*
 
 **Profil 1 — Trouble de la flexibilité mentale**
 - Fluences alternées + Une syllabe sur deux + Équivalences : Déficitaire.
@@ -140,7 +159,7 @@ Toutes les normes PrediFex sont stratifiées :
 **Profil 3 — Trouble de la planification**
 - Texte à mettre en ordre + Sudofex + Itinéraire : Déficitaire.
 - Difficulté à élaborer une stratégie séquentielle.
-- **Hypothèse** : fragilité de planification, à compléter par Tour de Londres / Tour de Hanoï.
+- **Hypothèse** : fragilité de planification, à compléter par Tour de Londres (cité par le manuel p. 10 ; Tour de Hanoï N'est PAS dans la liste du manuel).
 
 **Profil 4 — Trouble du raisonnement exécutif / inhibition**
 - Problème logique Luria + Équivalences + Une syllabe sur deux : Déficitaire.
@@ -148,13 +167,13 @@ Toutes les normes PrediFex sont stratifiées :
 - **Hypothèse** : fragilité d'inhibition / raisonnement abstrait, à explorer par Stroop, Hayling, TMT.
 
 **Profil 5 — Sujet à haute réserve cognitive (NSC 3) avec plainte subjective**
-- Score global dans la norme MAIS plusieurs épreuves en zone vert clair.
-- TEMPS d'exécution allongés sur la moitié des épreuves.
-- **Hypothèse** : profil compatible avec une fragilité débutante chez un sujet de haute réserve cognitive (population cible PrediFex). Réévaluation à 6-12 mois préconisée.
+- Score global dans la zone Vert MAIS proche du seuil M − 1,5σ sur plusieurs épreuves.
+- TEMPS d'exécution allongés (au-delà des seuils âge) sur la moitié des épreuves.
+- **Hypothèse** : profil compatible avec une fragilité débutante chez un sujet de haute réserve cognitive (population cible PrediFex — manuel p. 1, 11-12 parle textuellement de "réserve cognitive importante" et d'"effet plafond dans la plupart des tests"). Cas clinique typique : *tests classiques normaux malgré plainte cognitive du sujet ou de l'entourage*. Réévaluation à 6-12 mois préconisée (*formulation ortho.ia, le manuel ne propose pas de délai*).
 
 **Profil 6 — Plainte exécutive chez sujet sain (cluster cohérent dans la norme)**
-- Toutes les épreuves en vert foncé, temps dans la norme.
-- **Hypothèse** : pas de fragilité exécutive objectivée. Rassurer + conseils d'hygiène cognitive. Réévaluation à 12 mois si plainte persiste.
+- Toutes les épreuves en zone Vert, temps dans la norme.
+- **Hypothèse** : pas de fragilité exécutive objectivée. Rassurer + conseils d'hygiène cognitive. Réévaluation à 12 mois si plainte persiste (*formulation ortho.ia*).
 
 ---
 
@@ -176,11 +195,11 @@ Toutes les normes PrediFex sont stratifiées :
 
 7. **Formuler en impact FONCTIONNEL** au quotidien (ralentissement décisionnel, difficulté à planifier les courses, oubli des étapes d'une recette, etc.).
 
-8. **Vocabulaire à BANNIR** : "démence", "déclin cognitif", "détérioration", "dégénérescence", "Alzheimer", "syndrome frontal", "pathologique".
+8. **Vocabulaire à BANNIR dans le CRBO ortho.ia** (*règle ortho.ia, plus restrictive que le manuel qui utilise lui-même "pathologique" et "syndrome dysexécutif" librement à destination des cliniciens — manuel p. 16, 21, 33, 60*) : "démence", "déclin cognitif", "détérioration", "dégénérescence", "Alzheimer", "syndrome frontal", "syndrome dysexécutif", "pathologique". Préférer "fragilité installée", "difficulté avérée", "performance abaissée par rapport à la norme du groupe".
 
 9. **NSC 1 valide mais vigilance** : PrediFex est étalonné NSC 1 (9-12 ans scolarité). Pour les sujets *sous-NSC 1* (scolarité < 9 ans sans activité compensatoire), l'outil reste trop exigeant — préférer BREF, MoCA, ou un bilan neuropsychologique adapté. L'épreuve 09 Équivalences nécessite ≥ 10 ans scolarité (auteures recommandent de la sauter sinon, et de privilégier l'épreuve 10 Itinéraire).
 
-10. **Le titre de la synthèse est "Hypothèse de diagnostic"**, JAMAIS "Diagnostic".
+10. **Le titre de la synthèse est "Hypothèse de diagnostic"**, JAMAIS "Diagnostic" (*convention rédactionnelle ortho.ia ; le manuel parle textuellement d'"hypothèses diagnostiques" p. 14 mais n'impose pas de titre figé*).
 
 ---
 
@@ -191,30 +210,35 @@ PrediFex n'utilise pas de percentiles continus (notes standard / z-scores sigma-
 - **\`score\`** = score brut au format "X/Y" (ex: "23/30").
 - **\`et\`** = écart en notes standard ou en sigma par rapport à la moyenne du groupe (ex: "−1,8 σ"). null si non disponible.
 - **\`percentile\`** = laisser vide ('') ou indiquer la zone HappyNeuron (ex: "Zone jaune", "Seuil d'alerte"). PrediFex ne donne pas de percentile au sens classique.
-- **\`percentile_value\`** : valeur calibrée pour la couleur d'arrière-plan du tableau Word. **PrediFex a OFFICIELLEMENT 5 ZONES** (vs 6 zones Laurie côté Word) — on saute volontairement la zone Laurie "Moyenne basse" (jaune P26-49) qui n'existe pas dans HappyNeuron, parce que **Jaune HappyNeuron = seuil d'alerte clinique** (fragilité installée), équivalent en sévérité à "Zone de fragilité" Laurie et NON à "Moyenne basse" Laurie (cette dernière reste "norme un peu basse, OK" en Exalang) :
-  - **Vert foncé HappyNeuron** (≥ M) → \`percentile_value\` = **85** (cellule fond vert foncé Laurie "Excellent")
-  - **Vert clair HappyNeuron** (M−1σ à M−1,5σ, performance correcte, légèrement abaissée) → \`percentile_value\` = **60** (cellule fond vert clair Laurie "Moyenne haute")
+- **\`percentile_value\`** : valeur calibrée pour la couleur d'arrière-plan du tableau Word. **PrediFex a OFFICIELLEMENT 4 ZONES** (manuel p. 17, contrairement à PREDIMEM qui en a 5) — on saute volontairement la zone Laurie "Moyenne haute" (vert clair P50-75) ET la zone "Moyenne basse" (jaune P26-49) qui n'existent pas dans HappyNeuron PrediFex. **Jaune HappyNeuron = seuil d'alerte clinique** (fragilité installée), équivalent en sévérité à "Zone de fragilité" Laurie et NON à "Moyenne basse" Laurie (cette dernière reste "norme un peu basse, OK" en Exalang) :
+  - **Vert HappyNeuron** (≥ M − 1,5σ, "dans la norme ou au-dessus" — manuel p. 17) → \`percentile_value\` = **85** (cellule fond vert foncé Laurie "Excellent")
   - **Jaune HappyNeuron** (M−1,5σ à M−2σ, **SEUIL D'ALERTE OFFICIEL**) → \`percentile_value\` = **18** (cellule fond orange clair Laurie "Zone de fragilité" — la sévérité du seuil d'alerte exécutif colle à "Zone de fragilité", PAS à "Moyenne basse" qui sous-évaluerait l'alerte)
   - **Orange HappyNeuron** (M−2σ à M−3σ, difficulté avérée) → \`percentile_value\` = **8** (cellule fond orange foncé Laurie "Difficulté")
   - **Rouge HappyNeuron** (< M−3σ, effondrement) → \`percentile_value\` = **3** (cellule fond rouge Laurie "Difficulté sévère")
   Ces valeurs ne sont PAS des percentiles cliniques au sens classique (PrediFex est sigma-based, pas percentile-based) — ce sont des codes-couleurs pour piloter le shading Word, alignés sur la sémantique clinique HappyNeuron (et non sur la grille Exalang).
 - **\`interpretation\`** : utiliser **OBLIGATOIREMENT** le vocabulaire HappyNeuron retranscrit ci-dessous, JAMAIS les étiquettes percentile-based Exalang ("Excellent / Moyenne haute / Moyenne basse / Zone de fragilité / Difficulté / Difficulté sévère") qui n'ont pas de sens pour ce protocole sigma-based (instruction surclassée par l'instruction "6 zones par défaut" du \`tool-schema\` qui ne s'applique pas à PrediFex) :
-  - Vert foncé → "performance préservée"
-  - Vert clair → "performance dans la moyenne basse, à surveiller"
+  - Vert → "performance préservée"
   - Jaune → "fragilité objectivée (seuil d'alerte)"
   - Orange → "difficulté avérée"
   - Rouge → "effondrement"
-  *Précision rédactionnelle : ce vocabulaire est une paraphrase clinique transposée pour le CRBO, fidèle à l'esprit du manuel HappyNeuron qui n'impose pas de termes officiels.*
+  *Précision rédactionnelle : ce vocabulaire est une paraphrase clinique transposée pour le CRBO, fidèle à l'esprit du manuel HappyNeuron qui n'évoque textuellement que "norme ou au-dessus" (vert), "seuil d'alerte" (jaune) et "effondrés" (rouge) — manuel p. 17.*
 - **\`commentaire\`** du domaine ou de l'épreuve : OBLIGATOIRE pour PrediFex. Doit intégrer le score + le temps + l'observation qualitative + la lecture en lien avec les autres épreuves du protocole.
 
 ---
 
 #### ARTICULATION AVEC D'AUTRES OUTILS
 
-- **En amont** : MoCA, MMSE (screenings globaux), BREF (Frontal Assessment Battery).
-- **En complément** : TMT A/B, Wisconsin Card Sorting Test, Stroop, Hayling, Tour de Londres / Hanoï, Cubes de Corsi.
-- **En aval** : bilan neuropsychologique complet (consultation mémoire ou centre de la mémoire), imagerie cérébrale (IRM avec analyse frontale et sous-corticale), bilan biologique selon orientation.
-- **PREDIMEM** : complémentaire pour la composante mnésique chez l'adulte de NSC 2-3.
+**Cités explicitement par le manuel PrediFex (p. 10)** :
+- **Inhibition** : Stroop, Go/No-go, Hayling
+- **Flexibilité** : Fluences (Cardebat), TMT A/B
+- **Catégorisation** : Wisconsin Card Sorting Test, California Sorting Test
+- **Déduction de règles** : Test de Brixton
+- **Attention / MdT** : Doubles tâches TAP, Empan envers / croissant
+- **Planification** : Tour de Londres (*Tour de Hanoï N'EST PAS dans la liste manuel*)
+- **Tests écologiques** : BADS (Tâche 6 éléments, test du zoo), Tâche d'organisation d'une soirée, Test des commissions
+- **Gamme PREDI complémentaire** (manuel p. 27, 33, 41, 61) : **PREDILAC** (langage), **PREDILEM** (mémoire — souvent confondu, c'est l'ancien nom de la version Lecture/Mémoire ; à ne pas confondre avec PREDIMEM mémoire), **PREDIMEM** (mémoire).
+
+**Compléments d'usage clinique courant (non cités par le manuel)** : MoCA, MMSE, BREF (Frontal Assessment Battery) en amont comme screenings globaux ; bilan neuropsychologique complet, IRM avec analyse frontale et sous-corticale, bilan biologique en aval. À utiliser en complément, sans présenter comme "recommandation manuel".
 
 ---
 
