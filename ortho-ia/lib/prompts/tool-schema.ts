@@ -46,7 +46,7 @@ const EPREUVE_SCHEMA = {
         "'Classe 7 - Très supérieure' (>P93). " +
         "EXCEPTION MoCA — laisser '' (le rendu Word MoCA n'affiche pas de colonne Interprétation par épreuve). " +
         "EXCEPTION B-CM / B-CMado — laisser '' (rendu math pastilles qualitatives, pas de percentile). " +
-        "Pour les autres bilans HappyNeuron (PREDIMEM, PrediFex, PrediLac) — utiliser la nomenclature 6 zones par défaut.",
+        "EXCEPTION HappyNeuron sigma-based (PREDIMEM, PrediFex, PrediLac) — utiliser le vocabulaire HappyNeuron, PAS la grille Laurie 6 zones : 'performance préservée' (zone Vert ≥ M − 1,5σ), 'performance dans la moyenne basse, à surveiller' (zone Vert clair — PREDIMEM uniquement, M − 1σ à M − 1,5σ, n'existe pas en PrediFex/PrediLac), 'fragilité objectivée (seuil d'alerte)' (zone Jaune M − 1,5σ à M − 2σ), 'difficulté avérée' (zone Orange M − 2σ à M − 3σ), 'effondrement' (zone Rouge < M − 3σ). Le module prompt de chaque bilan donne les règles exactes — les surclasser sur cette consigne générique en cas de doute.",
     },
     sous_epreuves: {
       type: 'array' as const,
