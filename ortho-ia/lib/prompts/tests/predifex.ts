@@ -190,15 +190,22 @@ PrediFex n'utilise pas de percentiles continus (notes standard / z-scores sigma-
 
 - **\`score\`** = score brut au format "X/Y" (ex: "23/30").
 - **\`et\`** = écart en notes standard ou en sigma par rapport à la moyenne du groupe (ex: "−1,8 σ"). null si non disponible.
-- **\`percentile\`** = laisser vide ('') ou indiquer la zone HappyNeuron (ex: "Zone jaune").
-- **\`percentile_value\`** : valeur calibrée pour la couleur Word (cohérent avec PREDIMEM) :
-  - **Vert foncé** (≥ M) → 85 → "Excellent"
-  - **Vert clair** (M−1σ à M−1,5σ) → 60 → "Moyenne haute"
-  - **Jaune** (M−1,5σ à M−2σ, seuil d'alerte) → 18 → "Fragilité"
-  - **Orange** (M−2σ à M−3σ) → 7 → "Difficulté"
-  - **Rouge** (< M−3σ) → 3 → "Difficulté sévère"
-- **\`interpretation\`** : vocabulaire HappyNeuron ("performance préservée", "fragilité objectivée", etc.).
-- **\`commentaire\`** du domaine ou de l'épreuve : OBLIGATOIRE. Score + temps + observation qualitative + lecture en lien avec les autres épreuves.
+- **\`percentile\`** = laisser vide ('') ou indiquer la zone HappyNeuron (ex: "Zone jaune", "Seuil d'alerte"). PrediFex ne donne pas de percentile au sens classique.
+- **\`percentile_value\`** : valeur calibrée pour la couleur d'arrière-plan du tableau Word. **PrediFex a OFFICIELLEMENT 5 ZONES** (vs 6 zones Laurie côté Word) — on saute volontairement la zone Laurie "Moyenne basse" (jaune P26-49) qui n'existe pas dans HappyNeuron, parce que **Jaune HappyNeuron = seuil d'alerte clinique** (fragilité installée), équivalent en sévérité à "Zone de fragilité" Laurie et NON à "Moyenne basse" Laurie (cette dernière reste "norme un peu basse, OK" en Exalang) :
+  - **Vert foncé HappyNeuron** (≥ M) → \`percentile_value\` = **85** (cellule fond vert foncé Laurie "Excellent")
+  - **Vert clair HappyNeuron** (M−1σ à M−1,5σ, performance correcte, légèrement abaissée) → \`percentile_value\` = **60** (cellule fond vert clair Laurie "Moyenne haute")
+  - **Jaune HappyNeuron** (M−1,5σ à M−2σ, **SEUIL D'ALERTE OFFICIEL**) → \`percentile_value\` = **18** (cellule fond orange clair Laurie "Zone de fragilité" — la sévérité du seuil d'alerte exécutif colle à "Zone de fragilité", PAS à "Moyenne basse" qui sous-évaluerait l'alerte)
+  - **Orange HappyNeuron** (M−2σ à M−3σ, difficulté avérée) → \`percentile_value\` = **8** (cellule fond orange foncé Laurie "Difficulté")
+  - **Rouge HappyNeuron** (< M−3σ, effondrement) → \`percentile_value\` = **3** (cellule fond rouge Laurie "Difficulté sévère")
+  Ces valeurs ne sont PAS des percentiles cliniques au sens classique (PrediFex est sigma-based, pas percentile-based) — ce sont des codes-couleurs pour piloter le shading Word, alignés sur la sémantique clinique HappyNeuron (et non sur la grille Exalang).
+- **\`interpretation\`** : utiliser **OBLIGATOIREMENT** le vocabulaire HappyNeuron retranscrit ci-dessous, JAMAIS les étiquettes percentile-based Exalang ("Excellent / Moyenne haute / Moyenne basse / Zone de fragilité / Difficulté / Difficulté sévère") qui n'ont pas de sens pour ce protocole sigma-based (instruction surclassée par l'instruction "6 zones par défaut" du \`tool-schema\` qui ne s'applique pas à PrediFex) :
+  - Vert foncé → "performance préservée"
+  - Vert clair → "performance dans la moyenne basse, à surveiller"
+  - Jaune → "fragilité objectivée (seuil d'alerte)"
+  - Orange → "difficulté avérée"
+  - Rouge → "effondrement"
+  *Précision rédactionnelle : ce vocabulaire est une paraphrase clinique transposée pour le CRBO, fidèle à l'esprit du manuel HappyNeuron qui n'impose pas de termes officiels.*
+- **\`commentaire\`** du domaine ou de l'épreuve : OBLIGATOIRE pour PrediFex. Doit intégrer le score + le temps + l'observation qualitative + la lecture en lien avec les autres épreuves du protocole.
 
 ---
 
