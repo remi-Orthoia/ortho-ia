@@ -137,7 +137,9 @@ const EPREUVES: Epreuve[] = [
       'Rappel libre : arrêter quand "je ne sais plus" ou au bout de 3 min. Périphrase / geste acceptés.',
       'Intrusion = un objet nommé qui n\'était PAS dans les 25 → −1 pt (malus). Doublons = pas de pénalité mais à signaler.',
       'Optionnelle 1a (/30) UNIQUEMENT si rappel libre < 8. L\'examinateur choisit 10 objets non rappelés mêlés à 20 distracteurs verbaux.',
-      'Reconnaissance 1b : différée d\'au moins 10 min (intercaler épreuve 02 « mémoire d\'un texte lu »). 25 planches de 6 objets, 1 pt par objet reconnu du 1er coup.',
+      'Prolongation possible : indiçage catégoriel ("il y avait des animaux / moyens de transport / objets qu\'on porte sur soi…") — dissocie stockage vs récupération.',
+      'Reconnaissance 1b : différée d\'au moins 10 min (intercaler épreuve 02 « mémoire d\'un texte lu »). 25 planches de 6 objets (1 cible + 5 distracteurs), 1 pt par objet reconnu du 1er coup.',
+      'À noter qualitativement : signaler quand le sujet dit "j\'avais oublié celui-là" → indicateur récupération vs stockage.',
     ],
     interpretation: [
       'Rappel + reconnaissance bons → mémoire épisodique visuelle préservée.',
@@ -163,6 +165,7 @@ const EPREUVES: Epreuve[] = [
       'Rappel : 2 pts par information importante donnée spontanément ou en réponse à une question ouverte. 0 pt par info manquante ou erronée. 0 pt par erreur sur personnage.',
       'Si rappel d\'emblée correct : 12 pts sans poser les questions.',
       'Choix de résumé : différé d\'au moins 20 min. 4 résumés présentés. Bon choix d\'emblée = 8 pts, hésite et trouve en 2e = 2 pts, mauvais = 0.',
+      'Procédure de rattrapage : si le sujet n\'a pas compris la macrostructure, faire une RELECTURE À DEUX et décoder le texte avec lui — cette procédure change la valeur diagnostique du rappel, à signaler dans le commentaire.',
     ],
     interpretation: [
       'Temps de lecture > seuil + rappel correct → fragilité de gestion textuelle, pas mnésique pure.',
@@ -188,6 +191,7 @@ const EPREUVES: Epreuve[] = [
       'Pénalités : −2 pts par redemande complète du mot/nombre ; −1 pt par redemande partielle (1-3 chiffres) ; −2 pts si aide pour se retrouver.',
       'Auto-correction acceptée (points conservés).',
       'Le subtest 3b n\'est proposé QUE si le sujet a obtenu ≥ 18 pts au 3a.',
+      'Si le 3b est proposé : essais d\'entraînement NON comptabilisés (SEL-735 puis, en cas d\'échec, COL-429). Si les DEUX essais d\'entraînement sont échoués, on N\'ADMINISTRE PAS le 3b.',
     ],
     interpretation: [
       '3a faible (< 18) → fragilité de boucle phonologique / encodage immédiat.',
@@ -209,10 +213,11 @@ const EPREUVES: Epreuve[] = [
     ],
     hasTemps: true,
     rules: [
-      'Chaque blason est présenté seul, puis le sujet le reconstruit de mémoire à partir d\'éléments à choisir (forme, couleurs, dessin, position).',
+      'Chaque blason est présenté seul pendant 25 secondes, puis le sujet le reconstruit de mémoire à partir d\'éléments à choisir (forme, couleurs, dessin, position).',
       'Reconstruction immédiate (pas de différé entre présentation et rappel).',
       'Points attribués par caractéristique correcte (forme générale, répartition des couleurs, dessin central, position du dessin, couleurs spécifiques).',
       'Étape 3 (couleurs) : 2 pts si bonne couleur ET bien placée, 1 pt si bonne couleur choisie mais mal placée, 0 pt sinon.',
+      'CORRECTION par l\'examinateur AUTORISÉE uniquement sur les étapes 1 et 2 (forme + répartition). À partir de l\'étape 3, plus de correction — l\'erreur sur étape 3 n\'invalide pas la suite, l\'erreur sur étape 1-2 si.',
       'Le sujet peut verbaliser pour s\'aider à mémoriser ("ovale, rouge en haut, étoile au centre…").',
     ],
     interpretation: [
@@ -233,10 +238,10 @@ const EPREUVES: Epreuve[] = [
     ],
     hasTemps: true,
     rules: [
-      'Reconnaissance du chat (forme tangram complète) : 2 pts si reconnu spontanément.',
+      'Reconnaissance du chat (forme tangram complète) : 2 pts si reconnu spontanément après 15 secondes de mémorisation.',
       'Analyse de 3 planches : pour chaque planche, identifier les pièces EN TROP ou MANQUANTES par rapport au modèle.',
-      'Cotation détaillée par planche selon les pièces correctement identifiées (cf. logiciel HappyNeuron).',
-      'Malus : −2 pts si l\'examinateur doit corriger une consigne sur la planche 1 (signale une difficulté de compréhension de la tâche).',
+      'Pièces attendues : P1 (/4) — 2 pièces en trop (grand triangle = corps + triangle moyen). P2 (/4) — 2 pièces manquantes (queue + oreille). P3 (/6) — 1 manquante (corps) + 2 en trop (oreille + queue).',
+      'Malus : −2 pts si l\'examinateur doit corriger une consigne sur la planche 1 UNIQUEMENT (signale une difficulté de compréhension de la tâche).',
     ],
     interpretation: [
       'Échec à la reconnaissance du chat → suspicion d\'agnosie de forme ou de fragilité visuo-perceptive.',
@@ -258,7 +263,8 @@ const EPREUVES: Epreuve[] = [
     hasTemps: true,
     rules: [
       'Pour chaque subtest, le sujet doit associer des éléments selon une catégorie sémantique présentée.',
-      'Cotation : 2 pts d\'emblée, 1 pt en 2e essai, 0 pt si non trouvé. Pour les logos : ½ pt si la bonne association est faite sans nommer la marque.',
+      'Cotation animaux/objets : 2 pts au 1er essai, 1 pt au 2e essai (après remontrer la planche de 8), 0 pt sinon. 8 photos × 2 pts = 16 pour chaque subtest.',
+      'Cotation logos : 7 logos × 2 pts = 14. Cas particulier : 1 pt au 1er essai (et ½ pt au 2e essai) si bonne association sémantique faite SANS reconnaître le nom de la marque — l\'épreuve mesure la mémoire sémantique, pas la culture marketing.',
       'Malus : −1 pt par invention (association inexistante).',
       'L\'indiçage sémantique (catégorie) facilite la récupération — c\'est précisément ce que l\'épreuve mesure.',
       'Logos commerciaux : épreuve culturellement marquée, attention aux sujets éloignés de la consommation moderne.',
@@ -283,9 +289,11 @@ const EPREUVES: Epreuve[] = [
     hasTemps: true,
     rules: [
       'Lecture du texte par l\'examinateur, à débit naturel, une seule fois.',
-      'Texte étalonné (unique pour cette épreuve) — la réponse attendue au choix de résumé est le n°2.',
+      'Texte étalonné (unique pour cette épreuve, indépendant du NSC) — la réponse attendue au choix de résumé est le n°2.',
       'Cotation identique à l\'épreuve 02 : 2 pts par information pertinente (rappel) ; 8/2/0 pour le choix de résumé.',
       'Choix de résumé différé d\'au moins 20 min.',
+      'Procédure de rattrapage : si le sujet n\'a pas compris la macrostructure, FAIRE RÉÉCOUTER l\'enregistrement et décoder le texte avec lui — à signaler dans le commentaire (change la valeur diagnostique du rappel).',
+      '⚠️ Épreuve PARTIELLEMENT NON ÉTALONNÉE : le manuel ne fournit pas de normes stratifiées complètes pour le 07. Interpréter avec prudence — comparer surtout le rappel ENTENDU (07) au rappel LU (02) pour détecter un déficit modalitaire.',
     ],
     interpretation: [
       'Comparer texte LU vs ENTENDU pour ce sujet : un écart marqué oriente vers un déficit modalitaire (compréhension écrite vs orale).',
@@ -306,8 +314,9 @@ const EPREUVES: Epreuve[] = [
     ],
     hasTemps: true,
     rules: [
-      'Reconnaissance parmi des distracteurs visuels (formes proches).',
-      '2 pts par forme reconnue du 1er coup. 0 pt si reconnu en 2e choix.',
+      'Présentation 6 secondes par forme, puis reconnaissance parmi des distracteurs visuels (formes proches).',
+      '2 pts par forme reconnue du 1er coup. 0 pt si reconnu en 2e choix (seul le 1er choix compte).',
+      'Tâches interférentes (NON cotées) entre présentation et reconnaissance : calcul mental (entre rosaces et reconnaissance) puis fluence d\'arbres (entre idéogrammes et reconnaissance).',
       'Matériel choisi pour son absence de sémantique (impossible de "nommer" pour aider à mémoriser).',
     ],
     interpretation: [
@@ -331,6 +340,7 @@ const EPREUVES: Epreuve[] = [
       'Bruits : 6 sons d\'environnement (animaux, transports, objets…) à identifier puis reconnaître parmi des distracteurs sonores. 2 pts par bruit reconnu.',
       'Phrases : 4 phrases à répéter exactement (boucle phonologique allongée). Cotation 10 pts par phrase, modulée par les pertes.',
       'Pénalités phrases : −1 pt par mot ou morphème omis/modifié, −2 pts par groupe de mots, −3 pts si la phrase doit être redite AVANT le 1er essai, −5 pts si redite APRÈS un essai.',
+      '⚠️ DEUX JEUX DE PHRASES selon NSC (4 phrases dont la 4e identique entre les versions). Le logiciel charge le jeu adapté — vérifier la cohérence avec le NSC saisi.',
     ],
     interpretation: [
       'Bruits OK + phrases altérées → fragilité de boucle phonologique (composante verbale), à confronter à l\'empan endroit classique.',
@@ -351,7 +361,9 @@ const EPREUVES: Epreuve[] = [
     hasTemps: true,
     rules: [
       'Présentation d\'un parcours animé (cailloux qui s\'allument dans un ordre donné) puis reproduction par le sujet.',
+      'Structure : 2 items de 4 cailloux (/8 chacun = /16) + 2 items de 5 cailloux (/10 chacun = /20). Total /36.',
       'Cotation : 2 pts par caillou correctement pointé dans le bon ordre ; 1 pt si caillou correct mais mauvais ordre.',
+      'Pas de 2e essai par item.',
       '⚠️ PRÉALABLE : s\'assurer de l\'absence d\'héminégligence (test de barrage) et d\'apraxie constructive (figure de Rey) — sinon l\'interprétation mnésique est faussée.',
     ],
     interpretation: [
@@ -372,8 +384,9 @@ const EPREUVES: Epreuve[] = [
     ],
     hasTemps: true,
     rules: [
-      'Présentation d\'une série de visages (peints ou photos), puis reconnaissance parmi des distracteurs.',
-      '2 pts par visage reconnu du 1er coup. 0 pt si reconnaissance en 2e choix.',
+      'Présentation d\'une série de 5 portraits peints + 5 portraits photos, puis reconnaissance parmi des planches de 6 (1 cible + 5 distracteurs).',
+      '2 pts par visage reconnu du 1er coup. 0 pt si reconnaissance en 2e choix (seul le 1er choix compte).',
+      'Tâches interférentes (NON cotées) entre présentation et reconnaissance : calcul mental (entre peints et reconnaissance) puis fluence lexicale (entre photos et reconnaissance).',
       'Distinguer la modalité "peinte" (stylisée) de la modalité "photo" (réaliste) — peut révéler des dissociations.',
     ],
     interpretation: [
@@ -621,6 +634,22 @@ export default function PredimemScoresInput({ notes, onNotesChange, onResultatsC
           La stratification est <strong>obligatoire pour PREDIMEM</strong> : un sujet NSC 3 doit être comparé au groupe NSC 3 (effet
           réserve cognitive). Sans elle, le seuil d&apos;alerte HappyNeuron n&apos;a pas de sens.
         </p>
+        {state.nsc === '1' && (
+          <p className="text-[11px] text-amber-900 bg-amber-50 border border-amber-200 rounded px-2 py-1.5">
+            <strong>NSC 1 — minimum requis : 9 ans de scolarité.</strong> Les sujets *sous-NSC 1* (illettrés, scolarité &lt; 9 ans)
+            ne sont pas dans le périmètre PREDIMEM — préférer un bilan neuropsychologique adapté.
+          </p>
+        )}
+        {state.nsc === '3' && (
+          <p className="text-[11px] text-indigo-900 bg-indigo-50 border border-indigo-200 rounded px-2 py-1.5">
+            <strong>NSC 3 — haute réserve cognitive :</strong> population prototype PREDIMEM. Lire systématiquement le{' '}
+            <strong>TEMPS</strong> en plus du score : un score correct avec temps {'>'}{' '} seuil est un marqueur sub-clinique majeur.
+          </p>
+        )}
+        <div className="text-[11px] text-gray-600 bg-gray-50 border border-gray-200 rounded px-2 py-1.5">
+          <strong>Critères d&apos;exclusion à vérifier avant passation</strong> (manuel) : bilinguisme, MMSE &lt; 30 (effet plancher),
+          pathologie neurologique avérée déjà documentée, autre bilan mnésique en cours.
+        </div>
       </div>
 
       {/* Synthèse zones en bandeau (visible dès la 1ère épreuve saisie) */}
