@@ -105,6 +105,11 @@ export default function CRBOStructuredPreview({
   const seuilForCell = (v: number) => isEvaleoStructure ? seuilForEvaleo(v) : seuilFor(v)
   const colorForCell = (v: number) => seuilForCell(v).shading
 
+  // hideDomainCommentaire : aligné sur lib/word-export.ts. EVALEO ne doit pas
+  // afficher le paragraphe de synthèse domaine entre tableau et commentaires
+  // par épreuve (anti-redite, retour Justine 2026-06-03).
+  const hideDomainCommentaire = !!testList && testList.some(t => BILAN_REGISTRY[t]?.hideDomainCommentaire === true)
+
   const sevColors: Record<string, { bg: string; text: string; ring: string }> = {
     'Léger':      { bg: 'bg-green-100 dark:bg-green-900/30',   text: 'text-green-800 dark:text-green-200',   ring: 'ring-green-300 dark:ring-green-800' },
     'Modéré':     { bg: 'bg-amber-100 dark:bg-amber-900/30',   text: 'text-amber-800 dark:text-amber-200',   ring: 'ring-amber-300 dark:ring-amber-800' },
@@ -325,7 +330,7 @@ export default function CRBOStructuredPreview({
                 </table>
               </div>
 
-              {domain.commentaire && (
+              {!hideDomainCommentaire && domain.commentaire && (
                 <p className="mt-4 text-sm text-gray-700 dark:text-gray-300 italic leading-relaxed whitespace-pre-line">
                   {domain.commentaire}
                 </p>

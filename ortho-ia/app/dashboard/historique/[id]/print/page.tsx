@@ -21,6 +21,7 @@ import { useParams, useRouter } from 'next/navigation'
 import { createClient } from '@/lib/supabase'
 import { Loader2, Printer, ArrowLeft } from 'lucide-react'
 import { seuilFor, formatPercentileForDisplay } from '@/lib/word-export'
+import { BILAN_REGISTRY } from '@/lib/bilan-registry'
 import type { CRBOStructure } from '@/lib/prompts'
 
 interface CRBO {
@@ -378,6 +379,10 @@ function PrintSousItemIcon({ nom }: { nom: string }) {
 
 function CRBOPrintableStructure({ structure, testUtilise }: { structure: CRBOStructure; testUtilise: string | null }) {
   const isMoca = testUtilise === 'MoCA'
+  // hideDomainCommentaire : aligné sur lib/word-export.ts et CRBOStructuredPreview.tsx.
+  // EVALEO ne doit pas afficher le paragraphe de synthèse domaine entre tableau
+  // et commentaires par épreuve (anti-redite, retour Justine 2026-06-03).
+  const hideDomainCommentaire = !!testUtilise && BILAN_REGISTRY[testUtilise]?.hideDomainCommentaire === true
   return (
     <>
       {/* Anamnèse */}
@@ -472,7 +477,7 @@ function CRBOPrintableStructure({ structure, testUtilise }: { structure: CRBOStr
                   </tbody>
                 </table>
               )}
-              {!isMoca && d.commentaire && (
+              {!isMoca && !hideDomainCommentaire && d.commentaire && (
                 <p style={{ fontSize: 12.5, color: '#374151', margin: '4px 0 0', lineHeight: 1.55 }}>
                   {d.commentaire}
                 </p>

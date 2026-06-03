@@ -451,6 +451,13 @@ export async function generateCRBOWord(payload: WordExportPayload): Promise<Blob
   const hideEcartTypeColumn = _testListForOrder.some(
     (t) => BILAN_REGISTRY[t]?.hideEcartTypeColumn === true,
   )
+  // hideDomainCommentaire : si l'un des tests du bilan l'active (EVALEO 6-15),
+  // on saute le paragraphe `domain.commentaire` entre le tableau et les
+  // commentaires par épreuve. Anti-redite ; le prompt instruit déjà l'IA mais
+  // celle-ci ne respecte pas toujours (retour Justine 2026-06-03 renouv.).
+  const hideDomainCommentaire = _testListForOrder.some(
+    (t) => BILAN_REGISTRY[t]?.hideDomainCommentaire === true,
+  )
   const orderedDomains = hasStructure
     ? (preserveOrder ? structure!.domains : sortDomainsByFamily(structure!.domains))
     : []
@@ -1342,7 +1349,7 @@ export async function generateCRBOWord(payload: WordExportPayload): Promise<Blob
         new Paragraph({ children: [new TextRun({ text: '' })] }),
       )
 
-      if (domain.commentaire && domain.commentaire.trim()) {
+      if (!hideDomainCommentaire && domain.commentaire && domain.commentaire.trim()) {
         // Strip d'éventuels lead-ins parasites générés par l'IA :
         // "**Observations cliniques :**", "Observations cliniques :",
         // "Observation clinique :"… (avec ou sans markdown bold).

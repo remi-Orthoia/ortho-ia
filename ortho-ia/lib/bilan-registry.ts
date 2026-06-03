@@ -147,6 +147,16 @@ export interface BilanEntry {
    *  4 colonnes (Épreuve / Score / Centile / Interprétation) au lieu de 5,
    *  avec redistribution des largeurs. Piloté par lib/word-export.ts. */
   hideEcartTypeColumn?: boolean
+  /** Si true, le rendu Word SAUTE le paragraphe `domain.commentaire` rendu
+   *  entre le tableau d'épreuves et les commentaires par épreuve. EVALEO ne
+   *  doit PAS l'afficher (retour Justine Peyre, Anne Frouard) : le commentaire
+   *  de domaine produit une REDITE avec les commentaires par épreuve qui
+   *  suivent (typiquement la même observation reformulée). Le prompt EVALEO
+   *  instruit l'IA de retourner `commentaire = ""`, mais cette garde côté
+   *  renderer protège contre les ratés de l'IA (notamment renouvellement où
+   *  le LLM tend à re-rédiger une synthèse de domaine). Piloté par
+   *  lib/word-export.ts. */
+  hideDomainCommentaire?: boolean
 }
 
 // ============================================================================
@@ -262,6 +272,11 @@ export const BILAN_REGISTRY: Record<string, BilanEntry> = {
     // (Justine Peyre, Anne Frouard) — la lecture clinique passe par la
     // classe sept-classes et le centile.
     hideEcartTypeColumn: true,
+    // EVALEO retire le paragraphe de synthese domaine entre tableau et
+    // commentaires par epreuve (redite verbeuse — cf. b90c700 mai 2026 + retour
+    // Justine 2026-06-03 ou la synthese reapparait sur les renouvellements
+    // malgre l'instruction prompt). Garde defensive cote renderer.
+    hideDomainCommentaire: true,
   },
   'Exalang 3-6': {
     nom: 'Exalang 3-6',
