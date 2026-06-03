@@ -5,7 +5,6 @@ import DashboardSkeleton from '@/components/skeletons/DashboardSkeleton'
 import OnboardingTour from '@/components/OnboardingTour'
 import MilestoneCelebration from '@/components/MilestoneCelebration'
 import CalendarWidget from '@/components/CalendarWidget'
-import VoiceCommandButton from '@/components/VoiceCommandButton'
 import YearHeatmap from '@/components/YearHeatmap'
 import FeedbackBanner from '@/components/FeedbackBanner'
 import { useRouter } from 'next/navigation'
@@ -503,7 +502,6 @@ export default function DashboardPage() {
           </p>
         </div>
         <div className="flex items-center gap-2 flex-wrap">
-          <VoiceCommandButton />
           <Link href="/dashboard/nouveau-crbo" className="btn-primary whitespace-nowrap">
             <Plus size={18} />
             Nouveau CRBO

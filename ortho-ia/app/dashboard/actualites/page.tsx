@@ -62,31 +62,8 @@ const ARTICLES: Article[] = [
       </>
     ),
   },
-  {
-    id: '2026-05-voice-command',
-    title: 'Démarrer un CRBO à la voix en 3 secondes',
-    excerpt: "Dictez \"Nouveau bilan Léa CE2, motif lenteur lecture, Exalang 8-11\" et le formulaire se pré-remplit automatiquement.",
-    date: '2026-05-10',
-    category: 'produit',
-    body: (
-      <>
-        <p>
-          Nouveau bouton en haut du tableau de bord : <em>« Démarrer en vocal »</em>. Vous cliquez,
-          vous dictez une phrase naturelle, et nous transformons ça en formulaire pré-rempli
-          (prénom, classe, motif, test).
-        </p>
-        <p>
-          Le système comprend les approximations : <em>« cinquième »</em> → 5ème,
-          <em>« examang pour CM2 »</em> → Exalang 8-11. Si la commande est ambiguë,
-          un encart d&apos;aperçu vous laisse vérifier avant de confirmer.
-        </p>
-        <p>
-          Idéal pour démarrer un bilan entre 2 consultations, ou pour les orthos qui préfèrent
-          la dictée à la frappe.
-        </p>
-      </>
-    ),
-  },
+  // Entree "Demarrer en vocal" retiree 2026-06-04 — fonctionnalite supprimee
+  // suite a retour ortho (peu utilisee + qualite de transcription instable).
   {
     id: '2026-05-snippets',
     title: 'Vos formulations habituelles à portée de raccourci',

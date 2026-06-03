@@ -130,7 +130,7 @@ export interface GenerateCRBOResponse {
 
 // Options de formulaire — Classe / niveau (du préscolaire à la retraite).
 // Regroupées en familles pour rendu avec <optgroup>. La liste à plat
-// CLASSES_OPTIONS reste exportée pour la validation et le voice-command.
+// CLASSES_OPTIONS reste exportée pour la validation.
 export const CLASSES_GROUPS = [
   {
     label: 'Préscolaire',

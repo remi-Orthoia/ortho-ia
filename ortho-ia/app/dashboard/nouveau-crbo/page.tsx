@@ -412,46 +412,11 @@ function NouveauCRBOContent() {
       const renouvellementId = searchParams.get('renouvellement')
       const isRenouvellement = !!renouvellementId
 
-      // ============ Voice command prefill ============
-      // Si ?voice=1 est passé (depuis VoiceCommandButton sur le dashboard),
-      // on lit le payload de sessionStorage et on pré-remplit le form.
-      const isVoiceCommand = searchParams.get('voice') === '1'
-      let voiceVerb: 'voice' | null = null
-      if (isVoiceCommand) {
-        try {
-          const raw = sessionStorage.getItem('orthoia.voice-prefill')
-          if (raw) {
-            const v = JSON.parse(raw) as {
-              patient_prenom?: string | null
-              patient_nom?: string | null
-              patient_classe?: string | null
-              bilan_type?: 'initial' | 'renouvellement' | null
-              motif?: string | null
-              tests_utilises?: string[]
-            }
-            setFormData(prev => ({
-              ...prev,
-              patient_prenom: v.patient_prenom || prev.patient_prenom,
-              patient_nom: v.patient_nom || prev.patient_nom,
-              patient_classe: v.patient_classe || prev.patient_classe,
-              bilan_type: v.bilan_type || prev.bilan_type || 'initial',
-              motif: v.motif || prev.motif,
-              test_utilise: Array.isArray(v.tests_utilises) && v.tests_utilises.length > 0
-                ? v.tests_utilises
-                : prev.test_utilise,
-            }))
-            // Démarrage à l'étape 1 (Patient) pour permettre à l'ortho de
-            // valider/corriger les infos extraites avant d'aller plus loin.
-            setCurrentStep(1)
-            voiceVerb = 'voice'
-            // Nettoyage : on consomme le prefill une seule fois
-            sessionStorage.removeItem('orthoia.voice-prefill')
-            setPrefillBanner('🎤 Commande vocale interprétée — vérifiez et complétez si besoin.')
-          }
-        } catch (e) {
-          console.warn('Voice prefill failed:', e)
-        }
-      }
+      // Voice command prefill (?voice=1 + sessionStorage 'orthoia.voice-prefill')
+      // retire 2026-06-04 avec la fonctionnalite "Demarrer en vocal" (cf.
+      // VoiceCommandButton supprime du dashboard). Le code ci-dessus etait
+      // dead, voiceVerb n'etait jamais relu, le bloc d'hydration ne servait
+      // qu'au bouton vocal supprime.
 
       // Cle de brouillon scopee par user.id (eviter fuites entre orthos sur
       // poste partage). Une fois posee, persistDraft peut s'executer.

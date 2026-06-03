@@ -1,6 +1,6 @@
 /**
  * Helper partagé pour gérer les erreurs Anthropic remontées par les routes
- * /api/extract-*, /api/generate-*, /api/voice-command/*. Centralise notamment
+ * /api/extract-*, /api/generate-*. Centralise notamment
  * la détection du cas "credit balance too low" qui sinon tombe sur le handler
  * 500 générique et induit l'orthophoniste à retenter en boucle sans succès.
  *

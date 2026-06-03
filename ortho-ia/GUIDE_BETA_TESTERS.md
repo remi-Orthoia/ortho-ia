@@ -21,7 +21,7 @@ Merci de tester Ortho.ia avant son lancement public. Ce guide vous explique :
 
 ### Workflow standard CRBO (5-10 minutes par bilan)
 
-1. **Cliquez "Nouveau CRBO"** depuis le dashboard (ou utilisez le bouton vocal "Démarrer en vocal" si vous voulez dicter une commande).
+1. **Cliquez "Nouveau CRBO"** depuis le dashboard.
 
 2. **Étape 1 — Patient** : sélectionnez un patient du carnet ou créez un nouveau. Si vous arrivez depuis la fiche patient (bouton "Refaire un bilan"), c'est pré-rempli.
 

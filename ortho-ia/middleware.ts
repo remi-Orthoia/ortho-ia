@@ -63,7 +63,6 @@ export async function middleware(request: NextRequest) {
     // /api/calendar/* (le callback OAuth a sa propre validation par state).
     pathname.startsWith('/api/calendar/') ||
     pathname.startsWith('/api/patients/') ||
-    pathname.startsWith('/api/voice-command/') ||
     pathname.startsWith('/api/journal') ||
     pathname.startsWith('/api/feedbacks')
   // Pages /dev/* : outils internes — bloquées en prod, accessibles en dev local
@@ -105,7 +104,6 @@ export const config = {
     '/api/account/:path*',
     '/api/calendar/:path*',
     '/api/patients/:path*',
-    '/api/voice-command/:path*',
     '/api/journal/:path*',
     '/api/feedbacks/:path*',
     '/dev/:path*',
