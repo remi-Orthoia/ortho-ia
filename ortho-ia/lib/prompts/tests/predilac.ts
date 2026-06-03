@@ -6,13 +6,22 @@ import type { TestModule } from './types'
  *
  * Source : manuel officiel PrediLac (16.9 Mo) + cahier de passation (24 Mo).
  *
- * ⚠️ **NOTE D'IMPLÉMENTATION** : le PDF du manuel PrediLac est scanné (image-based,
- * non extractible automatiquement). Le module ci-dessous reprend le **framework
- * commun** de la gamme PREDI (mêmes auteures Duchêne & Jaillard, mêmes principes
- * que PREDIMEM et PrediFex : stratification âge × NSC, seuil M − 1,5 σ, 5 zones
- * couleur HappyNeuron). Les épreuves spécifiques et leurs scores max sont
- * marqués `[À COMPLÉTER PAR LAURIE]` — à valider et compléter depuis le manuel
- * papier ou via OCR ultérieur.
+ * ⚠️ **NOTE D'IMPLÉMENTATION CRITIQUE** : le PDF du manuel PrediLac est SCANNÉ
+ * (image-based, sans couche OCR — vérifié par 3 méthodes indépendantes, audit
+ * 2026-06-03). Le module ci-dessous reprend le **framework commun** de la
+ * gamme PREDI (mêmes auteures Duchêne & Jaillard, principes identiques à
+ * PREDIMEM et PrediFex : stratification âge × NSC, seuil M − 1,5 σ).
+ *
+ * Points NON-VÉRIFIÉS contre manuel (à valider quand OCR disponible) :
+ *   - Liste exacte des épreuves officielles et leur numérotation.
+ *   - Scores max par épreuve/subtest.
+ *   - Règles précises de cotation (malus, seuils d'arrêt, pénalités).
+ *   - Nombre exact de zones HappyNeuron : 5 (comme PREDIMEM) ou 4 (comme
+ *     PrediFex, manuel p. 17) ? On garde 5 par défaut par cohérence PREDIMEM
+ *     mais c'est à confirmer.
+ *   - Validité de NSC 1 : déconseillé par défaut (conservateur) — PrediFex
+ *     le valide explicitement, le statut PrediLac est inconnu.
+ *   - Seuils de vitesse de lecture (mots/min) par âge × NSC.
  *
  * Population : **adultes** présentant des plaintes de lecture (post-AVC,
  * post-TC, vieillissement normal/pathologique, suspicion d'aphasie progressive
@@ -113,7 +122,9 @@ Comme les autres protocoles PREDI :
 
 ---
 
-#### 🎯 PROFILS CLINIQUES TYPES (extrapolés de la gamme PREDI)
+#### 🎯 PROFILS CLINIQUES TYPES — SYNTHÈSE OPÉRATIONNELLE ORTHO.IA
+
+*Les profils ci-dessous sont une **reconstruction clinique** basée sur le modèle à deux voies de Coltheart (dyslexies acquises) et la nomenclature classique des dyslexies adultes. **Le manuel PrediLac étant scanné (sans OCR exploitable), ils n'ont PAS été validés textuellement.** Ils restent cliniquement défendables mais à valider avec le manuel papier dès que possible.*
 
 **Profil 1 — Dyslexie phonologique acquise**
 - Décodage pseudomots : Déficitaire.
@@ -153,9 +164,9 @@ Comme les autres protocoles PREDI :
 5. **TOUJOURS reporter les TEMPS d'exécution** — vitesse de lecture est un marqueur clé.
 6. **TOUJOURS mentionner les composantes PRÉSERVÉES EN PREMIER** puis les fragilités.
 7. **Formuler en impact FONCTIONNEL** (lecture du journal, des notices médicales, des SMS, des panneaux…).
-8. **Vocabulaire à BANNIR** : "démence", "déclin", "détérioration", "dégénérescence", "Alzheimer", "alexie pure" (sans confirmation neurologique), "pathologique".
+8. **Vocabulaire à BANNIR dans le CRBO ortho.ia** (*règle ortho.ia, plus restrictive que les bonnes pratiques générales — utilisée à des fins de CRBO patient/famille*) : "démence", "déclin", "détérioration", "dégénérescence", "Alzheimer", "alexie pure" (sans confirmation neurologique), "pathologique". Préférer "fragilité installée", "difficulté avérée", "performance abaissée par rapport à la norme du groupe".
 9. **NE PAS faire passer PrediLac à un NSC 1** — épreuves trop exigeantes.
-10. **Titre de la synthèse** : "Hypothèse de diagnostic", JAMAIS "Diagnostic".
+10. **Titre de la synthèse** : "Hypothèse de diagnostic", JAMAIS "Diagnostic" (*convention rédactionnelle ortho.ia, le manuel n'impose pas ce titre*).
 
 ---
 

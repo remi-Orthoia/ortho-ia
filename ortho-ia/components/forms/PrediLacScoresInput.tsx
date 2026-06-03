@@ -16,6 +16,7 @@
 
 import { useEffect, useMemo, useState } from 'react'
 import { Brain, ChevronDown, AlertCircle, Info } from 'lucide-react'
+// ChevronDown utilisé dans les accordéons règles + interprétation par épreuve.
 import MicButton from '../MicButton'
 
 interface Props {
@@ -48,19 +49,153 @@ interface Epreuve {
   label: string
   description: string
   cible: string
+  /** Rappels cliniques sur la cotation — accordéon indigo. Formulations
+   *  cliniquement défendables (modèle à deux voies de Coltheart) ; le manuel
+   *  PrediLac étant scanné (sans OCR), les règles précises ne peuvent pas être
+   *  garanties textuelles du manuel. */
+  rules: string[]
+  /** Aide à l'interprétation clinique — accordéon ambre. */
+  interpretation: string[]
+  /** Placeholder pour l'observation. */
+  obsPlaceholder: string
 }
 
 /** Épreuves génériques de la gamme PREDI orientée lecture.
- *  ⚠️ À ajuster selon le manuel papier officiel PrediLac. */
+ *  ⚠️ Liste à ajuster selon le manuel papier officiel PrediLac dès que l'OCR
+ *  sera disponible. Les hints/règles/interprétations ci-dessous sont des
+ *  bonnes pratiques cliniques sur les dyslexies acquises (modèle de Coltheart),
+ *  pas des citations directes du manuel. */
 const EPREUVES: Epreuve[] = [
-  { key: 'decodage_pseudomots',   label: 'Décodage de pseudomots',         description: 'Voie d\'assemblage (phonologique) pure — atteinte = dyslexie phonologique acquise.',                         cible: 'Voie d\'assemblage' },
-  { key: 'lecture_mots_irreg',    label: 'Lecture de mots irréguliers',    description: 'Voie d\'adressage (lexique orthographique) — atteinte = dyslexie de surface acquise.',                        cible: 'Voie d\'adressage' },
-  { key: 'lecture_mots_freq',     label: 'Lecture de mots fréquents',      description: 'Lecture de mots courants — repère pour comparer à mots rares (effet de fréquence).',                          cible: 'Lexique fréquent' },
-  { key: 'lecture_mots_rares',    label: 'Lecture de mots rares',          description: 'Lecture de mots peu fréquents — sensible à la voie d\'adressage.',                                            cible: 'Lexique rare' },
-  { key: 'comp_phrases',          label: 'Compréhension de phrases écrites', description: 'Compréhension de structures syntaxiques en lecture.',                                                       cible: 'Compréhension syntaxique' },
-  { key: 'comp_paragraphe',       label: 'Compréhension de paragraphe / texte', description: 'Compréhension narrative et inférences en lecture.',                                                    cible: 'Compréhension globale' },
-  { key: 'vitesse_lecture',       label: 'Vitesse de lecture (chronométrée)', description: 'Marqueur clé — ralentissement avec précision préservée = trouble de la fluence / automatisation.',     cible: 'Vitesse / fluence' },
-  { key: 'decision_lexicale',     label: 'Décision lexicale',              description: 'Choix mot vs pseudomot — accès au lexique orthographique.',                                                   cible: 'Lexique orthographique' },
+  {
+    key: 'decodage_pseudomots',
+    label: 'Décodage de pseudomots',
+    description: 'Voie d\'assemblage (phonologique) pure — atteinte = dyslexie phonologique acquise.',
+    cible: 'Voie d\'assemblage',
+    rules: [
+      'Lecture de pseudomots (suite de lettres prononçables sans signification).',
+      'Mesure la voie d\'assemblage (conversion grapho-phonémique).',
+      'Erreurs typiques à noter : lexicalisations ("pulot" → "polo"), substitutions phonémiques, hésitations, redémarrages.',
+      'Chronométrage utile (vitesse de décodage).',
+    ],
+    interpretation: [
+      'Décodage abaissé + lecture mots irréguliers préservée → DYSLEXIE PHONOLOGIQUE ACQUISE (atteinte de la voie d\'assemblage).',
+      'Décodage abaissé + lecture mots irréguliers altérée → dyslexie mixte / alexie globale (à confirmer).',
+      'Lexicalisations fréquentes → tentative de compensation par voie lexicale, marqueur fonctionnel.',
+      'À croiser avec : vitesse de lecture, décision lexicale, lecture mots rares.',
+    ],
+    obsPlaceholder: 'Ex. 14/30 pseudomots. Lexicalise 4 fois ("brouton" → "bouton"). Vitesse très ralentie sur les pseudomots de 3 syllabes. Précision préservée sur 2 syllabes.',
+  },
+  {
+    key: 'lecture_mots_irreg',
+    label: 'Lecture de mots irréguliers',
+    description: 'Voie d\'adressage (lexique orthographique) — atteinte = dyslexie de surface acquise.',
+    cible: 'Voie d\'adressage',
+    rules: [
+      'Lecture de mots dont la prononciation s\'écarte de la conversion grapho-phonémique régulière (femme, monsieur, second, sept, oignon, paysan, etc.).',
+      'Mesure la voie d\'adressage (lexique orthographique d\'entrée).',
+      'Erreurs typiques : régularisations ("femme" → /fɛm/ au lieu de /fam/), hésitations sur les graphies opaques.',
+    ],
+    interpretation: [
+      'Lecture mots irréguliers abaissée + décodage préservé → DYSLEXIE DE SURFACE ACQUISE (atteinte de la voie d\'adressage).',
+      'Régularisations systématiques → marqueur fonctionnel typique de la dyslexie de surface.',
+      'À croiser avec : décision lexicale, lecture mots fréquents vs rares.',
+    ],
+    obsPlaceholder: 'Ex. 18/30 mots irréguliers. Régularise "femme" → /fɛm/, "second" → /sə.kõd/, "oignon" → /ɔ.ɲɔ̃/. Reconnaît qu\'elle a tort après coup sans pouvoir corriger.',
+  },
+  {
+    key: 'lecture_mots_freq',
+    label: 'Lecture de mots fréquents',
+    description: 'Lecture de mots courants — repère pour comparer à mots rares (effet de fréquence).',
+    cible: 'Lexique fréquent',
+    rules: [
+      'Mots de fréquence d\'usage élevée (table, manger, voiture, soleil…).',
+      'Repère de base pour interpréter l\'effet de fréquence (mots fréquents > rares = effet de fréquence préservé = lexique orthographique fonctionnel).',
+    ],
+    interpretation: [
+      'Mots fréquents préservés + mots rares abaissés → effet de fréquence FORT, suggère une atteinte progressive du lexique (variant logopénique à explorer).',
+      'Mots fréquents abaissés → atteinte plus profonde, croiser avec décision lexicale.',
+    ],
+    obsPlaceholder: 'Ex. 28/30 mots fréquents lus sans erreur, vitesse OK. Pas de régularisation. Sert de baseline pour comparer aux mots rares.',
+  },
+  {
+    key: 'lecture_mots_rares',
+    label: 'Lecture de mots rares',
+    description: 'Lecture de mots peu fréquents — sensible à la voie d\'adressage et au lexique orthographique de second plan.',
+    cible: 'Lexique rare',
+    rules: [
+      'Mots de fréquence d\'usage faible (cénotaphe, ubac, gibbosité, glyphe…).',
+      'Sensibles à la voie d\'adressage et à la profondeur du lexique orthographique.',
+      'Si mots rares non connus du sujet, ne pas surinterpréter — distinguer méconnaissance vs trouble de lecture.',
+    ],
+    interpretation: [
+      'Effet de fréquence marqué (mots fréquents > rares) → lexique orthographique appauvri, marqueur clinique d\'une atteinte progressive.',
+      'Mots rares préservés → voie d\'adressage robuste.',
+      'À croiser avec lecture mots irréguliers.',
+    ],
+    obsPlaceholder: 'Ex. 12/20 mots rares. Méconnaissance de 4 mots ("ubac", "glyphe"…) à distinguer des 4 erreurs de lecture proprement dites.',
+  },
+  {
+    key: 'comp_phrases',
+    label: 'Compréhension de phrases écrites',
+    description: 'Compréhension de structures syntaxiques en lecture (relatives, passives, comparatives, négations doubles).',
+    cible: 'Compréhension syntaxique',
+    rules: [
+      'Présentation de phrases avec choix de réponse ou désignation d\'image.',
+      'Sensible aux structures syntaxiques complexes (passives, relatives enchâssées).',
+    ],
+    interpretation: [
+      'Échec sur phrases passives / relatives mais OK sur déclaratives simples → trouble de la compréhension syntaxique (à croiser avec un bilan langage oral).',
+      'Échec global → trouble global de la compréhension écrite (à différencier d\'un trouble de décodage qui en serait la cause).',
+    ],
+    obsPlaceholder: 'Ex. 6/10 phrases. Échec sur les 3 structures passives, OK sur les déclaratives. Suspecte une comparative ("le chat est plus petit que le chien").',
+  },
+  {
+    key: 'comp_paragraphe',
+    label: 'Compréhension de paragraphe / texte',
+    description: 'Compréhension narrative et inférences en lecture.',
+    cible: 'Compréhension globale',
+    rules: [
+      'Lecture d\'un paragraphe/texte, puis questions de compréhension (factuelles + inférences).',
+      'Distinguer questions factuelles (informations explicites) vs inférentielles (déductions, lecture entre les lignes).',
+    ],
+    interpretation: [
+      'Inférences abaissées + factuelles préservées → trouble inférentiel pur (charge exécutive), croiser avec PrediFex.',
+      'Factuelles ET inférences abaissées → trouble de la compréhension globale, croiser avec lecture chronométrée (peut être un défaut de décodage qui handicape la compréhension).',
+    ],
+    obsPlaceholder: 'Ex. 4/6 factuelles, 1/4 inférences. Restitution narrative confuse, mélange l\'ordre des événements. Temps de lecture long (4 min pour le paragraphe).',
+  },
+  {
+    key: 'vitesse_lecture',
+    label: 'Vitesse de lecture (chronométrée)',
+    description: 'Marqueur clé — ralentissement avec précision préservée = trouble de la fluence / automatisation.',
+    cible: 'Vitesse / fluence',
+    rules: [
+      'Lecture d\'un texte calibré, chronométrée. Calcul de la vitesse en mots/min.',
+      'Reporter SCORE + VITESSE séparément : un sujet peut être correct en précision mais lent en vitesse (marqueur fluence).',
+      'Pas de seuil de vitesse documenté dans le manuel public (à reporter d\'après le logiciel HappyNeuron).',
+    ],
+    interpretation: [
+      'Vitesse ralentie + précision préservée → trouble de la fluence / automatisation (typique des séquelles d\'AVC postérieur, ou vieillissement cognitif débutant).',
+      'Vitesse normale + précision abaissée → trouble du décodage ou de la voie d\'adressage selon le type d\'erreurs.',
+      'Vitesse + précision abaissées → trouble global de la lecture.',
+    ],
+    obsPlaceholder: 'Ex. 120 mots/min (référence ortho : ≥ 180 attendus pour un adulte NSC 3). Précision 95 %. Fatigabilité oculaire signalée après 5 min.',
+  },
+  {
+    key: 'decision_lexicale',
+    label: 'Décision lexicale',
+    description: 'Choix mot vs pseudomot — accès au lexique orthographique d\'entrée.',
+    cible: 'Lexique orthographique',
+    rules: [
+      'Présentation de stimuli : le sujet doit dire si c\'est un mot français existant ou non.',
+      'Mesure l\'accès au lexique orthographique sans passer par la lecture à voix haute.',
+    ],
+    interpretation: [
+      'Décision lexicale préservée + lecture à voix haute abaissée → l\'accès au lexique est OK, la production phonologique est limitée (croiser avec BECD, BIA).',
+      'Décision lexicale abaissée → atteinte du lexique orthographique lui-même (croiser avec lecture mots irréguliers et rares).',
+    ],
+    obsPlaceholder: 'Ex. 38/40 décisions correctes. Hésite sur les pseudomots ressemblant à des mots existants ("polotage" / "potolage"). Rapide sur les vrais mots fréquents.',
+  },
 ]
 
 const TRANCHE_AGE_OPTIONS: Array<{ key: '1' | '2' | '3' | '4' | '5'; label: string }> = [
@@ -310,11 +445,37 @@ export default function PrediLacScoresInput({ notes, onNotesChange, onResultatsC
                       )}
                     </div>
                   </div>
+                  {/* Règles de cotation (accordéon) */}
+                  <details className="group rounded-md border border-indigo-100 bg-indigo-50/50">
+                    <summary className="flex items-center gap-1.5 px-3 py-2 cursor-pointer select-none text-xs font-medium text-indigo-800 hover:bg-indigo-50">
+                      <ChevronDown size={14} className="transition-transform group-open:rotate-0 -rotate-90" />
+                      Règles de cotation / bonnes pratiques
+                    </summary>
+                    <ul className="px-3 pb-3 pt-1 space-y-1 text-xs text-gray-700">
+                      {e.rules.map((r, i) => (
+                        <li key={i} className="leading-relaxed">{r}</li>
+                      ))}
+                    </ul>
+                  </details>
+
+                  {/* Aide à l'interprétation (accordéon ambre) */}
+                  <details className="group rounded-md border border-amber-200 bg-amber-50/60">
+                    <summary className="flex items-center gap-1.5 px-3 py-2 cursor-pointer select-none text-xs font-medium text-amber-900 hover:bg-amber-100/50">
+                      <ChevronDown size={14} className="transition-transform group-open:rotate-0 -rotate-90" />
+                      Aide à l&apos;interprétation clinique
+                    </summary>
+                    <ul className="px-3 pb-3 pt-1 space-y-1 text-xs text-gray-700">
+                      {e.interpretation.map((r, i) => (
+                        <li key={i} className="leading-relaxed">{r}</li>
+                      ))}
+                    </ul>
+                  </details>
+
                   <textarea
                     value={st.observation}
                     onChange={(ev) => setField(e.key, 'observation', ev.target.value)}
                     rows={2}
-                    placeholder="Observation : stratégie, type d'erreurs, vitesse, attitude…"
+                    placeholder={e.obsPlaceholder}
                     className="w-full px-2 py-1 border border-gray-300 rounded text-xs leading-relaxed resize-y"
                   />
                 </div>
