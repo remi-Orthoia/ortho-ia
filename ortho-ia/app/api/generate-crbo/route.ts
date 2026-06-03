@@ -220,7 +220,12 @@ export async function POST(request: NextRequest) {
 
     const body = await request.json()
     const phase: CRBOPhase = (body.phase === 'extract' || body.phase === 'synthesize') ? body.phase : 'full'
-    const format: CRBOFormat = body.format === 'synthetique' ? 'synthetique' : 'complet'
+    // Defaut universel 'synthetique' depuis 2026-06-04 (retour ortho : le mode
+    // 'complet' produit des CRBO trop longs en pratique, l'UI selector a ete
+    // retire du formulaire). On accepte encore explicitement 'complet' pour
+    // ne pas casser les regenerations / scripts qui passeraient cette valeur,
+    // mais le defaut bascule de 'complet' a 'synthetique'.
+    const format: CRBOFormat = body.format === 'complet' ? 'complet' : 'synthetique'
     const formData = body.formData as any
     const extracted = body.extracted as ExtractedCRBO | undefined
     const edits = body.edits as { anamnese: string; motif: string; ortho_comments?: Record<string, string> } | undefined

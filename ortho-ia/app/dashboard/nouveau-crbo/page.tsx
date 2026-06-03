@@ -2648,36 +2648,13 @@ Astuce : tapez /fatigue, /anxiete, /encouragements… pour réutiliser vos formu
               <p className="mt-1 text-sm text-gray-500">Sélectionnez les tests utilisés et entrez les résultats</p>
             </div>
 
-            {/* Toggle Format CRBO — Synthétique vs Complet */}
-            <div className="rounded-xl border border-gray-200 dark:border-surface-dark-muted bg-white dark:bg-surface-dark-subtle p-4">
-              <p className="text-sm font-medium text-gray-700 dark:text-gray-200 mb-2">Format du CRBO</p>
-              <div className="grid grid-cols-2 gap-2">
-                {(['synthetique', 'complet'] as const).map((fmt) => {
-                  const active = (formData.format_crbo || 'synthetique') === fmt
-                  const labels = fmt === 'synthetique'
-                    ? { emoji: '🟢', title: 'Synthétique', sub: '2-3 pages · essentiel' }
-                    : { emoji: '🔵', title: 'Complet', sub: '4-6 pages · détaillé' }
-                  return (
-                    <button
-                      key={fmt}
-                      type="button"
-                      onClick={() => setFormData(prev => ({ ...prev, format_crbo: fmt }))}
-                      className={`text-left p-3 rounded-lg border-2 transition ${
-                        active
-                          ? 'border-green-500 bg-green-50 dark:bg-green-900/20 ring-2 ring-green-200'
-                          : 'border-gray-200 dark:border-surface-dark-muted hover:border-gray-300'
-                      }`}
-                    >
-                      <div className="flex items-center gap-2">
-                        <span>{labels.emoji}</span>
-                        <span className="font-semibold text-sm text-gray-900 dark:text-gray-100">{labels.title}</span>
-                      </div>
-                      <p className="text-xs text-gray-500 dark:text-gray-400 mt-0.5">{labels.sub}</p>
-                    </button>
-                  )
-                })}
-              </div>
-            </div>
+            {/* Toggle Format CRBO retiré 2026-06-04 : retour ortho — le mode
+                "Complet" produit des CRBO trop longs en pratique. Le mode
+                "Synthétique" devient le défaut pour tous les bilans (deja
+                applique via formData.format_crbo = 'synthetique' a l'init
+                + fallback || 'synthetique' au submit). Le champ reste en
+                state pour ne pas casser les 14 fichiers qui le consomment
+                (word-export, system-base, route API, etc.). */}
 
             <div>
               <label className="block text-sm font-medium text-gray-700 mb-2">Tests utilisés *</label>
