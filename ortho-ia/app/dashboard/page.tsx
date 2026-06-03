@@ -82,12 +82,27 @@ const PAGE_SIZE = 20
 // ortho B sur le meme navigateur (poste partage en cabinet).
 const DRAFT_KEY_PREFIX = 'ortho-ia:crbo-draft:'
 const LEGACY_DRAFT_KEY = 'ortho-ia:crbo-draft'
+// Prefixe des drafts B-CM / B-CMado (formulaire math). Aligne sur
+// components/bilans/math/BilanMathForm.tsx (DRAFT_KEY_PREFIX la-bas).
+// Cles : `ortho-ia:bilan-math-draft:${user.id}:b-cm` et `:b-cmado`.
+const MATH_DRAFT_KEY_PREFIX = 'ortho-ia:bilan-math-draft:'
 const DRAFT_MAX_AGE_MS = 30 * 24 * 60 * 60 * 1000
 
+/** Aperçu d'un brouillon affiché sur le dashboard. Couvre les 3 formulaires
+ *  avec draft : CRBO langage (wizard 4 etapes), B-CM enfant, B-CMado.
+ *  Plusieurs drafts peuvent coexister (un ortho peut avoir une evaluation
+ *  langage en pause ET un B-CMado en pause sur 2 patients differents). */
 interface DraftPreview {
-  step: number
+  /** Type de bilan, pilote l'URL "Reprendre" et le libelle. */
+  type: 'crbo' | 'b-cm' | 'b-cmado'
+  /** Etape du wizard (CRBO langage uniquement, 1..4). null pour math (pas de wizard). */
+  step: number | null
   patientName: string
   daysAgo: number
+  /** Timestamp ms — sert au tri (plus recent en premier). */
+  savedAt: number
+  /** URL absolue ou relative pour le bouton Reprendre. */
+  href: string
 }
 
 export default function DashboardPage() {
@@ -110,9 +125,11 @@ export default function DashboardPage() {
   const [feedbackCrboId, setFeedbackCrboId] = useState<string | null>(null)
   const [downloadingId, setDownloadingId] = useState<string | null>(null)
   const [deletingId, setDeletingId] = useState<string | null>(null)
-  // Brouillon en cours pour l'user courant — affiche un bandeau "Reprendre"
-  // en haut du dashboard. Hydrate dans fetchData apres recup de user.id.
-  const [draftPreview, setDraftPreview] = useState<DraftPreview | null>(null)
+  // Brouillons en cours pour l'user courant — affichés en bandeaux empilés
+  // au-dessus des stats. Couvre CRBO langage + B-CM + B-CMado (un ortho peut
+  // avoir 1 à 3 drafts en parallèle sur des patients différents). Triés du
+  // plus récent au plus ancien. Hydraté dans fetchData après récup user.id.
+  const [draftPreviews, setDraftPreviews] = useState<DraftPreview[]>([])
   // Pagination client-side : 20 CRBOs par page. Au-delà, l'ortho navigue
   // avec les boutons Prev / Next. Côté serveur on charge tous les CRBOs
   // (filtrés par RLS user_id) — le volume reste petit (max quelques
@@ -138,33 +155,84 @@ export default function DashboardPage() {
       return
     }
 
-    // Brouillon CRBO en cours pour CET ortho (cle scopee par user.id pour
+    // Brouillons en cours pour CET ortho (cles scopees par user.id pour
     // eviter qu'un brouillon ortho A fuite vers ortho B sur le meme
-    // navigateur). On purge aussi la cle globale legacy au passage.
+    // navigateur). On scanne 3 clés :
+    //   1. CRBO langage : `ortho-ia:crbo-draft:${user.id}`
+    //   2. B-CM enfant  : `ortho-ia:bilan-math-draft:${user.id}:b-cm`
+    //   3. B-CMado      : `ortho-ia:bilan-math-draft:${user.id}:b-cmado`
+    // On purge aussi la cle globale legacy au passage.
     try {
       localStorage.removeItem(LEGACY_DRAFT_KEY)
-      const draftRaw = localStorage.getItem(`${DRAFT_KEY_PREFIX}${user.id}`)
-      if (draftRaw) {
-        const draft = JSON.parse(draftRaw) as {
-          step?: number
-          formData?: { patient_prenom?: string; patient_nom?: string }
-          savedAt?: number
-        }
-        const savedAt = draft.savedAt || 0
-        const ageMs = savedAt ? Date.now() - savedAt : 0
-        if (savedAt && ageMs > DRAFT_MAX_AGE_MS) {
-          // Brouillon abandonne > 30j : purge silencieuse, pas de banniere.
-          try { localStorage.removeItem(`${DRAFT_KEY_PREFIX}${user.id}`) } catch {}
-        } else {
-          const fd = draft.formData || {}
-          const name = [fd.patient_prenom, fd.patient_nom].filter(Boolean).join(' ').trim()
-          setDraftPreview({
-            step: draft.step || 1,
+      const found: DraftPreview[] = []
+
+      // 1. Brouillon CRBO langage
+      const crboRaw = localStorage.getItem(`${DRAFT_KEY_PREFIX}${user.id}`)
+      if (crboRaw) {
+        try {
+          const draft = JSON.parse(crboRaw) as {
+            step?: number
+            formData?: { patient_prenom?: string; patient_nom?: string }
+            savedAt?: number
+          }
+          const savedAt = draft.savedAt || 0
+          const ageMs = savedAt ? Date.now() - savedAt : 0
+          if (savedAt && ageMs > DRAFT_MAX_AGE_MS) {
+            try { localStorage.removeItem(`${DRAFT_KEY_PREFIX}${user.id}`) } catch {}
+          } else {
+            const fd = draft.formData || {}
+            const name = [fd.patient_prenom, fd.patient_nom].filter(Boolean).join(' ').trim()
+            found.push({
+              type: 'crbo',
+              step: draft.step || 1,
+              patientName: name || 'patient non renseigne',
+              daysAgo: savedAt ? Math.floor(ageMs / (1000 * 60 * 60 * 24)) : 0,
+              savedAt,
+              href: '/dashboard/nouveau-crbo?reprendre=1',
+            })
+          }
+        } catch { /* draft corrompu : on ignore */ }
+      }
+
+      // 2 et 3. Brouillons B-CM et B-CMado (formulaire math)
+      // Structure du payload : BilanMathDraft + savedAt (cf. BilanMathForm.tsx
+      // ligne ~301 : payload = { ...draft, savedAt }). Patient sous draft.patient.
+      const mathVariants: Array<{ grilleId: 'b-cm' | 'b-cmado'; href: string }> = [
+        { grilleId: 'b-cm',    href: '/dashboard/bilan/b-cm' },
+        { grilleId: 'b-cmado', href: '/dashboard/bilan/b-cmado' },
+      ]
+      for (const v of mathVariants) {
+        const key = `${MATH_DRAFT_KEY_PREFIX}${user.id}:${v.grilleId}`
+        const raw = localStorage.getItem(key)
+        if (!raw) continue
+        try {
+          const draft = JSON.parse(raw) as {
+            patient?: { prenom?: string; nom?: string }
+            savedAt?: number
+          }
+          const savedAt = draft.savedAt || 0
+          const ageMs = savedAt ? Date.now() - savedAt : 0
+          if (savedAt && ageMs > DRAFT_MAX_AGE_MS) {
+            try { localStorage.removeItem(key) } catch {}
+            continue
+          }
+          const p = draft.patient || {}
+          const name = [p.prenom, p.nom].filter(Boolean).join(' ').trim()
+          found.push({
+            type: v.grilleId,
+            step: null,
             patientName: name || 'patient non renseigne',
             daysAgo: savedAt ? Math.floor(ageMs / (1000 * 60 * 60 * 24)) : 0,
+            savedAt,
+            href: v.href,
           })
-        }
+        } catch { /* draft corrompu : on ignore */ }
       }
+
+      // Tri : plus récent en premier (pertinent quand l'ortho jongle entre
+      // 2 patients — la session active est en haut).
+      found.sort((a, b) => b.savedAt - a.savedAt)
+      setDraftPreviews(found)
     } catch {
       // localStorage indisponible (mode prive) ou draft corrompu → on ignore.
     }
@@ -443,28 +511,40 @@ export default function DashboardPage() {
         </div>
       </div>
 
-      {/* Bandeau "Brouillon en cours" — affiche si un draft CRBO existe en
-          localStorage pour cet ortho. Sinon l'ortho ne savait pas qu'un
-          brouillon l'attendait et risquait de redemarrer un dossier de zero. */}
-      {draftPreview && (
-        <div className="rounded-2xl border border-amber-200 dark:border-amber-800/40 bg-gradient-to-br from-amber-50 to-orange-50 dark:from-amber-900/20 dark:to-orange-900/20 p-4 flex flex-col sm:flex-row items-start sm:items-center gap-3">
-          <div className="w-10 h-10 rounded-xl bg-amber-100 dark:bg-amber-900/40 text-amber-700 dark:text-amber-300 flex items-center justify-center shrink-0 text-lg">
-            📝
-          </div>
-          <div className="flex-1 min-w-0">
-            <p className="font-semibold text-gray-900 dark:text-gray-100">
-              Brouillon en cours — {draftPreview.patientName}
-            </p>
-            <p className="text-xs text-gray-600 dark:text-gray-400 mt-0.5">
-              Etape {draftPreview.step} sur 4 · {draftPreview.daysAgo === 0 ? "aujourd'hui" : `il y a ${draftPreview.daysAgo} j`}
-            </p>
-          </div>
-          <Link
-            href="/dashboard/nouveau-crbo?reprendre=1"
-            className="px-4 py-2 rounded-lg bg-amber-600 text-white text-sm font-semibold hover:bg-amber-700 whitespace-nowrap shadow-sm"
-          >
-            Reprendre
-          </Link>
+      {/* Bandeaux "Brouillon en cours" — un par draft non expiré (CRBO langage,
+          B-CM, B-CMado). Empilés, plus récent en premier. Sans ça l'ortho ne
+          savait pas qu'un brouillon l'attendait et risquait de redémarrer un
+          dossier de zéro — particulièrement critique pour B-CM/B-CMado qui
+          sont passés en plusieurs séances par nature. */}
+      {draftPreviews.length > 0 && (
+        <div className="space-y-2">
+          {draftPreviews.map((dp) => {
+            const labelType = dp.type === 'crbo' ? 'CRBO langage' : dp.type === 'b-cm' ? 'B-CM enfant' : 'B-CMado'
+            const subtitle = dp.type === 'crbo' && dp.step !== null
+              ? `Étape ${dp.step} sur 4 · ${dp.daysAgo === 0 ? "aujourd'hui" : `il y a ${dp.daysAgo} j`}`
+              : `${labelType} · ${dp.daysAgo === 0 ? "aujourd'hui" : `il y a ${dp.daysAgo} j`}`
+            return (
+              <div key={`${dp.type}-${dp.savedAt}`} className="rounded-2xl border border-amber-200 dark:border-amber-800/40 bg-gradient-to-br from-amber-50 to-orange-50 dark:from-amber-900/20 dark:to-orange-900/20 p-4 flex flex-col sm:flex-row items-start sm:items-center gap-3">
+                <div className="w-10 h-10 rounded-xl bg-amber-100 dark:bg-amber-900/40 text-amber-700 dark:text-amber-300 flex items-center justify-center shrink-0 text-lg">
+                  📝
+                </div>
+                <div className="flex-1 min-w-0">
+                  <p className="font-semibold text-gray-900 dark:text-gray-100">
+                    Brouillon {labelType} — {dp.patientName}
+                  </p>
+                  <p className="text-xs text-gray-600 dark:text-gray-400 mt-0.5">
+                    {subtitle}
+                  </p>
+                </div>
+                <Link
+                  href={dp.href}
+                  className="px-4 py-2 rounded-lg bg-amber-600 text-white text-sm font-semibold hover:bg-amber-700 whitespace-nowrap shadow-sm"
+                >
+                  Reprendre
+                </Link>
+              </div>
+            )
+          })}
         </div>
       )}
 
