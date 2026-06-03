@@ -137,7 +137,7 @@ const EPREUVES: Epreuve[] = [
       'Rappel libre : arrêter quand "je ne sais plus" ou au bout de 3 min. Périphrase / geste acceptés.',
       'Intrusion = un objet nommé qui n\'était PAS dans les 25 → −1 pt (malus). Doublons = pas de pénalité mais à signaler.',
       'Optionnelle 1a (/30) UNIQUEMENT si rappel libre < 8. L\'examinateur choisit 10 objets non rappelés mêlés à 20 distracteurs verbaux.',
-      'Reconnaissance 1b : différée après ≥ 10 min (intercaler épreuve 02 « mémoire d\'un texte lu »). 25 planches de 6 objets, 1 pt par objet reconnu du 1er coup.',
+      'Reconnaissance 1b : différée d\'au moins 10 min (intercaler épreuve 02 « mémoire d\'un texte lu »). 25 planches de 6 objets, 1 pt par objet reconnu du 1er coup.',
     ],
     interpretation: [
       'Rappel + reconnaissance bons → mémoire épisodique visuelle préservée.',
@@ -158,8 +158,8 @@ const EPREUVES: Epreuve[] = [
     ],
     hasTemps: true,
     rules: [
-      'Texte sélectionné par le logiciel selon NSC : NSC 1 = Aline (court), NSC 2 = Travers (intermédiaire), NSC 3 = Lapissoire (long, lexique soutenu).',
-      'Lecture silencieuse libre, temps chronométré (l\'ortho peut comparer au seuil HappyNeuron).',
+      'Texte sélectionné par le logiciel selon NSC : NSC 1 = Aline (temps de lecture étalonné 3 min, résumé n°3), NSC 2 = Travers (5 min, résumé n°4), NSC 3 = Lapissoire (6 min, résumé n°2).',
+      'Lecture silencieuse libre, temps chronométré ; au-delà du seuil étalonné, alerte « gestion textuelle » à signaler dans l\'observation.',
       'Rappel : 2 pts par information importante donnée spontanément ou en réponse à une question ouverte. 0 pt par info manquante ou erronée. 0 pt par erreur sur personnage.',
       'Si rappel d\'emblée correct : 12 pts sans poser les questions.',
       'Choix de résumé : différé d\'au moins 20 min. 4 résumés présentés. Bon choix d\'emblée = 8 pts, hésite et trouve en 2e = 2 pts, mauvais = 0.',
@@ -212,6 +212,7 @@ const EPREUVES: Epreuve[] = [
       'Chaque blason est présenté seul, puis le sujet le reconstruit de mémoire à partir d\'éléments à choisir (forme, couleurs, dessin, position).',
       'Reconstruction immédiate (pas de différé entre présentation et rappel).',
       'Points attribués par caractéristique correcte (forme générale, répartition des couleurs, dessin central, position du dessin, couleurs spécifiques).',
+      'Étape 3 (couleurs) : 2 pts si bonne couleur ET bien placée, 1 pt si bonne couleur choisie mais mal placée, 0 pt sinon.',
       'Le sujet peut verbaliser pour s\'aider à mémoriser ("ovale, rouge en haut, étoile au centre…").',
     ],
     interpretation: [
@@ -235,6 +236,7 @@ const EPREUVES: Epreuve[] = [
       'Reconnaissance du chat (forme tangram complète) : 2 pts si reconnu spontanément.',
       'Analyse de 3 planches : pour chaque planche, identifier les pièces EN TROP ou MANQUANTES par rapport au modèle.',
       'Cotation détaillée par planche selon les pièces correctement identifiées (cf. logiciel HappyNeuron).',
+      'Malus : −2 pts si l\'examinateur doit corriger une consigne sur la planche 1 (signale une difficulté de compréhension de la tâche).',
     ],
     interpretation: [
       'Échec à la reconnaissance du chat → suspicion d\'agnosie de forme ou de fragilité visuo-perceptive.',
@@ -256,6 +258,8 @@ const EPREUVES: Epreuve[] = [
     hasTemps: true,
     rules: [
       'Pour chaque subtest, le sujet doit associer des éléments selon une catégorie sémantique présentée.',
+      'Cotation : 2 pts d\'emblée, 1 pt en 2e essai, 0 pt si non trouvé. Pour les logos : ½ pt si la bonne association est faite sans nommer la marque.',
+      'Malus : −1 pt par invention (association inexistante).',
       'L\'indiçage sémantique (catégorie) facilite la récupération — c\'est précisément ce que l\'épreuve mesure.',
       'Logos commerciaux : épreuve culturellement marquée, attention aux sujets éloignés de la consommation moderne.',
     ],
@@ -279,7 +283,7 @@ const EPREUVES: Epreuve[] = [
     hasTemps: true,
     rules: [
       'Lecture du texte par l\'examinateur, à débit naturel, une seule fois.',
-      'Mêmes 3 textes que l\'épreuve 02 (Aline / Travers / Lapissoire selon NSC) — mais entendus au lieu de lus.',
+      'Texte étalonné (unique pour cette épreuve) — la réponse attendue au choix de résumé est le n°2.',
       'Cotation identique à l\'épreuve 02 : 2 pts par information pertinente (rappel) ; 8/2/0 pour le choix de résumé.',
       'Choix de résumé différé d\'au moins 20 min.',
     ],
@@ -325,8 +329,8 @@ const EPREUVES: Epreuve[] = [
     hasTemps: true,
     rules: [
       'Bruits : 6 sons d\'environnement (animaux, transports, objets…) à identifier puis reconnaître parmi des distracteurs sonores. 2 pts par bruit reconnu.',
-      'Phrases : 4 phrases à répéter exactement (boucle phonologique allongée).',
-      'Cotation phrases : 10 pts par phrase, modulé selon les pertes (mots oubliés, ordre modifié, paraphasies).',
+      'Phrases : 4 phrases à répéter exactement (boucle phonologique allongée). Cotation 10 pts par phrase, modulée par les pertes.',
+      'Pénalités phrases : −1 pt par mot ou morphème omis/modifié, −2 pts par groupe de mots, −3 pts si la phrase doit être redite AVANT le 1er essai, −5 pts si redite APRÈS un essai.',
     ],
     interpretation: [
       'Bruits OK + phrases altérées → fragilité de boucle phonologique (composante verbale), à confronter à l\'empan endroit classique.',
@@ -347,7 +351,7 @@ const EPREUVES: Epreuve[] = [
     hasTemps: true,
     rules: [
       'Présentation d\'un parcours animé (cailloux qui s\'allument dans un ordre donné) puis reproduction par le sujet.',
-      'Cotation : points par caillou correctement pointé dans le bon ordre.',
+      'Cotation : 2 pts par caillou correctement pointé dans le bon ordre ; 1 pt si caillou correct mais mauvais ordre.',
       '⚠️ PRÉALABLE : s\'assurer de l\'absence d\'héminégligence (test de barrage) et d\'apraxie constructive (figure de Rey) — sinon l\'interprétation mnésique est faussée.',
     ],
     interpretation: [
@@ -647,6 +651,29 @@ export default function PredimemScoresInput({ notes, onNotesChange, onResultatsC
       <div className="space-y-3">
         {EPREUVES.map(e => {
           const st = state.epreuves[e.key]
+
+          // Indicateur NSC pour les textes (épreuves 02 et 07) — affiche le
+          // texte sélectionné par le logiciel selon le NSC saisi en tête.
+          const texteParNsc: Record<string, string> = {
+            '1': 'Aline (court, temps étalonné 3 min, résumé attendu n°3)',
+            '2': 'Travers (intermédiaire, 5 min, résumé n°4)',
+            '3': 'Lapissoire (long, lexique soutenu, 6 min, résumé n°2)',
+          }
+          const showTexteNscHint = (e.key === 'e02_texte_lu' || e.key === 'e07_texte_entendu') && !!state.nsc
+          // Note : le texte de l'épreuve 07 est étalonné indépendamment du NSC
+          // (un seul texte, résumé attendu n°2) — donc on n'affiche le mapping
+          // que pour l'épreuve 02.
+          const showTexte02NscHint = e.key === 'e02_texte_lu' && !!state.nsc
+
+          // Alertes conditionnelles — pour guider l'ortho sur les bascules
+          // entre subtests (optionnelle 1a, subtest 3b).
+          const rappelLibre01 = parseInt(state.epreuves['e01_objets'].scores['rappel'] || '', 10)
+          const optionnelle01Suggeree = e.key === 'e01_objets' && !isNaN(rappelLibre01) && rappelLibre01 < 8
+
+          const subtest3a = parseInt(state.epreuves['e03_mdt'].scores['subtest_3a'] || '', 10)
+          const subtest3bAutorise = e.key === 'e03_mdt' && !isNaN(subtest3a) && subtest3a >= 18
+          const subtest3bBloque = e.key === 'e03_mdt' && !isNaN(subtest3a) && subtest3a < 18
+
           return (
             <div key={e.key} className="rounded-lg border border-gray-200 bg-white p-4">
               <div className="flex items-start justify-between gap-3 flex-wrap mb-2">
@@ -656,6 +683,37 @@ export default function PredimemScoresInput({ notes, onNotesChange, onResultatsC
                   <p className="text-xs text-gray-500 mt-0.5 leading-relaxed">{e.description}</p>
                 </div>
               </div>
+
+              {/* Hint texte selon NSC (épreuve 02 — texte lu) */}
+              {showTexte02NscHint && (
+                <div className="mt-2 px-2 py-1.5 rounded bg-indigo-50 border border-indigo-100 text-[11px] text-indigo-800">
+                  <span className="font-semibold">Texte sélectionné par HappyNeuron :</span>{' '}
+                  {texteParNsc[state.nsc]}
+                </div>
+              )}
+              {/* Hint texte épreuve 07 — un seul texte étalonné, indépendant du NSC */}
+              {e.key === 'e07_texte_entendu' && showTexteNscHint && (
+                <div className="mt-2 px-2 py-1.5 rounded bg-indigo-50 border border-indigo-100 text-[11px] text-indigo-800">
+                  <span className="font-semibold">Texte étalonné unique</span> (indépendant du NSC) — résumé attendu n°2.
+                </div>
+              )}
+
+              {/* Alertes pour subtests conditionnels */}
+              {optionnelle01Suggeree && (
+                <div className="mt-2 px-2 py-1.5 rounded bg-amber-50 border border-amber-200 text-[11px] text-amber-900">
+                  <strong>Rappel libre &lt; 8</strong> → l&apos;épreuve <strong>optionnelle /30</strong> est indiquée (dissocie encodage / récupération). Non comptabilisée dans le total.
+                </div>
+              )}
+              {subtest3bAutorise && (
+                <div className="mt-2 px-2 py-1.5 rounded bg-emerald-50 border border-emerald-200 text-[11px] text-emerald-900">
+                  <strong>Subtest 3a ≥ 18</strong> → le subtest <strong>3b</strong> peut être proposé.
+                </div>
+              )}
+              {subtest3bBloque && (
+                <div className="mt-2 px-2 py-1.5 rounded bg-gray-50 border border-gray-200 text-[11px] text-gray-700">
+                  <strong>Subtest 3a &lt; 18</strong> → le subtest 3b ne doit PAS être passé (consigne officielle).
+                </div>
+              )}
 
               {/* Subtests = scores bruts à saisir */}
               <div className="grid gap-2 mt-3">

@@ -119,7 +119,7 @@ export interface BilanEntry {
   /** Bilan verrouillé pendant la beta (visible en UI, non sélectionnable,
    *  affiché grisé avec badge "Bientôt"). On le débloque au fur et à mesure
    *  que la qualité des CRBO générés est validée sur ce bilan.
-   *  Validés au 2026-06-01 : Exalang (toutes versions), EVALEO 6-15, B-CMado. */
+   *  Validés au 2026-06-03 : Exalang (toutes versions), EVALEO 6-15, B-CMado, PREDIMEM. */
   betaDisabled?: boolean
   /** Si true, le rendu Word PRÉSERVE l'ordre des `domains[]` produits par le
    *  LLM au lieu d'appliquer le re-tri défensif par famille
@@ -191,7 +191,6 @@ export const BILAN_REGISTRY: Record<string, BilanEntry> = {
   },
   'PREDIMEM': {
     nom: 'PREDIMEM',
-    betaDisabled: true,
     famille: 'adulte',
     formPath: 'components/forms/PredimemScoresInput.tsx',
     promptPath: 'lib/prompts/tests/predimem.ts',
