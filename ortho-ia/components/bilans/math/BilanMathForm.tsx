@@ -844,9 +844,9 @@ export default function BilanMathForm({ grille }: BilanMathFormProps) {
               {draft.medecin?.nom && ` · Dr ${draft.medecin.nom}`}
             </p>
             <p style={{ margin: '4px 0 0', fontSize: 11.5, color: 'var(--fg-3)', lineHeight: 1.5 }}>
-              Motif et anamnèse déjà renseignés aux étapes 1-3 du wizard.{' '}
+              Motif et anamnèse déjà renseignés aux étapes précédentes.{' '}
               <a href="/dashboard/nouveau-crbo" style={{ color: 'var(--ds-primary)', textDecoration: 'underline' }}>
-                Revenir au wizard pour modifier
+                Modifier ces informations
               </a>
             </p>
           </div>
