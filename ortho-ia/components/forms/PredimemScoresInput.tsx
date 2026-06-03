@@ -100,6 +100,29 @@ interface Subtest {
   hint?: string
 }
 
+/** Case à cocher d'observation rapide — gain UX majeur en passation :
+ *  l'ortho coche les patterns observés (ex. "intrusions présentes", "stratégie
+ *  de catégorisation spontanée") au lieu de re-taper la même formulation à
+ *  chaque bilan. Les textes des cases cochées sont concaténés dans la sortie
+ *  normalisée (à côté de l'observation libre). N'écrasent PAS le champ
+ *  observation libre — coexistent avec.
+ *  Cf. mémo Bug fix 2026-06-04 : seules les 5 épreuves prioritaires
+ *  (01, 03, 06, 09, 10) en sont équipées en v1, par retour ortho. */
+interface QuickObs {
+  /** Identifiant stable (sérialisé dans l'état) — ne PAS renommer en prod. */
+  key: string
+  /** Libellé court affiché dans la chip-checkbox. */
+  label: string
+  /** Texte inséré dans la sortie normalisée si cochée. Doit être une
+   *  proposition complète (avec ponctuation finale gérée à la concaténation). */
+  text: string
+  /** Couleur de la chip selon la valence clinique :
+   *  - 'positive' (vert) = signe favorable (stratégie observée, bon bénéfice indiçage)
+   *  - 'neutral'  (gris) = observation factuelle sans valence (verbalisation, hésitation)
+   *  - 'negative' (rouge clair) = signe défavorable (intrusions, redemande, aide nécessaire) */
+  tone?: 'positive' | 'neutral' | 'negative'
+}
+
 interface Epreuve {
   key: EpreuveKey
   /** Numéro officiel HappyNeuron (01 à 11). */
@@ -118,6 +141,9 @@ interface Epreuve {
   interpretation?: string[]
   /** Placeholder pour la zone observation. */
   obsPlaceholder: string
+  /** Cases d'observation rapide à cocher (optionnel). Dérivées du manuel +
+   *  bonnes pratiques cliniques. Cocher → texte ajouté à la sortie normalisée. */
+  quickObservations?: QuickObs[]
 }
 
 const EPREUVES: Epreuve[] = [
@@ -147,7 +173,18 @@ const EPREUVES: Epreuve[] = [
       'Rappel + reconnaissance + optionnelle TOUS faibles, peu sensible à l\'indiçage → suggère un trouble d\'ENCODAGE / consolidation.',
       'Croiser avec les épreuves 02 et 07 (textes) et 06 (associations sémantiques) pour confirmer le profil. Jamais conclure sur cette épreuve isolée.',
     ],
-    obsPlaceholder: 'Ex. rappelle vite les 5 premiers objets puis décroche. Stratégie par catégories (animaux, objets…). Intrusion : "marteau" pour "hache".',
+    obsPlaceholder: 'Complément libre (au-delà des cases cochées). Ex. décroche après le 7e objet, périphrases sur "marteau", revient sur "hache" en différé.',
+    quickObservations: [
+      { key: 'strat_cat',     label: 'Stratégie de catégorisation spontanée',  text: 'Stratégie de catégorisation spontanée observée (regroupements animaux / objets / etc.).', tone: 'positive' },
+      { key: 'pas_strat',     label: 'Aucune stratégie spontanée',             text: 'Pas de stratégie de mémorisation spontanée.', tone: 'negative' },
+      { key: 'intrusions',    label: 'Intrusions',                             text: 'Intrusions observées (objets nommés non présentés, −1 pt chacun).', tone: 'negative' },
+      { key: 'doublons',      label: 'Doublons signalés',                      text: 'Doublons signalés spontanément (pas de pénalité, à noter).', tone: 'neutral' },
+      { key: 'jai_oublie',    label: '"J\'avais oublié celui-là"',             text: 'Verbalisations type « j\'avais oublié celui-là » à la reconnaissance — indicateur de récupération vs stockage.', tone: 'neutral' },
+      { key: 'opt_30',        label: 'Optionnelle /30 passée',                 text: 'Épreuve optionnelle /30 administrée (rappel libre < 8).', tone: 'neutral' },
+      { key: 'indicage_cat',  label: 'Indiçage catégoriel utilisé',            text: 'Indiçage catégoriel utilisé en prolongation (« il y avait des animaux / objets qu\'on porte sur soi… »).', tone: 'neutral' },
+      { key: 'benef_indicage', label: 'Bénéfice net à l\'indiçage',            text: 'Bon bénéfice à l\'indiçage / reconnaissance — oriente vers un trouble de récupération plutôt que d\'encodage.', tone: 'positive' },
+      { key: 'peu_benef',     label: 'Peu de bénéfice à l\'indiçage',          text: 'Peu de bénéfice à l\'indiçage / reconnaissance — évoque plutôt un trouble d\'encodage / consolidation.', tone: 'negative' },
+    ],
   },
   {
     key: 'e02_texte_lu',
@@ -198,7 +235,18 @@ const EPREUVES: Epreuve[] = [
       '3a réussi MAIS 3b effondré → fragilité spécifique de manipulation en mémoire de travail (administrateur central).',
       'Comparer aux résultats à l\'empan envers classique (WAIS), aux Acronymes PREDILAE et à la séquence Lettres-Chiffres.',
     ],
-    obsPlaceholder: 'Ex. répète le mot et le nombre à voix basse avant de répondre. Au 3b : range mentalement les chiffres avant l\'alternance. Persévération sur la 1ère lettre du 3e item.',
+    obsPlaceholder: 'Complément libre (au-delà des cases cochées). Ex. essoufflement après le 2e item, mots-clés inventés pour mémoriser.',
+    quickObservations: [
+      { key: 'auto_corr',       label: 'Auto-corrections (points conservés)', text: 'Auto-corrections spontanées (points conservés).', tone: 'positive' },
+      { key: 'voix_basse',      label: 'Répète à voix basse',                 text: 'Répète mot et nombre à voix basse avant de répondre (stratégie de subvocalisation).', tone: 'neutral' },
+      { key: 'ordre_mental',    label: 'Mise en ordre mentale (3b)',          text: 'Stratégie de mise en ordre mentale observée au 3b avant restitution.', tone: 'positive' },
+      { key: 'redem_partielle', label: 'Redemande partielle (−1 pt)',         text: 'Redemande partielle (1-3 chiffres) sur au moins un item (−1 pt).', tone: 'neutral' },
+      { key: 'redem_complete',  label: 'Redemande complète (−2 pt)',          text: 'Redemande complète du mot/nombre sur au moins un item (−2 pts).', tone: 'negative' },
+      { key: 'aide_perdu',      label: 'Aide pour se retrouver (−2 pt)',      text: 'Aide examinateur nécessaire pour se retrouver dans la séquence (−2 pts).', tone: 'negative' },
+      { key: 'persev',          label: 'Persévération sur item précédent',    text: 'Persévération sur la lettre / chiffre du 1er item lors du passage au suivant.', tone: 'negative' },
+      { key: 'sel_col_echec',   label: 'Essais SEL/COL ratés (3b non admin.)', text: 'Essais d\'entraînement SEL puis COL ratés — subtest 3b NON administré (consigne manuel).', tone: 'negative' },
+      { key: 'fatigue_3b',      label: 'Fatigue cognitive sur 3b',            text: 'Fatigue cognitive observable sur le 3b (effort prolongé visible).', tone: 'neutral' },
+    ],
   },
   {
     key: 'e04_blasons',
@@ -275,7 +323,18 @@ const EPREUVES: Epreuve[] = [
       'Score faible sur logos isolé → souvent un effet culturel (sujet âgé, peu de TV/pub), à ne pas surinterpréter.',
       'Échec global → fragilité d\'encodage non rattrapée par indiçage sémantique (profil compatible avec atteinte sémantique débutante).',
     ],
-    obsPlaceholder: 'Ex. animaux et objets : associations rapides et catégorisation spontanée. Logos : ne reconnaît pas 3 enseignes contemporaines (sujet âgé).',
+    obsPlaceholder: 'Complément libre (au-delà des cases cochées). Ex. associations rapides en animaux, hésite sur l\'enseigne X qu\'elle finit par reconnaître au geste de la mascotte.',
+    quickObservations: [
+      { key: 'benef_indicage',    label: 'Bénéfice net à l\'indiçage sémantique', text: 'Bénéfice net à l\'indiçage sémantique (catégorie) — mémoire sémantique préservée.', tone: 'positive' },
+      { key: 'echec_animaux',     label: 'Échec sur animaux',                     text: 'Échec d\'indiçage sur le subtest Animaux.', tone: 'negative' },
+      { key: 'echec_objets',      label: 'Échec sur objets',                      text: 'Échec d\'indiçage sur le subtest Objets.', tone: 'negative' },
+      { key: 'echec_logos',       label: 'Échec sur logos',                       text: 'Échec sur le subtest Logos.', tone: 'negative' },
+      { key: 'logos_culturel',    label: 'Logos non reconnus (effet culturel)',   text: 'Logos non reconnus par effet culturel/générationnel (à ne pas surinterpréter cliniquement).', tone: 'neutral' },
+      { key: 'logos_sans_marque', label: 'Reconnaît logos sans nommer la marque', text: 'Reconnaît certaines marques par leur logo sans pouvoir les nommer (1 pt au 1er essai / ½ pt au 2e).', tone: 'neutral' },
+      { key: 'inventions',        label: 'Inventions (−1 pt chacune)',            text: 'Inventions observées — associations inexistantes (−1 pt par invention).', tone: 'negative' },
+      { key: 'hesite',            label: 'Hésitations marquées',                  text: 'Hésitations marquées avant association — temps de récupération allongé.', tone: 'neutral' },
+      { key: 'deux_essais',       label: 'Bénéfice du 2e essai',                  text: 'Bénéfice net du 2e essai (planche remontrée) — accès lexical aidé par la présentation visuelle.', tone: 'positive' },
+    ],
   },
   {
     key: 'e07_texte_entendu',
@@ -347,7 +406,18 @@ const EPREUVES: Epreuve[] = [
       'Bruits altérés + phrases OK → fragilité auditivo-perceptive non verbale, à explorer (audition ? agnosie auditive ?).',
       'Pertes morphologiques ou lexicales sur les phrases → croiser avec épreuve 03 (MdT) et 07 (texte entendu).',
     ],
-    obsPlaceholder: 'Ex. bruits : 5/6 reconnus, hésitation sur "chien aboie" vs "loup hurle". Phrases : pertes des connecteurs sur la 3e et 4e (substitutions).',
+    obsPlaceholder: 'Complément libre (au-delà des cases cochées). Ex. bruit du chien confondu avec le loup, phrase 3 inversée syntaxiquement.',
+    quickObservations: [
+      { key: 'bruits_ok',         label: 'Bruits parfaitement reconnus',          text: 'Bruits parfaitement reconnus — mémoire auditive non verbale préservée.', tone: 'positive' },
+      { key: 'bruits_hes',        label: 'Hésitation sur bruits proches',         text: 'Hésitations sur des bruits acoustiquement proches.', tone: 'neutral' },
+      { key: 'phr_morpho',        label: 'Phrases : pertes morphologiques',       text: 'Pertes morphologiques sur les phrases (déterminants omis, marques verbales modifiées).', tone: 'negative' },
+      { key: 'phr_lexique',       label: 'Phrases : pertes lexicales',            text: 'Pertes lexicales sur les phrases (mots oubliés ou substitués).', tone: 'negative' },
+      { key: 'phr_ordre',         label: 'Phrases : ordre modifié',               text: 'Ordre des mots modifié dans la restitution des phrases.', tone: 'negative' },
+      { key: 'phr_groupes',       label: 'Pertes par groupes (−2 pts)',           text: 'Pertes par groupes de mots (−2 pts par groupe omis).', tone: 'negative' },
+      { key: 'phr_redem_avant',   label: 'Redemande AVANT essai (−3)',            text: 'Redemande de la phrase AVANT le 1er essai (−3 pts par phrase concernée).', tone: 'negative' },
+      { key: 'phr_redem_apres',   label: 'Redemande APRÈS essai (−5)',            text: 'Redemande APRÈS un essai entamé (−5 pts par phrase concernée).', tone: 'negative' },
+      { key: 'fatigue',           label: 'Fatigue auditive en fin',               text: 'Fatigue audible / décrochage sur les dernières phrases.', tone: 'neutral' },
+    ],
   },
   {
     key: 'e10_spatiale',
@@ -371,7 +441,17 @@ const EPREUVES: Epreuve[] = [
       'Échec en convergence avec épreuves 04, 05, 08, 11 → fragilité visuelle globale.',
       'Si héminégligence suspectée : invalider l\'interprétation et orienter vers neuropsy.',
     ],
-    obsPlaceholder: 'Ex. parcours 4 cailloux : 14/16, inversion entre cailloux 2 et 3. Parcours 5 : décroche après le 3e caillou. Aucun signe d\'héminégligence sur barrage préalable.',
+    obsPlaceholder: 'Complément libre (au-delà des cases cochées). Ex. décroche après le 3e caillou du 5-cailloux, ré-essaie spontanément avant l\'arrêt.',
+    quickObservations: [
+      { key: 'barrage_ok',    label: 'Préalable barrage OK (pas d\'héminégligence)', text: 'Préalable test de barrage effectué — pas d\'héminégligence détectée.', tone: 'positive' },
+      { key: 'rey_ok',        label: 'Préalable Rey OK (pas d\'apraxie)',           text: 'Préalable figure de Rey effectué — pas d\'apraxie constructive détectée.', tone: 'positive' },
+      { key: 'prealable_skip', label: '⚠ Préalables non effectués',                 text: '⚠ Préalables (barrage / figure de Rey) NON effectués — interprétation mnésique à pondérer (peut refléter héminégligence ou apraxie constructive).', tone: 'negative' },
+      { key: 'inversions',    label: 'Inversions d\'ordre (1 pt chacun)',           text: 'Inversions d\'ordre observées (caillou correct pointé mais à mauvaise position dans la séquence, 1 pt au lieu de 2).', tone: 'neutral' },
+      { key: 'decroche_5c',   label: 'Décrochage marqué sur cailloux 5',            text: 'Décrochage marqué dès le parcours à 5 cailloux (effet de charge).', tone: 'negative' },
+      { key: 'strat_verb',    label: 'Stratégie verbale ("haut-bas-gauche")',       text: 'Stratégie verbale de mémorisation observée (« haut-bas-gauche-droite », codage verbal du parcours).', tone: 'positive' },
+      { key: 'pas_strat',     label: 'Aucune stratégie spontanée',                  text: 'Aucune stratégie de mémorisation spontanée observée.', tone: 'negative' },
+      { key: 'plainte_spatiale', label: 'Plainte spontanée d\'orientation',         text: 'Le sujet signale spontanément des difficultés d\'orientation (se perdre dans des lieux familiers, etc.).', tone: 'neutral' },
+    ],
   },
   {
     key: 'e11_visages',
@@ -400,12 +480,16 @@ const EPREUVES: Epreuve[] = [
 
 /** État interne du composant : pour chaque épreuve, on garde les scores
  *  (par clé de subtest, en string pour permettre la saisie progressive),
- *  un temps optionnel, une zone HappyNeuron, et une observation. */
+ *  un temps optionnel, une zone HappyNeuron, une observation libre, et la
+ *  liste des `quickObservations` actuellement cochées (clés stables des
+ *  cases pré-rédigées — leurs textes sont concaténés à la sortie normalisée
+ *  À CÔTÉ de l'observation libre, sans collision possible). */
 interface EpreuveState {
   scores: Record<string, string>
   temps: string
   zone: ZoneKey
   observation: string
+  cochedQuickObs: string[]
 }
 
 type State = {
@@ -434,7 +518,7 @@ const NSC_OPTIONS: Array<{ key: '1' | '2' | '3'; label: string }> = [
 function emptyEpreuveState(epreuve: Epreuve): EpreuveState {
   const scores: Record<string, string> = {}
   for (const st of epreuve.subtests) scores[st.key] = ''
-  return { scores, temps: '', zone: '', observation: '' }
+  return { scores, temps: '', zone: '', observation: '', cochedQuickObs: [] }
 }
 
 function emptyState(): State {
@@ -496,7 +580,8 @@ export default function PredimemScoresInput({ notes, onNotesChange, onResultatsC
     for (const e of EPREUVES) {
       const st = state.epreuves[e.key]
       const anyScore = e.subtests.some(s => st.scores[s.key]?.trim() !== '')
-      if (!anyScore && !st.zone && !st.observation.trim()) continue
+      const hasQuickObs = (st.cochedQuickObs?.length ?? 0) > 0
+      if (!anyScore && !st.zone && !st.observation.trim() && !hasQuickObs) continue
 
       lines.push(`--- Épreuve ${e.num} — ${e.label} ---`)
       for (const sub of e.subtests) {
@@ -513,9 +598,18 @@ export default function PredimemScoresInput({ notes, onNotesChange, onResultatsC
         const z = ZONES.find(zz => zz.key === st.zone)!
         lines.push(`Zone HappyNeuron : ${z.label} (${z.sigma}) — ${ZONE_LABEL_CLINIQUE[st.zone]}`)
       }
-      const obs = st.observation.trim()
-      if (obs) {
-        lines.push(`Observation : ${obs}`)
+      // Concaténation observations rapides cochées + observation libre.
+      // Format : "Observation : <coché 1> <coché 2> ... <libre>". Les textes
+      // des cocheboxes sont déjà ponctués (point final), la jointure les
+      // sépare par un espace simple. L'observation libre suit, séparée par
+      // un espace si présente. L'IA voit un seul bloc cohérent.
+      const cochedTexts = (st.cochedQuickObs ?? [])
+        .map(k => e.quickObservations?.find(q => q.key === k)?.text)
+        .filter(Boolean) as string[]
+      const obsLibre = st.observation.trim()
+      if (cochedTexts.length > 0 || obsLibre) {
+        const combined = [...cochedTexts, obsLibre].filter(Boolean).join(' ')
+        lines.push(`Observation : ${combined}`)
       }
       lines.push('')
     }
@@ -579,6 +673,26 @@ export default function PredimemScoresInput({ notes, onNotesChange, onResultatsC
       ...s,
       epreuves: { ...s.epreuves, [epreuveKey]: { ...s.epreuves[epreuveKey], observation: value } },
     }))
+  }
+
+  /** Toggle d'une case d'observation rapide pour une épreuve donnée.
+   *  Inverse l'appartenance de `obsKey` à `cochedQuickObs`. Le texte de la
+   *  case sera ensuite injecté (ou retiré) automatiquement dans la sortie
+   *  normalisée par le useEffect. Pas de mutation du champ observation libre. */
+  const handleQuickObsToggle = (epreuveKey: EpreuveKey, obsKey: string) => {
+    setState(s => {
+      const current = s.epreuves[epreuveKey].cochedQuickObs ?? []
+      const next = current.includes(obsKey)
+        ? current.filter(k => k !== obsKey)
+        : [...current, obsKey]
+      return {
+        ...s,
+        epreuves: {
+          ...s.epreuves,
+          [epreuveKey]: { ...s.epreuves[epreuveKey], cochedQuickObs: next },
+        },
+      }
+    })
   }
 
   return (
@@ -843,11 +957,51 @@ export default function PredimemScoresInput({ notes, onNotesChange, onResultatsC
                 </details>
               )}
 
-              {/* Observation */}
+              {/* Observations rapides (cases pré-rédigées) — gain UX majeur en
+                  passation. Cocher = texte ajouté à la sortie pour l'IA, SANS
+                  toucher au champ observation libre. */}
+              {e.quickObservations && e.quickObservations.length > 0 && (
+                <div className="mt-3">
+                  <label className="block text-xs font-medium text-gray-700 mb-1">
+                    Observations rapides (cocher pour ajouter) :
+                  </label>
+                  <div className="flex flex-wrap gap-1.5">
+                    {e.quickObservations.map(qo => {
+                      const active = (st.cochedQuickObs ?? []).includes(qo.key)
+                      // Couleur des chips selon valence clinique. Quand active :
+                      //   - positive → fond vert plein, texte blanc
+                      //   - neutral  → fond gris plein, texte blanc
+                      //   - negative → fond rouge plein, texte blanc
+                      // Quand inactive : fond très clair + texte de la valence.
+                      const palette = qo.tone === 'positive'
+                        ? { active: 'bg-emerald-600 text-white ring-emerald-700', idle: 'bg-emerald-50 text-emerald-800 hover:bg-emerald-100 border border-emerald-200' }
+                        : qo.tone === 'negative'
+                        ? { active: 'bg-rose-600 text-white ring-rose-700', idle: 'bg-rose-50 text-rose-800 hover:bg-rose-100 border border-rose-200' }
+                        : { active: 'bg-gray-700 text-white ring-gray-800', idle: 'bg-gray-50 text-gray-700 hover:bg-gray-100 border border-gray-200' }
+                      return (
+                        <button
+                          key={qo.key}
+                          type="button"
+                          onClick={() => handleQuickObsToggle(e.key, qo.key)}
+                          className={`inline-flex items-center gap-1 px-2 py-1 rounded text-[11px] font-medium transition ${active ? `${palette.active} ring-1` : palette.idle}`}
+                          title={qo.text}
+                        >
+                          {active && <span aria-hidden="true">✓</span>}
+                          {qo.label}
+                        </button>
+                      )
+                    })}
+                  </div>
+                </div>
+              )}
+
+              {/* Observation libre (au-delà des cases cochées) */}
               <div className="mt-3">
                 <div className="flex items-center justify-between mb-1">
                   <label className="text-xs font-medium text-gray-700">
-                    Observation clinique (stratégies, attitudes, types d&apos;erreurs)
+                    {e.quickObservations && e.quickObservations.length > 0
+                      ? 'Observation libre (complément aux cases cochées)'
+                      : 'Observation clinique (stratégies, attitudes, types d\'erreurs)'}
                   </label>
                   <MicButton
                     value={st.observation}
