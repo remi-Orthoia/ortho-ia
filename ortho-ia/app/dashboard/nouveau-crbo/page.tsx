@@ -13,7 +13,7 @@ import SnippetTextarea from '@/components/SnippetTextarea'
 import Tooltip from '@/components/Tooltip'
 import ConfettiBurst from '@/components/ConfettiBurst'
 import CRBOStructuredPreview from '@/components/CRBOStructuredPreview'
-import { saveDraftToDb, deleteDraftFromDb } from '@/lib/draft-sync'
+import { saveDraftToDb, deleteDraftFromDb, autoUpsertPatientFromDraft } from '@/lib/draft-sync'
 import FileDropZone from '@/components/FileDropZone'
 import ShareCRBOButton from '@/components/ShareCRBOButton'
 import MicButton from '@/components/MicButton'
@@ -695,6 +695,47 @@ function NouveauCRBOContent() {
   // Sync staleTab state → ref pour que persistDraft (closure perime dans le
   // setTimeout du debounce) lise toujours la valeur fraiche.
   useEffect(() => { staleTabRef.current = staleTab }, [staleTab])
+
+  /** Auto-creation du patient au carnet — debounce 2s pour eviter le spam DB
+   *  pendant la saisie de prenom/nom caractere par caractere. Idempotent via
+   *  un Set "prenom|nom" deja tentes. Best-effort silencieux : ne bloque
+   *  jamais le save du draft. Cf. autoUpsertPatientFromDraft pour le detail.
+   *
+   *  Pourquoi : un ortho qui commence un CRBO sur Lea ne s'attend pas a devoir
+   *  ajouter Lea manuellement dans son carnet — elle devrait apparaitre
+   *  automatiquement des qu'elle est saisie. Sinon l'ortho perd du temps en
+   *  double saisie ET le patient n'est pas auto-suggere dans les prochains CRBO. */
+  const patientAutoUpsertTriedRef = useRef<Set<string>>(new Set())
+  useEffect(() => {
+    if (!draftKey || staleTabRef.current) return
+    const userId = draftKey.split(':').pop() ?? ''
+    if (!userId) return
+    const prenom = (formData.patient_prenom ?? '').trim()
+    const nom = (formData.patient_nom ?? '').trim()
+    if (!prenom || !nom) return
+    const sigKey = `${prenom.toLowerCase()}|${nom.toLowerCase()}`
+    if (patientAutoUpsertTriedRef.current.has(sigKey)) return
+    const handle = setTimeout(() => {
+      patientAutoUpsertTriedRef.current.add(sigKey)
+      autoUpsertPatientFromDraft(userId, {
+        prenom,
+        nom,
+        date_naissance: formData.patient_ddn || null,
+        classe: formData.patient_classe || null,
+        medecin_nom: formData.medecin_nom || null,
+        medecin_tel: formData.medecin_tel || null,
+      }).catch(() => null)
+    }, 2000)
+    return () => clearTimeout(handle)
+  }, [
+    draftKey,
+    formData.patient_prenom,
+    formData.patient_nom,
+    formData.patient_ddn,
+    formData.patient_classe,
+    formData.medecin_nom,
+    formData.medecin_tel,
+  ])
 
   // Multi-onglets : si un autre onglet modifie ou supprime le brouillon, on
   // le detecte via l'event 'storage' (firefox/chrome emettent l'event UNIQUEMENT

@@ -142,6 +142,80 @@ export function pickFreshestSource(
   return dbMs > localSavedAt ? 'db' : 'local'
 }
 
+/** Champs du patient extraits d'un draft en cours pour l'auto-création
+ *  au carnet patient. Les champs vides/null sont normalisés à null pour
+ *  ne pas polluer la DB. */
+export interface DraftPatientPayload {
+  prenom: string
+  nom: string
+  date_naissance?: string | null
+  classe?: string | null
+  medecin_nom?: string | null
+  medecin_tel?: string | null
+}
+
+/**
+ * Auto-création silencieuse d'un patient au carnet à partir d'un brouillon
+ * en cours. Idempotent : si un patient (user_id + prenom + nom case-insensitive)
+ * existe déjà, no-op. Sinon insert.
+ *
+ * Pourquoi : un ortho qui commence un B-CMado sur Hélène ne s'attend pas à
+ * devoir ajouter Hélène manuellement dans son carnet — elle devrait
+ * apparaître automatiquement dès qu'elle est saisie. Sinon l'ortho perd
+ * du temps en double saisie ET le patient n'est pas auto-suggéré dans
+ * les prochains CRBO.
+ *
+ * Best-effort : retourne true si insert ok ou déjà présent, false si
+ * échec réseau / RLS / etc. NE BLOQUE JAMAIS l'auto-save du draft.
+ *
+ * Idempotence : le caller DOIT garder un Set "prenom|nom déjà tentés
+ * dans cette session" pour éviter le spam DB (cette fonction peut être
+ * appelée à chaque tick d'auto-save, ce qui serait gaspillé).
+ */
+export async function autoUpsertPatientFromDraft(
+  userId: string,
+  patient: DraftPatientPayload,
+): Promise<boolean> {
+  const prenom = (patient.prenom ?? '').trim()
+  const nom = (patient.nom ?? '').trim()
+  // Garde-fou : on n'auto-créé QUE quand les 2 sont renseignés. Évite des
+  // entrées partielles "Hé..." qui resteraient en base avec un nom vide.
+  if (!prenom || !nom) return false
+  try {
+    const supabase = createClient()
+    // Cherche un patient existant pour ce user (prenom + nom case-insensitive).
+    // Pas d'index sur LOWER(prenom)/LOWER(nom) — la table reste petite par user
+    // (typiquement quelques dizaines de patients), le coût est négligeable.
+    const { data: existing } = await supabase
+      .from('patients')
+      .select('id')
+      .eq('user_id', userId)
+      .ilike('prenom', prenom)
+      .ilike('nom', nom)
+      .limit(1)
+    if (existing && existing.length > 0) return true // déjà au carnet
+    const { error } = await supabase
+      .from('patients')
+      .insert({
+        user_id: userId,
+        prenom,
+        nom,
+        date_naissance: patient.date_naissance || null,
+        classe: (patient.classe ?? '').trim() || null,
+        medecin_nom: (patient.medecin_nom ?? '').trim() || null,
+        medecin_tel: (patient.medecin_tel ?? '').trim() || null,
+      })
+    if (error) {
+      console.warn('[draft-sync] autoUpsertPatient failed:', error.message?.slice(0, 200))
+      return false
+    }
+    return true
+  } catch (err: any) {
+    console.warn('[draft-sync] autoUpsertPatient error:', err?.message?.slice(0, 200))
+    return false
+  }
+}
+
 /** Aperçu d'un brouillon enrichi pour l'affichage en liste (Historique).
  *  Couvre les 3 kinds (langage / math-b-cm / math-b-cmado). */
 export interface DraftListItem {

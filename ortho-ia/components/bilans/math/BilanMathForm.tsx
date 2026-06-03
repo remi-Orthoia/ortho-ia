@@ -1,6 +1,6 @@
 'use client'
 
-import { useEffect, useMemo, useState } from 'react'
+import { useEffect, useMemo, useRef, useState } from 'react'
 import { useRouter } from 'next/navigation'
 import { Loader2, Sparkles, Download, Save, X, MessageSquare } from 'lucide-react'
 import MatriceSection from './MatriceSection'
@@ -28,7 +28,7 @@ import type {
 import { readMathBilanHandoff, clearMathBilanHandoff } from '@/lib/bilans/math/handoff'
 import DemoAutofillButton from '@/components/DemoAutofillButton'
 import { buildDemoMathDraft } from '@/lib/demo-autofill'
-import { saveDraftToDb, loadDraftFromDb, deleteDraftFromDb, pickFreshestSource, type DraftKind } from '@/lib/draft-sync'
+import { saveDraftToDb, loadDraftFromDb, deleteDraftFromDb, pickFreshestSource, autoUpsertPatientFromDraft, type DraftKind } from '@/lib/draft-sync'
 
 /**
  * Formulaire complet d'un bilan B-CM / B-CMado en mode MATRICE 2D.
@@ -316,6 +316,42 @@ export default function BilanMathForm({ grille }: BilanMathFormProps) {
     }, 400)
     return () => clearTimeout(handle)
   }, [draft, draftKey, hydrated, currentUserId, grille.id])
+
+  /** Auto-création du patient au carnet — debounce 2s pour eviter le spam
+   *  DB pendant la saisie de prenom/nom caractere par caractere. Idempotent :
+   *  un Set des "prenom|nom" deja tentes evite de retry pour le meme couple
+   *  (si l'ortho corrige une typo et revient au nom original, c'est OK).
+   *  Best-effort silencieux : ne bloque jamais le save du draft. */
+  const patientAutoUpsertTried = useRef<Set<string>>(new Set())
+  useEffect(() => {
+    if (!hydrated || !currentUserId) return
+    const prenom = (draft.patient.prenom ?? '').trim()
+    const nom = (draft.patient.nom ?? '').trim()
+    if (!prenom || !nom) return
+    const sigKey = `${prenom.toLowerCase()}|${nom.toLowerCase()}`
+    if (patientAutoUpsertTried.current.has(sigKey)) return
+    const handle = setTimeout(() => {
+      patientAutoUpsertTried.current.add(sigKey)
+      autoUpsertPatientFromDraft(currentUserId, {
+        prenom,
+        nom,
+        date_naissance: draft.patient.date_naissance || null,
+        classe: draft.patient.classe || null,
+        medecin_nom: draft.medecin?.nom || null,
+        medecin_tel: draft.medecin?.tel || null,
+      }).catch(() => null)
+    }, 2000)
+    return () => clearTimeout(handle)
+  }, [
+    hydrated,
+    currentUserId,
+    draft.patient.prenom,
+    draft.patient.nom,
+    draft.patient.date_naissance,
+    draft.patient.classe,
+    draft.medecin?.nom,
+    draft.medecin?.tel,
+  ])
 
   // ===== Mutateurs =====
   const handleEpreuveChange = (epreuveId: string, next: EpreuveState) => {
