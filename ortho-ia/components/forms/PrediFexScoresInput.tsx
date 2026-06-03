@@ -89,6 +89,18 @@ interface Subtest {
   hint?: string
 }
 
+/** Case à cocher d'observation rapide — gain UX en passation : l'ortho coche
+ *  les patterns observés au lieu de re-taper. Les textes des cases cochées
+ *  sont concaténés dans la sortie normalisée à CÔTÉ de l'observation libre.
+ *  Pattern aligné PREDIMEM (cf. PredimemScoresInput.tsx). */
+interface QuickObs {
+  key: string
+  label: string
+  text: string
+  /** 'positive' = signe favorable, 'neutral' = factuel, 'negative' = signe d'alerte. */
+  tone?: 'positive' | 'neutral' | 'negative'
+}
+
 interface Epreuve {
   key: EpreuveKey
   num: string
@@ -105,6 +117,10 @@ interface Epreuve {
   interpretation: string[]
   /** Placeholder pour la zone observation. */
   obsPlaceholder: string
+  /** Cases d'observation rapide à cocher (optionnel). Pas toutes les cartes
+   *  équipées en v1 — les 5 prioritaires manuellement choisies (01, 04, 07,
+   *  08, 09) par retour terrain. */
+  quickObservations?: QuickObs[]
 }
 
 const EPREUVES: Epreuve[] = [
@@ -132,7 +148,15 @@ const EPREUVES: Epreuve[] = [
       'Le manuel (p. 27-28) distingue 4 types de difficulté à observer : compréhension verbale, lexico-sémantique, accès au lexique, processus exécutifs.',
       'À croiser avec épreuves 04 (Une syllabe sur deux) et 09 (Équivalences) pour confirmer un profil flexibilité.',
     ],
-    obsPlaceholder: 'Ex. NSC 2, 18 mots en 1 min (10 villes + 8 pays). 4 persévérations sur la catégorie villes en début. Reprend après recadrage. Pas d\'erreur catégorielle.',
+    obsPlaceholder: 'Complément libre (au-delà des cases cochées). Ex. NSC 2, 18 mots en 1 min, lenteur en milieu d\'épreuve.',
+    quickObservations: [
+      { key: 'alternance_rompue', label: 'Alternance rompue (≥ 2 mots même catégorie)', text: 'Alternance rompue à plusieurs reprises (2+ mots de la même catégorie consécutifs, 1 pt seulement).', tone: 'negative' },
+      { key: 'persev_cat',        label: 'Persévérations sur une catégorie',           text: 'Persévérations marquées sur une des deux catégories.', tone: 'negative' },
+      { key: 'exemples_redonnes', label: 'Exemples de la consigne redonnés',           text: 'Exemples donnés dans la consigne redonnés par le sujet (non comptabilisés — manuel p. 27).', tone: 'neutral' },
+      { key: 'desequilibre',      label: 'Production très déséquilibrée entre cat.',    text: 'Production très déséquilibrée entre les deux catégories (une beaucoup plus productive).', tone: 'neutral' },
+      { key: 'lenteur',           label: 'Lenteur d\'accès lexical',                    text: 'Lenteur d\'accès lexical observée (pauses longues entre mots).', tone: 'neutral' },
+      { key: 'deuxieme_min',      label: '2e minute effectuée (qualitative)',           text: 'Deuxième minute proposée pour analyse qualitative (non comptabilisée — manuel p. 25).', tone: 'neutral' },
+    ],
   },
   {
     key: 'e02_texte_mettre_ordre',
@@ -208,7 +232,16 @@ const EPREUVES: Epreuve[] = [
       'Effondrement sur les mots 3-4 syllabes uniquement = surcharge MdT phonologique (croiser avec ép. 05 et empan envers).',
       'Échec dès les mots 2 syllabes = fragilité majeure d\'inhibition (croiser avec ép. 07 et 09).',
     ],
-    obsPlaceholder: 'Ex. mots 2 syl OK (8/8). Mots 3 syl : 12/18, dit le mot entier puis se reprend sur 3 items. Mots 4 syl : 8/16, demande répétition 2×.',
+    obsPlaceholder: 'Complément libre (au-delà des cases cochées). Ex. fatigue audible sur les mots 4 syl, conscient de ses erreurs.',
+    quickObservations: [
+      { key: 'mot_entier_reprend',   label: 'Dit le mot entier puis se reprend',          text: 'Dit le mot entier puis se reprend sur certains items (conscience de l\'erreur).', tone: 'neutral' },
+      { key: 'compose_2_successives', label: 'Compose avec 2 syllabes successives (défaut inhibition)', text: 'Compose un mot avec 2 syllabes successives (au lieu d\'1 sur 2) — défaut d\'inhibition de l\'autre syllabe (manuel p. 43).', tone: 'negative' },
+      { key: 'repetition_audio',     label: 'Répétition audio demandée (−2 pts)',         text: 'Répétitions audio demandées par le sujet (−2 pts par répétition).', tone: 'negative' },
+      { key: 'ecrit_aide',           label: '⚠ A écrit pour s\'aider → ÉCHEC (score = 0)', text: '⚠ Le sujet a écrit pour s\'aider — épreuve considérée comme ÉCHOUÉE et score = 0 (consigne manuel p. 43, règle "écrire = 0").', tone: 'negative' },
+      { key: 'consigne_67',          label: 'Consigne « un à la fois » donnée (items 6-7)', text: 'Consigne officielle « ne recomposer qu\'un mot à la fois » donnée sur les items 6-7 (manuel p. 43).', tone: 'neutral' },
+      { key: 'arret_2_echecs',       label: 'Arrêt après 2 items consécutifs échoués',    text: 'Arrêt déclenché après 2 items consécutivement échoués dans une catégorie (consigne manuel).', tone: 'neutral' },
+      { key: 'decroche_complexite',  label: 'Décrochage progressif avec la complexité',    text: 'Décrochage progressif observable avec l\'augmentation de la complexité syllabique.', tone: 'negative' },
+    ],
   },
   {
     key: 'e05_mise_a_jour',
@@ -288,7 +321,14 @@ const EPREUVES: Epreuve[] = [
       'Réponse intuitive systématiquement maintenue malgré l\'erreur signalée → fragilité d\'inhibition (croiser avec ép. 04 et 09).',
       'À croiser avec ép. 09 (Équivalences) pour profil de raisonnement abstrait.',
     ],
-    obsPlaceholder: 'Ex. Q1 réussie d\'emblée. Q2 : tombe dans le piège « plus que » → additionne. Se reprend après reformulation. Q3 et Q4 échouées. Score 4+0+0+0 = 4/10.',
+    obsPlaceholder: 'Complément libre (au-delà des cases cochées). Ex. raisonnement à voix haute, dessine un axe temporel pour s\'aider.',
+    quickObservations: [
+      { key: 'piege_se_reprend',      label: 'Tombe dans le piège « plus que » puis se reprend', text: 'Tombe dans le piège « plus que » (additionne au lieu de soustraire) puis se reprend spontanément.', tone: 'neutral' },
+      { key: 'piege_pas_reprend',     label: 'Tombe dans le piège et ne se reprend pas',          text: 'Tombe dans le piège « plus que » et ne se reprend pas (défaut du SAS / sensibilité à l\'interférence — manuel p. 60).', tone: 'negative' },
+      { key: 'reformulation_aide',    label: 'Reformulation/aide examinateur (−3 pts)',           text: 'Reformulation ou aide examinateur sur l\'énoncé (−3 pts par item concerné).', tone: 'negative' },
+      { key: 'q1_echec',              label: 'Q1 (la plus simple) échouée',                       text: 'Q1 (la plus simple) échouée — fragilité majeure d\'analyse logique ou de compréhension d\'énoncé.', tone: 'negative' },
+      { key: 'voix_haute',            label: 'Raisonnement à voix haute',                         text: 'Raisonnement à voix haute observé (stratégie de désamorçage du piège).', tone: 'neutral' },
+    ],
   },
   {
     key: 'e08_sudofex',
@@ -318,7 +358,15 @@ const EPREUVES: Epreuve[] = [
       'Le manuel décrit 6 stratégies de progression typiques (p. 66) à observer pour qualifier la performance.',
       'Croiser avec ép. 09 et 10 pour profil de raisonnement / planification globale.',
     ],
-    obsPlaceholder: 'Ex. MIREILLE OK. MARIE réalisée : 14/16, 1 erreur de couleur sur la dernière ligne (effet Stroop modéré sur mapping fixe). Temps 9 min (NSC 3, 55 ans → > seuil 8 min). GUILLAUME non tentée.',
+    obsPlaceholder: 'Complément libre (au-delà des cases cochées). Ex. MIREILLE OK d\'emblée, GUILLAUME non tentée par contrainte de temps.',
+    quickObservations: [
+      { key: 'mireille_pas_compris', label: 'MIREILLE non compris → bascule ANNICK',       text: 'Essai MIREILLE non compris fait à deux — bascule sur grille ANNICK (consigne manuel p. 63).', tone: 'negative' },
+      { key: 'marie_echec',          label: 'Échec MARIE → bascule ANNICK',                text: 'Plus de 5 erreurs ou abandon sur la grille MARIE — bascule sur grille ANNICK (consigne manuel p. 63).', tone: 'negative' },
+      { key: 'confusion_stroop',     label: 'Confusion couleur stylo vs nom écrit',         text: 'Confusion couleur du stylo vs nom de couleur écrit — défaut d\'inhibition (effet Stroop).', tone: 'negative' },
+      { key: 'strategie_lignes',     label: 'Stratégie par lignes / colonnes observée',     text: 'Stratégie de résolution par lignes / colonnes observée (l\'une des 6 stratégies typiques manuel p. 66).', tone: 'positive' },
+      { key: 'aide_partielle',       label: 'Aide partielle examinateur (−3)',              text: 'Aide partielle examinateur (−3 pts).', tone: 'negative' },
+      { key: 'aide_majeure',         label: 'Aide majeure examinateur (−6)',                text: 'Aide majeure examinateur (−6 pts).', tone: 'negative' },
+    ],
   },
   {
     key: 'e09_equivalences',
@@ -347,7 +395,16 @@ const EPREUVES: Epreuve[] = [
       'Réussit Formes et Feux mais effondre sur Étoiles / Flèches → effet de complexité normal, à pondérer selon NSC.',
       'Réussit le subtest le plus dur sans aide → flexibilité analogique préservée, profil exécutif robuste.',
     ],
-    obsPlaceholder: 'Ex. LUNES OK. Formes 8/8 facile. Feux 10/12 (1 hésitation). Étoiles 12/18, bloque sur les analogies les plus abstraites. Flèches non tenté (échec annoncé).',
+    obsPlaceholder: 'Complément libre (au-delà des cases cochées). Ex. LUNES OK, abandonne Flèches après item 2 — patient frustré.',
+    quickObservations: [
+      { key: 'lunes_pas_compris',      label: 'LUNES non compris → épreuve abandonnée',          text: 'Essai LUNES non compris — épreuve abandonnée (consigne manuel p. 71). Orienter vers ép. 10 Itinéraire.', tone: 'negative' },
+      { key: 'scolarite_lt_10',        label: '⚠ Scolarité < 10 ans → épreuve sautée',           text: '⚠ Scolarité < 10 ans — épreuve SAUTÉE même si LUNES OK (consigne manuel p. 75 : la scolarité prime sur l\'essai).', tone: 'negative' },
+      { key: 'bloque_abstraction',     label: 'Bloque sur abstraction des prémisses',            text: 'Bloque sur l\'abstraction des prémisses — fragilité d\'abstraction (croiser ép. 07 et 08).', tone: 'negative' },
+      { key: 'demande_valeurs',        label: 'Demande des valeurs concrètes pour raisonner',    text: 'Demande des valeurs ou exemples concrets pour pouvoir raisonner (incapacité à manipuler l\'abstrait pur).', tone: 'negative' },
+      { key: 'reussit_sans_aide',      label: 'Réussit le subtest le plus dur sans aide',        text: 'Réussit le subtest le plus dur sans aide — flexibilité analogique préservée, profil exécutif robuste.', tone: 'positive' },
+      { key: 'aide_partielle_09',      label: 'Aide partielle examinateur (−3)',                 text: 'Aide partielle examinateur (−3 pts).', tone: 'negative' },
+      { key: 'aide_majeure_09',        label: 'Aide majeure examinateur (−6)',                   text: 'Aide majeure examinateur (−6 pts).', tone: 'negative' },
+    ],
   },
   {
     key: 'e10_itineraire',
@@ -389,13 +446,14 @@ const NSC_OPTIONS: Array<{ key: '1' | '2' | '3'; label: string }> = [
   { key: '3', label: 'NSC 3 — ≥ Bac+4 (haute réserve cognitive)' },
 ]
 
-/** État d'une épreuve : scores par subtest, temps libre, zone, observation,
- *  toggle non passée. */
+/** État d'une épreuve : scores par subtest, temps libre, zone, observation
+ *  libre, liste des cases d'observation rapide cochées, toggle non passée. */
 interface EpreuveState {
   scores: Record<string, string>
   temps: string
   zone: ZoneKey
   observation: string
+  cochedQuickObs: string[]
   non_passee: boolean
 }
 
@@ -408,7 +466,7 @@ interface State {
 function emptyEpreuveState(e: Epreuve): EpreuveState {
   const scores: Record<string, string> = {}
   for (const st of e.subtests) scores[st.key] = ''
-  return { scores, temps: '', zone: '', observation: '', non_passee: false }
+  return { scores, temps: '', zone: '', observation: '', cochedQuickObs: [], non_passee: false }
 }
 
 function emptyState(): State {
@@ -468,9 +526,17 @@ export default function PrediFexScoresInput({ notes, onNotesChange, onResultatsC
 
     for (const e of EPREUVES) {
       const st = state.epreuves[e.key]
-      if (st.non_passee) continue
+      // Épreuve explicitement non passée : ligne d'info à l'IA pour qu'elle
+      // n'interprète pas l'absence comme un échec (aligné pattern PREDIMEM).
+      if (st.non_passee) {
+        lines.push(`--- Épreuve ${e.num} — ${e.label} ---`)
+        lines.push('Non passée (passation écourtée / hypothèse clinique ciblée — ne pas interpréter).')
+        lines.push('')
+        continue
+      }
       const anyScore = e.subtests.some(s => st.scores[s.key]?.trim() !== '')
-      if (!anyScore && !st.zone && !st.observation.trim() && !st.temps.trim()) continue
+      const hasQuickObs = (st.cochedQuickObs?.length ?? 0) > 0
+      if (!anyScore && !st.zone && !st.observation.trim() && !st.temps.trim() && !hasQuickObs) continue
 
       lines.push(`--- Épreuve ${e.num} — ${e.label} ---`)
       for (const sub of e.subtests) {
@@ -487,8 +553,15 @@ export default function PrediFexScoresInput({ notes, onNotesChange, onResultatsC
         const z = ZONES.find(zz => zz.key === st.zone)!
         lines.push(`Zone HappyNeuron : ${z.label} (${z.sigma}) — ${ZONE_LABEL_CLINIQUE[st.zone]}`)
       }
-      const obs = st.observation.trim()
-      if (obs) lines.push(`Observation : ${obs}`)
+      // Combine textes des cases cochées + observation libre (aligné PREDIMEM).
+      const cochedTexts = (st.cochedQuickObs ?? [])
+        .map(k => e.quickObservations?.find(q => q.key === k)?.text)
+        .filter(Boolean) as string[]
+      const obsLibre = st.observation.trim()
+      if (cochedTexts.length > 0 || obsLibre) {
+        const combined = [...cochedTexts, obsLibre].filter(Boolean).join(' ')
+        lines.push(`Observation : ${combined}`)
+      }
       lines.push('')
     }
 
@@ -533,6 +606,23 @@ export default function PrediFexScoresInput({ notes, onNotesChange, onResultatsC
       ...s,
       epreuves: { ...s.epreuves, [epreuveKey]: { ...s.epreuves[epreuveKey], [field]: value } },
     }))
+  }
+
+  /** Toggle d'une case d'observation rapide — pattern aligné PREDIMEM. */
+  const handleQuickObsToggle = (epreuveKey: EpreuveKey, obsKey: string) => {
+    setState(s => {
+      const current = s.epreuves[epreuveKey].cochedQuickObs ?? []
+      const next = current.includes(obsKey)
+        ? current.filter(k => k !== obsKey)
+        : [...current, obsKey]
+      return {
+        ...s,
+        epreuves: {
+          ...s.epreuves,
+          [epreuveKey]: { ...s.epreuves[epreuveKey], cochedQuickObs: next },
+        },
+      }
+    })
   }
 
   // Index dans tempsAlerteMinParAge selon la tranche sélectionnée
@@ -816,11 +906,45 @@ export default function PrediFexScoresInput({ notes, onNotesChange, onResultatsC
                     </ul>
                   </details>
 
-                  {/* Observation */}
+                  {/* Observations rapides (cases pré-rédigées) — gain UX
+                      passation. Pattern aligné PREDIMEM. */}
+                  {e.quickObservations && e.quickObservations.length > 0 && (
+                    <div className="mt-3">
+                      <label className="block text-xs font-medium text-gray-700 mb-1">
+                        Observations rapides (cocher pour ajouter) :
+                      </label>
+                      <div className="flex flex-wrap gap-1.5">
+                        {e.quickObservations.map(qo => {
+                          const active = (st.cochedQuickObs ?? []).includes(qo.key)
+                          const palette = qo.tone === 'positive'
+                            ? { active: 'bg-emerald-600 text-white ring-emerald-700', idle: 'bg-emerald-50 text-emerald-800 hover:bg-emerald-100 border border-emerald-200' }
+                            : qo.tone === 'negative'
+                            ? { active: 'bg-rose-600 text-white ring-rose-700', idle: 'bg-rose-50 text-rose-800 hover:bg-rose-100 border border-rose-200' }
+                            : { active: 'bg-gray-700 text-white ring-gray-800', idle: 'bg-gray-50 text-gray-700 hover:bg-gray-100 border border-gray-200' }
+                          return (
+                            <button
+                              key={qo.key}
+                              type="button"
+                              onClick={() => handleQuickObsToggle(e.key, qo.key)}
+                              className={`inline-flex items-center gap-1 px-2 py-1 rounded text-[11px] font-medium transition ${active ? `${palette.active} ring-1` : palette.idle}`}
+                              title={qo.text}
+                            >
+                              {active && <span aria-hidden="true">✓</span>}
+                              {qo.label}
+                            </button>
+                          )
+                        })}
+                      </div>
+                    </div>
+                  )}
+
+                  {/* Observation libre (complément aux cases cochées si présentes) */}
                   <div className="mt-3">
                     <div className="flex items-center justify-between mb-1">
                       <label className="text-xs font-medium text-gray-700">
-                        Observation clinique (stratégies, attitudes, types d&apos;erreurs)
+                        {e.quickObservations && e.quickObservations.length > 0
+                          ? 'Observation libre (complément aux cases cochées)'
+                          : 'Observation clinique (stratégies, attitudes, types d\'erreurs)'}
                       </label>
                       <MicButton
                         value={st.observation}
