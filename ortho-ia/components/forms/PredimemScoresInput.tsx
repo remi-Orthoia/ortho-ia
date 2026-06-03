@@ -483,13 +483,20 @@ const EPREUVES: Epreuve[] = [
  *  un temps optionnel, une zone HappyNeuron, une observation libre, et la
  *  liste des `quickObservations` actuellement cochées (clés stables des
  *  cases pré-rédigées — leurs textes sont concaténés à la sortie normalisée
- *  À CÔTÉ de l'observation libre, sans collision possible). */
+ *  À CÔTÉ de l'observation libre, sans collision possible).
+ *
+ *  `non_passee` permet à l'ortho de marquer explicitement une épreuve non
+ *  passée (fatigue patient, hypothèse clinique ciblée, contrainte de temps).
+ *  Aligné sur le pattern PrediFex/PrediLac. Cache les sous-champs en UI,
+ *  exclut l'épreuve des compteurs de zones, et sort une ligne explicite à
+ *  l'IA pour qu'elle n'interprète pas l'absence comme un échec. */
 interface EpreuveState {
   scores: Record<string, string>
   temps: string
   zone: ZoneKey
   observation: string
   cochedQuickObs: string[]
+  non_passee: boolean
 }
 
 type State = {
@@ -518,7 +525,7 @@ const NSC_OPTIONS: Array<{ key: '1' | '2' | '3'; label: string }> = [
 function emptyEpreuveState(epreuve: Epreuve): EpreuveState {
   const scores: Record<string, string> = {}
   for (const st of epreuve.subtests) scores[st.key] = ''
-  return { scores, temps: '', zone: '', observation: '', cochedQuickObs: [] }
+  return { scores, temps: '', zone: '', observation: '', cochedQuickObs: [], non_passee: false }
 }
 
 function emptyState(): State {
@@ -542,22 +549,35 @@ export default function PredimemScoresInput({ notes, onNotesChange, onResultatsC
     let count = 0
     for (const e of EPREUVES) {
       const st = state.epreuves[e.key]
+      if (st.non_passee) continue
       const anyScore = e.subtests.some(s => st.scores[s.key]?.trim() !== '')
       if (anyScore) count++
     }
     return count
   }, [state.epreuves])
 
-  /** Compte des épreuves dans chaque zone HappyNeuron pour le badge global. */
+  /** Compte des épreuves dans chaque zone HappyNeuron pour le badge global.
+   *  Les épreuves marquées non_passee sont exclues (elles n'ont pas de zone
+   *  cliniquement significative). */
   const zoneCounts = useMemo(() => {
     const counts: Record<Exclude<ZoneKey, ''>, number> = {
       vert_fonce: 0, vert_clair: 0, jaune: 0, orange: 0, rouge: 0,
     }
     for (const e of EPREUVES) {
-      const z = state.epreuves[e.key].zone
-      if (z) counts[z]++
+      const st = state.epreuves[e.key]
+      if (st.non_passee) continue
+      if (st.zone) counts[st.zone]++
     }
     return counts
+  }, [state.epreuves])
+
+  /** Compte des épreuves explicitement marquées non passées (pour info à l'IA). */
+  const nonPasseesCount = useMemo(() => {
+    let count = 0
+    for (const e of EPREUVES) {
+      if (state.epreuves[e.key].non_passee) count++
+    }
+    return count
   }, [state.epreuves])
 
   /** Émet la string normalisée à chaque changement. Format lisible par
@@ -579,6 +599,14 @@ export default function PredimemScoresInput({ notes, onNotesChange, onResultatsC
 
     for (const e of EPREUVES) {
       const st = state.epreuves[e.key]
+      // Épreuve explicitement non passée : on l'indique à l'IA pour qu'elle
+      // n'interprète pas l'absence comme un échec (cf. PrediFex/PrediLac).
+      if (st.non_passee) {
+        lines.push(`--- Épreuve ${e.num} — ${e.label} ---`)
+        lines.push('Non passée (passation écourtée / hypothèse clinique ciblée — ne pas interpréter).')
+        lines.push('')
+        continue
+      }
       const anyScore = e.subtests.some(s => st.scores[s.key]?.trim() !== '')
       const hasQuickObs = (st.cochedQuickObs?.length ?? 0) > 0
       if (!anyScore && !st.zone && !st.observation.trim() && !hasQuickObs) continue
@@ -675,6 +703,15 @@ export default function PredimemScoresInput({ notes, onNotesChange, onResultatsC
     }))
   }
 
+  /** Toggle "Épreuve non passée" : marque explicitement une épreuve volontairement
+   *  écourtée (fatigue / hypothèse ciblée / temps). Aligné PrediFex/PrediLac. */
+  const handleNonPasseeToggle = (epreuveKey: EpreuveKey, checked: boolean) => {
+    setState(s => ({
+      ...s,
+      epreuves: { ...s.epreuves, [epreuveKey]: { ...s.epreuves[epreuveKey], non_passee: checked } },
+    }))
+  }
+
   /** Toggle d'une case d'observation rapide pour une épreuve donnée.
    *  Inverse l'appartenance de `obsKey` à `cochedQuickObs`. Le texte de la
    *  case sera ensuite injecté (ou retiré) automatiquement dans la sortie
@@ -767,10 +804,13 @@ export default function PredimemScoresInput({ notes, onNotesChange, onResultatsC
       </div>
 
       {/* Synthèse zones en bandeau (visible dès la 1ère épreuve saisie) */}
-      {totalEpreuvesSaisies > 0 && (
+      {(totalEpreuvesSaisies > 0 || nonPasseesCount > 0) && (
         <div className="rounded-lg border border-gray-200 bg-gray-50 p-3">
           <p className="text-xs font-semibold text-gray-700 mb-2">
             Répartition par zone — {totalEpreuvesSaisies}/11 épreuves saisies
+            {nonPasseesCount > 0 && (
+              <span className="ml-2 font-normal text-gray-500">({nonPasseesCount} non passée{nonPasseesCount > 1 ? 's' : ''})</span>
+            )}
           </p>
           <div className="flex flex-wrap gap-1.5">
             {ZONES.map(z => {
@@ -818,15 +858,31 @@ export default function PredimemScoresInput({ notes, onNotesChange, onResultatsC
           const subtest3bBloque = e.key === 'e03_mdt' && !isNaN(subtest3a) && subtest3a < 18
 
           return (
-            <div key={e.key} className="rounded-lg border border-gray-200 bg-white p-4">
+            <div key={e.key} className={`rounded-lg border bg-white p-4 ${st.non_passee ? 'border-gray-300 opacity-60' : 'border-gray-200'}`}>
               <div className="flex items-start justify-between gap-3 flex-wrap mb-2">
                 <div className="flex-1 min-w-0">
                   <p className="text-xs font-mono text-gray-400">Épreuve {e.num}</p>
                   <h4 className="text-sm font-semibold text-gray-900">{e.label}</h4>
-                  <p className="text-xs text-gray-500 mt-0.5 leading-relaxed">{e.description}</p>
+                  {!st.non_passee && (
+                    <p className="text-xs text-gray-500 mt-0.5 leading-relaxed">{e.description}</p>
+                  )}
+                  {st.non_passee && (
+                    <p className="text-xs italic text-gray-500 mt-0.5">Épreuve marquée non passée — pas d&apos;interprétation par l&apos;IA.</p>
+                  )}
                 </div>
+                <label className="text-xs text-gray-600 flex items-center gap-1.5 shrink-0 cursor-pointer select-none">
+                  <input
+                    type="checkbox"
+                    checked={st.non_passee}
+                    onChange={(ev) => handleNonPasseeToggle(e.key, ev.target.checked)}
+                    className="rounded"
+                  />
+                  Épreuve non passée
+                </label>
               </div>
 
+              {!st.non_passee && (
+              <>
               {/* Hint texte selon NSC (épreuve 02 — texte lu) */}
               {showTexte02NscHint && (
                 <div className="mt-2 px-2 py-1.5 rounded bg-indigo-50 border border-indigo-100 text-[11px] text-indigo-800">
@@ -1016,6 +1072,8 @@ export default function PredimemScoresInput({ notes, onNotesChange, onResultatsC
                   className="w-full px-2 py-1.5 border border-gray-300 rounded text-sm leading-relaxed resize-y focus:outline-none focus:ring-2 focus:ring-indigo-400"
                 />
               </div>
+              </>
+              )}
             </div>
           )
         })}
