@@ -309,10 +309,27 @@ export async function POST(request: NextRequest) {
     // canonique et laisse passer "Melina" alors qu'on veut "Méline" (cas
     // typique des commentaires qualitatifs dictes a la voix ou paraphrases
     // par Claude en phase extract).
+    //
+    // STRIP TAGS XML-LIKE : Claude hallucine parfois des tags de fermeture
+    // au format `</anamnese_redigee>`, `</motif_reformule>`, etc. en fin de
+    // texte (contamination par les noms de champs JSON du tool-schema, vu
+    // en prod sur EVALEO renouvellement 2026-06-03). On strip toute balise
+    // `<...>` ou `</...>` qui matche un nom de champ CRBO connu.
+    const CRBO_FIELD_TAGS = [
+      'anamnese_redigee', 'motif_reformule', 'diagnostic', 'recommandations',
+      'conclusion', 'points_forts', 'difficultes_identifiees',
+      'axes_therapeutiques', 'pap_suggestions', 'bilans_complementaires',
+      'synthese_evolution', 'reasoning_clinical', 'domains', 'epreuves',
+      'sous_epreuves', 'commentaire', 'domain_commentaires',
+    ]
+    const TAG_LEAK_RE = new RegExp(`</?\\s*(?:${CRBO_FIELD_TAGS.join('|')})\\s*/?\\s*>`, 'gi')
+    const stripLeakedTags = (t: string) => t.replace(TAG_LEAK_RE, '')
+
     const sanitizeFreeText = (t: string | undefined) => {
       if (!t) return ''
       const { text: normalized } = normalizePatientName(t, pn, pno)
-      return scrubText(normalized, scrubList) ?? ''
+      const stripped = stripLeakedTags(normalized)
+      return scrubText(stripped, scrubList) ?? ''
     }
     const anonymizedExtracted: ExtractedCRBO | undefined = extracted
       ? {
@@ -583,16 +600,21 @@ export async function POST(request: NextRequest) {
                 Array.isArray(rawSynth.domain_commentaires) ? rawSynth.domain_commentaires : [],
                 reverseMap,
               )
+              // Strip tags XML-like halluciés sur tous les fields free-text
+              // (bug EVALEO renouvellement : </anamnese_redigee> en fin de texte).
               const result: SynthesizedCRBO = {
-                points_forts: rehydrated.points_forts ?? '',
-                difficultes_identifiees: rehydrated.difficultes_identifiees ?? '',
-                diagnostic: rehydrated.diagnostic,
-                recommandations: rehydrated.recommandations,
-                axes_therapeutiques: rehydrated.axes_therapeutiques ?? [],
-                conclusion: rehydrated.conclusion,
-                pap_suggestions: rehydrated.pap_suggestions ?? [],
-                bilans_complementaires: rehydrated.bilans_complementaires ?? [],
-                domain_commentaires,
+                points_forts: stripLeakedTags(rehydrated.points_forts ?? ''),
+                difficultes_identifiees: stripLeakedTags(rehydrated.difficultes_identifiees ?? ''),
+                diagnostic: stripLeakedTags(rehydrated.diagnostic),
+                recommandations: stripLeakedTags(rehydrated.recommandations),
+                axes_therapeutiques: (rehydrated.axes_therapeutiques ?? []).map((a) => stripLeakedTags(a)),
+                conclusion: stripLeakedTags(rehydrated.conclusion),
+                pap_suggestions: (rehydrated.pap_suggestions ?? []).map((p) => stripLeakedTags(p)),
+                bilans_complementaires: (rehydrated.bilans_complementaires ?? []).map((b) => stripLeakedTags(b)),
+                domain_commentaires: (domain_commentaires as any[]).map((dc) => ({
+                  ...dc,
+                  commentaire: stripLeakedTags(dc?.commentaire ?? ''),
+                })),
                 synthese_evolution: rehydrated.synthese_evolution ?? null,
                 reasoning_clinical: (rawSynth as any).reasoning_clinical ?? null,
               }
@@ -600,6 +622,25 @@ export async function POST(request: NextRequest) {
             } else {
               const rawStructure = toolUseBlock.input as CRBOStructure
               const structure = rehydrate(rawStructure, reverseMap)
+              // Strip tags XML-like halluciés sur tous les fields free-text
+              // de la structure complète (flow legacy 'full' single-shot).
+              structure.anamnese_redigee = stripLeakedTags(structure.anamnese_redigee || '')
+              if (structure.motif_reformule) structure.motif_reformule = stripLeakedTags(structure.motif_reformule)
+              if (structure.diagnostic) structure.diagnostic = stripLeakedTags(structure.diagnostic)
+              if (structure.recommandations) structure.recommandations = stripLeakedTags(structure.recommandations)
+              if (structure.conclusion) structure.conclusion = stripLeakedTags(structure.conclusion)
+              if (structure.points_forts) structure.points_forts = stripLeakedTags(structure.points_forts)
+              if (structure.difficultes_identifiees) structure.difficultes_identifiees = stripLeakedTags(structure.difficultes_identifiees)
+              if (structure.axes_therapeutiques) structure.axes_therapeutiques = structure.axes_therapeutiques.map(stripLeakedTags)
+              if (structure.pap_suggestions) structure.pap_suggestions = structure.pap_suggestions.map(stripLeakedTags)
+              if (structure.bilans_complementaires) structure.bilans_complementaires = structure.bilans_complementaires.map(stripLeakedTags)
+              for (const domain of structure.domains || []) {
+                if (domain.commentaire) domain.commentaire = stripLeakedTags(domain.commentaire)
+                for (const e of domain.epreuves || []) {
+                  if (e.interpretation) e.interpretation = stripLeakedTags(e.interpretation)
+                  if (e.commentaire) e.commentaire = stripLeakedTags(e.commentaire)
+                }
+              }
               const crbo = structureToText(structure)
               send({ type: 'complete', phase: 'full', crbo, structure })
             }
@@ -685,10 +726,22 @@ export async function POST(request: NextRequest) {
         conclusion: '',
       }
       const rehydrated = rehydrate(partialStructure, reverseMap)
+      // Strip tags XML-like halluciés par Claude (cf. stripLeakedTags ci-dessus,
+      // bug EVALEO renouvellement 2026-06-03 : </anamnese_redigee> en fin de
+      // texte). On nettoie sur la sortie de phase 'extract' renvoyée au client
+      // — la phase 'synthesize' utilise déjà sanitizeFreeText qui strippe.
       const result: ExtractedCRBO = {
-        anamnese_redigee: rehydrated.anamnese_redigee,
-        motif_reformule: rehydrated.motif_reformule || '',
-        domains: rehydrated.domains,
+        anamnese_redigee: stripLeakedTags(rehydrated.anamnese_redigee || ''),
+        motif_reformule: stripLeakedTags(rehydrated.motif_reformule || ''),
+        domains: (rehydrated.domains || []).map((d) => ({
+          ...d,
+          commentaire: stripLeakedTags(d.commentaire || ''),
+          epreuves: (d.epreuves || []).map((e) => ({
+            ...e,
+            interpretation: stripLeakedTags(e.interpretation || ''),
+            commentaire: e.commentaire ? stripLeakedTags(e.commentaire) : e.commentaire,
+          })),
+        })),
       }
       return NextResponse.json({ success: true, phase: 'extract', extracted: result })
     }
