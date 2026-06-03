@@ -7,10 +7,11 @@ import type { TestModule } from './types'
  * Source : manuel utilisateur officiel (pas de cahier de passation séparé).
  * Échantillon de validation : 542 adultes répartis en 5 classes d'âge × 3 NSC.
  *
- * Population cible : **adultes de NSC 2 à 3** (≥ Bac, jusqu'à très haut niveau).
- * Les auteures déconseillent PrediFex pour les sujets de NSC très bas (< 8 ans
- * scolarité sans activité compensatoire) — les épreuves sont trop difficiles
- * et reflètent davantage le NSC que des déficits pathologiques.
+ * Population cible : **adultes NSC 1 à 3** (étalonnage manuel p. 1, 16). Les
+ * auteures déconseillent PrediFex pour les sujets *sous-NSC 1* (scolarité
+ * < 9 ans sans activité compensatoire) — les épreuves sont trop difficiles
+ * et reflètent davantage le NSC que des déficits pathologiques. L'épreuve 09
+ * Équivalences nécessite spécifiquement ≥ 10 ans de scolarité (p. 75-76).
  *
  * Le protocole comporte **10 épreuves** ciblant les fonctions exécutives
  * (flexibilité, mise à jour, planification, résolution de problèmes,
@@ -46,7 +47,7 @@ export const predifex: TestModule = {
 
 **Nature** : outil de **DÉPISTAGE** orienté fonctions exécutives, conçu pour identifier des **fragilités subtiles** chez l'adulte de bon NSC, particulièrement pertinent en NSC 3 où l'effet plafond des batteries classiques masque les déficits émergents.
 
-**Population cible** : adultes 18-90 ans, **NSC 2 et 3** prioritairement (le manuel déconseille la passation aux NSC très bas — les épreuves sont trop difficiles et reflètent davantage le NSC que des déficits pathologiques).
+**Population cible** : adultes 18-90 ans, **NSC 1, 2 ou 3** (étalonnage complet sur les 3 niveaux). Le manuel déconseille la passation aux sujets *sous-NSC 1* (scolarité < 9 ans sans activité compensatoire) — les épreuves restent trop difficiles. Cas d'usage prototype : **plainte cognitive subjective avec MMS=30 et bilan neuropsy classique normal** (effet plafond), typiquement sujet à haute réserve cognitive.
 
 **Compétences requises** : orthophoniste, neuropsychologue ou neurologue formé à la prise en charge des pathologies neurologiques de l'adulte.
 
@@ -66,30 +67,42 @@ Toutes les normes PrediFex sont stratifiées :
 
 | NSC | Niveau socio-culturel |
 |-----|------------------------|
-| 1   | ≤ scolarité 12 ans (CAP, BEP, Brevet, Certificat d'études) — passation DÉCONSEILLÉE |
+| 1   | scolarité 9-12 ans (CAP, BEP, Brevet, Certificat d'études) — VALIDE, étalonnage présent. ⚠️ épreuve 09 Équivalences nécessite ≥ 10 ans scolarité. |
 | 2   | Bac à Bac+3 inclus |
-| 3   | ≥ Bac+4 (cadre, ingénieur, professions à forte réserve cognitive) |
+| 3   | ≥ Bac+4 (cadre, ingénieur, professions à forte réserve cognitive) — population prototype, attention au plafonnement sur 02/03/06 (lire le temps plutôt que le score) |
 
 **Seuil d'alerte officiel** : score < **moyenne − 1,5 écart-type** du groupe (âge × NSC). Le logiciel HappyNeuron affiche le verdict automatiquement.
 
 ---
 
-#### LES 10 ÉPREUVES — Cibles cognitives
+#### LES 10 ÉPREUVES — Scores max, cotation, cibles cognitives
 
-| N° | Épreuve | Cible exécutive principale |
-|----|---------|----------------------------|
-| 01 | Fluences alternées | Flexibilité mentale + inhibition d'une réponse automatique |
-| 02 | Texte à mettre en ordre | Planification + cohérence textuelle + mémoire de travail |
-| 03 | Textes « exécutifs » | Compréhension de texte exigeante en attention / inhibition / inférences |
-| 04 | Une syllabe sur deux | Inhibition + flexibilité (alternance syllabique) |
-| 05 | Mise à jour | Mise à jour de la MdT (suivi de la dernière information) |
-| 06 | Problème arithmétique | Planification + MdT en numérique |
-| 07 | Problème logique « Luria » | Raisonnement abstrait + inhibition d'une réponse intuitive |
-| 08 | Sudofex | Inhibition + raisonnement logique en grille |
-| 09 | Équivalences | Raisonnement analogique + inhibition |
-| 10 | Itinéraire | Planification spatiale + MdT visuo-spatiale |
+| N° | Épreuve | Max | Cotation clé | Cible exécutive |
+|----|---------|-----|--------------|------------------|
+| 01 | Fluences alternées | 30 | 1 pt / mot correct, plafond 30. Pas de malus. 2 mots de la même catégorie à la suite = 1 pt seulement. | Flexibilité + inhibition d'une réponse automatique |
+| 02 | Texte à mettre en ordre | 12 | −2 pt / segment mal placé sans casser la cohérence, −4 pt si casse la cohérence, −3 pt si aide examinateur. | Planification + cohérence textuelle + MdT |
+| 03 | Textes « exécutifs » | 10 (4 + 6) | 3a Résumé /4 (tout ou rien). 3b Ordre des événements /6 : −1 pt / épisode mal placé, −2 pt sur épisode à astérisque (plus exécutif), −3 pt si aide. | Compréhension exigeante en attention / inhibition / inférences |
+| 04 | Une syllabe sur deux | 42 (8+18+16) | 4 pt mot 2 syl / 6 pt mot 3 syl / 8 pt mot 4 syl. −2 pt / répétition audio. Arrêt après 2 items échoués. | Inhibition + flexibilité (alternance syllabique) |
+| 05 | Mise à jour | 45 (5a 21 + 5b 24) | 5a Chiffres /21 (3 pt/série, −1 pt par chiffre manquant). 5b Syllabes /24 (3 pt/série). 5c Stroop lettres /32 **optionnel et non comptabilisé** — déclenché uniquement si 5a < 12 ou 5b < 14. | Mise à jour de la MdT |
+| 06 | Problème arithmétique | 10 (6 raisonnement + 4 calcul) | −2 pt / erreur de raisonnement ou omission d'info, −3 pt si aide examinateur. | Planification + MdT en numérique |
+| 07 | Problème logique « Luria » | 10 (4+2+2+2) | 4 pt Q1, 2 pt chacune Q2/Q3/Q4. −3 pt si aide. | Raisonnement abstrait + inhibition (énoncé piégeant « avoir X ans de plus que ») |
+| 08 | Sudofex | 22 | Essai MIREILLE obligatoire (non scoré). Puis examinateur choisit Annick (max 8) / Marie (max 16) / Guillaume (max 22). **Seule la meilleure grille compte.** 1-2 pt / case (contenu + couleur séparés), −3/−6 pt selon aide. | Inhibition + raisonnement logique en grille |
+| 09 | Équivalences | 20 | Essai LUNES obligatoire (non scoré). Si LUNES non compris → renoncer à l'épreuve. Puis subtests : Formes (max 8) / Feux (max 12) / Étoiles (max 18) / Flèches (max 20). **Seul le meilleur subtest compte.** 2-3 pt / item, −3/−6 pt selon aide. Nécessite ≥ 10 ans scolarité. | Raisonnement analogique + inhibition |
+| 10 | Itinéraire | 20 | 2 pt par consigne respectée (passages + sens interdits + école + labo). Malus libre si aide ou trajet trop long. Ciblée pour NSC 1 (alternative à l'ép. 09) et NSC 3 en confirmation. | Planification spatiale + MdT visuo-spatiale |
 
-**Temps** : chaque épreuve est chronométrée. Un seuil d'alerte temps est donné par le logiciel — un sujet peut obtenir un score correct EN TEMPS PATHOLOGIQUE (lenteur de traitement). **Cet aspect doit être systématiquement reporté dans le commentaire.**
+**Temps d'alerte par tranche d'âge** (minutes — donnés explicitement dans le manuel) :
+
+| Épreuve | 18-49 | 50-59 | 60-69 | 70-79 | ≥80 |
+|---------|-------|-------|-------|-------|-----|
+| 02 Texte ordre | 4 | 5 | 7 | 11 | 18 |
+| 03 Textes exé | 5 | 6 | 8 | 10 | 15 |
+| 06 Pb arith   | 5 | 6 | 6 | 8 | 16 |
+| 07 Luria      | 5 | 6 | 7 | 9 | 18 |
+| 08 Sudofex    | 7 | 8 | 9 | 15 | 30 |
+| 09 Équiv      | 5 | 6 | 8 | 10 | 20 |
+| 10 Itinéraire | 6 | 6 | 7 | 8 | 10 |
+
+**Pas de seuil temps** pour 01 (chrono fixe 1 min), 04 (variabilité trop élevée), 05 (auto). Un sujet peut obtenir un score correct EN TEMPS PATHOLOGIQUE — c'est le marqueur sub-clinique majeur, particulièrement chez NSC 3 (plafonnement attendu sur 02/03/06). **À reporter systématiquement dans le commentaire.**
 
 ---
 
@@ -165,7 +178,7 @@ Toutes les normes PrediFex sont stratifiées :
 
 8. **Vocabulaire à BANNIR** : "démence", "déclin cognitif", "détérioration", "dégénérescence", "Alzheimer", "syndrome frontal", "pathologique".
 
-9. **NE PAS faire passer PrediFex à un NSC 1** — l'outil est trop exigeant et reflète davantage le NSC que des déficits réels. Préférer dans ce cas BREF, MoCA, ou un bilan neuropsychologique adapté.
+9. **NSC 1 valide mais vigilance** : PrediFex est étalonné NSC 1 (9-12 ans scolarité). Pour les sujets *sous-NSC 1* (scolarité < 9 ans sans activité compensatoire), l'outil reste trop exigeant — préférer BREF, MoCA, ou un bilan neuropsychologique adapté. L'épreuve 09 Équivalences nécessite ≥ 10 ans scolarité (auteures recommandent de la sauter sinon, et de privilégier l'épreuve 10 Itinéraire).
 
 10. **Le titre de la synthèse est "Hypothèse de diagnostic"**, JAMAIS "Diagnostic".
 
@@ -203,7 +216,9 @@ PrediFex n'utilise pas de percentiles continus (notes standard / z-scores sigma-
 - ❌ Conclure depuis une seule épreuve isolée.
 - ❌ Poser un diagnostic d'Alzheimer, démence frontotemporale, MCI, etc.
 - ❌ Spéculer sur la localisation cérébrale.
-- ❌ Faire passer PrediFex à un NSC 1 (résultats non interprétables — pas une pathologie mais un effet de niveau).
+- ❌ Faire passer PrediFex à un sujet *sous-NSC 1* (< 9 ans scolarité) — résultats non interprétables (effet de niveau).
+- ❌ Faire passer l'épreuve 09 Équivalences à un sujet < 10 ans scolarité (sauter et proposer l'épreuve 10 Itinéraire à la place).
+- ❌ Conclure à un déficit chez un NSC 3 sur la base d'un score plafond (12/12 en 02 Texte ordre, par exemple) — lire le TEMPS, qui révèle la vraie performance dans ces cas.
 - ❌ Ignorer les temps d'exécution.
 - ❌ Plaquer les zones percentile-based.
 - ❌ Utiliser un vocabulaire alarmant.
