@@ -9,7 +9,7 @@ import { playSwoosh } from '@/lib/sounds'
 import { playPrintAnimation } from '@/components/PrintAnimation'
 import { applyVocabToObject } from '@/lib/vocab-perso'
 import { applyGlossaireToObject } from '@/lib/glossaire'
-import { listDraftsForUser, deleteDraftFromDb, type DraftListItem } from '@/lib/draft-sync'
+import { listDraftsForUser, deleteDraftFromDb, autoUpsertPatientFromDraft, type DraftListItem } from '@/lib/draft-sync'
 
 export default function HistoriquePage() {
   const toast = useToast()
@@ -48,6 +48,25 @@ export default function HistoriquePage() {
       if (profileRes.data) setProfile(profileRes.data)
       setDrafts(draftsRes)
       setLoading(false)
+
+      // BACKFILL DEFENSIF : pour chaque draft qui a un patient renseigne (prenom +
+      // nom), declenche l'auto-upsert dans le carnet patients. Couvre les drafts
+      // crees AVANT le deploy du auto-upsert au save (commit 3dc1ded) — sans ca,
+      // un ortho qui ouvre la page Historique pour la 1ere fois apres le deploy
+      // verrait ses brouillons mais pas les patients correspondants dans Patients.
+      // Best-effort silencieux : l'auto-upsert lui-meme est idempotent (SELECT
+      // case-insensitive avant INSERT), donc safe a appeler meme si le patient
+      // existe deja. Pas de spinner / pas de toast — la creation est invisible.
+      for (const d of draftsRes) {
+        if (d.patientPrenom && d.patientNom) {
+          autoUpsertPatientFromDraft(user.id, {
+            prenom: d.patientPrenom,
+            nom: d.patientNom,
+            date_naissance: d.patientDdn ?? null,
+            classe: d.patientClasse ?? null,
+          }).catch(() => null)
+        }
+      }
     }
 
     fetchCRBOs()

@@ -10,6 +10,7 @@ import FeedbackBanner from '@/components/FeedbackBanner'
 import { useRouter } from 'next/navigation'
 import Link from 'next/link'
 import { createClient } from '@/lib/supabase'
+import { autoUpsertPatientFromDraft } from '@/lib/draft-sync'
 import { useToast } from '@/components/Toast'
 import { playPrintAnimation } from '@/components/PrintAnimation'
 import { playSwoosh } from '@/lib/sounds'
@@ -171,7 +172,14 @@ export default function DashboardPage() {
         try {
           const draft = JSON.parse(crboRaw) as {
             step?: number
-            formData?: { patient_prenom?: string; patient_nom?: string }
+            formData?: {
+              patient_prenom?: string
+              patient_nom?: string
+              patient_ddn?: string
+              patient_classe?: string
+              medecin_nom?: string
+              medecin_tel?: string
+            }
             savedAt?: number
           }
           const savedAt = draft.savedAt || 0
@@ -189,6 +197,19 @@ export default function DashboardPage() {
               savedAt,
               href: '/dashboard/nouveau-crbo?reprendre=1',
             })
+            // Backfill defensif : auto-upsert patient au carnet meme pour les
+            // drafts crees AVANT le deploy du auto-upsert au save (commit 3dc1ded).
+            // Idempotent + silencieux, ne bloque jamais l'affichage dashboard.
+            if (fd.patient_prenom && fd.patient_nom) {
+              autoUpsertPatientFromDraft(user.id, {
+                prenom: fd.patient_prenom,
+                nom: fd.patient_nom,
+                date_naissance: fd.patient_ddn || null,
+                classe: fd.patient_classe || null,
+                medecin_nom: fd.medecin_nom || null,
+                medecin_tel: fd.medecin_tel || null,
+              }).catch(() => null)
+            }
           }
         } catch { /* draft corrompu : on ignore */ }
       }
@@ -206,7 +227,8 @@ export default function DashboardPage() {
         if (!raw) continue
         try {
           const draft = JSON.parse(raw) as {
-            patient?: { prenom?: string; nom?: string }
+            patient?: { prenom?: string; nom?: string; date_naissance?: string; classe?: string }
+            medecin?: { nom?: string; tel?: string }
             savedAt?: number
           }
           const savedAt = draft.savedAt || 0
@@ -225,6 +247,19 @@ export default function DashboardPage() {
             savedAt,
             href: v.href,
           })
+          // Backfill defensif (idem CRBO langage) : auto-upsert pour les drafts
+          // math crees AVANT le deploy du auto-upsert au save. Idempotent +
+          // silencieux. Couvre B-CM et B-CMado.
+          if (p.prenom && p.nom) {
+            autoUpsertPatientFromDraft(user.id, {
+              prenom: p.prenom,
+              nom: p.nom,
+              date_naissance: p.date_naissance || null,
+              classe: p.classe || null,
+              medecin_nom: draft.medecin?.nom || null,
+              medecin_tel: draft.medecin?.tel || null,
+            }).catch(() => null)
+          }
         } catch { /* draft corrompu : on ignore */ }
       }
 
