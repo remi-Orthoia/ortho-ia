@@ -203,6 +203,36 @@ Si l'un de ces critères est présent, mentionner explicitement la limite dans l
 
 ---
 
+#### 🔒 OVERRIDES TOOL-SCHEMA — Sections CRBO standard adaptées adulte
+
+Le tool-schema impose des formats centrés enfant/scolaire. Pour PrediFex (dépistage exécutif adulte, NSC 1 à 3, sans école), les sections suivantes du CRBO sont SURCLASSÉES :
+
+**1. \`diagnostic\` — OVERRIDE** : le tool-schema impose le format strict *"trouble spécifique des apprentissages en langage écrit (communément appelé dyslexie-dysorthographie), forme [légère/modérée/sévère/compensée]"*. **CETTE INSTRUCTION NE S'APPLIQUE PAS À PrediFex** (bilan cognitif adulte, pas un trouble d'apprentissage enfant). On SURCLASSE en :
+- Titre : "**Hypothèse de diagnostic**" (jamais "Diagnostic").
+- Contenu : prose modalisée — *"le profil exécutif observé est compatible avec…"*, *"ces éléments suggèrent une fragilité de…"*, *"à confirmer / caractériser par un bilan neuropsychologique approfondi"*.
+- JAMAIS la formule "trouble spécifique des apprentissages en langage écrit / dyslexie-dysorthographie / forme légère-modérée-sévère-compensée" — non pertinente pour un bilan exécutif adulte.
+- JAMAIS de diagnostic étiologique (Alzheimer, démence frontotemporale, MCI, etc. — règle clinique absolue n°1).
+
+**2. \`recommandations\` — OVERRIDE** : le tool-schema impose la phrase 1 verbatim *"Une prise en charge orthophonique est recommandée, et en parallèle la mise en place ou le renforcement des aménagements en classe."* **CETTE INSTRUCTION NE S'APPLIQUE PAS À PrediFex** (adulte, pas d'école). On SURCLASSE avec ces phrases-types adultes (*formulations dérivées des bonnes pratiques cliniques françaises*) :
+- **Aucun seuil d'alerte franchi (toutes zones Vert)** : *"Le dépistage PrediFex ne met pas en évidence de fragilité exécutive objectivable à ce stade. Une réévaluation à 12 mois est envisageable si la plainte persiste ou évolue. Conseils d'hygiène cognitive proposés."*
+- **Une ou plusieurs épreuves en zone Jaune isolément** : *"Le dépistage PrediFex met en évidence des performances en zone d'alerte sur [composantes exécutives concernées]. Une réévaluation à 6 mois est préconisée pour suivre l'évolution."*
+- **Profil cohérent de fragilité (≥ 2 épreuves convergentes en Jaune/Orange/Rouge)** : *"Le dépistage PrediFex met en évidence un profil [flexibilité / mise à jour / planification / inhibition / raisonnement exécutif] à caractériser plus finement. **Un bilan neuropsychologique approfondi est recommandé**, ainsi qu'une consultation mémoire spécialisée. Selon l'orientation diagnostique, une rééducation orthophonique des stratégies cognitives pourra être proposée en parallèle."*
+
+**3. \`pap_suggestions\` — OVERRIDE OBLIGATOIRE** : le tool-schema demande 4-6 aménagements scolaires. **CETTE INSTRUCTION NE S'APPLIQUE PAS À PrediFex** — pas d'école pour un adulte. **Retourner OBLIGATOIREMENT \`pap_suggestions = []\`** (tableau vide). Le rendu Word saute la section automatiquement quand le tableau est vide.
+
+**4. \`bilans_complementaires\` — OVERRIDE catégories adultes** : les catégories listées dans le tool-schema sont enfant/scolaire (Psychomotricité, Orthoptie, Pédopsychiatrie, CRTLA…). Pour PrediFex (adulte), utiliser ces catégories spécifiques (1 ligne par catégorie, **format strict** \`"Catégorie : justification clinique courte pointant l'indice du bilan"\`) :
+- **Neurologie** : profil exécutif convergent évoquant une atteinte neurologique débutante (démence frontotemporale, Parkinson cognitif, lésions sous-corticales à explorer par consultation spécialisée + imagerie).
+- **Gériatrie / Consultation mémoire** : sujet > 60 ans avec fragilités convergentes — orientation prioritaire.
+- **Neuropsychologie** : profil exécutif nécessitant un bilan approfondi (TMT A/B, WCST, Stroop, Hayling, Tour de Londres, BADS, Brixton, doubles tâches TAP, California Sorting Test).
+- **Psychiatrie adulte / psychologue clinicien** : si éléments dépressifs/anxieux suspectés susceptibles d'expliquer le tableau exécutif (pseudo-démence dépressive à éliminer).
+- **Médecine du travail** : si le sujet est en activité professionnelle et la plainte exécutive impacte le poste de travail (décisions complexes, planification, multitâche).
+- **PREDIMEM** : complémentaire si fragilité mnésique suspectée associée (gamme PREDI cohérente pour un bilan adulte complet).
+Liste VIDE \`[]\` si aucun élément clinique ne justifie une orientation pluridisciplinaire (cas profil 6 sujet sain). **NE JAMAIS lister** Pédopsychiatrie, CRTLA, Orthoptie scolaire, Ergothérapie scolaire — sans pertinence adulte.
+
+**5. \`difficultes_identifiees\` — OVERRIDE conséquences adultes** : le tool-schema dit *"se terminer sur les conséquences concrètes scolaires et de la vie quotidienne pour l'élève"*. Pour PrediFex (adulte), reformuler en **conséquences fonctionnelles AU QUOTIDIEN ET PROFESSIONNELLES** : ralentissement dans la prise de décision complexe, difficulté à planifier les tâches longues, oubli des étapes d'une recette ou d'un dossier, fatigue cognitive en fin de journée, gestion compromise des situations de multitâche, baisse de performance au travail sur des dossiers exigeants. JAMAIS "élève", "scolaire", "en classe", "écolier".
+
+---
+
 #### TRANSPOSITION VERS LE CRBO ORTHO.IA
 
 PrediFex n'utilise pas de percentiles continus (notes standard / z-scores sigma-based). Pour l'intégrer dans la structure CRBO :
