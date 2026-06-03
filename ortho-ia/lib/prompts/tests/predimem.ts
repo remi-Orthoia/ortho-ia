@@ -198,9 +198,20 @@ Ces règles s'ajoutent aux règles cliniques globales du système.
    - "atteinte sévère" (préférer "difficulté avérée" / "fragilité installée"),
    - "pathologique" (préférer "abaissée par rapport à la norme du groupe").
 
-9. **Pas de PAP / aménagements scolaires** : PREDIMEM concerne presque toujours des adultes hors cadre scolaire. Si la table \`pap_suggestions\` doit être remplie, la laisser vide (\`[]\`).
+9. **🔒 OVERRIDE \`pap_suggestions\`** : le tool-schema demande 4-6 aménagements scolaires. **CETTE INSTRUCTION NE S'APPLIQUE PAS À PREDIMEM** — pas d'école pour un adulte. **Retourner OBLIGATOIREMENT \`pap_suggestions = []\`** (tableau vide). Le rendu Word saute la section automatiquement quand le tableau est vide.
 
-10. **Le titre de la synthèse est "Hypothèse de diagnostic"**, JAMAIS "Diagnostic" (cohérence avec le rendu MoCA d'ortho-ia, par sécurité juridique).
+10. **🔒 OVERRIDE \`bilans_complementaires\`** : les catégories listées dans le tool-schema sont enfant/scolaire (Psychomotricité, Orthoptie, Pédopsychiatrie, CRTLA…). Pour PREDIMEM (adulte), utiliser ces catégories spécifiques (1 ligne par catégorie, **format strict** \`"Catégorie : justification clinique courte pointant l'indice du bilan"\`) :
+    - **Neurologie** : profil convergent évoquant une atteinte neurologique débutante, à explorer par consultation mémoire + imagerie.
+    - **Gériatrie / Consultation mémoire** : sujet de plus de 60 ans avec fragilités convergentes — orientation prioritaire.
+    - **Neuropsychologie** : profil exécutif / mnésique nécessitant un bilan approfondi (RL/RI 16, DMS 48, BEM 144, MEM IV Wechsler, figure de Rey, Doors and people).
+    - **ORL / audiologie** : si fragilité dominante sur les épreuves auditives (ép. 09) sans audiométrie récente.
+    - **Psychiatrie adulte / psychologue clinicien** : si éléments dépressifs/anxieux suspectés susceptibles d'expliquer les fragilités cognitives (pseudo-démence dépressive à éliminer).
+    - **Médecine du travail** : si le sujet est en activité professionnelle et la plainte impacte le poste de travail.
+    Liste VIDE \`[]\` si aucun élément clinique ne justifie une orientation pluridisciplinaire (cas profil 6 sujet sain). NE JAMAIS lister Pédopsychiatrie, CRTLA, Orthoptie scolaire — sans pertinence adulte.
+
+11. **Le titre de la synthèse est "Hypothèse de diagnostic"**, JAMAIS "Diagnostic" (cohérence avec le rendu MoCA d'ortho-ia, par sécurité juridique).
+
+12. **🔒 OVERRIDE \`difficultes_identifiees\`** : le tool-schema dit *"se terminer sur les conséquences concrètes scolaires et de la vie quotidienne pour l'élève"*. Pour PREDIMEM (adulte), reformuler en **conséquences fonctionnelles AU QUOTIDIEN ET PROFESSIONNELLES** (oublis de RDV, perte du fil de conversation, difficulté à retenir une consigne médicale, ralentissement dans la prise de décision, fatigue cognitive en fin de journée). JAMAIS "élève", "scolaire", "en classe".
 
 ---
 
@@ -236,12 +247,16 @@ PREDIMEM n'utilise pas de percentiles continus (notes standards / z-scores sigma
 2. **Domaines / épreuves** : organiser les 11 épreuves dans des regroupements logiques (Mémoire visuelle, Mémoire épisodique verbale, Mémoire de travail, Mémoire auditive, Associations). Pour chaque épreuve : score, temps, position dans les zones HappyNeuron, observation qualitative.
 
 3. **Synthèse / Hypothèse de diagnostic** :
+   - 🔒 **OVERRIDE tool-schema** : le champ \`diagnostic\` du tool-schema impose le format strict *"trouble spécifique des apprentissages en langage écrit (communément appelé dyslexie-dysorthographie), forme [légère/modérée/sévère/compensée]"*. **CETTE INSTRUCTION NE S'APPLIQUE PAS À PREDIMEM** (bilan cognitif adulte, pas un trouble d'apprentissage enfant). On SURCLASSE le format en :
+     - Titre : "**Hypothèse de diagnostic**" (jamais "Diagnostic")
+     - Contenu : prose modalisée — *"le profil observé est compatible avec…"*, *"ces éléments suggèrent une fragilité de…"*, *"à confirmer / caractériser par un bilan neuropsychologique approfondi"*.
+     - JAMAIS la formule "trouble spécifique des apprentissages en langage écrit / dyslexie-dysorthographie / forme légère-modérée-sévère-compensée" — non pertinente pour un bilan mnésique adulte.
    - Statuer d'abord sur les domaines PRÉSERVÉS.
    - Décrire ensuite les fragilités OBJECTIVÉES (≥ 2 épreuves convergentes minimum).
-   - Référer à un profil clinique attendu (cf. profils 1 à 6 ci-dessus) en formulant avec un verbe de modalisation : "le profil observé est compatible avec…", "ces éléments suggèrent une fragilité de…", "à confirmer / caractériser par un bilan neuropsychologique approfondi".
-   - JAMAIS de diagnostic étiologique.
+   - Référer à un profil clinique attendu (cf. profils 1 à 6 ci-dessus).
+   - JAMAIS de diagnostic étiologique (Alzheimer, MCI, démence sémantique, APP, etc.).
 
-4. **Recommandations** — phrases-types pour PREDIMEM (*formulations dérivées des bonnes pratiques cliniques françaises courantes ; le manuel HappyNeuron ne propose pas de phrases-types*) :
+4. **Recommandations** — 🔒 **OVERRIDE tool-schema** : le champ \`recommandations\` du tool-schema impose la phrase 1 verbatim *"Une prise en charge orthophonique est recommandée, et en parallèle la mise en place ou le renforcement des aménagements en classe."* **CETTE INSTRUCTION NE S'APPLIQUE PAS À PREDIMEM** (population adulte, pas d'école, orientation pluridisciplinaire prioritaire sur l'orthophonie). On SURCLASSE avec les phrases-types adultes ci-dessous (*formulations dérivées des bonnes pratiques cliniques françaises courantes ; le manuel HappyNeuron ne propose pas de phrases-types*) :
    - Si aucun seuil d'alerte franchi (toutes épreuves en zone verte) : "Le dépistage PREDIMEM ne met pas en évidence de fragilité mnésique objectivable à ce stade. Une réévaluation à 12 mois est envisageable si la plainte persiste ou évolue. Conseils d'hygiène cognitive proposés."
    - Si une ou plusieurs épreuves en zone jaune isolément : "Le dépistage PREDIMEM met en évidence des performances en zone d'alerte sur [domaines]. Une réévaluation à 6 mois est préconisée pour suivre l'évolution."
    - Si profil cohérent de fragilité (≥ 2 épreuves convergentes en zone jaune/orange/rouge) : "Le dépistage PREDIMEM met en évidence un profil [trouble d'encodage / récupération / mémoire de travail / visuo-spatial] à caractériser plus finement. **Un bilan neuropsychologique approfondi est recommandé**, ainsi qu'une consultation mémoire spécialisée. Selon l'orientation diagnostique, une rééducation orthophonique des stratégies cognitives pourra être proposée en parallèle."
