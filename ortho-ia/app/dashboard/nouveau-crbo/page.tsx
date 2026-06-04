@@ -4,8 +4,10 @@ import { useState, useEffect, useRef, Suspense } from 'react'
 import { useRouter, useSearchParams } from 'next/navigation'
 import { createClient } from '@/lib/supabase'
 import { CLASSES_OPTIONS, CLASSES_GROUPS, TESTS_OPTIONS, TESTS_SCREENING_OPTIONS, CRBOFormData } from '@/lib/types'
-import type { CRBOStructure, CRBODomain, CRBOEpreuve } from '@/lib/prompts'
+import type { CRBOStructure, CRBODomain, CRBOEpreuve, ExtractedCRBO, SynthesizedCRBO } from '@/lib/prompts'
 import { downloadCRBOWord } from '@/lib/word-export'
+import { applyVocabToObject } from '@/lib/vocab-perso'
+import { applyGlossaireToObject } from '@/lib/glossaire'
 import StepProgress from '@/components/StepProgress'
 import GenerationLoader from '@/components/GenerationLoader'
 import AutoSaveIndicator from '@/components/AutoSaveIndicator'
@@ -1478,77 +1480,239 @@ function NouveauCRBOContent() {
     setError('')
 
     try {
-      // ============ PHASE 1 : EXTRACTION ============
-      // Reformulation anamnèse + motif + parsing structuré des scores. Pas de
-      // diagnostic ni recommandations à ce stade — l'orthophoniste valide d'abord
-      // les extractions et ajoute ses commentaires qualitatifs sur la page suivante.
-      const response = await fetch('/api/generate-crbo', {
+      // ============ PIPELINE SSE (extract + synthesize en cascade) ============
+      // Refonte 2026-06 (étape 3/4 fusion /resultats → /preview) : appelle
+      // /api/generate-crbo?phase=pipeline qui chaîne les 2 phases côté serveur
+      // en un seul stream SSE. Une seule attente IA pour l'ortho (~40-80s)
+      // au lieu de 2 attentes + page intermédiaire /resultats.
+      const response = await fetch('/api/generate-crbo?stream=1', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
-          phase: 'extract',
+          phase: 'pipeline',
           formData: formDataForSubmission,
           format: formDataForSubmission.format_crbo || 'synthetique',
         }),
       })
 
-      const data = await response.json()
-
       if (!response.ok) {
+        // Erreurs AVANT le stream (auth, quota, validation) — réponse JSON.
         if (response.status === 401) {
-          // Auto-save retire (cf. 2026-05-26 — fuite entre patients).
-          // L'ortho devra resaisir apres reconnexion. Message ajuste.
           setError('Session expirée. Vous serez redirigé·e vers la page de connexion (la saisie en cours sera perdue).')
           setTimeout(() => {
             router.push(`/auth/login?redirect=${encodeURIComponent('/dashboard/nouveau-crbo')}`)
           }, 2500)
           return
         }
-        throw new Error(data.error || 'Erreur lors de l\'extraction')
+        const errBody = await response.json().catch(() => ({}))
+        throw new Error(errBody?.error || 'Erreur lors de la génération du CRBO.')
       }
 
-      // Persiste tout le contexte nécessaire à la page de résultats dans
-      // sessionStorage (volume potentiel > 100ko, on évite query string).
-      const handoff = {
-        formData: formDataForSubmission,
-        extracted: data.extracted,
-        selectedPatientId,
-        selectedMedecinId,
-      }
-      try {
-        // Clé scopée par user.id pour eviter qu'un autre onglet (meme user
-        // a 2 sessions, ou poste partage) ne contamine ce handoff. Le
-        // user.id est deja dispose via la session Supabase chargee plus
-        // haut (presence de draftKey scopée = user resolu).
-        const handoffUserId = draftKey?.split(':').pop() ?? ''
-        const handoffKey = handoffUserId
-          ? `ortho-ia:crbo-handoff:${handoffUserId}`
-          : 'ortho-ia:crbo-handoff'
-        sessionStorage.setItem(handoffKey, JSON.stringify(handoff))
-        // Purge l'ancienne clé non-scopée si elle traine (migration douce).
-        try { sessionStorage.removeItem('ortho-ia:crbo-handoff') } catch {}
-        if (draftKey) localStorage.removeItem(draftKey)
-        // Purge le draft DB en parallele : le CRBO est en phase 2 (synthesize),
-        // plus besoin du brouillon. Best-effort silencieux.
-        if (handoffUserId) {
-          deleteDraftFromDb(handoffUserId, 'langage').catch(() => null)
+      // ============ Consommation du stream SSE ============
+      const reader = response.body?.getReader()
+      if (!reader) throw new Error('Streaming non supporté par ce navigateur.')
+      const decoder = new TextDecoder()
+      let sseBuffer = ''
+      let extracted: ExtractedCRBO | null = null
+      let synthesized: SynthesizedCRBO | null = null
+      let streamError: string | null = null
+
+      while (true) {
+        const { value, done } = await reader.read()
+        if (done) break
+        sseBuffer += decoder.decode(value, { stream: true })
+        const events = sseBuffer.split('\n\n')
+        sseBuffer = events.pop() ?? ''
+        for (const evt of events) {
+          if (!evt.startsWith('data:')) continue
+          const dataLine = evt.replace(/^data:\s*/, '')
+          let parsed: any
+          try { parsed = JSON.parse(dataLine) } catch { continue }
+          // start/progress/delta : le GenerationLoader affiche déjà ses 4 étapes,
+          // pas besoin d'afficher le contenu live (cf. décision 2026-06 retrait
+          // de StreamingCRBO). On ne capture que `complete` et `error`.
+          if (parsed.type === 'complete' && parsed.synthesized && parsed.extracted) {
+            extracted = parsed.extracted as ExtractedCRBO
+            synthesized = parsed.synthesized as SynthesizedCRBO
+          } else if (parsed.type === 'error') {
+            streamError = parsed.message || 'Erreur streaming'
+          }
         }
-      } catch (e) {
-        // Si sessionStorage échoue (mode privé, quota dépassé, navigateur exotique),
-        // on NE navigue PAS vers /resultats — sinon la page suivante ne trouve
-        // pas le handoff et fait un redirect loop vers ici. On affiche un
-        // message actionnable et on laisse l'ortho retenter.
-        console.error('SessionStorage indisponible:', e)
-        setError(
-          "Impossible de transférer le CRBO vers la page suivante (stockage navigateur indisponible). " +
-          "Désactivez le mode privé / videz le cache, puis réessayez.",
-        )
+      }
+
+      if (streamError) throw new Error(streamError)
+      if (!extracted || !synthesized) {
+        throw new Error("Aucun résultat reçu à la fin de la génération.")
+      }
+
+      // ============ Construction de la CRBOStructure finale ============
+      // Port littéral de resultats/page.tsx:370-448. L'ortho n'a pas eu
+      // l'occasion d'éditer entre les 2 phases, donc pas d'orthoComments à
+      // merger — les commentaires de domaine viennent uniquement de l'IA.
+      // L'ortho éditera tout sur /preview/[id] après cette redirection.
+      const reformulatedByName = new Map<string, string>()
+      for (const dc of synthesized.domain_commentaires ?? []) {
+        if (dc?.nom && typeof dc.commentaire === 'string') {
+          reformulatedByName.set(dc.nom.trim(), dc.commentaire.trim())
+        }
+      }
+      const domainsWithComments: CRBODomain[] = extracted.domains.map(d => ({
+        ...d,
+        commentaire:
+          reformulatedByName.get(d.nom.trim())
+          ?? (d.commentaire || '').trim(),
+        epreuves: d.epreuves.map(e => ({
+          ...e,
+          commentaire: e.commentaire ? e.commentaire.trim() || undefined : undefined,
+        })),
+      }))
+
+      const rawFinalStructure: CRBOStructure = {
+        anamnese_redigee: extracted.anamnese_redigee,
+        motif_reformule: extracted.motif_reformule || '',
+        domains: domainsWithComments,
+        points_forts: synthesized.points_forts,
+        difficultes_identifiees: synthesized.difficultes_identifiees,
+        diagnostic: synthesized.diagnostic,
+        recommandations: synthesized.recommandations,
+        axes_therapeutiques: synthesized.axes_therapeutiques,
+        conclusion: synthesized.conclusion,
+        pap_suggestions: synthesized.pap_suggestions,
+        synthese_evolution: synthesized.synthese_evolution ?? null,
+        reasoning_clinical: synthesized.reasoning_clinical ?? null,
+      }
+      // Vocabulaire perso + glossaire (port littéral de resultats:446-448).
+      const finalStructure: CRBOStructure = applyGlossaireToObject(
+        applyVocabToObject(rawFinalStructure),
+      )
+
+      // ============ Persistance Supabase (port littéral resultats:450-581) ============
+      const supabase = createClient()
+      const { data: { user } } = await supabase.auth.getUser()
+      if (!user) {
+        setError("Session expirée — votre CRBO n'a pas pu être sauvegardé.")
         return
       }
 
-      router.push('/dashboard/nouveau-crbo/resultats')
+      const fd = formDataForSubmission
+
+      // Auto-création/réconciliation patient (port littéral resultats:460-503).
+      let patientId = selectedPatientId || null
+      if (!patientId && fd.patient_prenom?.trim() && fd.patient_nom?.trim()) {
+        const prenom = fd.patient_prenom.trim()
+        const nom = fd.patient_nom.trim()
+        const ddn = fd.patient_ddn || null
+        try {
+          let findQuery = supabase
+            .from('patients')
+            .select('id')
+            .eq('user_id', user.id)
+            .eq('prenom', prenom)
+            .eq('nom', nom)
+          findQuery = ddn ? findQuery.eq('date_naissance', ddn) : findQuery.is('date_naissance', null)
+          const { data: existing } = await findQuery.maybeSingle()
+          if (existing?.id) {
+            patientId = existing.id
+          } else {
+            const { data: created, error: createErr } = await supabase
+              .from('patients')
+              .insert({
+                user_id: user.id,
+                prenom,
+                nom,
+                date_naissance: ddn,
+                classe: fd.patient_classe || null,
+                medecin_nom: fd.medecin_nom || null,
+                medecin_tel: fd.medecin_tel || null,
+              })
+              .select('id')
+              .single()
+            if (createErr) {
+              console.warn('Patient non créé (best-effort):', createErr)
+            } else if (created?.id) {
+              patientId = created.id
+            }
+          }
+        } catch (e) {
+          console.warn('Find/create patient failed:', e)
+        }
+      }
+
+      // INSERT du CRBO (port littéral resultats:513-543).
+      const { data: insertedCrbo, error: insertError } = await supabase
+        .from('crbos')
+        .insert({
+          user_id: user.id,
+          patient_id: patientId,
+          patient_prenom: fd.patient_prenom,
+          patient_nom: fd.patient_nom,
+          patient_ddn: fd.patient_ddn,
+          patient_classe: fd.patient_classe,
+          bilan_date: fd.bilan_date,
+          bilan_type: fd.bilan_type,
+          medecin_nom: fd.medecin_nom,
+          medecin_tel: fd.medecin_tel,
+          medecin_date_prescription: fd.medecin_date_prescription || null,
+          motif: fd.motif,
+          anamnese: fd.anamnese,
+          test_utilise: Array.isArray(fd.test_utilise) ? fd.test_utilise.join(', ') : (fd.test_utilise || ''),
+          resultats: fd.resultats_manuels,
+          notes_analyse: fd.notes_analyse,
+          structure_json: finalStructure,
+          comportement_seance: fd.comportement_seance || null,
+          duree_seance_minutes: fd.duree_seance_minutes || null,
+          severite_globale: (finalStructure as any).severite_globale ?? null,
+          bilan_precedent_id: fd.bilan_precedent_id || null,
+          statut: 'a_rediger',
+        })
+        .select('id')
+        .single()
+
+      if (insertError || !insertedCrbo?.id) {
+        console.error('Erreur sauvegarde CRBO:', insertError)
+        setError("Le CRBO a été généré mais n'a pas pu être sauvegardé. Réessayez.")
+        return
+      }
+
+      const insertedCrboId = insertedCrbo.id as string
+
+      // Compteurs CRBO + médecin (best-effort, port littéral resultats:570-581).
+      try {
+        const { error: rpcError } = await supabase.rpc('increment_crbo_count', { user_id: user.id })
+        if (rpcError) console.warn('Compteur CRBO non incrémenté:', rpcError)
+      } catch (e) { console.warn('Compteur CRBO RPC failed:', e) }
+      if (selectedMedecinId) {
+        try {
+          const { error: medErr } = await supabase.rpc('increment_medecin_usage', { medecin_id: selectedMedecinId })
+          if (medErr) console.warn('Compteur médecin non incrémenté:', medErr)
+        } catch (e) { console.warn('Compteur médecin RPC failed:', e) }
+      }
+
+      // Cleanup drafts (le CRBO existe en DB, plus besoin du brouillon).
+      try {
+        if (draftKey) localStorage.removeItem(draftKey)
+        const handoffUserId = draftKey?.split(':').pop() ?? ''
+        if (handoffUserId) {
+          deleteDraftFromDb(handoffUserId, 'langage').catch(() => null)
+        }
+      } catch {}
+
+      // Feedback pending (port littéral resultats:603-605).
+      try {
+        sessionStorage.setItem('orthoia.feedback-pending', insertedCrboId)
+      } catch {}
+
+      // ============ Animations finales (option A : son+flip AVANT redirection) ============
+      // playSuccessSound : son satisfaisant qui annonce "CRBO officiellement
+      // généré". playPrintAnimation(800) : flip 2 feuilles, ~800ms avant que
+      // /preview/[id] ne s'affiche. Reproduit l'effet de resultats:584+607
+      // dans le nouveau flow direct (sans page intermédiaire).
+      playSuccessSound()
+      playPrintAnimation(800)
+
+      router.push(`/dashboard/nouveau-crbo/preview/${insertedCrboId}`)
     } catch (err: any) {
-      setError(err.message)
+      setError(err?.message || 'Erreur inattendue lors de la génération.')
     } finally {
       setGenerating(false)
     }
