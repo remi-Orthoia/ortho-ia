@@ -863,16 +863,12 @@ function NouveauCRBOContent() {
     return `${years} ans ${months} m`
   })()
 
-  // Famille de tests suggérée depuis l'âge du patient — déplie automatiquement
-  // l'accordéon pertinent à l'étape Résultats. Évite à l'ortho de chercher
-  // dans 5 familles repliées laquelle ouvrir. Mapping conservateur (centré
-  // sur la batterie cliniquement la plus courante par tranche d'âge) :
-  //  < 6 ans       → langage oral (préscolaire)
-  //  6-17 ans      → langage écrit (scolaire — couvre Exalang 5-8 → Lyfac + EVALEO)
-  //  ≥ 18 ans      → adulte (BETL, PREDIMEM, PrediFex, etc.)
-  //  pas de DDN    → null (aucune famille pré-ouverte)
-  // Pour les cas math (dyscalculie), l'ortho ouvre la famille explicitement —
-  // le signal âge seul ne suffit pas à distinguer langage vs math.
+  // Auto-déploiement de la famille "Adultes & seniors" à partir de 45 ans —
+  // à cet âge, le bilan est quasi-systématiquement neuro/aphasie/mémoire, pas
+  // un bilan langage écrit pédiatrique. Pour les patients plus jeunes, toutes
+  // les familles restent fermées par défaut (langage oral vs écrit vs math
+  // dépend du contexte clinique, l'âge seul ne suffit pas à trancher).
+  // L'ortho garde toujours la main pour ouvrir une autre famille.
   const suggestedFamilyId: string | null = (() => {
     if (!formData.patient_ddn) return null
     const birth = new Date(formData.patient_ddn)
@@ -881,9 +877,7 @@ function NouveauCRBOContent() {
     const m = bilan.getMonth() - birth.getMonth()
     if (m < 0 || (m === 0 && bilan.getDate() < birth.getDate())) years--
     if (!Number.isFinite(years) || years < 0) return null
-    if (years < 6) return 'langage_oral'
-    if (years < 18) return 'langage_ecrit'
-    return 'adulte'
+    return years >= 45 ? 'adulte' : null
   })()
 
   // Sélectionner un patient existant
@@ -2773,14 +2767,7 @@ Astuce : tapez /fatigue, /anxiete, /encouragements… pour réutiliser vos formu
                     : (selectedInFamily > 0 || isSuggestedByAge)
                   if (familyTests.length === 0 && !isMathFamily) return null
                   return (
-                    <div
-                      key={family.id}
-                      className={`rounded-lg border bg-white overflow-hidden transition ${
-                        isSuggestedByAge && explicit === undefined
-                          ? 'border-emerald-300 ring-1 ring-emerald-200'
-                          : 'border-gray-200'
-                      }`}
-                    >
+                    <div key={family.id} className="rounded-lg border border-gray-200 bg-white overflow-hidden">
                       <button
                         type="button"
                         onClick={() =>
@@ -2791,17 +2778,7 @@ Astuce : tapez /fatigue, /anxiete, /encouragements… pour réutiliser vos formu
                         <div className="flex items-center gap-3 min-w-0">
                           <span className="text-lg shrink-0" aria-hidden="true">{family.icon}</span>
                           <div className="min-w-0">
-                            <p className="text-sm font-semibold text-gray-900 flex items-center gap-2 flex-wrap">
-                              {family.label}
-                              {isSuggestedByAge && (
-                                <span
-                                  className="px-1.5 py-0.5 bg-emerald-100 text-emerald-800 text-[10px] font-semibold uppercase tracking-wide rounded"
-                                  title={patientAgeLabel ? `Famille suggérée pour ${patientAgeLabel}` : 'Famille suggérée selon l\'âge du patient'}
-                                >
-                                  Suggéré
-                                </span>
-                              )}
-                            </p>
+                            <p className="text-sm font-semibold text-gray-900">{family.label}</p>
                             <p className="text-xs text-gray-500 mt-0.5">{family.description}</p>
                           </div>
                         </div>
