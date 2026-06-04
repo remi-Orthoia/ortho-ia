@@ -863,21 +863,46 @@ function NouveauCRBOContent() {
     return `${years} ans ${months} m`
   })()
 
-  // Auto-déploiement de la famille "Adultes & seniors" à partir de 45 ans —
-  // à cet âge, le bilan est quasi-systématiquement neuro/aphasie/mémoire, pas
-  // un bilan langage écrit pédiatrique. Pour les patients plus jeunes, toutes
-  // les familles restent fermées par défaut (langage oral vs écrit vs math
-  // dépend du contexte clinique, l'âge seul ne suffit pas à trancher).
-  // L'ortho garde toujours la main pour ouvrir une autre famille.
-  const suggestedFamilyId: string | null = (() => {
-    if (!formData.patient_ddn) return null
-    const birth = new Date(formData.patient_ddn)
-    const bilan = new Date(formData.bilan_date || new Date().toISOString())
-    let years = bilan.getFullYear() - birth.getFullYear()
-    const m = bilan.getMonth() - birth.getMonth()
-    if (m < 0 || (m === 0 && bilan.getDate() < birth.getDate())) years--
-    if (!Number.isFinite(years) || years < 0) return null
-    return years >= 45 ? 'adulte' : null
+  // Familles de tests pré-dépliées dans l'étape Résultats — combine 2 signaux :
+  //
+  //   1. MOTIF de consultation (saisi à l'étape Dossier) — signal le plus
+  //      précis. Si l'ortho a coché "Langage écrit", elle cherche les Exalang
+  //      / EVALEO, pas les BETL. Mapping :
+  //        - Langage oral          → langage_oral
+  //        - Langage écrit         → langage_ecrit
+  //        - Langage écrit & oral  → langage_ecrit (Exalang/EVALEO couvrent les 2)
+  //        - Cognitif              → adulte
+  //        - Maths                 → math
+  //        - OMF                   → autres
+  //      Plusieurs motifs cochés → plusieurs familles dépliées.
+  //
+  //   2. ÂGE du patient — fallback si aucun motif renseigné. À partir de 45
+  //      ans, le bilan est quasi-systématiquement neuro/aphasie/mémoire →
+  //      famille adulte dépliée. Patients plus jeunes sans motif : aucune
+  //      pré-ouverture (langage oral vs écrit vs math dépend du contexte
+  //      clinique, l'âge seul ne suffit pas à trancher).
+  //
+  // L'ortho garde toujours la main pour ouvrir/fermer manuellement.
+  const suggestedFamilyIds: Set<string> = (() => {
+    const set = new Set<string>()
+    const motifs = parseMotif(formData.motif)
+    for (const m of motifs) {
+      if (m === 'Langage oral') set.add('langage_oral')
+      else if (m === 'Langage écrit') set.add('langage_ecrit')
+      else if (m === 'Langage écrit & oral') set.add('langage_ecrit')
+      else if (m === 'Cognitif') set.add('adulte')
+      else if (m === 'Maths') set.add('math')
+      else if (m === 'OMF') set.add('autres')
+    }
+    if (set.size === 0 && formData.patient_ddn) {
+      const birth = new Date(formData.patient_ddn)
+      const bilan = new Date(formData.bilan_date || new Date().toISOString())
+      let years = bilan.getFullYear() - birth.getFullYear()
+      const monthDiff = bilan.getMonth() - birth.getMonth()
+      if (monthDiff < 0 || (monthDiff === 0 && bilan.getDate() < birth.getDate())) years--
+      if (Number.isFinite(years) && years >= 45) set.add('adulte')
+    }
+    return set
   })()
 
   // Sélectionner un patient existant
@@ -2757,14 +2782,15 @@ Astuce : tapez /fatigue, /anxiete, /encouragements… pour réutiliser vos formu
                   // qui ne sont pas dans TESTS_OPTIONS — ils élargissent visuellement la
                   // famille même si rien n'est cochable dans TESTS_OPTIONS au-delà d'Examath.
                   const isMathFamily = family.id === 'math'
-                  const isSuggestedByAge = suggestedFamilyId === family.id
+                  const isSuggested = suggestedFamilyIds.has(family.id)
                   const explicit = openFamilies[family.id]
                   // Ouverture automatique : (1) tests cochés dans la famille,
-                  // (2) famille suggérée par l'âge du patient. Sans choix
-                  // explicite de l'ortho, l'accordéon pertinent se déplie.
+                  // (2) famille suggérée par le motif de consultation ou l'âge.
+                  // Sans choix explicite de l'ortho, les accordéons pertinents
+                  // se déplient seuls.
                   const isOpen = explicit !== undefined
                     ? explicit
-                    : (selectedInFamily > 0 || isSuggestedByAge)
+                    : (selectedInFamily > 0 || isSuggested)
                   if (familyTests.length === 0 && !isMathFamily) return null
                   return (
                     <div key={family.id} className="rounded-lg border border-gray-200 bg-white overflow-hidden">
