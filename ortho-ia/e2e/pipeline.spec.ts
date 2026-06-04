@@ -43,9 +43,11 @@ function saveArtifact(fixtureId: string, filename: string, content: string) {
 
 async function login(page: import('@playwright/test').Page) {
   await page.goto('/auth/login')
-  await page.getByLabel(/email/i).fill(TEST_EMAIL!)
-  await page.getByLabel(/mot de passe/i).fill(TEST_PASSWORD!)
-  await page.getByRole('button', { name: /connexion|se connecter/i }).click()
+  // AppInput component rend un label custom non associé à l'input via for/id,
+  // donc page.getByLabel() ne fonctionne pas. On cible par autocomplete (stable).
+  await page.locator('input[autocomplete="email"]').fill(TEST_EMAIL!)
+  await page.locator('input[autocomplete="current-password"]').fill(TEST_PASSWORD!)
+  await page.locator('button[type="submit"]').click()
   await page.waitForURL('**/dashboard**', { timeout: 30_000 })
 }
 
@@ -143,9 +145,20 @@ for (const fixtureId of Object.keys(FIXTURES)) {
     // Laisse le temps au mount complet de la preview (load CRBO + statut).
     await page.waitForLoadState('networkidle', { timeout: 30_000 }).catch(() => null)
 
-    // Capture du rendu preview en pleine page.
+    // Capture du rendu preview en mode "Aperçu" (défaut WYSIWYG).
     await page.screenshot({
-      path: path.join('e2e', '.results', fixtureId, 'step-preview.png'),
+      path: path.join('e2e', '.results', fixtureId, 'step-preview-apercu.png'),
+      fullPage: true,
+    })
+
+    // Bascule en mode "Éditer" — les ancres sec-anamnese, sec-diagnostic
+    // etc. sont rendues uniquement dans ce mode (le mode preview est un
+    // WYSIWYG Word qui n'expose pas ces IDs). Cf. preview/[id]/page.tsx:573.
+    await page.getByRole('button', { name: /^Éditer$/i }).first().click().catch(() => null)
+    await page.waitForTimeout(500)
+
+    await page.screenshot({
+      path: path.join('e2e', '.results', fixtureId, 'step-preview-edit.png'),
       fullPage: true,
     })
 

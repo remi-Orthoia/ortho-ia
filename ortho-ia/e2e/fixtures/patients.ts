@@ -170,8 +170,91 @@ export const FIXTURE_EVALEO_DYSLEXIE: CRBOFixture = {
     + "Stratégies d'évitement observées (demande de pause sur dictée pseudomots).",
 }
 
-/** Toutes les fixtures disponibles — accessibles par ID. */
+/** Cas typique 6e — bilan langage écrit avec Exalang 11-15.
+ *  Ce test n'est PAS dans TESTS_WITH_SPECIFIC_FORM (omission constatée
+ *  2026-06), donc le textarea générique reste affiché et le pipeline E2E
+ *  peut coller les résultats sans devoir simuler un form structuré chip
+ *  par chip. À utiliser comme cas pilote tant que les form fillers
+ *  Exalang 8-11 / EVALEO 6-15 ne sont pas écrits. */
+export const FIXTURE_EXALANG_1115_DYSLEXIE: CRBOFixture = {
+  id: 'exalang-11-15-dyslexie-6e',
+  description: '6e dyslexie compensée révélée à l\'entrée collège (Exalang 11-15)',
+  patient: {
+    prenom: 'Hugo',
+    nom: 'TESTUSER',
+    ddn: '2014-09-15',
+    classe: '6ème',
+  },
+  bilanDate: '2026-06-04',
+  bilanType: 'initial',
+  motif: 'Langage écrit',
+  medecin: {
+    prenom: 'Marie',
+    nom: 'TESTMEDECIN',
+    specialite: 'Pédiatre',
+    datePrescription: '2026-05-15',
+  },
+  anamnese:
+    "Hugo est adressé en consultation orthophonique pour difficultés persistantes en lecture-orthographe "
+    + "depuis l'entrée en 6e. Aucun diagnostic posé au primaire. Bilan ORL et ophtalmologique récents normaux. "
+    + "Pas d'antécédents familiaux connus de troubles des apprentissages. Bonne entrée dans le langage oral "
+    + "(premiers mots vers 14 mois). Au primaire, lecture lente notée par les enseignants mais aucune alerte "
+    + "formelle. Décompensation observée à l'entrée 6e : lenteur accentuée, fatigabilité importante, baisse "
+    + "des notes en français et histoire-géographie. Estime de soi fragilisée selon les parents.",
+  testUtilise: 'Exalang 11-15',
+  resultats:
+    "=== Exalang 11-15 (Helloin, Lenfant, Thibault — HappyNeuron 2009) ===\n"
+    + "Niveau scolaire : 6e (~11-12 ans)\n\n"
+    + "--- A.1 Langage oral ---\n"
+    + "Épreuve : Fluence phonémique (lettre, 1 min)\n"
+    + "  Percentile : P26 — P49 — Moyenne basse\n"
+    + "Épreuve : Fluence sémantique (catégorie, 1 min)\n"
+    + "  Percentile : P50 — P75 — Moyenne haute\n"
+    + "Épreuve : Compréhension orale de textes abstraits\n"
+    + "  Percentile : P50 — P75 — Moyenne haute\n"
+    + "Épreuve : Dénomination rapide de mots complexes\n"
+    + "  Percentile : P11 — P25 — Zone de fragilité\n"
+    + "  Observation : Manque du mot subclinique, lenteur d'accès lexical.\n\n"
+    + "--- A.2 Métaphonologie / phonologie complexe ---\n"
+    + "Épreuve : Répétition de logatomes complexes\n"
+    + "  Percentile : P6 — P10 — Difficulté\n"
+    + "  Observation : Trace résiduelle de fragilité phonologique.\n\n"
+    + "--- B.1 Lecture ---\n"
+    + "Épreuve : Lecture de mots fréquents\n"
+    + "  Percentile : P26 — P49 — Moyenne basse\n"
+    + "Épreuve : Lecture de mots irréguliers\n"
+    + "  Percentile : P11 — P25 — Zone de fragilité\n"
+    + "Épreuve : Lecture de non-mots / logatomes écrits\n"
+    + "  Percentile : P6 — P10 — Difficulté\n"
+    + "  Observation : Décodage analytique persistant, paralexies sur les non-mots longs.\n"
+    + "Épreuve : Leximétrie en contexte (texte long)\n"
+    + "  Percentile : P1 — P5 — Difficulté sévère\n"
+    + "  Observation : 105 mots/min (norme 6e attendue 140-180 mots/min) — flag majeur.\n"
+    + "Épreuve : Compréhension écrite inférentielle\n"
+    + "  Percentile : P26 — P49 — Moyenne basse\n\n"
+    + "--- B.2 Orthographe / production écrite ---\n"
+    + "Épreuve : Dictée de mots, de phrases, de texte\n"
+    + "  Percentile : P11 — P25 — Zone de fragilité\n"
+    + "  Observation : Erreurs phonologiques dominantes + homophones grammaticaux a/à, ses/ces non maîtrisés.\n"
+    + "Épreuve : Production écrite narrative\n"
+    + "  Percentile : P11 — P25 — Zone de fragilité\n\n"
+    + "--- C.1 Mémoire et fonctions exécutives ---\n"
+    + "Épreuve : Empan auditif endroit\n"
+    + "  Percentile : P26 — P49 — Moyenne basse\n"
+    + "Épreuve : Empan auditif envers\n"
+    + "  Percentile : P11 — P25 — Zone de fragilité\n",
+  comportementSeance:
+    "Hugo coopératif mais visiblement anxieux face aux épreuves écrites. Fatigabilité importante notée "
+    + "sur les épreuves chronométrées. Décompensation à l'entrée 6e mentionnée par les parents.",
+}
+
+/** Toutes les fixtures disponibles — accessibles par ID.
+ *  Note 2026-06-04 : les fixtures Exalang 8-11 et EVALEO 6-15 sont
+ *  désactivées tant que les form fillers structurés ne sont pas écrits
+ *  (ces tests utilisent des chips percentile par épreuve, pas un
+ *  textarea). À réactiver dans une 2e passe avec helpers Playwright. */
 export const FIXTURES: Record<string, CRBOFixture> = {
-  [FIXTURE_EXALANG_811_DYSLEXIE.id]: FIXTURE_EXALANG_811_DYSLEXIE,
-  [FIXTURE_EVALEO_DYSLEXIE.id]: FIXTURE_EVALEO_DYSLEXIE,
+  [FIXTURE_EXALANG_1115_DYSLEXIE.id]: FIXTURE_EXALANG_1115_DYSLEXIE,
+  // [FIXTURE_EXALANG_811_DYSLEXIE.id]: FIXTURE_EXALANG_811_DYSLEXIE,  // requires form filler
+  // [FIXTURE_EVALEO_DYSLEXIE.id]: FIXTURE_EVALEO_DYSLEXIE,            // requires form filler
 }

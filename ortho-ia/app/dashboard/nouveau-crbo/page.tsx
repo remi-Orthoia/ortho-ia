@@ -3556,12 +3556,12 @@ Compréhension écrite : 7/10, É-T : -0.50, Med (P50)
               {generating ? (
                 <>
                   <Loader2 className="animate-spin" size={18} />
-                  Extraction des données…
+                  Génération en cours…
                 </>
               ) : (
                 <>
                   <Sparkles size={18} />
-                  <span>Visualiser les résultats</span>
+                  <span>Générer le CRBO</span>
                   <kbd className="hidden lg:inline-flex items-center gap-0.5 ml-1 px-1.5 py-0.5 bg-white/20 rounded text-[10px] font-mono">
                     ⌘↵
                   </kbd>

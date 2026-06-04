@@ -30,7 +30,10 @@ export default defineConfig({
     ['list'],
     ['html', { outputFolder: 'e2e/.report', open: 'never' }],
   ],
-  outputDir: 'e2e/.results',
+  // outputDir = artefacts Playwright (traces, vidéos, screenshots auto sur
+  // failure). NOS artefacts custom (sections JSON, métadonnées) vont dans
+  // e2e/.results — qui DOIT être distinct, sinon Playwright le purge.
+  outputDir: 'e2e/.playwright-output',
   use: {
     baseURL: process.env.E2E_BASE_URL ?? 'http://localhost:3000',
     trace: 'on-first-retry',
