@@ -307,21 +307,22 @@ Méthode obligatoire :
 
 1. **Matcher nominativement** chaque épreuve actuelle avec son homologue dans le bilan précédent (par libellé). Les 10 épreuves PrediFex ont des libellés stables — matching strict possible.
 
-2. **Convertir les zones HappyNeuron en valeur numérique** AVANT de comparer, selon le mapping interne ortho.ia :
-   - Vert foncé (préservé) → 75
-   - Vert clair (moyenne basse) → 55
-   - Jaune (seuil d'alerte) → 30
-   - Orange (difficulté avérée) → 13
-   - Rouge (effondré) → 3
+2. **Convertir les zones HappyNeuron en valeur numérique** AVANT de comparer, en utilisant le **MÊME mapping que la section "rendu CRBO" ci-dessus** (lignes 244-247). C'est crucial : le mapping doit être identique pour que les \`percentile_value\` du JSON CRBO soient cohérents avec le calcul de delta du renouvellement. Mapping unique PrediFex (4 zones officielles, manuel p. 17) :
+   - Vert (préservé, ≥ M−1,5σ, "dans la norme ou au-dessus") → **85**
+   - Jaune (M−1,5σ à M−2σ, **seuil d'alerte officiel**) → **18**
+   - Orange (M−2σ à M−3σ, difficulté avérée) → **8**
+   - Rouge (< M−3σ, effondrement) → **3**
 
-3. **Calculer le delta de zone** :
-   - **Delta ≥ +15** → **PROGRÈS NET** (récupération post-AVC, bénéfice rééducation cognitive).
-   - **Delta entre -10 et +14** → **STABILITÉ** — résultat clinique attendu et rassurant en adulte.
-   - **Delta ≤ -10** → **RÉGRESSION** — signal d'alerte, en particulier si plusieurs épreuves convergent (suspicion dysexécutivité installée).
+3. **Calculer la trajectoire d'évolution selon le PASSAGE DE ZONE** (logique plus claire cliniquement que le delta numérique pur, vu que les zones HappyNeuron ont une sémantique forte) :
+   - **Passage d'une zone vers le HAUT** (rouge → orange, orange → jaune, jaune → vert, orange → vert, etc.) → **PROGRÈS** (récupération post-AVC ou bénéfice rééducation cognitive).
+   - **MÊME zone aux 2 bilans** → **STABILITÉ** — résultat clinique attendu et rassurant en adulte.
+   - **Passage d'une zone vers le BAS** (vert → jaune, vert → orange, jaune → orange, orange → rouge, etc.) → **RÉGRESSION** — signal d'alerte, en particulier si plusieurs épreuves convergent (suspicion dysexécutivité installée).
 
-4. **Cas particulier vert → jaune** : apparition d'une fragilité exécutive. Cliniquement très significatif — à investiguer (consultation mémoire, IRM analysant la région frontale et sous-corticale, BREF / batterie GREFEX en aval).
+   En complément, comme garde-fou anti-bruit : si le delta numérique est dans \`[-5, +5]\` mais que les zones sont identiques, c'est stable. Si les zones diffèrent, c'est progrès ou régression selon le sens — peu importe la valeur absolue du delta.
 
-5. **Citation nominative obligatoire** : écrire "Texte en ordre (planification narrative) : passage de la zone vert clair à la zone orange, une fragilité avérée est objectivée", PAS "des fragilités exécutives sont notées".
+4. **Cas particulier vert → jaune** : **apparition d'une fragilité exécutive** (franchissement du seuil d'alerte HappyNeuron). Cliniquement très significatif — à investiguer (consultation mémoire, IRM analysant la région frontale et sous-corticale, BREF / batterie GREFEX en aval).
+
+5. **Citation nominative obligatoire** : écrire "Texte en ordre (planification narrative) : passage de la zone vert à la zone orange, une fragilité avérée est objectivée", PAS "des fragilités exécutives sont notées". Cite par nom de zone, pas par percentile (PrediFex est sigma-based, pas percentile-based — les valeurs internes 85/18/8/3 sont des codes-couleurs).
 
 6. **Délai entre les bilans** à mentionner :
    - **6 mois** si fragilité présente au premier bilan.

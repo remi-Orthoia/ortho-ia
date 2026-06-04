@@ -323,21 +323,23 @@ Méthode obligatoire :
 
 1. **Matcher nominativement** chaque épreuve actuelle avec son homologue dans le bilan précédent (par libellé). Les 11 épreuves PREDIMEM ont des libellés stables — matching strict possible.
 
-2. **Convertir les zones HappyNeuron en valeur numérique** AVANT de comparer, selon le mapping interne ortho.ia (cf. \`percentile_value\` documenté plus haut) :
-   - Vert foncé (préservé, > M-1σ) → 75
-   - Vert clair (moyenne basse) → 55
-   - Jaune (seuil d'alerte, M-1.5σ) → 30
-   - Orange (difficulté avérée, M-2 à M-3σ) → 13
-   - Rouge (effondré, ≤ M-3σ) → 3
+2. **Convertir les zones HappyNeuron en valeur numérique** AVANT de comparer, en utilisant le **MÊME mapping que la section "rendu CRBO" ci-dessus** (lignes 226-230). C'est crucial : le mapping doit être identique pour que les \`percentile_value\` du JSON CRBO soient cohérents avec le calcul de delta du renouvellement. Mapping unique PREDIMEM :
+   - Vert foncé (préservé, ≥ M, manuel ligne 270 "dans la norme ou au-dessus") → **85**
+   - Vert clair (M−1σ à M−1,5σ, légèrement abaissée) → **60**
+   - Jaune (M−1,5σ à M−2σ, **seuil d'alerte officiel**) → **18**
+   - Orange (M−2σ à M−3σ, difficulté avérée) → **8**
+   - Rouge (≤ M−3σ, effondré, manuel ligne 270) → **3**
 
-3. **Calculer le delta de zone** (sur la valeur numérique 0-100) :
-   - **Delta ≥ +15** → **PROGRÈS NET** (signaler dans \`synthese_evolution.progres\`). Ex. : zone orange → vert clair = +42. Récupération post-AVC ou bénéfice de la PEC.
-   - **Delta entre -10 et +14** → **STABILITÉ** (signaler dans \`synthese_evolution.stagnation\`). En adulte, la stabilité est un résultat clinique attendu et rassurant — la formuler comme telle ("Le profil mnésique reste stable, ce qui est rassurant dans le contexte de plainte mnésique persistante").
-   - **Delta ≤ -10** → **RÉGRESSION** (signaler dans \`synthese_evolution.regression\`). En adulte, un déclin même modéré est un signal d'alerte — formuler avec prudence et orienter ("Une fragilité supplémentaire est objectivée sur [épreuve], qui pourrait évoquer une évolution dyscognitive. Un bilan neuropsychologique approfondi est recommandé pour caractériser cette évolution.").
+3. **Calculer la trajectoire d'évolution selon le PASSAGE DE ZONE** (logique plus claire cliniquement que le delta numérique pur, vu que les zones HappyNeuron ont une sémantique forte) :
+   - **Passage d'une zone vers le HAUT** (rouge → orange, orange → jaune, jaune → vert clair, jaune → vert foncé, vert clair → vert foncé, orange → vert clair, etc.) → **PROGRÈS** (signaler dans \`synthese_evolution.progres\`). Récupération post-AVC ou bénéfice de la PEC.
+   - **MÊME zone aux 2 bilans** → **STABILITÉ** (signaler dans \`synthese_evolution.stagnation\`). En adulte, la stabilité est un résultat clinique attendu et rassurant ("Le profil mnésique reste stable, ce qui est rassurant dans le contexte de plainte mnésique persistante").
+   - **Passage d'une zone vers le BAS** (vert foncé → vert clair, vert foncé → jaune, vert clair → jaune, jaune → orange, orange → rouge, etc.) → **RÉGRESSION** (signaler dans \`synthese_evolution.regression\`). En adulte, un déclin même d'une seule zone est un signal d'alerte — formuler avec prudence et orienter ("Une fragilité supplémentaire est objectivée sur [épreuve], qui pourrait évoquer une évolution dyscognitive. Un bilan neuropsychologique approfondi est recommandé pour caractériser cette évolution.").
 
-4. **Cas particulier vert → jaune** : Δ -45 ≈ apparition d'une fragilité. Cliniquement très significatif — à investiguer en priorité (consultation mémoire spécialisée, IRM si non récente).
+   En complément, comme garde-fou anti-bruit : si le delta numérique est dans \`[-5, +5]\` mais que les zones sont identiques, c'est stable. Si les zones diffèrent, c'est progrès ou régression selon le sens — peu importe la valeur absolue du delta.
 
-5. **Citation nominative obligatoire** : écrire "Mémoire d'un texte LU : passage de la zone vert clair (P55) à la zone jaune (P30), un déclin objectivé est noté", PAS "plusieurs régressions observées".
+4. **Cas particulier vert clair / vert foncé → jaune** : **apparition d'une fragilité** (franchissement du seuil d'alerte HappyNeuron). Cliniquement très significatif — à investiguer en priorité (consultation mémoire spécialisée, IRM si non récente, ré-évaluation neuropsy).
+
+5. **Citation nominative obligatoire** : écrire "Mémoire d'un texte LU : passage de la zone vert clair à la zone jaune (seuil d'alerte franchi), un déclin objectivé est noté", PAS "plusieurs régressions observées". Cite par nom de zone, pas par percentile (les percentiles internes 85/60/18/8/3 sont des codes-couleurs, pas des percentiles cliniques au sens classique — PREDIMEM est sigma-based, pas percentile-based).
 
 6. **Délai entre les bilans** à mentionner explicitement ("Au regard de N mois écoulés depuis le précédent dépistage"). Pour PREDIMEM, le délai recommandé est :
    - **6 mois** : si fragilité présente au premier bilan (suivi de monitorage rapproché).
