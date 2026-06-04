@@ -3,7 +3,7 @@
 import React from 'react'
 import { Download, Edit, AlertTriangle, Sparkles, BookOpen, Eye, UserCheck } from 'lucide-react'
 import type { CRBOStructure } from '@/lib/prompts'
-import { SEUILS, seuilFor, getPercentileColor, formatPercentileForDisplay, seuilForEvaleo } from '@/lib/word-export'
+import { SEUILS, seuilFor, getPercentileColor, formatPercentileForDisplay, seuilForEvaleo, shouldShowAllEpreuveComments } from '@/lib/word-export'
 import { BILAN_REGISTRY } from '@/lib/bilan-registry'
 import ReasoningClinicalDisplay from './ReasoningClinical'
 import RenouvellementComparisonTable from './RenouvellementComparisonTable'
@@ -109,6 +109,10 @@ export default function CRBOStructuredPreview({
   // afficher le paragraphe de synthèse domaine entre tableau et commentaires
   // par épreuve (anti-redite, retour Justine 2026-06-03).
   const hideDomainCommentaire = !!testList && testList.some(t => BILAN_REGISTRY[t]?.hideDomainCommentaire === true)
+  // showAllComments : EVALEO 6-15 — toutes les observations remontent, y
+  // compris pour une épreuve en norme (P>=50). Fix 2026-06 retour Cindy
+  // ("elle saute des lignes" sur Evalouette classe 4 → invisible avant).
+  const showAllComments = shouldShowAllEpreuveComments(testList)
 
   const sevColors: Record<string, { bg: string; text: string; ring: string }> = {
     'Léger':      { bg: 'bg-green-100 dark:bg-green-900/30',   text: 'text-green-800 dark:text-green-200',   ring: 'ring-green-300 dark:ring-green-800' },
@@ -191,6 +195,7 @@ export default function CRBOStructuredPreview({
         previousStructure={previousStructure}
         previousBilanDate={previousBilanDate}
         bilanDate={bilanDate}
+        testList={testList}
       />
 
       {/* Bilan — un bloc par domaine */}
@@ -335,13 +340,15 @@ export default function CRBOStructuredPreview({
                   {domain.commentaire}
                 </p>
               )}
-              {/* Paragraphes dédiés par épreuve "en dessous de la médiane"
-                  (P<50) — demande Laurie 2026-05. */}
+              {/* Paragraphes dédiés par épreuve : par défaut "en dessous de
+                  la médiane" (P<50, demande Laurie 2026-05). EVALEO :
+                  `showAllComments` leve ce filtre — toutes les observations
+                  remontent (cf. retour Cindy 2026-06). */}
               {domain.epreuves
-                .filter((e) => typeof e.percentile_value === 'number'
-                  && e.percentile_value < 50
-                  && e.commentaire
-                  && e.commentaire.trim().length > 0)
+                .filter((e) => e.commentaire
+                  && e.commentaire.trim().length > 0
+                  && (showAllComments
+                    || (typeof e.percentile_value === 'number' && e.percentile_value < 50)))
                 .map((e, k) => (
                   <p key={`ep-${k}`} className="mt-3 text-sm text-gray-700 dark:text-gray-300 leading-relaxed">
                     <strong>{e.nom}</strong> — {e.commentaire}

@@ -33,7 +33,7 @@ import { createClient } from '@/lib/supabase'
 import type { CRBOStructure, CRBOEpreuve, CRBODomain, ExtractedCRBO, SynthesizedCRBO } from '@/lib/prompts'
 import type { CRBOFormData } from '@/lib/types'
 import { drawHappyNeuronChart, computeChartHeight, computeChartWidth, type ChartGroup } from '@/lib/chart'
-import { downloadCRBOWord, SEUILS, getPercentileColor, seuilFor, formatPercentileForDisplay } from '@/lib/word-export'
+import { downloadCRBOWord, SEUILS, getPercentileColor, seuilFor, formatPercentileForDisplay, seuilForCell, getPercentileColorForCell } from '@/lib/word-export'
 import MicButton from '@/components/MicButton'
 import StreamingCRBO from '@/components/StreamingCRBO'
 import { playPrintAnimation } from '@/components/PrintAnimation'
@@ -149,7 +149,7 @@ function SousItemIcon({ nom }: { nom: string }) {
   return null
 }
 
-function DomainTable({ domain }: { domain: CRBODomain }) {
+function DomainTable({ domain, testList }: { domain: CRBODomain; testList?: string[] }) {
   return (
     <div className="overflow-x-auto -mx-5 px-5">
       <table className="w-full text-sm">
@@ -164,7 +164,17 @@ function DomainTable({ domain }: { domain: CRBODomain }) {
         </thead>
         <tbody className="divide-y divide-gray-100 dark:divide-surface-dark-muted/50">
           {domain.epreuves.map((e: CRBOEpreuve, eIdx: number) => {
-            const color = getPercentileColor(e.percentile_value)
+            // Palette adaptee : EVALEO (7 classes) si le bilan utilise la
+            // grille EVALEO via registry, sinon Laurie 6 zones standard.
+            // Aligne sur le Word genere — fix 2026-06 retour Laurie/Cindy.
+            const color = getPercentileColorForCell(e.percentile_value, testList)
+            const seuil = seuilForCell(e.percentile_value, testList)
+            // Pour EVALEO et autres bilans a label custom (Claude renvoie
+            // "Classe X - Norme/Fragilite/..."), on prefere l'interpretation
+            // de l'IA au label de seuil par defaut.
+            const interpLabel = (typeof e.interpretation === 'string' && e.interpretation.trim())
+              ? e.interpretation.trim()
+              : seuil.label
             return (
               <tr key={eIdx} className="hover:bg-gray-50 dark:hover:bg-surface-dark-muted/30">
                 <td className="py-2 pr-3 text-gray-900 dark:text-gray-100">{e.nom}</td>
@@ -174,14 +184,9 @@ function DomainTable({ domain }: { domain: CRBODomain }) {
                   {formatPercentileForDisplay(e.percentile, e.percentile_value)}
                 </td>
                 <td className="py-2 pl-2 text-center">
-                  {(() => {
-                    const seuil = seuilFor(e.percentile_value)
-                    return (
-                      <span className="inline-block px-2 py-0.5 rounded text-xs font-semibold" style={{ backgroundColor: '#' + seuil.shading, color: seuil.textColor ? '#' + seuil.textColor : '#000' }}>
-                        {seuil.label}
-                      </span>
-                    )
-                  })()}
+                  <span className="inline-block px-2 py-0.5 rounded text-xs font-semibold" style={{ backgroundColor: '#' + seuil.shading, color: seuil.textColor ? '#' + seuil.textColor : '#000' }}>
+                    {interpLabel}
+                  </span>
                 </td>
               </tr>
             )
@@ -913,7 +918,7 @@ export default function ResultatsPage() {
               <h3 className="font-bold text-primary-700 dark:text-primary-400 text-base">
                 {d.nom}
               </h3>
-              <DomainTable domain={d} />
+              <DomainTable domain={d} testList={testsArray} />
               <div className="pt-2 space-y-2">
                 <div className="flex items-center justify-between">
                   <label className="flex items-center gap-1.5 text-sm font-medium text-gray-700 dark:text-gray-300">

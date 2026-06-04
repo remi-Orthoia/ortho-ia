@@ -213,6 +213,60 @@ export function normalizeInterpretation(stored: string | undefined): SeuilLabel 
 export const getPercentileColor = (v: number): string => seuilFor(v).shading
 export const getPercentileCssColor = (v: number): string => seuilFor(v).css
 
+// ============================================================================
+// Helpers UI registry-driven (palette par bilan)
+// ----------------------------------------------------------------------------
+// Ces helpers sont la source unique de verite pour les VISUALISATIONS HTML
+// du CRBO (DomainTable des pages resultats/preview, RenouvellementComparisonTable,
+// CRBOPrintableStructure de l'historique). Ils s'alignent sur la logique
+// interne de generateCRBOWord (cf. ligne ~442 : `legendType` calcule depuis
+// le registry). Sans ces helpers, chaque ecran retombait sur `seuilFor()`
+// hardcode = grille Laurie 6 zones, ce qui produit une grille a 6 couleurs
+// au lieu des 7 classes officielles EVALEO 6-15 (retour Cindy 2026-06).
+// ============================================================================
+
+/** Normalise un testList qui peut etre :
+ *  - un vrai array de noms ["EVALEO 6-15", "Exalang 8-11"]
+ *  - un array a un seul element ["EVALEO 6-15, Exalang 8-11"] (cas
+ *    test_utilise stocke en string comma-separated et wrappe sans split,
+ *    cf. preview/[id]/page.tsx)
+ *  - vide ou null
+ *  Eclate les entrees comma-separated pour que le lookup BILAN_REGISTRY[t]
+ *  matche les vrais noms de bilans. */
+function normalizeTestList(testList?: string[] | null): string[] {
+  if (!testList || testList.length === 0) return []
+  return testList.flatMap(t => t.split(',').map(s => s.trim()).filter(Boolean))
+}
+
+/** Determine la palette de seuils a utiliser pour un CRBO d'apres la liste
+ *  des bilans utilises. 'evaleo' si au moins un test a legendType='evaleo'
+ *  dans le registry, 'standard' sinon. */
+export function paletteForTestList(testList?: string[] | null): 'standard' | 'evaleo' {
+  const tests = normalizeTestList(testList)
+  return tests.some(t => BILAN_REGISTRY[t]?.legendType === 'evaleo') ? 'evaleo' : 'standard'
+}
+
+/** Helper UI : seuil clinique pour une cellule de tableau (percentile +
+ *  interpretation). A utiliser dans tous les composants HTML qui rendent
+ *  des cellules colorees de percentile depuis `e.percentile_value`. */
+export function seuilForCell(value: number, testList?: string[] | null): SeuilClinique {
+  return pickSeuil(value, paletteForTestList(testList))
+}
+
+/** Helper UI : shading hex (sans '#') pour une cellule, equivalent du
+ *  getPercentileColor mais registry-aware. */
+export function getPercentileColorForCell(value: number, testList?: string[] | null): string {
+  return seuilForCell(value, testList).shading
+}
+
+/** Helper UI : decide si les commentaires d'epreuve hors zone fragile
+ *  doivent etre rendus (cf. registry showAllEpreuveComments — EVALEO 6-15).
+ *  Aligne avec lib/word-export.ts ligne ~467. */
+export function shouldShowAllEpreuveComments(testList?: string[] | null): boolean {
+  const tests = normalizeTestList(testList)
+  return tests.some(t => BILAN_REGISTRY[t]?.showAllEpreuveComments === true)
+}
+
 /**
  * Formate un percentile pour affichage UI/Word/PDF (refonte 2026-05).
  *

@@ -27,7 +27,7 @@
 
 import React from 'react'
 import type { CRBOStructure } from '@/lib/prompts'
-import { getPercentileColor, formatPercentileForDisplay } from '@/lib/word-export'
+import { getPercentileColorForCell, formatPercentileForDisplay } from '@/lib/word-export'
 
 interface Props {
   /** Structure CRBO du bilan en cours. */
@@ -38,6 +38,11 @@ interface Props {
   previousBilanDate?: string | null
   /** Date du bilan actuel pour etiqueter la colonne. */
   bilanDate?: string | null
+  /** Liste des bilans utilises — source de verite pour la palette de couleurs
+   *  (EVALEO 7 classes vs Laurie 6 zones). Sans ce prop, retombe sur la
+   *  palette standard 6 zones meme pour un EVALEO, ce qui produit une
+   *  incoherence visuelle avec la legende EVALEO affichee en haut de page. */
+  testList?: string[]
 }
 
 function formatDateFr(iso?: string | null): string {
@@ -52,6 +57,7 @@ export default function RenouvellementComparisonTable({
   previousStructure,
   previousBilanDate,
   bilanDate,
+  testList,
 }: Props) {
   const hasPrev =
     !!previousStructure &&
@@ -169,8 +175,11 @@ export default function RenouvellementComparisonTable({
                 </tr>
                 {d.epreuves.map((e, eIdx) => {
                   const prev = prevIndex.get(e.nom.toLowerCase().trim())
-                  const prevColor = prev ? getPercentileColor(prev.value) : ''
-                  const curColor = getPercentileColor(e.percentile_value)
+                  // Palette registry-aware : EVALEO 7 classes si le bilan
+                  // utilise la grille EVALEO, sinon Laurie 6 zones standard.
+                  // Aligne sur le Word genere — fix 2026-06.
+                  const prevColor = prev ? getPercentileColorForCell(prev.value, testList) : ''
+                  const curColor = getPercentileColorForCell(e.percentile_value, testList)
                   let arrow = '→', arrowLabel = 'Stable', arrowClass = 'text-gray-500'
                   if (prev) {
                     const delta = e.percentile_value - prev.value

@@ -20,7 +20,7 @@ import React, { useEffect, useState } from 'react'
 import { useParams, useRouter } from 'next/navigation'
 import { createClient } from '@/lib/supabase'
 import { Loader2, Printer, ArrowLeft } from 'lucide-react'
-import { seuilFor, formatPercentileForDisplay } from '@/lib/word-export'
+import { seuilFor, seuilForCell, formatPercentileForDisplay, shouldShowAllEpreuveComments } from '@/lib/word-export'
 import { BILAN_REGISTRY } from '@/lib/bilan-registry'
 import type { CRBOStructure } from '@/lib/prompts'
 
@@ -383,6 +383,13 @@ function CRBOPrintableStructure({ structure, testUtilise }: { structure: CRBOStr
   // EVALEO ne doit pas afficher le paragraphe de synthèse domaine entre tableau
   // et commentaires par épreuve (anti-redite, retour Justine 2026-06-03).
   const hideDomainCommentaire = !!testUtilise && BILAN_REGISTRY[testUtilise]?.hideDomainCommentaire === true
+  // testList pour la palette de couleurs (EVALEO 7 classes vs Laurie 6 zones).
+  // Le helper `seuilForCell` accepte une string comma-separated wrappee dans
+  // un array — il l'eclate lui-meme via normalizeTestList.
+  const testList = testUtilise ? [testUtilise] : []
+  // EVALEO : tous les commentaires d'epreuve remontent, pas seulement
+  // ceux des epreuves fragiles (P<50). Aligne sur le Word genere.
+  const showAllComments = shouldShowAllEpreuveComments(testList)
   return (
     <>
       {/* Anamnèse */}
@@ -459,7 +466,12 @@ function CRBOPrintableStructure({ structure, testUtilise }: { structure: CRBOStr
                   </thead>
                   <tbody>
                     {d.epreuves.map((e, j) => {
-                      const seuil = seuilFor(e.percentile_value)
+                      // Palette registry-aware (fix 2026-06 retour Laurie/Cindy) :
+                      // EVALEO 7 classes si bilan EVALEO, Laurie 6 zones sinon.
+                      const seuil = seuilForCell(e.percentile_value, testList)
+                      const interpLabel = (typeof e.interpretation === 'string' && e.interpretation.trim())
+                        ? e.interpretation.trim()
+                        : seuil.label
                       return (
                         <tr key={j}>
                           <td style={{ padding: '4px 8px', border: '1px solid #BFBFBF' }}>{e.nom}</td>
@@ -469,7 +481,7 @@ function CRBOPrintableStructure({ structure, testUtilise }: { structure: CRBOStr
                             {formatPercentileForDisplay(e.percentile, e.percentile_value)}
                           </td>
                           <td style={{ padding: '4px 8px', textAlign: 'center', border: '1px solid #BFBFBF', backgroundColor: '#' + seuil.shading, color: seuil.textColor ? '#' + seuil.textColor : '#000', fontWeight: 600 }}>
-                            {seuil.label}
+                            {interpLabel}
                           </td>
                         </tr>
                       )
@@ -482,14 +494,16 @@ function CRBOPrintableStructure({ structure, testUtilise }: { structure: CRBOStr
                   {d.commentaire}
                 </p>
               )}
-              {/* Paragraphes dédiés par épreuve "en dessous de la médiane"
-                  (P<50) — demande Laurie 2026-05 : pour chaque sous-épreuve
-                  dans le rouge, afficher son commentaire clinique. */}
+              {/* Paragraphes dédiés par épreuve : par défaut "en dessous de
+                  la médiane" (P<50, demande Laurie 2026-05). EVALEO :
+                  `showAllComments` leve ce filtre — toutes les observations
+                  remontent, y compris pour une épreuve en norme (cf. retour
+                  Cindy 2026-06). */}
               {!isMoca && d.epreuves
-                .filter((e) => typeof e.percentile_value === 'number'
-                  && e.percentile_value < 50
-                  && e.commentaire
-                  && e.commentaire.trim().length > 0)
+                .filter((e) => e.commentaire
+                  && e.commentaire.trim().length > 0
+                  && (showAllComments
+                    || (typeof e.percentile_value === 'number' && e.percentile_value < 50)))
                 .map((e, k) => (
                   <p key={`ep-${k}`} style={{ fontSize: 12.5, color: '#374151', margin: '6px 0 0', lineHeight: 1.55 }}>
                     <strong>{e.nom}</strong> — {e.commentaire}

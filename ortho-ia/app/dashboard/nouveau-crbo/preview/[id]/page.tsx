@@ -38,7 +38,7 @@ import {
 } from 'lucide-react'
 import { createClient } from '@/lib/supabase'
 import type { CRBOStructure, CRBODomain } from '@/lib/prompts'
-import { SEUILS, seuilFor, getPercentileColor, formatPercentileForDisplay } from '@/lib/word-export'
+import { SEUILS, seuilFor, getPercentileColor, formatPercentileForDisplay, seuilForCell, getPercentileColorForCell } from '@/lib/word-export'
 import { classifyEpreuveFamily, FAMILY_LABEL, FAMILY_ORDER, type FamilyKey } from '@/lib/chart'
 import CRBOStructuredPreview from '@/components/CRBOStructuredPreview'
 import { applyVocabToObject } from '@/lib/vocab-perso'
@@ -479,7 +479,7 @@ function AutoSaveBadge({ status, lastSavedAt }: { status: 'idle' | 'saving' | 's
 /** Tableau des épreuves par domaine — read-only (les scores ne se modifient pas
  *  depuis la preview, c'est la phase d'extraction qui les a posés). Le
  *  commentaire de domaine reste éditable juste dessous. */
-function DomainTable({ domain }: { domain: CRBODomain }) {
+function DomainTable({ domain, testList }: { domain: CRBODomain; testList?: string[] }) {
   return (
     <div className="overflow-x-auto -mx-4 px-4">
       <table className="w-full text-sm border-collapse">
@@ -494,8 +494,14 @@ function DomainTable({ domain }: { domain: CRBODomain }) {
         </thead>
         <tbody className="divide-y divide-gray-100">
           {domain.epreuves.map((e, i) => {
-            const color = getPercentileColor(e.percentile_value)
-            const seuil = seuilFor(e.percentile_value)
+            // Palette adaptee : EVALEO (7 classes) si le bilan utilise la
+            // grille EVALEO via registry, sinon Laurie 6 zones standard.
+            // Aligne sur le Word genere — fix 2026-06 retour Laurie/Cindy.
+            const color = getPercentileColorForCell(e.percentile_value, testList)
+            const seuil = seuilForCell(e.percentile_value, testList)
+            const interpLabel = (typeof e.interpretation === 'string' && e.interpretation.trim())
+              ? e.interpretation.trim()
+              : seuil.label
             return (
               <tr key={i}>
                 <td className="py-2 pr-3 text-gray-900">{e.nom}</td>
@@ -509,7 +515,7 @@ function DomainTable({ domain }: { domain: CRBODomain }) {
                     className="inline-block px-2 py-0.5 rounded text-xs font-semibold"
                     style={{ backgroundColor: '#' + seuil.shading, color: seuil.textColor ? '#' + seuil.textColor : '#000' }}
                   >
-                    {seuil.label}
+                    {interpLabel}
                   </span>
                 </td>
               </tr>
@@ -1129,6 +1135,7 @@ export default function CRBOPreviewPage() {
                 previousStructure={previousStructure}
                 previousBilanDate={previousBilanDate}
                 bilanDate={crbo.bilan_date}
+                testList={typeof crbo?.test_utilise === 'string' && crbo.test_utilise.trim() ? [crbo.test_utilise] : []}
               />
             </div>
           )}
@@ -1192,7 +1199,10 @@ export default function CRBOPreviewPage() {
                         {byFamily[fk].map(({ d, i }) => (
                           <div key={i} id={`sec-domain-${i}`} className="scroll-mt-24 card-modern p-4">
                             <h4 className="font-bold text-primary-700 text-base mb-3">{d.nom}</h4>
-                            <DomainTable domain={d} />
+                            <DomainTable
+                              domain={d}
+                              testList={typeof crbo?.test_utilise === 'string' && crbo.test_utilise.trim() ? [crbo.test_utilise] : []}
+                            />
                             <div className="mt-3">
                               <SectionEditor
                                 id={`sec-domain-${i}-comment`}
@@ -1215,7 +1225,13 @@ export default function CRBOPreviewPage() {
                                 </p>
                                 <div className="space-y-3">
                                   {d.epreuves.map((e, j) => {
-                                    const seuil = seuilFor(e.percentile_value)
+                                    // Palette registry-aware (fix 2026-06) — EVALEO 7 classes
+                                    // vs Laurie 6 zones standard.
+                                    const tlist = typeof crbo?.test_utilise === 'string' && crbo.test_utilise.trim() ? [crbo.test_utilise] : []
+                                    const seuil = seuilForCell(e.percentile_value, tlist)
+                                    const interpLabel = (typeof e.interpretation === 'string' && e.interpretation.trim())
+                                      ? e.interpretation.trim()
+                                      : seuil.label
                                     return (
                                       <div key={j} className="rounded-lg border border-gray-100 p-3 bg-gray-50/50">
                                         <div className="flex items-center justify-between gap-2 mb-2">
@@ -1224,7 +1240,7 @@ export default function CRBOPreviewPage() {
                                             className="inline-flex items-center px-2 py-0.5 rounded text-xs font-semibold"
                                             style={{ backgroundColor: '#' + seuil.shading, color: seuil.textColor ? '#' + seuil.textColor : '#000' }}
                                           >
-                                            {seuil.label} ({formatPercentileForDisplay(e.percentile, e.percentile_value)})
+                                            {interpLabel} ({formatPercentileForDisplay(e.percentile, e.percentile_value)})
                                           </span>
                                         </div>
                                         <SectionEditor
