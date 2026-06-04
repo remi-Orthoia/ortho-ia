@@ -223,6 +223,13 @@ export const BILAN_REGISTRY: Record<string, BilanEntry> = {
     scoreSchema: 'percentile',
     wordRenderer: 'standard',
     generateRoute: '/api/generate-crbo',
+    // Cohérence avec les bilans à observations détaillées (BETL, EVALEO,
+    // Exalang 5-8 / 11-15 / Lyfac, Examath) : les observations qualitatives
+    // saisies par l'ortho ou extraites du PDF (stratégies, fatigabilité,
+    // type d'erreurs) doivent remonter dans le Word même pour les épreuves
+    // en zone HappyNeuron favorable. Sans ce flag, le filtre par défaut
+    // P<50 jetait toute observation sur épreuve en zone vert / vert clair.
+    showAllEpreuveComments: true,
   },
   'PrediFex': {
     nom: 'PrediFex',
@@ -232,6 +239,8 @@ export const BILAN_REGISTRY: Record<string, BilanEntry> = {
     scoreSchema: 'percentile',
     wordRenderer: 'standard',
     generateRoute: '/api/generate-crbo',
+    // Cohérence avec PREDIMEM ci-dessus — mêmes raisons.
+    showAllEpreuveComments: true,
   },
   'PrediLac': {
     nom: 'PrediLac',
@@ -310,6 +319,12 @@ export const BILAN_REGISTRY: Record<string, BilanEntry> = {
     scoreSchema: 'percentile',
     wordRenderer: 'standard',
     generateRoute: '/api/generate-crbo',
+    // Cohérence avec les autres Exalang (5-8, 11-15, Lyfac) et EVALEO :
+    // les observations qualitatives (intelligibilité, stratégies d'évitement,
+    // attention conjointe, anxiété de passation) doivent remonter même
+    // pour les épreuves en zone de norme — critique en maternelle où les
+    // observations comportementales priment souvent sur le score brut.
+    showAllEpreuveComments: true,
   },
   'Exalang 5-8': {
     nom: 'Exalang 5-8',
@@ -349,6 +364,11 @@ export const BILAN_REGISTRY: Record<string, BilanEntry> = {
     scoreSchema: 'percentile',
     wordRenderer: 'standard',
     generateRoute: '/api/generate-crbo',
+    // Cohérence avec les autres Exalang (3-6, 5-8, 11-15, Lyfac) et EVALEO :
+    // les annotations qualitatives (types d'erreurs DRA, stratégies de
+    // lecture, fatigabilité, confusion b/d) doivent remonter dans le Word
+    // même hors zone de fragilité — retour Cindy 2026-06.
+    showAllEpreuveComments: true,
   },
   'Exalang 11-15': {
     nom: 'Exalang 11-15',
