@@ -98,10 +98,16 @@ export const TESTS_WITH_SPECIFIC_FORM = new Set<string>([
   'EVALO 2-6',
   'EVALEO 6-15',
   'Exalang 3-6',
-  // 'Exalang 5-8' — retiré 2026-05-21 sur demande utilisateur : revient à
-  // la saisie libre (textarea générique) pour ce test. Le composant
-  // Exalang58ScoresInput existe encore mais n'est plus monté tant que
-  // ce test n'est pas dans cet ensemble.
+  // Exalang 5-8 — réactivé 2026-06-04 (demande Justine, mode renouvellement
+  // structuré). Refonte complète 2026-06 sur la base du manuel officiel
+  // Orthomotus 2010 (7 modules / 35 épreuves / 4 niveaux d'étalonnage).
+  // Avant cette ligne le form était bien monté mais l'absence du test de
+  // cet ensemble faisait apparaître le textarea générique EN DOUBLON
+  // sous le form structuré — fixé 2026-06.
+  'Exalang 5-8',
+  // Exalang 8-11 — ajouté 2026-06-04 en même temps que 5-8 (même demande
+  // mode renouvellement structuré, 22 épreuves / 5 groupes A.1/A.2/B.1/B.2/C.1).
+  'Exalang 8-11',
   'Exalang Lyfac',
 ])
 
