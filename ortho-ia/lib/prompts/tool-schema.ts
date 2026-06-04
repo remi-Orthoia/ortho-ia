@@ -232,14 +232,19 @@ export const SYNTHESIZE_TOOL: Anthropic.Tool = {
         type: 'string',
         description:
           "Champ conclusion = 1 OU 2 paragraphes séparés par une ligne vide (\\n\\n) — refonte 2026-06-05. " +
-          "PARAGRAPHE 1 (CONDITIONNEL, AMO) : si le module impose une nomenclature AMO (Exalang 3-6/5-8/8-11/11-15/Lyfac, EVALEO, B-CM, B-CMado, BETL pédiatrique), écris : " +
-          "'La rééducation s\\'inscrit dans le cadre de la nomenclature AMO [code] ([libellé]).' " +
-          "Codes : 8.4 (langage écrit) / 9.4 (langage oral) / 11.7 (cognition mathématique) selon profil dominant. " +
-          "OMETTRE cette phrase pour les bilans adulte (PREDIMEM, PrediFex, PrediLac, BETL adulte, BIA, BECD, MoCA) — pas de nomenclature AMO pour la cognition adulte. " +
+          "PARAGRAPHE 1 (CONDITIONNEL, nomenclature) : si le module impose une nomenclature, écris UNE seule phrase courte (2 lignes max). " +
+          "🔒 CODES PAR BILAN — UTILISER UNIQUEMENT le code de la liste ci-dessous, JAMAIS inventer un code voisin : " +
+          "* Exalang 3-6 / 5-8 / 8-11 / 11-15 / Lyfac → 'AMO 8.4 (rééducation des troubles du langage écrit)' OU 'AMO 9.4 (rééducation des troubles du langage oral)' selon profil dominant. " +
+          "* Examath, B-CM, B-CMado → 'AMO 11.7 (rééducation des troubles spécifiques des apprentissages — cognition mathématique)'. JAMAIS 12.6 / 11.4 / 12.1 — la cotation est UNIQUEMENT 11.7 (verbatim). " +
+          "* BETL pédiatrique → 'AMO 8.4' ou '9.4' selon profil. " +
+          "* EVALEO 6-15 → ⚠️ EXCEPTION : EVALEO utilise la grille NGAP propre (PAS la grille AMO 8.4/9.4). " +
+          "  Codes EVALEO : 'AMO 12,1' (dyslexie/dysorthographie) / 'AMO 13,5' (TDL ou TDL+dyslexie) / 'AMO 13,8' (trouble neurologique sévère) / 'AMO 10,1' (surveillance). " +
+          "  Format EVALEO : 'La prise en charge orthophonique est cotée selon la NGAP AMO [code] ([libellé]).' " +
+          "OMETTRE cette phrase pour les bilans adulte (PREDIMEM, PrediFex, PrediLac, BETL adulte, BIA, BECD, MoCA) — pas de nomenclature pour la cognition adulte. " +
           "PARAGRAPHE 2 (OBLIGATOIRE, médico-légal, VERBATIM) : " +
           "'Compte rendu remis en main propre à l\\'assuré(e) pour servir et faire valoir ce que de droit. (Copie au médecin prescripteur).' " +
-          "Pour les bilans avec AMO : 2 paragraphes (AMO + \\n\\n + formule juridique). Pour les bilans sans AMO : 1 seul paragraphe (formule juridique). " +
-          "Le rendu Word affiche le paragraphe AMO en taille normale (gauche), le paragraphe juridique en italique petit gris centré.",
+          "Pour les bilans avec nomenclature : 2 paragraphes (nomenclature + \\n\\n + formule juridique). Pour les bilans sans nomenclature : 1 seul paragraphe (formule juridique). " +
+          "Le rendu Word affiche le paragraphe nomenclature en taille normale (gauche), le paragraphe juridique en italique petit gris centré.",
       },
       synthese_evolution: {
         type: ['object', 'null'],

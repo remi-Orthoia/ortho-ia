@@ -351,10 +351,19 @@ Méthode obligatoire :
 
 #### NOMENCLATURE AMO
 
-Le CRBO Examath doit inclure dans la conclusion 1 phrase mentionnant la nomenclature AMO :
-- **AMO 12.6** : Rééducation des troubles spécifiques des apprentissages (dyscalculie).
+Le CRBO Examath DOIT inclure dans le champ \`conclusion\` (paragraphe 1, avant la formule juridique) la nomenclature AMO :
 
-Format attendu : "La rééducation s'inscrit dans le cadre de la nomenclature AMO 12.6 (rééducation des troubles spécifiques des apprentissages — dyscalculie)." Une phrase, point.
+🔒 **Code AMO Examath = 11.7 — VERBATIM, RIEN D'AUTRE.**
 
-⚠️ Si profil de dyscalculie secondaire (à un trouble du langage), la PEC peut relever de l'AMO 8.4 (LE) ou 9.4 (LO) selon le profil principal, avec mention de la composante dyscalculique en complément.`,
+JAMAIS 12.6, JAMAIS 11.4, JAMAIS 12.1, JAMAIS aucun autre code voisin. Ces codes sont SOIT inexistants SOIT propres à d'autres bilans (12,1 / 13,5 / 13,8 sont les codes NGAP EVALEO, par exemple). Si tu écris autre chose que 11.7 dans un CRBO Examath, c'est un bug — le CRBO ne sera pas remboursé correctement par l'Assurance Maladie.
+
+**Format attendu (verbatim)** :
+
+"La rééducation s'inscrit dans le cadre de la nomenclature AMO 11.7 (rééducation des troubles spécifiques des apprentissages — cognition mathématique)."
+
+Une phrase, point. Pas de justification autour, pas de paragraphe d'explication.
+
+⚠️ Si profil de dyscalculie secondaire (à un trouble du langage), la PEC peut relever de l'AMO 8.4 (LE) ou 9.4 (LO) selon le profil principal, avec mention de la composante dyscalculique en complément.
+
+(Refonte 2026-06-05 : le prompt précédent disait "AMO 12.6" qui est un code inexistant — bug détecté en E2E. Le bon code dyscalculie est **11.7**.)`,
 }

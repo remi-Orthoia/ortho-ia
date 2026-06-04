@@ -768,10 +768,20 @@ une analyse synthetique du sous-type (cf. exemples ci-dessous).
 - "Cette epreuve obtient un percentile P13."
 - "En lecture de mots, le score est cote en classe 1."
 - "Le score d'efficience est cote en classe 2."
+- "La lecture de pseudomots se situe en zone pathologique."  (refonte 2026-06-05 — pattern detecte en E2E)
+- "La dictee de mots se situe en zone de fragilite."  (idem)
+- "La dictee de phrases se situe en classe 2."  (idem)
 
-→ Le tableau juste au-dessus affiche **deja** la classe et le percentile
-sous forme de cellule coloree. La repetition en prose est une **redite
-verbeuse** que les orthos rejettent (retour utilisateur 2026-05-26).
+🔒 **REGLE EXPLICITE** : tout commentaire d'epreuve qui COMMENCE par
+"La/Le [nom epreuve] (est cote/se situe/obtient) en [classe / zone /
+percentile / niveau] X" est INTERDIT, **peu importe la formulation
+exacte** ("zone pathologique" ≡ "classe 1", "zone de fragilite" ≡
+"classe 2", etc.). Le tableau juste au-dessus affiche **deja** la
+classe et la couleur de fond — repeter la cotation en debut de prose
+est la redite que les orthos rejettent (retour utilisateur 2026-05-26).
+La phrase d'ouverture du commentaire DOIT etre une observation
+clinique, un type d'erreur, une consequence fonctionnelle, ou une
+dissociation — pas un restate du tableau.
 
 ✅ **DEMARRE le commentaire par l'observation clinique directe** :
 - "Inversions visuelles b/p observees, regle contextuelle du g non maitrisee."
@@ -842,11 +852,25 @@ Structure obligatoire (un seul bloc, pas de sous-titres internes) :
 ❌ NE PAS écrire de longues recommandations avec justification clinique par axe — le diagnostic juste au-dessus a déjà fait ce travail.
 ✅ Remplir \`recommandations\` avec un **projet thérapeutique en prose très courte** (1 phrase d'intro + 1 phrase PAP, ~3-4 lignes total) suivi d'**axes en bullets non numérotés courts** (1 ligne par axe, **3-5 axes max**, pas \`1. 2. 3.\`).
 
-🔒 **REGLE IMPERATIVE EVALEO — MENTION AMO OBLIGATOIRE ET COURTE** : la
-1re phrase des \`recommandations\` (et donc des "Axes therapeutiques" du
-Word) DOIT imperativement inclure la cotation NGAP avec le code AMO.
-**NE JAMAIS omettre cette mention** — c'est une obligation legale pour
-la prise en charge orthophonique remboursee.
+🔒 **REGLE IMPERATIVE EVALEO — MENTION NGAP OBLIGATOIRE** : la cotation
+NGAP doit apparaitre DEUX FOIS dans le CRBO EVALEO :
+
+1. Dans \`conclusion\` (paragraphe 1, refonte 2026-06-05) : la mention
+   NGAP est desormais affichee dans le bloc "Conclusion" du Word (vs
+   ancienne section "Projet therapeutique" supprimee). Format :
+   "La prise en charge orthophonique est cotee selon la NGAP AMO
+   [code] ([libelle])."
+   ⚠️ EVALEO utilise sa propre grille NGAP (12,1 / 13,5 / 13,8 / 10,1),
+   PAS la grille AMO commune 8.4 / 9.4. Si tu ecris "AMO 8.4" dans un
+   CRBO EVALEO, c'est FAUX — utilise UNIQUEMENT 12,1 / 13,5 / 13,8 /
+   10,1 selon le profil diagnostique pose juste au-dessus.
+
+2. Dans \`recommandations\` (legacy, en debut de prose) : meme cotation,
+   meme phrase modele. Ce champ n'est plus rendu dans le Word (decision
+   Laurie 2026-05) mais reste utile pour rétrocompat DB.
+
+**NE JAMAIS omettre la cotation** — obligation legale pour la prise en
+charge orthophonique remboursee.
 
 🔒 **VOLUME STRICT — mention AMO = 1 phrase / 2 lignes maximum** : la
 mention AMO doit tenir en **UNE SEULE PHRASE** (pas un paragraphe, pas

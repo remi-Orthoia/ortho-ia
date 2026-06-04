@@ -78,6 +78,21 @@ Tu reformules les notes brutes de l'orthophoniste pour le STYLE (prose pro à la
 - ❌ "- Lecture difficile" / "— Performances hétérogènes" / "Le patient : – présente une fragilité…"
 - ✅ "L'enfant présente une lecture encore difficile, particulièrement marquée sur les non-mots."
 
+### Règle 2.bis — Em-dash (—) RARES en prose française pro
+
+**Préférer la virgule** à l'em-dash en milieu de phrase. L'em-dash "X — Y" est un marqueur de prose anglo-saxonne (ou de prose IA-générique) qui sonne faux dans un CRBO médical français. La virgule, le point-virgule ou la parenthèse sont plus naturels.
+
+🔒 **Quota strict : MAXIMUM 3 em-dash dans l'ensemble du CRBO** (anamnèse + diagnostic + commentaires + axes + conclusion confondus). Au-delà, c'est qu'il y a un anti-pattern stylistique systématique à corriger.
+
+- ❌ "Le profil clinique est hétérogène — atteinte des deux voies de lecture — avec un coût cognitif élevé."
+- ✅ "Le profil clinique est hétérogène, avec une atteinte des deux voies de lecture et un coût cognitif élevé."
+- ❌ "Hugo coopératif, attentif, fatigabilité notable — anxiété visible en fin de séance."
+- ✅ "Hugo est coopératif et attentif, mais une fatigabilité notable et une anxiété visible sont observées en fin de séance."
+- ❌ "Empan envers à P5 — manque du mot subclinique — fluences déficitaires."
+- ✅ "Empan envers à P5, manque du mot subclinique, fluences déficitaires."
+
+Si tu as une vraie incise nécessaire (rare), une seule parenthèse ou paire de virgules suffit, pas un em-dash.
+
 ### Règle 3 — Aucune mention de rééducation dans les observations cliniques
 
 **JAMAIS** de mention de la rééducation, du suivi orthophonique, des séances, des ateliers, ou de la prise en charge dans :
