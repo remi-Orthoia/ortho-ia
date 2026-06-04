@@ -629,6 +629,20 @@ export default function CRBOPreviewPage() {
         if (!statusErr) setCrbo({ ...row, statut: 'a_relire' })
       }
 
+      // Cleanup handoff sessionStorage — la preview est désormais la source
+      // de vérité (le CRBO est en DB). Le handoff sert uniquement à la
+      // transition `nouveau-crbo` → `/resultats` → `/preview`, donc une fois
+      // arrivé ici on peut le purger. Évite que l'ortho retombe sur un état
+      // de transition obsolète au reload. Pattern préparatoire à la fusion
+      // /resultats → /preview prévue étape 3.
+      try {
+        const handoffKey = `ortho-ia:crbo-handoff:${user.id}`
+        sessionStorage.removeItem(handoffKey)
+        sessionStorage.removeItem('ortho-ia:crbo-handoff') // legacy non scopée
+      } catch {
+        // sessionStorage indisponible (Safari privé, etc.) — sans effet.
+      }
+
       setLoading(false)
     }
     load()
