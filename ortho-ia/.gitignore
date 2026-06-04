@@ -45,3 +45,11 @@ next-env.d.ts
 # Manuels des tests (matériel propriétaire Ortho Édition / autres éditeurs).
 # Source de référence pour enrichir les prompts ; jamais commité.
 /docs/Bilans Sources/
+
+# Tests E2E Playwright — artefacts par run, rapport HTML, credentials test.
+/e2e/.results/
+/e2e/.report/
+/e2e/.env.test
+/.env.test
+/test-results/
+/playwright-report/
