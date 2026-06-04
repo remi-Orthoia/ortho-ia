@@ -314,11 +314,23 @@ export const BILAN_REGISTRY: Record<string, BilanEntry> = {
     // mode renouvellement complet (tableau comparatif + flèches d'évolution).
     // Le textarea libre ne permettait pas de produire la `epreuves[].percentile_value`
     // structurée nécessaire au calcul des deltas par épreuve.
+    //
+    // Refonte 2026-06 sur la base du manuel officiel
+    // (Thibault, Helloin, Croteau — Orthomotus 2010) : 7 modules / 35 épreuves
+    // (au lieu de la nomenclature Exalang-8-11-isée précédente A.1/A.2/B.1/B.2/C.1
+    // qui ne correspondait pas à la structure officielle 5-8).
     formPath: 'components/forms/Exalang58ScoresInput.tsx',
     promptPath: 'lib/prompts/tests/exalang-5-8.ts',
     scoreSchema: 'percentile',
     wordRenderer: 'standard',
     generateRoute: '/api/generate-crbo',
+    // Exalang 5-8 bénéficie de l'option `showAllEpreuveComments` introduite
+    // pour EVALEO (cf. e533d8f) : les observations saisies (annotations
+    // articulatoires sur Dénomination, stratégies de devinette sur Lecture
+    // de mots, types d'erreurs sur les épreuves d'orthographe...) doivent
+    // remonter dans le rapport Word, y compris pour une épreuve en zone de
+    // norme — sinon l'analyse qualitative typologique se perd à l'export.
+    showAllEpreuveComments: true,
   },
   'Exalang 8-11': {
     nom: 'Exalang 8-11',
