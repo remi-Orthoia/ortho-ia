@@ -1,6 +1,6 @@
 ---
-title: Comment rédiger un CRBO : guide complet 2026
-description: Structure obligatoire, formulations, erreurs à éviter : tout ce qu'il faut savoir pour rédiger un CRBO conforme, rapide et opposable. Trame téléchargeable incluse.
+title: "Comment rédiger un CRBO : guide complet 2026"
+description: "Structure obligatoire, formulations, erreurs à éviter : tout ce qu'il faut savoir pour rédiger un CRBO conforme, rapide et opposable. Trame téléchargeable incluse."
 slug: rediger-crbo
 locale: fr
 cocon: redaction-crbo
@@ -8,8 +8,8 @@ stage_funnel: TOFU
 format: guide
 publishedAt: 2026-06-04
 author: Ortho.ia
-cover: https://images.pexels.com/photos/9034989/pexels-photo-9034989.jpeg?auto=compress&cs=tinysrgb&h=650&w=940
-coverAlt: Comment rédiger un compte rendu de bilan orthophonique (CRBO) : guide complet 2026
+cover: "https://images.pexels.com/photos/9034989/pexels-photo-9034989.jpeg?auto=compress&cs=tinysrgb&h=650&w=940"
+coverAlt: "Comment rédiger un compte rendu de bilan orthophonique (CRBO) : guide complet 2026"
 ---
 
 # Comment rédiger un compte rendu de bilan orthophonique (CRBO) : guide complet 2026
