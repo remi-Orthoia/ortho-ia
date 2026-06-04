@@ -329,8 +329,15 @@ export async function POST(request: NextRequest) {
     // STRIP TAGS XML-LIKE : Claude hallucine parfois des tags de fermeture
     // au format `</anamnese_redigee>`, `</motif_reformule>`, etc. en fin de
     // texte (contamination par les noms de champs JSON du tool-schema, vu
-    // en prod sur EVALEO renouvellement 2026-06-03). On strip toute balise
-    // `<...>` ou `</...>` qui matche un nom de champ CRBO connu.
+    // en prod sur EVALEO renouvellement 2026-06-03 + test E2E Exalang 11-15
+    // 2026-06-04 qui a leaké `<parameter name="motif_reformule">`).
+    //
+    // 2 patterns matchés :
+    //  - Tags nommés d'après nos champs CRBO (avec ou sans attributs)
+    //  - Tags génériques du format tool_use Anthropic : `<parameter ...>`,
+    //    `</parameter>`, `<invoke ...>`, `</invoke>`, `<function_calls>`,
+    //    `</function_calls>`, `<answer>`, `</answer>`. Ces tags ne devraient
+    //    jamais apparaître dans le rendu utilisateur.
     const CRBO_FIELD_TAGS = [
       'anamnese_redigee', 'motif_reformule', 'diagnostic', 'recommandations',
       'conclusion', 'points_forts', 'difficultes_identifiees',
@@ -338,7 +345,22 @@ export async function POST(request: NextRequest) {
       'synthese_evolution', 'reasoning_clinical', 'domains', 'epreuves',
       'sous_epreuves', 'commentaire', 'domain_commentaires',
     ]
-    const TAG_LEAK_RE = new RegExp(`</?\\s*(?:${CRBO_FIELD_TAGS.join('|')})\\s*/?\\s*>`, 'gi')
+    const ANTHROPIC_TOOL_TAGS = [
+      'parameter', 'invoke', 'function_calls', 'function_call', 'answer', 'thinking',
+    ]
+    const ALL_LEAK_TAGS = [...CRBO_FIELD_TAGS, ...ANTHROPIC_TOOL_TAGS]
+    // Pattern : `<` puis `/` optionnel, nom de tag, attributs optionnels
+    // (`name="..."`, etc. — tout sauf `>`), `/` optionnel pour self-closing, `>`.
+    //
+    // ⚠️ Escape gotcha JS : `new RegExp(\`\\s\`)` donne une regex `s` (un seul
+    // backslash dans la string est consommé comme escape), pas `\s` whitespace.
+    // Il faut DOUBLE-escape : `\\\\s` en template literal → `\\s` dans string →
+    // `\s` dans regex. L'ancienne version utilisait `\\s` (cassé) et ne
+    // matchait que les tags `</tag>` sans espace ni attributs par chance.
+    const TAG_LEAK_RE = new RegExp(
+      `</?\\\\s*(?:${ALL_LEAK_TAGS.join('|')})(?:\\\\s+[^>]*)?\\\\s*/?\\\\s*>`,
+      'gi',
+    )
     const stripLeakedTags = (t: string) => t.replace(TAG_LEAK_RE, '')
 
     const sanitizeFreeText = (t: string | undefined) => {

@@ -1864,23 +1864,47 @@ export async function generateCRBOWord(payload: WordExportPayload): Promise<Blob
   // surlignage bleu reste UNIQUEMENT sur la preview HTML côté client pour
   // que l'ortho voie ses propres édits — le document exporté est propre.
 
-  // ===== CONCLUSION (mention médico-légale, petit italique, en bas) =====
-  // Règle Laurie : c'est le SEUL endroit du Word avec de l'italique.
+  // ===== CONCLUSION =====
+  // Refonte 2026-06-05 : la conclusion peut contenir 1 ou 2 paragraphes
+  // séparés par \n\n. Paragraphe 1 (optionnel) = phrase AMO (nomenclature
+  // 8.4 / 9.4 / 11.7). Paragraphe 2 (obligatoire) = formule médico-légale
+  // standard. Les bilans adulte n'ont qu'un seul paragraphe (juridique).
+  //
+  // Stylage :
+  //  - AMO : taille normale, gauche, non-italique (lisible par le médecin).
+  //  - Formule juridique : italique petit gris centré (règle Laurie : seul
+  //    endroit du Word avec italique).
   if (hasStructure && structure!.conclusion?.trim()) {
-    children.push(
-      new Paragraph({ children: [new TextRun({ text: '' })] }),
-      new Paragraph({
-        alignment: AlignmentType.CENTER,
-        spacing: { before: 600 },
-        children: [new TextRun({
-          text: structure!.conclusion.trim(),
-          size: 16,
-          font: FONT,
-          italics: true,
-          color: '707070',
-        })],
-      }),
-    )
+    const conclusionText = structure!.conclusion.trim()
+    const parts = conclusionText.split(/\n\s*\n/).map((p) => p.trim()).filter(Boolean)
+    // Heuristique : si la dernière partie contient "remis en main propre"
+    // (formule juridique standard), elle est rendue en italique centré ;
+    // les autres parties (typiquement la phrase AMO) en style normal.
+    const legalIdx = parts.findIndex((p) => /remis en main propre|servir et faire valoir/i.test(p))
+    const legalText = legalIdx >= 0 ? parts[legalIdx] : parts[parts.length - 1]
+    const otherParts = parts.filter((_, i) => i !== (legalIdx >= 0 ? legalIdx : parts.length - 1))
+
+    children.push(new Paragraph({ children: [new TextRun({ text: '' })] }))
+    // Paragraphes "normaux" (AMO ou autres mentions cliniques) avant la formule.
+    for (const p of otherParts) {
+      children.push(new Paragraph({
+        alignment: AlignmentType.BOTH,
+        spacing: { before: 240, after: 120 },
+        children: [new TextRun({ text: p, size: FONT_SIZE_NORMAL, font: FONT })],
+      }))
+    }
+    // Formule médico-légale standard : italique petit gris centré.
+    children.push(new Paragraph({
+      alignment: AlignmentType.CENTER,
+      spacing: { before: otherParts.length > 0 ? 300 : 600 },
+      children: [new TextRun({
+        text: legalText,
+        size: 16,
+        font: FONT,
+        italics: true,
+        color: '707070',
+      })],
+    }))
   }
 
   // ===== MENTION CONFIDENTIALITE (italique, fin de document) =====

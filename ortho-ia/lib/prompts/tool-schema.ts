@@ -194,12 +194,11 @@ export const SYNTHESIZE_TOOL: Anthropic.Tool = {
       recommandations: {
         type: 'string',
         description:
-          "Phrase imposée Laurie + (optionnellement) une 2e phrase AMO. " +
-          "PHRASE 1 OBLIGATOIRE (verbatim) : 'Une prise en charge orthophonique est recommandée, et en parallèle la mise en place ou le renforcement des aménagements en classe.' " +
-          "PHRASE 2 OPTIONNELLE (UNE SEULE phrase max, sur les bilans dont le module impose une mention AMO — Exalang 3-6 à 11-15, Lyfac, EVALEO, B-CM, B-CMado) : " +
-          "'La rééducation s'inscrit dans le cadre de la nomenclature AMO [code] ([libellé]).' Code = 8.4 (langage écrit) / 9.4 (langage oral) / 11.7 (cognition mathématique) selon profil dominant. " +
-          "JAMAIS de mention de réévaluation, de nouveau bilan, de délai, de fréquence de séances, ni de paragraphe d'analyse. JAMAIS d'orientation vers d'autres professionnels. " +
-          "Pour un bilan de renouvellement, le format ne change PAS : les détails évolution vont dans synthese_evolution / diagnostic / axes_therapeutiques / pap_suggestions, JAMAIS dans recommandations.",
+          "Phrase imposée Laurie, VERBATIM, une seule phrase : " +
+          "'Une prise en charge orthophonique est recommandée, et en parallèle la mise en place ou le renforcement des aménagements en classe.' " +
+          "Refonte 2026-06-05 : la mention AMO a été déplacée vers le champ `conclusion` (où elle s'affiche dans le Word, alors que ce champ `recommandations` reste retiré du rendu par décision Laurie 2026-05). NE PAS ajouter l'AMO ici. " +
+          "JAMAIS de mention de réévaluation, fréquence séances, orientation, ni paragraphe d'analyse. " +
+          "Pour un bilan de renouvellement, le format ne change PAS.",
       },
       axes_therapeutiques: {
         type: 'array',
@@ -231,7 +230,16 @@ export const SYNTHESIZE_TOOL: Anthropic.Tool = {
       },
       conclusion: {
         type: 'string',
-        description: "Mention médico-légale standard (affichée en italique petit en bas) : 'Compte rendu remis en main propre à l'assuré(e) pour servir et faire valoir ce que de droit. (Copie au médecin prescripteur).'",
+        description:
+          "Champ conclusion = 1 OU 2 paragraphes séparés par une ligne vide (\\n\\n) — refonte 2026-06-05. " +
+          "PARAGRAPHE 1 (CONDITIONNEL, AMO) : si le module impose une nomenclature AMO (Exalang 3-6/5-8/8-11/11-15/Lyfac, EVALEO, B-CM, B-CMado, BETL pédiatrique), écris : " +
+          "'La rééducation s\\'inscrit dans le cadre de la nomenclature AMO [code] ([libellé]).' " +
+          "Codes : 8.4 (langage écrit) / 9.4 (langage oral) / 11.7 (cognition mathématique) selon profil dominant. " +
+          "OMETTRE cette phrase pour les bilans adulte (PREDIMEM, PrediFex, PrediLac, BETL adulte, BIA, BECD, MoCA) — pas de nomenclature AMO pour la cognition adulte. " +
+          "PARAGRAPHE 2 (OBLIGATOIRE, médico-légal, VERBATIM) : " +
+          "'Compte rendu remis en main propre à l\\'assuré(e) pour servir et faire valoir ce que de droit. (Copie au médecin prescripteur).' " +
+          "Pour les bilans avec AMO : 2 paragraphes (AMO + \\n\\n + formule juridique). Pour les bilans sans AMO : 1 seul paragraphe (formule juridique). " +
+          "Le rendu Word affiche le paragraphe AMO en taille normale (gauche), le paragraphe juridique en italique petit gris centré.",
       },
       synthese_evolution: {
         type: ['object', 'null'],
