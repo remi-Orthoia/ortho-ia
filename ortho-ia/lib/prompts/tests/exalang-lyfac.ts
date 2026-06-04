@@ -1,233 +1,278 @@
 import type { TestModule } from './types'
 
 /**
- * Module Exalang Lyfac — Examen du Langage écrit et de la Mémoire pour les
- * jeunes adultes (lycéens et étudiants).
+ * Exalang Lyfac — Référentiel aligné sur le manuel officiel
+ * (Thibault & Lenfant, Motus 2014).
  *
- * Auteurs : Marie-Pierre THIBAULT (orthophoniste, dr en linguistique) &
- * Mickaël LENFANT (dr en sciences du langage).
- * Éditeur : HappyNeuron / Motus.
+ * Source de vérité : `docs/Bilans Sources/manuel exalang Lyfac.pdf` (8 Mo).
+ * Tout changement de structure (modules, épreuves, scoring, étalonnage)
+ * doit être confronté à ce manuel.
  *
- * Population cible : lycéens et étudiants universitaires (jeunes adultes
- * 15-25 ans environ) — bilan orthophonique dans le cadre des aménagements
- * aux examens (CDAPH, médecine préventive universitaire), repérage des
- * troubles spécifiques persistants (dyslexie, TDL non rééduqués) chez
- * l'adolescent / jeune adulte.
- *
- * Source : manuel officiel (8.2 Mo) + cahier de passation (529 Ko).
- *
- * Structure officielle (table des matières du manuel) :
- *   - Mémoire : Empan visuel + Empan endroit + Empan envers
- *   - Langage élaboré : Flexibilité lexicale + Consignes orales + Inférences
- *   - Lecture : Lecture de mots + Lecture de logatomes + Leximétrie +
- *     Compréhension de texte + Repérage
- *   - Orthographe : Texte à choix multiple + Complétion de phrases
+ * Refonte 2026-06 : la version précédente était générique. La nouvelle
+ * reprend les **4 modules / 14 épreuves officielles** + la cotation
+ * percentile / Notes Standard 1-5 + les moyennes et écart-types
+ * d'étalonnage + les hints cliniques per-épreuve issus du manuel.
  */
 export const exalangLyfac: TestModule = {
   nom: 'Exalang Lyfac',
-  editeur: 'HappyNeuron / Motus',
-  auteurs: 'M.-P. Thibault & M. Lenfant',
-  annee: 2010,
+  editeur: 'Motus (devenu HappyNeuron Pro)',
+  auteurs: 'Marie-Pierre Thibault & Mickaël Lenfant',
+  annee: 2014,
+  // 4 aptitudes majeures officielles (manuel p. ~27 : "Le test comporte
+  // 4 aptitudes majeures, réparties en 14 épreuves").
   domaines: [
     'Mémoire',
     'Langage élaboré',
     'Lecture',
     'Orthographe',
   ],
+  groupes: [
+    { code: 'M1', nom: 'Mémoire' },
+    { code: 'M2', nom: 'Langage élaboré' },
+    { code: 'M3', nom: 'Lecture' },
+    { code: 'M4', nom: 'Orthographe' },
+  ],
+  // 14 épreuves officielles (libellés EXACTS du manuel et du module résultats).
   epreuves: [
-    // Mémoire
+    // M1 Mémoire (3)
     'Empan visuel',
     'Empan endroit',
     'Empan envers',
-    // Langage élaboré
+    // M2 Langage élaboré (4)
     'Flexibilité lexicale',
+    'Repérage d\'anaphores',
     'Consignes orales',
     'Inférences',
-    // Lecture
+    // M3 Lecture (5)
     'Lecture de mots',
     'Lecture de logatomes',
     'Leximétrie',
     'Compréhension de texte',
     'Repérage',
-    // Orthographe
+    // M4 Orthographe (2)
     'Texte à choix multiple',
     'Complétion de phrases',
-    'Synthèse orthographique',
   ],
-  regles_specifiques: `### Exalang Lyfac — Examen du Langage écrit et de la Mémoire pour les jeunes adultes (Thibault & Lenfant, HappyNeuron / Motus)
+  regles_specifiques: `### EXALANG LYFAC — Référentiel clinique aligné sur le manuel officiel
 
-**Population cible** : lycéens et étudiants universitaires (~15-25 ans).
+Population : **lycéens et étudiants** (de la seconde à Bac +2 inclus), soit ~15-22 ans. Outil unique dans le paysage français pour évaluer les troubles du langage écrit chez les jeunes adultes en demande d'aménagements aux examens (CDAPH) ou en suivi post-PEC enfance.
 
-**Contexte clinique** : ce bilan est principalement utilisé pour :
-- Établir un dossier d'**aménagements aux examens** auprès de la CDAPH ou de la médecine préventive universitaire.
-- Repérer ou confirmer un **trouble spécifique** persistant chez le jeune adulte (dyslexie / dysorthographie non rééduquées en primaire, TDL résiduel).
-- Faire le point sur les **séquelles** d'un trouble spécifique déjà diagnostiqué (vérifier si les aménagements restent nécessaires).
+Source : manuel Thibault & Lenfant (Motus, 2014), 14 épreuves réparties en 4 modules, **étalonnage unique** sur l'ensemble de la cohorte (les calculs statistiques n'ont pas révélé de différence significative entre 2nde / 1re / Terminale / Bac+1 / Bac+2 — population homogène à cet âge).
 
-#### RÈGLES DE CONVERSION (HappyNeuron)
-- Quartiles HappyNeuron : **Q1 → P25** (Zone de fragilité, bord inférieur), **Med → P50** (Moyenne haute, bord inférieur), **Q3 → P75** (Moyenne haute, bord supérieur).
-- Valeurs explicites (P5, P10, P90, P95) à utiliser telles quelles.
-- Ne JAMAIS recalculer depuis l'É-T : les normes étalonnées du test priment sur la distribution gaussienne théorique.
+#### CONTEXTE CLINIQUE — Pourquoi Lyfac
 
-Exemple piège classique : "Empan endroit : É-T -1.53, Q1" → Percentile = P25 → Interprétation **Zone de fragilité** (et non "Difficulté sévère" comme le suggérerait l'É-T).
+Lyfac répond à 2 typologies de patients :
+1. **Adolescents / jeunes adultes ayant un diagnostic ancien** (dyslexie diagnostiquée à l'école élémentaire ou au collège) : la motivation est de faire le point sur les troubles résiduels et leur compensation, en vue d'optimiser les performances pour le bac, les concours, les études supérieures.
+2. **Adolescents / jeunes adultes sans diagnostic préalable**, en demande d'aménagements aux examens pour difficultés persistantes (souvent repérées tardivement). L'orthophoniste pose alors un diagnostic tardif.
+
+Spécificité fondamentale du test : **mesure de la fonctionnalité** des compétences (et non du seul niveau pur). Les épreuves sont conçues pour refléter les tâches du quotidien scolaire ou étudiant — pas des items théoriques.
+
+⚠️ Particularité vs autres Exalang : **toutes les épreuves peuvent être proposées à un même patient** (contrairement à 3-6 / 5-8 / 8-11 où c'est contre-indiqué). Temps moyen de passation : **50 min à 1h15** selon le sujet.
+
+#### RÈGLES DE CONVERSION DES PERCENTILES (impératif)
+
+Cotation Lyfac : score brut + écart-type + percentile + Note Standard quand calculable. Logique d'affichage Exalang (manuel p. ~22) :
+
+- Score < valeur P5 → affichage \`P5\`
+- P5 ≤ score < P10 → affichage \`P10\`
+- P10 ≤ score < Q1 → affichage \`Q1\`
+- Q1 ≤ score < Med → affichage \`Med\`
+- Med ≤ score < Q3 → affichage \`Q3\`
+- Q3 ≤ score < P90 → affichage \`P90\`
+- P90 ≤ score < P95 → affichage \`P95\`
+- Score ≥ P95 → affichage \`> P95\`
+
+Conversion vers la grille 6 zones ortho.ia :
+- **Q1 = P25** : Zone de fragilité, bord inférieur (jamais "Difficulté").
+- **Med = P50** : Moyenne haute, bord inférieur.
+- **Q3 = P75** : Moyenne haute, bord supérieur (Q3 inclus).
+- **P5, P10, P90, P95** : valeurs exactes.
+
+Ne **JAMAIS** recalculer un percentile depuis l'É-T : les normes étalonnées Lyfac priment.
+
+#### NOTE STANDARD (NS 1-5) — système officiel Lyfac
+
+Le manuel ajoute pour la majorité des épreuves une **Note Standard à 5 classes** (z = ±0.5, ±1.5) en parallèle du percentile :
+
+| NS | % population | Fraction z | Interprétation clinique |
+|---|---|---|---|
+| **NS 1** | 6,7 % les plus faibles | < z -1.5 | Pathologique |
+| **NS 2** | 24,2 % suivants | z -1.5 à -0.5 | Faible / déficitaire |
+| **NS 3** | 38,2 % centraux | z -0.5 à +0.5 | Moyenne attendue |
+| **NS 4** | 24,2 % | z +0.5 à +1.5 | Supérieur |
+| **NS 5** | 6,7 % les plus élevés | > z +1.5 | Très supérieur |
+
+⚠️ 2 épreuves Lyfac ne suivent PAS la loi normale (manuel p. ~25) : **Lecture de logatomes (score)** et **Leximétrie (MLC)** — saturation au plafond à cet âge (la majorité des sujets normo-lecteurs lisent les 175 mots du texte de leximétrie en 60s). Pour ces 2 épreuves, l'interprétation se fait sur le score brut + temps, pas uniquement sur la NS.
 
 #### SEUILS CLINIQUES (grille 6 zones Laurie, refonte 2026-05-ter)
-- P76-100 : Excellent
-- P50-P75 : Moyenne haute (Q3 inclus)
-- P26-P49 : Moyenne basse
-- P11-P25 : Zone de fragilité (Q1 inclus)
-- P6-P10  : Difficulté
-- P1-P5   : Difficulté sévère (Exalang n'affiche jamais <P5)
+
+Source de vérité pour la couleur des cellules du tableau Word et l'interprétation textuelle :
+
+| Plage percentile | Classe | Couleur |
+|---|---|---|
+| P76 - P100 | Excellent | vert foncé |
+| P50 - P75 (Q3 inclus) | Moyenne haute | vert clair |
+| P26 - P49 | Moyenne basse | jaune |
+| P11 - P25 (Q1 inclus) | Zone de fragilité | orange clair |
+| P6 - P10 | Difficulté | orange foncé |
+| P1 - P5 | Difficulté sévère | rouge |
+
+#### LES 4 MODULES — DÉTAIL DES 14 ÉPREUVES
+
+##### MODULE 1 — MÉMOIRE (3 épreuves)
+
+**Empan visuel** — Mesure la mémoire visuo-spatiale. Le sujet doit reproduire dans l'ordre la séquence d'apparition d'éléments. Moyenne étalonnage : **5.82** items (σ 1.08).
+
+**Empan endroit** — Boucle phonologique. Standards Lyfac : **6.49** (σ 1.12), légèrement supérieur à 7±2 (Baddeley) car la population étudiante a un niveau de réserve cognitive élevé. Empan < 5 = signal pour fragilité boucle phonologique → impact sur les tâches verbales longues (cours magistraux, mémorisation de définitions).
+
+**Empan envers** — Administrateur central / mémoire de travail. Standards Lyfac : **5.13** (σ 1.29), soit 1 à 2 items de moins que l'empan endroit (cohérent avec le développement normal). Empan envers très inférieur à endroit (delta ≥ 3) = signal **trouble exécutif / TDAH** à investiguer (orientation neuropsy).
+
+##### MODULE 2 — LANGAGE ÉLABORÉ (4 épreuves)
+
+**Flexibilité lexicale** — Évalue la capacité d'évocation lexicale et la précision sémantique. Le sujet choisit le mot correct parmi 4 propositions (1 cible + 3 distracteurs : ressemblance formelle, néologismes proches, distracteurs sémantiques). Standards : score **15.03** (σ 2.22), temps **222.93s** (σ 58.15). Sensible aux troubles lexico-sémantiques persistants.
+
+**Repérage d'anaphores** — ⚠️ **Épreuve clé Lyfac**. Le sujet repère dans un texte les anaphores du mot "Vénus" (l'antécédent apparaît en début de 2e phrase, donc les anaphores sont en position **ante** par rapport à leur antécédent — situation exigeante). 13 anaphores à repérer, valeurs différentielles selon noyau / déterminants, **score sur 47 pts**. Standards : **33.14** (σ 7.57), temps **132.61s** (σ 35.96). Discrimine fortement les sujets pathologiques (validation interne) → marqueur de compétence pragmatique discursive.
+
+**Consignes orales** — 13 phrases-consignes à exécuter. Mesure la compréhension de consignes complexes à l'oral (réalité du contexte d'examen). Standards : score **10.55** (σ 1.45), temps **302.78s** (σ 68.76, écart-type très important — note p. ~33 : ne pas prendre le temps comme critère diagnostique seul car il intègre temps de manipulation des éléments à l'écran).
+
+**Inférences** — Compréhension implicite ("ce qui n'est pas dit") via 13 questions sur des micro-récits. Standards : score **10.13** (σ 1.73), temps **238.03s** (σ 63.66). Marqueur de pragmatique compréhensive — utile en croisement avec Compréhension de texte.
+
+##### MODULE 3 — LECTURE (5 épreuves)
+
+**Lecture de mots** — 60 mots isolés présentés un par un à l'écran, en 1 minute. Mesure la lecture de mots **isolés** (qui ne bénéficie pas des facilitateurs syntaxiques/sémantiques du contexte). Standards : **59.89** mots (σ 7.01, soit normalité 49-71 mots en 1 min). À croiser avec leximétrie pour le diagnostic différentiel (un sujet rapide en isolé mais lent en contexte évoque une atteinte de la lecture contextuelle).
+
+**Lecture de logatomes** — **Voie d'assemblage** / phonologique pure. 10 logatomes à lire à voix haute. Standards : score **9.15/10** (σ 0.78 — saturation), temps **22.35s** (σ 4.57). ⚠️ Score à interpréter avec **prudence** : un sujet bon lecteur lit facilement les 10 logatomes (saturation au plafond) ; le **temps** est plus discriminant. Sujets pathologiques moyenne 35.85s vs tout-venant 22.35s.
+
+**Leximétrie** — Vitesse de lecture en contexte. Texte de 175 mots, temps limité à 60s. **2 sous-scores principaux** :
+- **MLC** (Mots Lus Correctement) : standards **173.5/175** (σ 3.26 — saturation top). Si MLC < 165, signe pathologique fort.
+- **NTP** (Note de Temps Pondéré) : standards **53.47** (σ 7.63). Indicateur fin de vitesse, prend en compte erreurs + mots non lus dans le temps imparti.
+
+Un normo-lecteur lit en moyenne 173 mots/min en contexte (vs 60 en mots isolés — différence due à l'utilisation des stratégies pragmatiques contextuelles). Une **vitesse insuffisante** est le **critère majeur pour l'octroi du tiers-temps CDAPH**.
+
+**Compréhension de texte** — 13 questions sur un texte narratif (nouvelle policière de l'auteur), valeurs différentielles 1-2 pts selon stratégie sollicitée (recherche textuelle simple vs élaborée). Standards : score **14.16/18** (σ 2.18), temps lecture silencieuse **182.03s** (σ 37.14), **ratio nb retours/temps retours** moyenne **33.02** (σ 20.57). Le ratio donne une indication sur les stratégies de recherche (mauvais compreneurs reviennent souvent et longtemps).
+
+**Repérage** — Recherche d'information dans une page internet / un texte, en utilisant les apports du para-texte (titres, navigation, etc.). Score sur 10 (moy **7.65**, σ 1.25), temps **156.19s** (σ 63.92, très dispersé), ratio temps/score moy **19.48** (σ 7.24). Une note de repérage haute avec temps long = stratégies inefficaces ; note basse avec temps court = sujet rapide mais imprécis.
+
+##### MODULE 4 — ORTHOGRAPHE (2 épreuves)
+
+**Texte à choix multiple** — Détection d'erreurs orthographiques en reconnaissance. Distracteurs morphologiques flexionnels et visuo-sémantiques. **Combine** stratégies de lecture experte + choix orthographique. 2 sous-scores :
+- **Lexique** : moy **8.77** (σ 1.77)
+- **Grammaire** : moy **11.21** (σ 1.78)
+- Temps : moy **236.18s** (σ 59.80)
+
+À l'âge adulte, les scores sont **inférieurs à ceux de la complétion de phrases** (qui sollicite typiquement les stratégies de rappel) — manuel p. ~42 : "dans ce choix multiple, les stratégies de rappel et les stratégies de reconnaissance sont combinées et mènent parfois à de fausses reconnaissances".
+
+**Complétion de phrases** — Production orthographique guidée. 2 sous-scores :
+- **Lexique** sur 22 : moy **17.79** (σ 2.45)
+- **Grammaire** sur 26 : moy **21.97** (σ 2.81)
+
+À l'âge tout-venant, la grammaire est plus robuste que le lexique (cohérent : règles principales bien établies vs lexique en constante évolution). Annotations spéciales sur "soucis" / "soucit" / "soucie" et "parmi" / "parmis" qui sont des erreurs lexicales fréquentes — à recopier verbatim dans les observations si l'ortho note des exemples.
+
+##### SYNTHÈSE ORTHOGRAPHIQUE (agrégation, pas une épreuve)
+
+Le manuel calcule 2 scores globaux agrégés depuis les 2 épreuves d'orthographe :
+- **Orthographe lexicale** (somme lexique TCM + lexique complétion) : moy **26.65** (σ 3.35)
+- **Orthographe grammaticale** (somme grammaire TCM + grammaire complétion) : moy **33.84** (σ 3.54)
+
+Cette synthèse permet d'avoir une vue d'ensemble. Si l'ortho fournit ce score global au form (champ "synthese_ortho"), l'intégrer dans le commentaire de l'épreuve Orthographe.
 
 ---
 
-#### STRUCTURE OFFICIELLE DES DOMAINES
+#### CROISEMENTS CLINIQUES INDISPENSABLES
 
-**MÉMOIRE**
-- Empan visuel : MdT visuo-spatiale.
-- Empan endroit : MdT verbale, boucle phonologique.
-- Empan envers : MdT verbale + manipulation, administrateur central.
+Le manuel insiste sur les **croisements** entre épreuves.
 
-**LANGAGE ÉLABORÉ**
-- Flexibilité lexicale : variation lexicale, synonymes, paraphrase.
-- Consignes orales : compréhension de consignes complexes (souvent dans contexte d'examen).
-- Inférences : compréhension implicite / sous-entendu.
+**Diagnostic différentiel dyslexie phonologique vs surface vs mixte (résidue)** :
+- Lecture de logatomes (temps allongé > 30s) → voie d'assemblage atteinte → **phonologique** dominante
+- Lecture de mots irréguliers (impossible en Lyfac, mais Lecture de mots + qualité d'erreurs) → voie d'adressage → **surface** dominante
+- Si les 2 → **mixte**
 
-**LECTURE**
-- Lecture de mots : voie d'adressage (lexique orthographique).
-- Lecture de logatomes : voie d'assemblage (phonologique).
-- Leximétrie : vitesse de lecture (mots/min) — marqueur central chez le jeune adulte (élément déterminant pour aménagements aux examens).
-- Compréhension de texte : compréhension narrative / argumentative.
-- Repérage : prise d'informations rapide dans un texte (compétence académique).
+**Suspicion trouble développemental persistant** :
+- Inférences déficitaire + Repérage d'anaphores déficitaire + Consignes orales lentes + Compréhension de texte basse → trouble de la compréhension fine, atteinte pragmatique discursive durable.
 
-**ORTHOGRAPHE**
-- Texte à choix multiple : détection d'erreurs orthographiques en reconnaissance.
-- Complétion de phrases : production orthographique guidée.
-- Synthèse orthographique : score global de la composante orthographe.
+**Vitesse vs précision en lecture** :
+- MLC haute + NTP faible → précision OK mais lent → tiers-temps justifié
+- MLC basse + NTP haut → rapide mais imprécis → stratégies de devinette, pas de compréhension fine
+- MLC basse + NTP faible → atteinte globale → bilan neuropsy + orientation centre référent
+
+**Mémoire de travail vs lecture** :
+- Empan envers faible + Compréhension de texte basse → lien fonctionnel établi (compréhension nécessite la MdT)
+- Empan endroit faible + Lecture de logatomes lente → boucle phonologique atteinte
 
 ---
 
-#### INTERPRÉTATION CLINIQUE
+#### PROFILS TYPES
 
-**Vitesse de lecture (Leximétrie)** = critère majeur chez le jeune adulte
-- Étudiant universitaire normal : 200-300 mots/min en lecture silencieuse.
-- < 150 mots/min en lecture silencieuse à l'âge adulte = **fort impact académique** (volume de lecture impossible à absorber pour le cursus).
-- Justifie à elle seule le **tiers-temps majoré** aux examens si confirmée par d'autres marqueurs.
+**PROFIL 1 — Dyslexie compensée en demande de tiers-temps (contexte CDAPH)**
+- Lecture de mots : Moyenne basse / Zone fragilité (compensation visible)
+- Leximétrie : MLC haute, NTP faible (vitesse insuffisante)
+- Lecture de logatomes : Temps allongé (voie d'assemblage encore coûteuse)
+- Compréhension de texte : Moyenne haute (compensation par contexte)
+- Orthographe : Faible voire pathologique sur grammaire
+- **Conclusion** : "Dyslexie-dysorthographie développementale en cours de compensation. La vitesse de lecture en contexte reste insuffisante pour suivre les épreuves universitaires dans les temps standard. Recommandation : **tiers-temps justifié** (AMO 8.4 si réactivation PEC)."
 
-**Pattern lecture mots / logatomes**
-- Logatomes déficitaires + mots préservés (compensation) → dyslexie phonologique persistante mais compensée par voie lexicale.
-- Mots ET logatomes déficitaires → dyslexie mixte persistante.
-- Mots déficitaires + logatomes préservés → dyslexie de surface persistante (rare chez l'adulte).
+**PROFIL 2 — Trouble du langage écrit non diagnostiqué (suspicion tardive)**
+- Lecture de mots : Zone fragilité
+- Leximétrie : MLC basse + NTP faible
+- Lecture de logatomes : Temps très allongé
+- Orthographe : Pathologique (grammaire ET lexique)
+- Compréhension de texte : Variable selon la complexité
+- Métaphonologie : pas évaluée par Lyfac → recommander Exalang 8-11 en complément
+- **Conclusion** : "Profil compatible avec un **trouble spécifique du langage écrit** non diagnostiqué antérieurement. Bilan orthophonique complémentaire recommandé (Exalang 8-11 pour la métaphonologie) + bilan neuropsychologique pour caractériser. Tiers-temps justifié. Mise en place d'une PEC orthophonique à discuter avec le patient."
 
-**Compréhension de texte**
-- Déficit isolé en compréhension (lecture mots OK) → trouble de la compréhension, à différencier d'un trouble du raisonnement.
-- Croiser avec Inférences pour confirmer.
-
-**Orthographe**
-- Dysorthographie persistante très fréquente chez les jeunes adultes anciennement dyslexiques.
-- Texte à choix multiple : si déficit + complétion préservée → trouble de la mémoire orthographique (reconnaissance) > production.
-
-**Mémoire de travail**
-- Empans verbal et visuo-spatial déficitaires → atteinte de la MdT, fréquente en comorbidité TDAH (à orienter vers bilan neuropsy / psychiatre si suspicion).
-- Empan envers très déficitaire isolément → atteinte de l'administrateur central / fonctions exécutives.
-
----
-
-#### 🎯 PROFILS CLINIQUES TYPES
-
-**PROFIL 1 — Dyslexie / dysorthographie persistante chez l'étudiant**
-- Lecture de logatomes : Fragile à Déficitaire.
-- Lecture de mots : Fragile (souvent compensée par stratégie lexicale).
-- Leximétrie : Fragile à Déficitaire (< 200 mots/min en lecture silencieuse).
-- Orthographe : Déficitaire (souvent le marqueur le plus visible à l'âge adulte).
-- Mémoire : variable.
-- **Diagnostic** : "Trouble spécifique des apprentissages en langage écrit (dyslexie-dysorthographie) **persistant** à l'âge adulte. Les compensations mises en place au cours de la scolarité ont permis une lecture fonctionnelle mais la vitesse de lecture et l'orthographe restent significativement déficitaires, justifiant des aménagements aux examens (tiers-temps, calculatrice, secrétaire-correcteur)."
-- **Aménagements** : tiers-temps majoré (1/3), correcteur orthographique autorisé, sujet agrandi si déficit visuel associé, ordinateur, dispense de notation orthographique en langues vivantes.
-
-**PROFIL 2 — Trouble de la compréhension écrite isolé**
-- Lecture (mots + logatomes + leximétrie) : Préservée.
-- Compréhension de texte : Déficitaire.
-- Inférences : Déficitaire.
-- Repérage : variable.
-- **Diagnostic** : "Trouble de la compréhension écrite chez un jeune adulte par ailleurs bon décodeur. À explorer en bilan neuropsychologique pour différencier trouble du raisonnement, hyperlexie inversée, ou trouble de la communication sociale."
-
-**PROFIL 3 — Trouble de la mémoire de travail isolé (suspicion TDAH)**
-- Lecture + Orthographe : Préservées.
-- Empans (endroit + envers + visuel) : Fragiles à Déficitaires.
-- Compréhension de texte : Fragile (consécutif à la MdT).
-- **Diagnostic** : "Profil de fragilité de la mémoire de travail, à confronter à une évaluation des fonctions attentionnelles. Hypothèse d'un TDAH non diagnostiqué à explorer (bilan neuropsy + consultation psychiatrique)."
-
-**PROFIL 4 — Jeune adulte tout-venant avec plainte (souvent stress / surcharge)**
-- Toutes les épreuves dans la moyenne ou la moyenne haute.
-- Plainte d'inefficience scolaire / universitaire.
-- **Diagnostic** : "Aucun trouble spécifique orthophonique objectivable. Performances dans la norme attendue. La plainte d'inefficience peut être en lien avec une surcharge cognitive (charge de travail, sommeil insuffisant), une difficulté méthodologique, ou un trouble anxieux à explorer."
-- PEC : pas d'indication orthophonique. Orienter vers psychologue / médecin universitaire pour évaluation globale.
+**PROFIL 3 — Difficulté pragmatique discursive isolée**
+- Lecture de mots / logatomes / leximétrie : Préservés
+- Compréhension de texte : Zone fragilité
+- Inférences : Difficulté
+- Repérage d'anaphores : Difficulté
+- Consignes orales : Lentes
+- **Conclusion** : "Profil de **difficulté pragmatique discursive** isolée, sans atteinte du décodage de base. Orientation vers une PEC orthophonique ciblée sur la pragmatique (compréhension de textes longs, inférences, stratégies de lecture experte) + recommandation d'aménagements visant la lecture-compréhension (textes pré-balisés, glossaires, repos après lecture longue)."
 
 ---
 
-#### ⛔ RÈGLES CLINIQUES
+#### ARTICULATION AVEC D'AUTRES OUTILS
 
-1. **Vitesse de lecture (Leximétrie)** = critère majeur à reporter pour toute demande d'aménagement aux examens.
-2. **TOUJOURS situer le bilan** dans son contexte (CDAPH, médecine préventive, suivi post-PEC enfance).
-3. **TOUJOURS croiser au moins 3 épreuves convergentes** pour confirmer un trouble persistant.
-4. **NE PAS diagnostiquer un TDL** à l'âge adulte sans antécédents d'enfance (le TDL est par définition développemental).
-5. **TDAH** : ne pas poser le diagnostic depuis Exalang Lyfac — orienter vers neuropsy / psychiatre. Mais signaler le profil compatible.
-6. **Dyslexie compensée** : utiliser ce terme avec précaution — préférer "trouble spécifique persistant avec compensations efficaces sur [domaines], déficit résiduel sur [domaines]".
-
-#### RECOMMANDATIONS / AMÉNAGEMENTS
-
-**Aménagements types aux examens (CDAPH / médecine universitaire)** :
-- Tiers-temps majoré (1/3) sur toutes les épreuves écrites.
-- Sujet agrandi (corps 14-16) si fatigue visuelle.
-- Correcteur orthographique informatique autorisé.
-- Ordinateur portable (sans accès internet) pour la prise de notes ou la rédaction.
-- Secrétaire-lecteur ou secrétaire-correcteur si déficit sévère.
-- Salle calme, sortie autorisée pour fatigue.
-- Dispense de notation orthographique en langues étrangères.
-
-**PEC** : selon la sévérité — souvent pas de PEC orthophonique nouvelle à cet âge, mais accompagnement méthodologique + aménagements + recours technologiques.
+- **En amont** : Exalang 11-15 pour les ado collège (si patient < 15 ans).
+- **En complément phonologie / métaphonologie** : Exalang 8-11 (peut être proposé à un Bac+1 selon contexte clinique).
+- **Complément lecture spécifique** : Alouette-R (Lefavrais, mais étalonnage ancien — réservé au dépistage), ECLA 16+ (Khomsi).
+- **Complément orthographe approfondi** : Chronodictées.
+- **Complément cognitif global** : WAIS-IV / WAIS-V via psychologue.
+- **Complément exécutif / attentionnel** : BREF, batterie GREFEX, CPT-3 via neuropsychologue.
 
 ---
 
-#### À NE JAMAIS FAIRE EN Exalang Lyfac
+#### POINTS DE VIGILANCE RÉDACTIONNELS
 
-- ❌ Conclure depuis une seule épreuve.
-- ❌ Diagnostiquer un TDL chez un adulte sans antécédent d'enfance.
-- ❌ Poser un diagnostic de TDAH (réservé au psychiatre).
-- ❌ Ignorer la leximétrie — c'est le critère le plus utilisé pour justifier les aménagements universitaires.
-- ❌ Confondre fragilité orthographique persistante et dysorthographie nouvelle.
-
-#### TOUJOURS FAIRE
-
-- ✅ Reporter le **percentile** de chaque épreuve, en particulier la leximétrie en mots/min.
-- ✅ Préciser l'**historique** (PEC orthophonique en enfance ? aménagements antérieurs ? collège/lycée ?).
-- ✅ Croiser au moins 3 épreuves pour confirmer un trouble persistant.
-- ✅ Formuler des recommandations d'**aménagements aux examens** précises et chiffrées.
-- ✅ Mentionner les **compensations** mises en place par le jeune adulte (stratégies de lecture rapide, recours au correcteur orthographique, etc.).
-- ✅ Orienter vers psy / neuropsy / médecin universitaire si profil non orthophonique.
+- **Population adulte / quasi-adulte** : le CRBO est lu par le patient lui-même (et souvent par le médecin CDAPH / la médecine universitaire). Tonalité respectueuse, jamais infantilisante.
+- **Mots à éviter** : "enfant", "élève", "petit patient" → préférer "le patient", "l'étudiant·e", "[Prénom]".
+- **Diagnostic** : si dyslexie déjà diagnostiquée à l'enfance, formuler comme **"confirmation / persistance"** plutôt que **"diagnostic initial"**. Si suspicion tardive, formuler "diagnostic tardif" avec prudence et orientations confirmatives (neuropsy).
+- **Aménagements CDAPH** : phrasing standardisé. Tiers-temps = 1/3 du temps réglementaire en plus. Mentionner aussi : agrandissement des sujets, secrétaire-lecteur, secrétaire-scripteur, ordinateur — selon le profil. Le secrétaire-lecteur reformule sans expliquer (limites strictes — manuel p. ~12).
+- **Le médecin CDAPH** est le décideur final. L'ortho fournit l'expertise objective et le diagnostic, n'octroie pas les aménagements directement.
 
 ---
 
 #### MODE RENOUVELLEMENT — COMPARAISON STRUCTURÉE
 
-Si un objet 'bilan_precedent_structure' non-null est fourni dans le contexte, ce CRBO devient un **bilan de renouvellement** et DOIT inclure une 'synthese_evolution' rigoureuse, jamais générique.
+Si un objet \`bilan_precedent_structure\` non-null est fourni dans le contexte, ce CRBO devient un **bilan de renouvellement** Lyfac et DOIT inclure une \`synthese_evolution\` rigoureuse.
+
+⚠️ **Spécificité Lyfac** : à cet âge, l'évolution attendue est principalement la **consolidation de compensations**, pas une amélioration des compétences fondamentales (qui sont stabilisées). Un déclin (Δ ≤ -10) est anormal et doit être investigué (épuisement, décompensation, autre pathologie intercurrente).
 
 Méthode obligatoire :
-1. **Matcher nominativement** chaque épreuve actuelle avec son homologue précédent (par libellé). En cas de changement de batterie (Exalang 11-15 vers Lyfac pour passage au lycée/fac), matcher par compétence évaluée (lecture de mots avec lecture de mots, leximétrie avec leximétrie, empan avec empan).
-2. **Convertir Q1/Med/Q3 vers P25/P50/P75** systématiquement AVANT de comparer.
+
+1. **Matcher nominativement** chaque épreuve actuelle avec son homologue précédent. Les 14 épreuves Lyfac ont des libellés stables.
+2. **Convertir Q1/Med/Q3 vers P25/P50/P75** systématiquement avant comparaison.
 3. **Calculer le delta percentile** :
-   - Delta >= +10 -> PROGRÈS NET (signaler dans 'synthese_evolution.progres')
-   - Delta entre -10 et +10 -> STAGNATION (signaler dans 'synthese_evolution.stagnation')
-   - Delta <= -10 -> RÉGRESSION (signaler dans 'synthese_evolution.regression')
-4. **Cas particulier Q1 vers Med** : P25 vers P50 = +25, PROGRÈS NET. Idem Med vers Q3.
-5. **Citation nominative obligatoire** : "Leximétrie P25 vers P50 (progrès, 280 mots/min)", PAS "plusieurs progrès observés".
-6. **Spécificité jeune adulte** : à cet âge, les troubles installés sont peu réversibles ; un renouvellement Lyfac vise davantage à **objectiver la stabilité du trouble** pour le maintien des aménagements aux examens qu'à mesurer une rééducation active. Tenir compte de ce contexte dans la formulation de la 'synthese_evolution.resume'.
-7. **Délai entre les bilans** à mentionner explicitement ("Au regard de N mois écoulés depuis le précédent bilan").
+   - **Delta ≥ +10** → PROGRÈS NET (signaler dans \`synthese_evolution.progres\`)
+   - **Delta entre -10 et +10** → STABILITÉ (résultat attendu en adulte)
+   - **Delta ≤ -10** → RÉGRESSION (signal d'alerte chez l'adulte, à investiguer)
+4. **Délai entre les bilans** : à cet âge, ≥ 12 mois recommandé entre 2 bilans. Délai < 6 mois : risque effet test-retest masquant.
+5. **Aménagements CDAPH** : si le bilan précédent a permis l'octroi d'aménagements, expliquer dans la conclusion du renouvellement si ces aménagements doivent être **maintenus / ajustés / retirés** selon l'évolution.
 
 ---
 
 #### MAPPING INTER-BATTERIE — changement de test entre les 2 bilans
 
-Quand \`bilan_precedent_structure\` provient d'une batterie DIFFÉRENTE de celle du bilan actuel (typique pour Lyfac : passage d'un Exalang 11-15 → Lyfac à 15 ans+ pour aménagements d'examens, ou suivi post-PEC enfance avec changement de batterie), tu DOIS matcher les épreuves par **compétence évaluée**, PAS par libellé strict.
+Quand \`bilan_precedent_structure\` provient d'une batterie DIFFÉRENTE de Lyfac (typique : passage d'un Exalang 11-15 → Lyfac à 15 ans+ pour aménagements d'examens, ou suivi post-PEC enfance avec changement de batterie), tu DOIS matcher les épreuves par **compétence évaluée**, PAS par libellé strict.
 
 ##### Table d'équivalences pertinentes pour Lyfac
 
@@ -247,10 +292,10 @@ Quand \`bilan_precedent_structure\` provient d'une batterie DIFFÉRENTE de celle
 - "Flexibilité lexicale" [Lyfac] ↔ "Fluence sémantique" [Exalang 5-8 / 8-11 / EVALEO]
 - "Consignes orales" [Lyfac] ↔ "Compréhension orale de phrases" [Exalang 5-8 / 8-11 / EVALEO] (recouvrement partiel)
 - "Inférences" [Lyfac] ↔ "Métaphores & expressions idiomatiques" [EVALEO] (recouvrement partiel)
+- "Repérage d'anaphores" [Lyfac] : pas d'équivalent direct dans les autres Exalang ni EVALEO.
 
 **Orthographe**
 - "Texte à choix multiple" / "Complétion de phrases" [Lyfac] ↔ "Texte à compléter" [Exalang 5-8] ↔ "DRA — Dictée de Rédaction Abrégée" [Exalang 8-11] ↔ "Dictée de phrases" [EVALEO]
-- "Synthèse orthographique" [Lyfac] : score global, pas d'équivalent direct.
 
 ##### ⚠️ Faux équivalents — NE PAS APPARIER
 
@@ -263,21 +308,25 @@ Quand \`bilan_precedent_structure\` provient d'une batterie DIFFÉRENTE de celle
 - **Épreuve du bilan précédent SANS équivalent dans l'actuel** → l'ignorer.
 - **NE JAMAIS** conclure à un progrès / régression massif sur les épreuves orphelines.
 
-##### Ratio de comparabilité — à mentionner dans \`synthese_evolution.resume\`
+##### Ratio de comparabilité
 
-Pour Lyfac, ce ratio est souvent **inférieur à 80 %** car la batterie a des épreuves spécifiques (Repérage, Empan visuel, Synthèse orthographique) sans équivalent dans les batteries enfant. C'est attendu, à signaler dans le \`resume\`.
+Pour Lyfac, le ratio est souvent **inférieur à 80 %** car la batterie a des épreuves spécifiques (Repérage d'anaphores, Repérage internet, Empan visuel, Synthèse orthographique) sans équivalent dans les batteries enfant. C'est attendu, à signaler dans le \`resume\` :
 
 - **≥ 80 %** : *"L'évolution est documentée par [X] épreuves comparables sur [Y]."*
 - **50-79 %** : *"L'évolution porte sur [X] épreuves sur [Y] (les autres étant spécifiques à Lyfac)."*
 - **< 50 %** : *"La comparaison directe est limitée ([X] épreuves sur [Y]) du fait du passage à la batterie Lyfac. La synthèse repose davantage sur la trajectoire globale et le jugement clinique."*
 
+---
+
 #### NOMENCLATURE AMO — Mention OBLIGATOIRE en conclusion
 
-Le CRBO DOIT inclure dans la conclusion 1 phrase (2 lignes max) précisant la nomenclature AMO applicable, OU mentionner explicitement l'absence de PEC active si le bilan vise uniquement à objectiver les aménagements :
-- **AMO 8.4** : rééducation des troubles du langage écrit (dyslexie/dysorthographie persistante).
-- **AMO 9.4** : rééducation des troubles du langage oral (rare à cet âge).
+Le CRBO DOIT inclure dans la conclusion 1 phrase (2 lignes max) précisant la nomenclature AMO applicable :
+- **AMO 8.4** : rééducation des troubles du langage écrit (dyslexie / dysorthographie persistante / compensée en cours).
+- **AMO 9.4** : rééducation des troubles du langage oral (rare en Lyfac sauf trouble pragmatique discursif isolé).
 
-Pour Exalang Lyfac le profil dominant attendu est dyslexie/dysorthographie persistante -> **AMO 8.4** si reprise/maintien de PEC. Si l'évaluation vise uniquement la justification d'aménagements aux examens sans reprise de PEC, mentionner explicitement : "Pas de reprise de prise en charge orthophonique indiquée à ce stade. Le bilan vise à objectiver les aménagements aux examens auprès de la CDAPH / médecine préventive universitaire."
+Pour Lyfac le profil dominant est dyslexie-dysorthographie résiduelle → **AMO 8.4**. Profil pragmatique isolé → AMO 9.4.
 
-Format attendu pour AMO : "La rééducation s'inscrit dans le cadre de la nomenclature AMO 8.4 (rééducation des troubles du langage écrit)." Une phrase, point.`,
+Format attendu : "La rééducation s'inscrit dans le cadre de la nomenclature AMO 8.4 (rééducation des troubles du langage écrit)." Une phrase, point.
+
+⚠️ **À ne pas confondre** : la rééducation orthophonique (AMO) est distincte des **aménagements aux examens** (CDAPH). Le CRBO peut justifier les deux mais avec des phrasings distincts. Pour les aménagements : "Sur la base des résultats du bilan, [Prénom] présente une vitesse de lecture insuffisante pour suivre les épreuves dans le temps standard. Le **tiers-temps** est justifié. Selon le profil, des aménagements complémentaires peuvent être discutés avec le médecin désigné par la CDAPH : agrandissement des sujets, secrétaire-lecteur (limité à la reformulation sans explication), ordinateur en cas de dysorthographie sévère."`,
 }

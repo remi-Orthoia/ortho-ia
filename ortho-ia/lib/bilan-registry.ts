@@ -357,15 +357,15 @@ export const BILAN_REGISTRY: Record<string, BilanEntry> = {
   },
   'Exalang Lyfac': {
     nom: 'Exalang Lyfac',
-    // Grisé 2026-06 — le form et le prompt existent depuis longtemps mais
-    // n'ont PAS encore reçu la refonte sur la base du manuel officiel
-    // (contrairement à Exalang 5-8 refondu sur le manuel Orthomotus 2010).
-    // À débloquer une fois `docs/Bilans Sources/manuel exalang Lyfac.pdf`
-    // lu et le module aligné (épreuves officielles, niveaux d'étalonnage,
-    // sous-scores spécifiques, hints cliniques per-épreuve). Le code en
-    // l'état reste utilisable mais pourrait produire des CRBO de qualité
-    // hétérogène vs la batterie réelle.
-    betaDisabled: true,
+    // Refonte 2026-06 sur la base du manuel officiel Thibault & Lenfant
+    // (Motus 2014) — 4 modules / 14 épreuves officielles + synthèse
+    // orthographique agrégée. Cotation percentile + Notes Standard 1-5,
+    // étalonnage unique 2nde→Bac+2 (pas de subdivision par niveau). Hints
+    // cliniques per-épreuve avec moyennes et écart-types du manuel.
+    // Épreuve "Repérage d'anaphores" ajoutée (manquait dans la version
+    // pre-refonte). Comparable en qualité à EVALEO et Exalang 5-8.
+    // Flag betaDisabled retiré 2026-06 (était activé en attendant cette
+    // refonte).
     famille: 'langage_oral_ecrit',
     ageRange: 'lycée / fac',
     formPath: 'components/forms/ExalangLyfacScoresInput.tsx',
@@ -373,6 +373,11 @@ export const BILAN_REGISTRY: Record<string, BilanEntry> = {
     scoreSchema: 'percentile',
     wordRenderer: 'standard',
     generateRoute: '/api/generate-crbo',
+    // Toutes les observations remontent dans le Word (analyse qualitative
+    // type "stratégies d'évitement à l'écrit", "anxiété d'examen", "auto-
+    // correction tardive" qui ne sont pas captées par les seuls scores).
+    // Cohérent avec EVALEO et Exalang 5-8.
+    showAllEpreuveComments: true,
   },
 
   // ===== Langage oral seul =====

@@ -16,15 +16,18 @@
 
 import type Anthropic from '@anthropic-ai/sdk'
 
-/** 14 cles d'epreuves valides — DOIVENT matcher ExalangLyfacScoresInput.tsx. */
+/** 15 cles d'epreuves valides — DOIVENT matcher ExalangLyfacScoresInput.tsx.
+ *  14 epreuves officielles du manuel Thibault & Lenfant 2014 + synthese_ortho
+ *  (agregation lexicale/grammaticale optionnelle, ajoutee au form pour
+ *  faciliter la saisie d'un score global module Orthographe). */
 export const EXALANGLYFAC_EPREUVE_KEYS = [
   // Memoire (3)
   'empan_visuel', 'empan_endroit', 'empan_envers',
-  // Langage elabore (3)
-  'flexibilite_lexicale', 'consignes_orales', 'inferences',
+  // Langage elabore (4) — anaphores ajoute 2026-06 (alignement manuel)
+  'flexibilite_lexicale', 'anaphores', 'consignes_orales', 'inferences',
   // Lecture (5)
   'lecture_mots', 'lecture_logatomes', 'leximetrie', 'comp_texte', 'reperage',
-  // Orthographe (3)
+  // Orthographe (2 + synthese)
   'texte_choix_multiple', 'completion_phrases', 'synthese_ortho',
 ] as const
 
@@ -118,7 +121,8 @@ Texte libre. Recopier verbatim le niveau d'etudes mentionne (ex. "Terminale S", 
 - "Empan envers" / "Empan auditif envers" → \`empan_envers\`
 
 ## Langage elabore
-- "Flexibilite lexicale" / "Synonymes" / "Paraphrase" → \`flexibilite_lexicale\`
+- "Flexibilite lexicale" / "Flexibilite semantique" / "Synonymes" / "Paraphrase" → \`flexibilite_lexicale\`
+- "Reperage d'anaphores" / "Anaphores" / "Anaphores du mot Venus" → \`anaphores\` (epreuve sur 47 pts, 13 anaphores du mot Venus, score moy 33.14)
 - "Consignes orales" / "Comprehension de consignes" → \`consignes_orales\`
 - "Inferences" / "Sous-entendu" → \`inferences\`
 
