@@ -554,29 +554,38 @@ export default function DashboardPage() {
         <div className="space-y-2">
           {draftPreviews.map((dp) => {
             const labelType = dp.type === 'crbo' ? 'CRBO langage' : dp.type === 'b-cm' ? 'B-CM enfant' : 'B-CMado'
-            const subtitle = dp.type === 'crbo' && dp.step !== null
-              ? `Étape ${dp.step} sur 4 · ${dp.daysAgo === 0 ? "aujourd'hui" : `il y a ${dp.daysAgo} j`}`
+            // Mapping rétrocompat brouillons 4 étapes → 3 étapes (fusion
+            // Patient + Médecin/Motif en step 1 "Dossier", refonte 2026-06).
+            const migratedStep = dp.step !== null
+              ? (dp.step <= 2 ? 1 : dp.step - 1)
+              : null
+            const subtitle = dp.type === 'crbo' && migratedStep !== null
+              ? `Étape ${migratedStep} sur 3 · ${dp.daysAgo === 0 ? "aujourd'hui" : `il y a ${dp.daysAgo} j`}`
               : `${labelType} · ${dp.daysAgo === 0 ? "aujourd'hui" : `il y a ${dp.daysAgo} j`}`
             return (
-              <div key={`${dp.type}-${dp.savedAt}`} className="rounded-2xl border border-amber-200 dark:border-amber-800/40 bg-gradient-to-br from-amber-50 to-orange-50 dark:from-amber-900/20 dark:to-orange-900/20 p-4 flex flex-col sm:flex-row items-start sm:items-center gap-3">
-                <div className="w-10 h-10 rounded-xl bg-amber-100 dark:bg-amber-900/40 text-amber-700 dark:text-amber-300 flex items-center justify-center shrink-0 text-lg">
-                  📝
+              <Link
+                key={`${dp.type}-${dp.savedAt}`}
+                href={dp.href}
+                className="group block rounded-2xl border border-amber-200 dark:border-amber-800/40 bg-gradient-to-br from-amber-50 to-orange-50 dark:from-amber-900/20 dark:to-orange-900/20 p-4 hover:shadow-md hover:border-amber-300 transition-all"
+              >
+                <div className="flex flex-col sm:flex-row items-start sm:items-center gap-3">
+                  <div className="w-10 h-10 rounded-xl bg-amber-100 dark:bg-amber-900/40 text-amber-700 dark:text-amber-300 flex items-center justify-center shrink-0 text-lg group-hover:scale-105 transition-transform">
+                    📝
+                  </div>
+                  <div className="flex-1 min-w-0">
+                    <p className="font-semibold text-gray-900 dark:text-gray-100">
+                      Brouillon {labelType} — {dp.patientName}
+                    </p>
+                    <p className="text-xs text-gray-600 dark:text-gray-400 mt-0.5">
+                      {subtitle}
+                    </p>
+                  </div>
+                  <div className="inline-flex items-center gap-1.5 px-4 py-2 rounded-lg bg-amber-600 text-white text-sm font-semibold shadow-sm group-hover:bg-amber-700 transition whitespace-nowrap shrink-0">
+                    Reprendre
+                    <ChevronRight size={15} />
+                  </div>
                 </div>
-                <div className="flex-1 min-w-0">
-                  <p className="font-semibold text-gray-900 dark:text-gray-100">
-                    Brouillon {labelType} — {dp.patientName}
-                  </p>
-                  <p className="text-xs text-gray-600 dark:text-gray-400 mt-0.5">
-                    {subtitle}
-                  </p>
-                </div>
-                <Link
-                  href={dp.href}
-                  className="px-4 py-2 rounded-lg bg-amber-600 text-white text-sm font-semibold hover:bg-amber-700 whitespace-nowrap shadow-sm"
-                >
-                  Reprendre
-                </Link>
-              </div>
+              </Link>
             )
           })}
         </div>
