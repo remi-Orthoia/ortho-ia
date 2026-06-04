@@ -22,8 +22,8 @@
  * Couplage : utilisé dans nouveau-crbo/page.tsx quand test_utilise === ['Examath'].
  */
 
-import { useEffect, useMemo, useState } from 'react'
-import { Brain, Calculator, ChevronDown, Info } from 'lucide-react'
+import { useEffect, useMemo, useRef, useState } from 'react'
+import { Brain, Calculator, ChevronDown, FileUp, Info, Loader2 } from 'lucide-react'
 import MicButton from '../MicButton'
 
 interface Props {
@@ -92,6 +92,15 @@ interface Module {
   epreuves: Epreuve[]
 }
 
+// Refonte 2026-06 : alignement strict sur le manuel officiel Examath 8-15
+// (Lafay & Helloin, HappyNeuron 2016). 40 épreuves officielles réparties
+// en 6 modules + 1 sous-section "Numération décimale et fractionnaire"
+// (CM2+) intégrée dans le M2.
+//
+// Backward compat : certaines clés conservent le préfixe historique m2_*
+// même si elles ont été reclassées en M3 par le manuel (jugement_operations,
+// calcul_fractions, estimation_resultat) — pour ne pas casser les drafts
+// localStorage de l'ortho. Le rangement par MODULES dicte l'affichage UI.
 const MODULES: Module[] = [
   {
     id: 'm1',
@@ -102,7 +111,7 @@ const MODULES: Module[] = [
       {
         key: 'm1_comparaison_analogique',
         label: 'Comparaison analogique',
-        description: 'Comparer deux collections de points (sens du nombre non symbolique).',
+        description: 'Comparer deux collections de points (sens du nombre non symbolique, SNA).',
       },
       {
         key: 'm1_relation_arabe_analogique',
@@ -123,12 +132,12 @@ const MODULES: Module[] = [
       {
         key: 'm1_ligne_numerique',
         label: 'Ligne numérique',
-        description: 'Estimer la position d\'un nombre sur une ligne 0-100 (très sensible : la compression anormale est quasi-pathognomonique).',
+        description: 'Estimer la position d\'un nombre sur une ligne 0-100 ou 0-1000. La compression logarithmique anormale après le CE2 est quasi-pathognomonique de la dyscalculie primaire.',
       },
       {
         key: 'm1_identification_quantites',
         label: 'Identification de quantités',
-        description: 'Reconnaître rapidement de petites quantités (subitizing).',
+        description: 'Reconnaître rapidement de petites quantités sans dénombrement (subitizing, SNP).',
         subtests: [
           { key: 'subitizing', label: 'Subitizing' },
         ],
@@ -136,7 +145,7 @@ const MODULES: Module[] = [
       {
         key: 'm1_denombrement_calcul',
         label: 'Dénombrement et calcul',
-        description: 'Dénombrer une collection (jusqu\'à 25). Noter la stratégie : sur les doigts, sur l\'écran, par groupes.',
+        description: 'Dénombrer une collection jusqu\'à 25 + production de collection. Noter la stratégie : sur les doigts, par groupes, comptage 1 par 1.',
         subtests: [
           { key: 'identification_collection', label: 'Identification d\'une collection' },
           { key: 'production_collection',     label: 'Production d\'une collection' },
@@ -148,13 +157,14 @@ const MODULES: Module[] = [
     id: 'm2',
     num: 2,
     label: 'Numération',
-    description: 'Numération base 10 (transcodage, valeur positionnelle) + numération décimale/fractionnaire (CM2+).',
+    description: 'Numération base 10 (transcodage, valeur positionnelle) + numération décimale/fractionnaire (CM2+). 9 épreuves au total.',
     epreuves: [
+      // M2 - Numération base 10 (5 épreuves)
       {
         key: 'm2_transcodage',
         label: 'Transcodage',
         tag: 'chrono',
-        description: 'Lire et écrire les nombres en chiffres et en lettres. Analyser les erreurs : lexicales (quatorze/quarante) vs syntaxiques (3008 pour 308).',
+        description: 'Lire et écrire les nombres en chiffres et en lettres. Analyser les erreurs : lexicales (quatorze/quarante) vs syntaxiques (3008 pour 308 = défaut conversion arabe→verbal).',
         subtests: [
           { key: 'lecture_1_99',  label: 'Lecture 1 à 99',           tag: 'chrono' },
           { key: 'lecture_99p',   label: 'Lecture 99+',              tag: 'chrono+AA' },
@@ -163,15 +173,20 @@ const MODULES: Module[] = [
         ],
       },
       {
+        key: 'm2_repetition_grands_nombres',
+        label: 'Répétition de grands nombres',
+        description: 'Répéter oralement un grand nombre lu par l\'examinateur. Mesure le code verbal du nombre + boucle phonologique. Échec = signal MdT verbale fragile (à croiser avec empan endroit Exalang).',
+      },
+      {
         key: 'm2_identification_udcm',
         label: "Identification d'U/D/C/M",
         tag: 'AA',
-        description: 'Identifier les unités, dizaines, centaines, milliers d\'un nombre — valeur positionnelle.',
+        description: 'Identifier les unités, dizaines, centaines, milliers d\'un nombre — valeur positionnelle. Échec massif au CM1+ = défaut central de représentation base 10.',
       },
       {
         key: 'm2_relation_arabe_analogique_udc',
         label: 'Relation Arabe / Analogique U-D-C',
-        description: 'Représenter et lire des nombres en représentation U-D-C (base 10 imagée).',
+        description: 'Représenter et lire des nombres en représentation U-D-C (base 10 imagée : cubes/barres/plaques).',
         subtests: [
           { key: 'production_arabe_analogique', label: 'Production Arabe → Analogique' },
           { key: 'production_analogique_arabe', label: 'Production Analogique → Arabe' },
@@ -182,36 +197,31 @@ const MODULES: Module[] = [
         key: 'm2_decomposition_additive',
         label: 'Décomposition additive',
         tag: 'AA',
-        description: 'Décomposer un nombre en somme de centaines, dizaines, unités.',
+        description: 'Décomposer un nombre en somme de centaines, dizaines, unités. Marqueur de la maîtrise de la base 10.',
+      },
+      // M2 - Numération décimale et fractionnaire (4 épreuves, CM2+)
+      {
+        key: 'm2_fractions_images',
+        label: 'Fractions en images',
+        description: 'Identifier des fractions à partir de représentations imagées (parts d\'un tout colorées). Conceptualisation fractionnaire de base.',
+        niveau_specifique: 'CM2+',
       },
       {
         key: 'm2_ligne_numerique_fractions',
         label: 'Ligne numérique — Fractions',
-        description: 'Positionner une fraction sur une ligne 0-1. CM2 et au-delà.',
+        description: 'Positionner une fraction sur une ligne 0-1. Plus exigeant qu\'images car nécessite la représentation analogique de la quantité fractionnaire.',
+        niveau_specifique: 'CM2+',
+      },
+      {
+        key: 'm2_jugement_ecriture_decimale',
+        label: "Jugement d'écriture décimale",
+        description: 'Juger si une écriture décimale est valide. Détecte les confusions classiques type "2,10 > 2,9".',
         niveau_specifique: 'CM2+',
       },
       {
         key: 'm2_comparaison_fractions',
         label: 'Comparaison de fractions',
-        description: 'Comparer deux fractions. CM2 et au-delà.',
-        niveau_specifique: 'CM2+',
-      },
-      {
-        key: 'm2_jugement_operations',
-        label: "Jugement d'opérations",
-        description: 'Estimer la plausibilité du résultat d\'une opération. CM2 et au-delà.',
-        niveau_specifique: 'CM2+',
-      },
-      {
-        key: 'm2_calcul_fractions',
-        label: 'Calcul avec fractions',
-        description: 'Calculer avec des fractions simples. CM2 et au-delà.',
-        niveau_specifique: 'CM2+',
-      },
-      {
-        key: 'm2_estimation_resultat',
-        label: 'Estimation de résultat',
-        description: 'Estimer l\'ordre de grandeur d\'un résultat avant calcul. CM2 et au-delà.',
+        description: 'Comparer deux fractions. Croiser avec Ligne numérique fractions pour identifier le défaut de représentation analogique.',
         niveau_specifique: 'CM2+',
       },
     ],
@@ -220,19 +230,25 @@ const MODULES: Module[] = [
     id: 'm3',
     num: 3,
     label: 'Arithmétique',
-    description: 'Fluence arithmétique chronométrée (récupération automatisée des faits) + mécanismes opératoires posés.',
+    description: 'Récupération des faits, mécanismes opératoires posés, calcul mental complexe, estimation, calcul avec fractions. 7 épreuves.',
     epreuves: [
       {
         key: 'm3_operations_analogiques',
         label: 'Opérations analogiques',
         tag: 'AA',
-        description: 'Opérations sur représentations imagées (avant le passage au symbolique).',
+        description: 'Opérations sur représentations imagées (avant le passage au symbolique). Préservé = représentations préservées, l\'écart sur le calcul symbolique reflète un défaut d\'accès au sens du nombre.',
+      },
+      {
+        key: 'm2_jugement_operations',
+        label: "Jugement d'opérations",
+        description: 'Estimer la plausibilité du résultat d\'une opération (réservé CM2+). Marqueur du sens du nombre opérationnel.',
+        niveau_specifique: 'CM2+',
       },
       {
         key: 'm3_fluence_arithmetique',
         label: 'Fluence arithmétique',
         tag: 'chrono',
-        description: 'Vitesse de récupération des faits arithmétiques. Tables défaillantes au CM1+ = signal fort. Comptage sur doigts persistant après CE1 = défaut d\'automatisation.',
+        description: 'Vitesse de récupération des faits arithmétiques. Tables défaillantes au CM1+ = signal fort dyscalculie. Comptage sur doigts persistant après le CE1 = défaut d\'automatisation.',
         subtests: [
           { key: 'additions',       label: 'Additions',       tag: 'chrono' },
           { key: 'soustractions',   label: 'Soustractions',   tag: 'chrono' },
@@ -240,15 +256,32 @@ const MODULES: Module[] = [
         ],
       },
       {
+        key: 'm3_calcul_mental_complexe',
+        label: 'Calcul mental complexe',
+        description: 'Calculs mentaux multi-étapes (ex. retenue, plusieurs opérations). Mobilise la MdT + automatisation des faits + procédures. Discriminant pour les profils compensés (faits OK mais MdT faible).',
+      },
+      {
         key: 'm3_mecanismes_operatoires',
         label: 'Mécanismes opératoires écrits',
         tag: 'AA',
-        description: 'Opérations posées sur le papier. Procédure préservée = profil compensé même si calcul mental déficitaire.',
+        description: 'Opérations posées sur le papier. Procédure préservée = profil compensé même si calcul mental déficitaire. Erreurs systématiques (oubli retenue, sens posé inversé) = défaut procédural pur.',
         subtests: [
           { key: 'additions',     label: 'Additions',     tag: 'AA' },
           { key: 'soustractions', label: 'Soustractions', tag: 'AA' },
           { key: 'multiplication', label: 'Multiplication', tag: 'AA' },
         ],
+      },
+      {
+        key: 'm2_calcul_fractions',
+        label: 'Calcul avec fractions',
+        description: 'Calculs avec fractions simples (addition, soustraction, multiplication). Plus complexe : sollicite la représentation fractionnaire + procédures.',
+        niveau_specifique: 'CM2+',
+      },
+      {
+        key: 'm2_estimation_resultat',
+        label: 'Estimation de résultat',
+        description: 'Estimer l\'ordre de grandeur d\'un résultat avant calcul. Forte sollicitation du sens du nombre — déficit = signal fort dyscalculie primaire.',
+        niveau_specifique: 'CM2+',
       },
     ],
   },
@@ -256,12 +289,22 @@ const MODULES: Module[] = [
     id: 'm4',
     num: 4,
     label: 'Mesures',
-    description: 'Approche contextuelle des unités (cm, m, kg, l, mn, m²). Souvent secondaire à l\'expérience de vie quotidienne.',
+    description: 'Approche contextuelle des unités (cm, m, kg, l, mn, m²) + équivalences + problèmes de mesures. 3 épreuves.',
     epreuves: [
       {
         key: 'm4_approche_mesures',
         label: 'Approche contextuelle des mesures',
-        description: 'Associer une unité (cm, m, kg, l, mn, m²) à un objet ou un contexte usuel. Peu spécifique en isolé.',
+        description: 'Associer une unité (cm, m, kg, l, mn, m²) à un objet ou un contexte usuel. Peu spécifique en isolé — dépend de l\'expérience de vie quotidienne.',
+      },
+      {
+        key: 'm4_equivalence_comparaison',
+        label: 'Équivalence et Comparaison',
+        description: 'Convertir entre unités (cm ↔ m, g ↔ kg, ...) et comparer des mesures. Sollicite la base 10 + le sens du nombre.',
+      },
+      {
+        key: 'm4_problemes_mesures',
+        label: 'Problèmes de mesures',
+        description: 'Problèmes verbalisés mobilisant des grandeurs et conversions. À croiser avec M5 pour différencier difficulté problème vs difficulté conversion d\'unités.',
       },
     ],
   },
@@ -269,24 +312,24 @@ const MODULES: Module[] = [
     id: 'm5',
     num: 5,
     label: 'Résolution de problèmes arithmétiques',
-    description: 'Compréhension d\'énoncé verbal + modélisation + exécution. Déficit isolé sur ce module = souvent secondaire (dyslexie, MdT).',
+    description: 'Compréhension d\'énoncé verbal + modélisation + exécution. 9 épreuves. Déficit isolé sur ce module = souvent secondaire (dyslexie, trouble du langage, MdT verbale).',
     epreuves: [
       {
         key: 'm5_combinaison_plus',
         label: 'Combinaison +',
-        description: 'Recherche d\'une combinaison/composition + recherche d\'une valeur complément. Addition simple à élaborer depuis l\'énoncé.',
+        description: 'Recherche d\'une combinaison/composition + valeur complément. Addition simple à élaborer depuis l\'énoncé.',
       },
       {
         key: 'm5_transformation_plus',
         label: 'Transformation +',
         tag: 'AA',
-        description: 'Ajout / retrait avec recherche de la situation finale, transformation, ou situation initiale (6 sous-items).',
+        description: 'Ajout / retrait avec recherche de la situation finale, transformation, ou situation initiale (6 sous-items). Plus exigeant que combinaison car nécessite la modélisation temporelle.',
       },
       {
         key: 'm5_comparaison_plus',
         label: 'Comparaison +',
         tag: 'AA',
-        description: 'Comparaisons « Plus que » / « Moins que » avec recherche de valeur supérieure, inférieure, ou différence. Structures inverses = forte sollicitation inhibitrice.',
+        description: 'Comparaisons « Plus que » / « Moins que » avec recherche de valeur supérieure, inférieure, ou différence. Les structures inverses (« moins de X que Y, Y = ? ») exigent une forte inhibition du référent linguistique.',
       },
       {
         key: 'm5_proportionnalite',
@@ -294,17 +337,35 @@ const MODULES: Module[] = [
         description: 'Recherche de quantité d\'unités (division partage), valeur multipliée (4ᵉ proportionnelle), valeur unitaire (division regroupement).',
       },
       {
+        key: 'm5_proportionnalite_composee',
+        label: 'Proportionnalité simple composée ×',
+        description: 'Proportionnalité avec étape intermédiaire de calcul. CM2 uniquement.',
+        niveau_specifique: 'CM2+',
+      },
+      {
+        key: 'm5_proportionnalite_multiple',
+        label: 'Proportionnalité multiple ×',
+        description: 'Proportionnalité à plusieurs niveaux de variables (ex. unités et débits). 6e+ uniquement.',
+        niveau_specifique: '6e+',
+      },
+      {
         key: 'm5_comparaison_x',
         label: 'Comparaison ×',
         tag: 'AA',
         description: 'Multiplication / division avec comparaisons « Fois plus que » / « Fois moins que ». CM2 uniquement.',
-        niveau_specifique: 'CM2',
+        niveau_specifique: 'CM2+',
       },
       {
         key: 'm5_probleme_compose',
         label: 'Problème composé',
         description: 'Problème à plusieurs étapes nécessitant la coordination de plusieurs opérations. CM2 uniquement.',
-        niveau_specifique: 'CM2',
+        niveau_specifique: 'CM2+',
+      },
+      {
+        key: 'm5_problemes_composes',
+        label: 'Problèmes composés',
+        description: 'Problèmes complexes coordonnant 3+ opérations / variables. 6e+ uniquement.',
+        niveau_specifique: '6e+',
       },
     ],
   },
@@ -312,12 +373,32 @@ const MODULES: Module[] = [
     id: 'm6',
     num: 6,
     label: 'Langage et raisonnement',
-    description: 'Préservation = critère différentiel important. Déficit associé = orienter vers bilan langagier (Exalang).',
+    description: 'Préservation = critère différentiel important. Déficit associé = orienter vers bilan langagier (Exalang). 6 épreuves.',
     epreuves: [
       {
         key: 'm6_inferences_images',
         label: 'Inférences en images',
         description: '12 scènes images : déduction logique sans support verbal (Fonte de l\'igloo, Esquimau pêcheur, Chat sur le toit, Vol de fruits, Serpent, Ours polaire, Voleur, Porte-monnaie vide, Pizza fourmis, Chocolats gourmand, Voleur attrapé, Robinson).',
+      },
+      {
+        key: 'm6_inferences_logiques',
+        label: 'Inférences logiques non verbales',
+        description: 'Raisonnement logique sur des supports non verbaux (suites, analogies). Aide à différencier difficulté logique pure vs difficulté verbale.',
+      },
+      {
+        key: 'm6_inferences_verbales',
+        label: 'Inférences verbales',
+        description: 'Inférences à partir d\'énoncés verbaux. Échec ici + Inférences images préservées = orientation vers trouble du langage / compréhension.',
+      },
+      {
+        key: 'm6_inferences_lexicales',
+        label: 'Inférences lexicales et sémantiques',
+        description: 'Inférences sur du vocabulaire et sens — accès lexical sémantique. Croiser avec Exalang Lexique-sémantique en cas de déficit.',
+      },
+      {
+        key: 'm6_lexique_math',
+        label: 'Mathématique — Lexique',
+        description: 'Vocabulaire spécifique mathématique (somme, différence, produit, double, moitié...). Important pour le langage mathématique en classe — défaut isolé peut expliquer beaucoup de difficultés en problèmes.',
       },
       {
         key: 'm6_gestion_enonces',
@@ -334,6 +415,7 @@ const NIVEAU_OPTIONS = [
   { key: 'CM1',   label: 'CM1 (~9-10 ans)' },
   { key: 'CM2',   label: 'CM2 (~10-11 ans)' },
   { key: '6e_5e', label: '6e-5e (~11-13 ans)' },
+  { key: '4e_3e', label: '4e-3e (~13-15 ans)' },
 ] as const
 
 interface SubtestState {
@@ -429,11 +511,86 @@ function PercentileChips({
   )
 }
 
-export default function ExamathScoresInput({ notes, onNotesChange, onResultatsChange }: Props) {
+export default function ExamathScoresInput({ notes, onNotesChange, onResultatsChange, onError }: Props) {
   const [state, setState] = useState<State>(emptyState)
   const [expanded, setExpanded] = useState<Record<string, boolean>>({
     m1: true, m2: false, m3: false, m4: false, m5: false, m6: false,
   })
+
+  // Import PDF Examath — route /api/extract-examath-pdf.
+  // Pre-remplit niveau + 40 epreuves (percentile + subtests + temps + observation)
+  // depuis un rapport HappyNeuron Pro ou scan cahier.
+  const fileInputRef = useRef<HTMLInputElement | null>(null)
+  const [importing, setImporting] = useState(false)
+  const [importInfo, setImportInfo] = useState<string | null>(null)
+
+  async function handleImportFile(file: File) {
+    setImporting(true)
+    setImportInfo(null)
+    try {
+      const fd = new FormData()
+      fd.append('file', file)
+      const res = await fetch('/api/extract-examath-pdf', { method: 'POST', body: fd })
+      const data = await res.json()
+      if (!res.ok || !data?.success) {
+        const msg = data?.error ?? 'Échec de l\'import PDF.'
+        onError?.(msg)
+        setImportInfo(`Erreur : ${msg}`)
+        return
+      }
+      const ex = data.extracted as {
+        niveau: string
+        epreuves: Array<{
+          key: string
+          percentile: string
+          subtests: Record<string, { percentile: string; score_brut: string; temps: string }>
+          score_brut: string
+          temps: string
+          observation: string
+          non_passee: boolean
+        }>
+      }
+      setState(prev => {
+        const next: State = {
+          niveau: (ex.niveau || prev.niveau) as State['niveau'],
+          epreuves: { ...prev.epreuves },
+        }
+        for (const item of ex.epreuves ?? []) {
+          if (!(item.key in next.epreuves)) continue
+          const cur = next.epreuves[item.key]
+          // Merge subtests : ne pas ecraser les saisies existantes si le PDF est vide.
+          const mergedSubs: Record<string, SubtestState> = { ...cur.subtests }
+          for (const [k, v] of Object.entries(item.subtests ?? {})) {
+            mergedSubs[k] = {
+              percentile: ((v.percentile as PercentileKey) || mergedSubs[k]?.percentile || ''),
+              score_brut: v.score_brut || mergedSubs[k]?.score_brut || '',
+              temps: v.temps || mergedSubs[k]?.temps || '',
+            }
+          }
+          next.epreuves[item.key] = {
+            percentile: (item.percentile as PercentileKey) || cur.percentile,
+            score_brut: item.score_brut || cur.score_brut,
+            temps: item.temps || cur.temps,
+            observation: item.observation || cur.observation,
+            non_passee: !!item.non_passee,
+            subtests: mergedSubs,
+          }
+        }
+        return next
+      })
+      const epreuvesImported = (ex.epreuves ?? []).length
+      setImportInfo(
+        `Import réussi : ${epreuvesImported} épreuve${epreuvesImported > 1 ? 's' : ''} pré-remplie${epreuvesImported > 1 ? 's' : ''}. Vérifiez et complétez si besoin.`,
+      )
+    } catch (err: any) {
+      const msg = err?.message ?? 'Erreur réseau durant l\'import.'
+      onError?.(msg)
+      setImportInfo(`Erreur : ${msg}`)
+    } finally {
+      setImporting(false)
+      if (fileInputRef.current) fileInputRef.current.value = ''
+    }
+  }
 
   // Compte d'épreuves saisies (avec au moins un percentile).
   const totalSaisies = useMemo(() => {
@@ -574,13 +731,54 @@ export default function ExamathScoresInput({ notes, onNotesChange, onResultatsCh
       <div className="flex items-start gap-2 p-3 rounded-lg border border-indigo-200 bg-indigo-50">
         <Calculator size={18} className="text-indigo-600 shrink-0 mt-0.5" />
         <div className="text-sm">
-          <p className="font-semibold text-indigo-900">Saisie structurée Examath 8-15 — 6 modules officiels</p>
+          <p className="font-semibold text-indigo-900">Saisie structurée Examath 8-15 — 6 modules officiels, 40 épreuves</p>
           <p className="text-indigo-700 text-xs mt-0.5 leading-relaxed">
             Reportez le <strong>percentile</strong> affiché par le logiciel HappyNeuron pour chaque épreuve / subtest.
             Seuil officiel de pathologie : <strong>P ≤ 10</strong>. P ≤ 5 = pathologie sévère.
-            Cochez « non passée » pour exclure une épreuve du CRBO. Les normes sont stratifiées par niveau scolaire — sélectionnez-le ci-dessous.
+            Cochez « non passée » pour exclure une épreuve du CRBO. Les normes sont stratifiées par niveau scolaire (CE2 → 3e) — sélectionnez-le ci-dessous.
           </p>
         </div>
+      </div>
+
+      {/* Import PDF Examath — rapport HappyNeuron Pro ou scan cahier. */}
+      <div className="rounded-lg border border-sky-200 bg-sky-50/60 p-3">
+        <div className="flex items-start justify-between gap-3 flex-wrap">
+          <div className="flex items-start gap-2 min-w-0">
+            <FileUp size={18} className="text-sky-700 shrink-0 mt-0.5" />
+            <div className="text-sm min-w-0">
+              <p className="font-semibold text-sky-900">Importer un document Examath (optionnel)</p>
+              <p className="text-sky-800 text-xs mt-0.5 leading-relaxed">
+                Format accepté : <strong>PDF uniquement</strong> (rapport HappyNeuron Pro ou scan cahier rempli). L&apos;extracteur dédié pré-remplit niveau + percentiles + sous-scores des 40 épreuves.
+              </p>
+            </div>
+          </div>
+          <div className="flex items-center gap-2 shrink-0">
+            <input
+              ref={fileInputRef}
+              type="file"
+              accept=".pdf,application/pdf"
+              onChange={(e) => {
+                const f = e.target.files?.[0]
+                if (f) handleImportFile(f)
+              }}
+              className="hidden"
+            />
+            <button
+              type="button"
+              onClick={() => fileInputRef.current?.click()}
+              disabled={importing}
+              className="inline-flex items-center gap-1.5 px-3 py-2 rounded text-sm font-medium bg-sky-600 text-white hover:bg-sky-700 disabled:bg-sky-300 disabled:cursor-wait transition"
+            >
+              {importing ? <Loader2 size={14} className="animate-spin" /> : <FileUp size={14} />}
+              {importing ? 'Extraction en cours…' : 'Choisir un fichier'}
+            </button>
+          </div>
+        </div>
+        {importInfo && (
+          <p className={`mt-2 text-xs ${importInfo.startsWith('Erreur') ? 'text-red-700' : 'text-emerald-700'}`}>
+            {importInfo}
+          </p>
+        )}
       </div>
 
       {/* Niveau scolaire (stratification officielle de l'étalonnage) */}

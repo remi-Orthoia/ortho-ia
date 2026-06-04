@@ -471,7 +471,13 @@ export const BILAN_REGISTRY: Record<string, BilanEntry> = {
   // ===== Transverse =====
   'Examath': {
     nom: 'Examath',
-    betaDisabled: true,
+    // Refonte 2026-06 : alignement sur le manuel officiel
+    // (Lafay & Helloin, HappyNeuron 2016). 6 modules / 40 épreuves
+    // officielles (vs ~27 dans la version pre-refonte) / 5 niveaux
+    // d'étalonnage CE2 → 3e (le 4e-3e était manquant). Extracteur PDF
+    // dédié + prompt clinique complet (référentiel dyscalculie primaire
+    // vs secondaire vs trouble du raisonnement math, DSM-5).
+    // Flag betaDisabled retiré 2026-06.
     famille: 'transverse',
     ageRange: '8-15 ans',
     formPath: 'components/forms/ExamathScoresInput.tsx',
@@ -479,6 +485,10 @@ export const BILAN_REGISTRY: Record<string, BilanEntry> = {
     scoreSchema: 'percentile',
     wordRenderer: 'standard',
     generateRoute: '/api/generate-crbo',
+    // Toutes les observations remontent dans le Word (stratégies type
+    // "compte sur les doigts CM2", types d'erreurs Transcodage lexical /
+    // syntaxique, etc.). Cohérent avec EVALEO et Exalang 5-8.
+    showAllEpreuveComments: true,
   },
   'OMF / Déglutition': {
     nom: 'OMF / Déglutition',
