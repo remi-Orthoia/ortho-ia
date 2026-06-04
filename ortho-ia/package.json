@@ -8,11 +8,11 @@
     "start": "next start",
     "lint": "next lint",
     "build:extension": "node scripts/build-extension-zip.mjs",
-    "test:e2e": "playwright test",
-    "test:e2e:ui": "playwright test --ui",
-    "test:e2e:headed": "playwright test --headed",
+    "test:e2e": "dotenv -e .env.test -- playwright test",
+    "test:e2e:ui": "dotenv -e .env.test -- playwright test --ui",
+    "test:e2e:headed": "dotenv -e .env.test -- playwright test --headed",
     "test:analyze": "node scripts/analyze-crbo.mjs",
-    "test:pipeline": "npm run test:e2e && npm run test:analyze"
+    "test:pipeline": "dotenv -e .env.test -- playwright test && node scripts/analyze-crbo.mjs"
   },
   "dependencies": {
     "@anthropic-ai/sdk": "^0.39.0",
@@ -40,6 +40,7 @@
     "adm-zip": "^0.5.17",
     "autoprefixer": "^10.4.20",
     "dotenv": "^17.4.2",
+    "dotenv-cli": "^11.0.0",
     "esbuild": "^0.28.0",
     "eslint": "^8.57.1",
     "eslint-config-next": "^14.2.35",
