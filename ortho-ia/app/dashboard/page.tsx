@@ -2,11 +2,6 @@
 
 import { useState, useEffect } from 'react'
 import DashboardSkeleton from '@/components/skeletons/DashboardSkeleton'
-import OnboardingTour from '@/components/OnboardingTour'
-import MilestoneCelebration from '@/components/MilestoneCelebration'
-import CalendarWidget from '@/components/CalendarWidget'
-import YearHeatmap from '@/components/YearHeatmap'
-import FeedbackBanner from '@/components/FeedbackBanner'
 import { useRouter } from 'next/navigation'
 import Link from 'next/link'
 import { createClient } from '@/lib/supabase'
@@ -19,14 +14,11 @@ import { applyGlossaireToObject } from '@/lib/glossaire'
 import {
   Plus,
   FileText,
-  Clock,
-  CheckCircle,
-  Eye,
   Calendar,
-  User,
   Trash2,
   Loader2,
   Download,
+  Eye,
   ChevronLeft,
   ChevronRight,
 } from 'lucide-react'
@@ -117,12 +109,7 @@ export default function DashboardPage() {
     thisMonth: 0,
     timeSaved: 0,
   })
-  // Nombre de patients enregistres dans le carnet — sert a calculer la
-  // checklist d'onboarding (etape "1er patient ajoute"). Charge en parallele
-  // des CRBOs et profile dans fetchData.
-  const [patientCount, setPatientCount] = useState(0)
   const [planLimit, setPlanLimit] = useState<number | null>(10)
-  const [feedbackCrboId, setFeedbackCrboId] = useState<string | null>(null)
   const [downloadingId, setDownloadingId] = useState<string | null>(null)
   const [deletingId, setDeletingId] = useState<string | null>(null)
   // Brouillons en cours pour l'user courant — affichés en bandeaux empilés
@@ -138,13 +125,6 @@ export default function DashboardPage() {
 
   useEffect(() => {
     fetchData()
-    try {
-      const pending = sessionStorage.getItem('orthoia.feedback-pending')
-      if (pending) {
-        sessionStorage.removeItem('orthoia.feedback-pending')
-        setFeedbackCrboId(pending)
-      }
-    } catch {}
   }, [])
 
   const fetchData = async () => {
@@ -290,14 +270,6 @@ export default function DashboardPage() {
       .single()
     const unlimited = !sub || sub.crbo_limit === -1 || (sub.plan && sub.plan !== 'free')
     setPlanLimit(unlimited ? null : (sub?.crbo_limit ?? 3))
-
-    // Compte patients — uniquement le count, pas les lignes (perf).
-    // Sert a cocher l'etape 2 de la checklist d'onboarding.
-    const { count: patientsCount } = await supabase
-      .from('patients')
-      .select('id', { count: 'exact', head: true })
-      .eq('user_id', user.id)
-    setPatientCount(patientsCount ?? 0)
 
     // CRBOs (tout charger, tri DB par created_at desc)
     const { data: crbosData } = await supabase
@@ -506,24 +478,12 @@ export default function DashboardPage() {
   const hour = now.getHours()
   const salutation = hour < 12 ? 'Bonjour' : hour < 18 ? 'Bon après-midi' : 'Bonsoir'
 
-  const aRedigerCount = crbos.filter(c => c.statut === 'a_rediger').length
   const totalPages = Math.max(1, Math.ceil(crbos.length / PAGE_SIZE))
   const safePage = Math.min(Math.max(1, page), totalPages)
   const pagedCrbos = crbos.slice((safePage - 1) * PAGE_SIZE, safePage * PAGE_SIZE)
 
   return (
     <div className="space-y-6 animate-fade-in">
-      <OnboardingTour />
-      <MilestoneCelebration crboCount={stats.total} />
-      <FeedbackBanner crboId={feedbackCrboId} />
-
-      <CalendarWidget />
-
-      {/* Heatmap année — uniquement si l'ortho a au moins 1 CRBO */}
-      {stats.total > 0 && (
-        <YearHeatmap crboDates={crbos.map(c => c.created_at)} />
-      )}
-
       {/* Header salutation + actions principales */}
       <div className="flex flex-col sm:flex-row sm:items-end sm:justify-between gap-4">
         <div>
@@ -581,44 +541,6 @@ export default function DashboardPage() {
         </div>
       )}
 
-      {/* 4 cartes stats */}
-      <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
-        {(() => {
-          const reachedQuota = planLimit !== null && stats.thisMonth >= planLimit
-          const nearQuota = planLimit !== null && stats.thisMonth >= planLimit - 2 && !reachedQuota
-          const thisMonthValue = planLimit === null
-            ? String(stats.thisMonth)
-            : `${stats.thisMonth} / ${planLimit}`
-          const thisMonthColor = reachedQuota
-            ? 'text-red-600 dark:text-red-400'
-            : nearQuota
-              ? 'text-amber-600 dark:text-amber-400'
-              : 'text-gray-900 dark:text-gray-100'
-          const cards = [
-            { label: 'Total CRBO', value: stats.total, color: 'text-gray-900 dark:text-gray-100', sub: null as string | null },
-            {
-              label: planLimit === null ? 'Ce mois' : 'CRBOs ce mois',
-              value: thisMonthValue,
-              color: thisMonthColor,
-              sub: reachedQuota ? 'Quota atteint — passez Pro' : nearQuota ? 'Proche du quota' : null,
-            },
-            { label: 'À rédiger', value: aRedigerCount, color: 'text-blue-600 dark:text-blue-400', sub: null },
-            { label: 'Temps gagné', value: `${Math.floor(stats.timeSaved / 60)} h`, color: 'text-primary-600 dark:text-primary-400', sub: null },
-          ]
-          return cards.map((s) => (
-            <div key={s.label} className="card-modern p-4">
-              <p className="text-sm text-gray-500 dark:text-gray-400">{s.label}</p>
-              <p className={`text-2xl font-bold mt-0.5 ${s.color}`}>{s.value}</p>
-              {s.sub && (
-                <p className={`text-[11px] mt-1 ${reachedQuota ? 'text-red-600 dark:text-red-400' : 'text-amber-600 dark:text-amber-400'}`}>
-                  {s.sub}
-                </p>
-              )}
-            </div>
-          ))
-        })()}
-      </div>
-
       {/* Bandeau quota atteint */}
       {planLimit !== null && stats.thisMonth >= planLimit && (
         <div className="rounded-2xl border border-red-200 dark:border-red-800/40 bg-gradient-to-br from-red-50 to-orange-50 dark:from-red-900/20 dark:to-orange-900/20 p-5 flex flex-col sm:flex-row items-start sm:items-center gap-4">
@@ -637,117 +559,22 @@ export default function DashboardPage() {
         </div>
       )}
 
-      {/* Checklist d'onboarding — interactive : chaque etape se coche
-          automatiquement selon l'etat reel (profil, patients, CRBO). On masque
-          le bloc des que les 3 etapes sont validees pour ne pas encombrer
-          le dashboard d'un user actif. */}
+      {/* Bandeau profil incomplet — version sobre, 1 ligne. Remplace la
+          checklist gamifiée 3 etapes (retrait audit UX 2026-06). */}
       {(() => {
-        // Etat de chaque etape — recalcule a chaque render pour suivre les
-        // updates de profile / patientCount / stats.
         const profileComplete = !!(
           profile?.adresse?.trim()
           && profile?.code_postal?.trim()
           && profile?.ville?.trim()
           && profile?.telephone?.trim()
         )
-        const hasPatient = patientCount > 0
-        const hasFirstCrbo = stats.total > 0
-        const allDone = profileComplete && hasPatient && hasFirstCrbo
-        if (allDone) return null
-
-        const doneCount = [profileComplete, hasPatient, hasFirstCrbo].filter(Boolean).length
-
-        const Step = ({
-          done,
-          label,
-          desc,
-          href,
-        }: { done: boolean; label: string; desc: string; href: string }) => (
-          <li className="flex items-start gap-3">
-            <span
-              className={`inline-flex items-center justify-center w-6 h-6 rounded-full shrink-0 mt-0.5 transition ${
-                done
-                  ? 'bg-green-600 text-white'
-                  : 'bg-white text-green-700 border-2 border-green-300'
-              }`}
-              aria-hidden="true"
-            >
-              {done ? <CheckCircle size={14} /> : null}
-            </span>
-            <span className={`text-sm ${done ? 'text-gray-500 line-through' : 'text-gray-800'}`}>
-              <Link href={href} className={`font-semibold ${done ? 'text-gray-500' : 'text-green-700 hover:underline'}`}>
-                {label}
-              </Link>
-              <span className="ml-1">— {desc}</span>
-            </span>
-          </li>
-        )
-
+        if (profileComplete) return null
         return (
-          <div className="bg-gradient-to-br from-green-50 to-emerald-50 border border-green-200 rounded-2xl p-6 sm:p-8">
-            <div className="flex items-start gap-4">
-              <div className="w-12 h-12 rounded-xl bg-white shadow-sm flex items-center justify-center shrink-0">
-                <FileText className="text-green-600" size={24} />
-              </div>
-              <div className="flex-1">
-                <div className="flex items-baseline gap-3 flex-wrap">
-                  <h3 className="text-xl font-bold text-gray-900">
-                    {doneCount === 0 ? 'Bienvenue sur Ortho.ia 👋' : `Bien joué, ${doneCount}/3 étapes validées`}
-                  </h3>
-                  <span className="text-sm font-medium text-green-700">
-                    {doneCount === 0 && 'À 3 étapes de votre premier CRBO'}
-                    {doneCount === 1 && 'Plus que 2 étapes'}
-                    {doneCount === 2 && 'Une dernière étape, vous y êtes presque'}
-                  </span>
-                </div>
-                {/* Barre de progression visuelle */}
-                <div className="mt-3 h-1.5 w-full max-w-md bg-white/70 rounded-full overflow-hidden">
-                  <div
-                    className="h-full bg-green-600 transition-all duration-500"
-                    style={{ width: `${(doneCount / 3) * 100}%` }}
-                  />
-                </div>
-                <ol className="mt-5 space-y-3">
-                  <Step
-                    done={profileComplete}
-                    label="Complétez votre profil"
-                    desc="adresse, téléphone, email — pré-remplis dans chaque CRBO."
-                    href="/dashboard/profil"
-                  />
-                  <Step
-                    done={hasPatient}
-                    label="Ajoutez votre premier patient"
-                    desc="dans le carnet, ou directement en créant le CRBO."
-                    href="/dashboard/patients"
-                  />
-                  <Step
-                    done={hasFirstCrbo}
-                    label="Créez votre premier CRBO"
-                    desc="5 étapes guidées, import PDF, génération en 20 sec."
-                    href="/dashboard/nouveau-crbo"
-                  />
-                </ol>
-                <div className="mt-6">
-                  <Link
-                    href={
-                      !profileComplete
-                        ? '/dashboard/profil'
-                        : !hasPatient
-                          ? '/dashboard/patients'
-                          : '/dashboard/nouveau-crbo'
-                    }
-                    className="inline-flex items-center gap-2 bg-green-600 text-white px-5 py-2.5 rounded-xl font-semibold hover:bg-green-700 transition"
-                  >
-                    <Plus size={18} />
-                    {!profileComplete
-                      ? 'Compléter mon profil'
-                      : !hasPatient
-                        ? 'Ajouter un patient'
-                        : 'Démarrer mon premier CRBO'}
-                  </Link>
-                </div>
-              </div>
-            </div>
+          <div className="rounded-lg border border-amber-200 bg-amber-50 px-4 py-2.5 text-sm text-amber-900 flex items-center justify-between gap-3 flex-wrap">
+            <span>Complétez votre profil pour pré-remplir l&apos;en-tête de vos CRBO.</span>
+            <Link href="/dashboard/profil" className="font-semibold hover:underline whitespace-nowrap">
+              Compléter →
+            </Link>
           </div>
         )
       })()}
@@ -883,37 +710,6 @@ export default function DashboardPage() {
         </div>
       )}
 
-      {/* Quick Actions secondaires */}
-      <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-        <Link
-          href="/dashboard/patients"
-          className="bg-white rounded-xl border border-gray-200 p-5 hover:shadow-md transition group"
-        >
-          <div className="flex items-center gap-4">
-            <div className="w-12 h-12 bg-indigo-100 rounded-lg flex items-center justify-center group-hover:bg-indigo-200 transition">
-              <User className="text-indigo-600" size={24} />
-            </div>
-            <div>
-              <h3 className="font-semibold text-gray-900">Carnet patients</h3>
-              <p className="text-sm text-gray-500">Gérer vos patients et leur historique</p>
-            </div>
-          </div>
-        </Link>
-        <Link
-          href="/dashboard/historique"
-          className="bg-white rounded-xl border border-gray-200 p-5 hover:shadow-md transition group"
-        >
-          <div className="flex items-center gap-4">
-            <div className="w-12 h-12 bg-emerald-100 rounded-lg flex items-center justify-center group-hover:bg-emerald-200 transition">
-              <FileText className="text-emerald-600" size={24} />
-            </div>
-            <div>
-              <h3 className="font-semibold text-gray-900">Historique CRBO</h3>
-              <p className="text-sm text-gray-500">Recherche, filtres avancés sur tous vos comptes rendus</p>
-            </div>
-          </div>
-        </Link>
-      </div>
     </div>
   )
 }
