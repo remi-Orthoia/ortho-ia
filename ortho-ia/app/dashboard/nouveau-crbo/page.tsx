@@ -26,6 +26,7 @@ import Evalo26ScoresInput from '@/components/forms/Evalo26ScoresInput'
 import Exalang36ScoresInput from '@/components/forms/Exalang36ScoresInput'
 import Exalang58ScoresInput from '@/components/forms/Exalang58ScoresInput'
 import Exalang811ScoresInput from '@/components/forms/Exalang811ScoresInput'
+import Exalang1115ScoresInput from '@/components/forms/Exalang1115ScoresInput'
 import PrediFexScoresInput from '@/components/forms/PrediFexScoresInput'
 import BecdScoresInput from '@/components/forms/BecdScoresInput'
 import BiaScoresInput from '@/components/forms/BiaScoresInput'
@@ -2998,6 +2999,8 @@ Astuce : tapez /fatigue, /anxiete, /encouragements… pour réutiliser vos formu
                           <PredimemScoresInput
                             {...sharedNotesProps}
                             onResultatsChange={(v) => handleTestSlotChange('PREDIMEM', v)}
+                            bilanPrecedentStructure={formData.bilan_precedent_structure ?? null}
+                            bilanPrecedentDate={formData.bilan_precedent_date ?? null}
                           />
                         )}
                         {test === 'Examath' && (
@@ -3046,10 +3049,20 @@ Astuce : tapez /fatigue, /anxiete, /encouragements… pour réutiliser vos formu
                             bilanPrecedentDate={formData.bilan_precedent_date ?? null}
                           />
                         )}
+                        {test === 'Exalang 11-15' && (
+                          <Exalang1115ScoresInput
+                            {...sharedNotesProps}
+                            onResultatsChange={(v) => handleTestSlotChange('Exalang 11-15', v)}
+                            bilanPrecedentStructure={formData.bilan_precedent_structure ?? null}
+                            bilanPrecedentDate={formData.bilan_precedent_date ?? null}
+                          />
+                        )}
                         {test === 'PrediFex' && (
                           <PrediFexScoresInput
                             {...sharedNotesProps}
                             onResultatsChange={(v) => handleTestSlotChange('PrediFex', v)}
+                            bilanPrecedentStructure={formData.bilan_precedent_structure ?? null}
+                            bilanPrecedentDate={formData.bilan_precedent_date ?? null}
                           />
                         )}
                         {test === 'BECD' && (

@@ -354,11 +354,20 @@ export const BILAN_REGISTRY: Record<string, BilanEntry> = {
     nom: 'Exalang 11-15',
     famille: 'langage_oral_ecrit',
     ageRange: '11-15 ans',
-    formPath: null,
+    // Form structure ajoute 2026-06-04 — refonte alignee sur Exalang 8-11
+    // (template stable). 16 epreuves officielles, 5 groupes A.1 / A.2 / B.1 /
+    // B.2 / C.1, etalonnage 6e a 3e. Permet le mode renouvellement avec
+    // tableau comparatif + fleches d'evolution.
+    formPath: 'components/forms/Exalang1115ScoresInput.tsx',
     promptPath: 'lib/prompts/tests/exalang-11-15.ts',
-    scoreSchema: 'free_text',
+    scoreSchema: 'percentile',
     wordRenderer: 'standard',
     generateRoute: '/api/generate-crbo',
+    // Toutes les observations remontent dans le Word (au college, annotations
+    // type "decompensation observee a l'entree 6e", "demande PPS en cours",
+    // "stratégie de relecture spontanee" sont essentielles meme hors zone
+    // fragile). Coherent avec Exalang 5-8 / 8-11 / EVALEO.
+    showAllEpreuveComments: true,
   },
   'Exalang Lyfac': {
     nom: 'Exalang Lyfac',
