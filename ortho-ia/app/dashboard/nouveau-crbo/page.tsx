@@ -2990,6 +2990,8 @@ Astuce : tapez /fatigue, /anxiete, /encouragements… pour réutiliser vos formu
                               if (m < 0 || (m === 0 && bilan.getDate() < birth.getDate())) years--
                               return years
                             })()}
+                            bilanPrecedentStructure={formData.bilan_precedent_structure ?? null}
+                            bilanPrecedentDate={formData.bilan_precedent_date ?? null}
                           />
                         )}
                         {test === 'PREDIMEM' && (

@@ -200,7 +200,6 @@ export const BILAN_REGISTRY: Record<string, BilanEntry> = {
   // ===== Adulte / Aphasie / Gériatrie =====
   'BETL': {
     nom: 'BETL',
-    betaDisabled: true,
     label: 'BETL — Bilan Évaluation Trouble Lexical',
     famille: 'adulte',
     ageRange: 'adulte',
@@ -209,6 +208,12 @@ export const BILAN_REGISTRY: Record<string, BilanEntry> = {
     scoreSchema: 'percentile',
     wordRenderer: 'standard',
     generateRoute: '/api/generate-crbo',
+    // Refonte 2026-06 : injection du modèle Hillis-Caramazza dans le prompt,
+    // section MODE RENOUVELLEMENT adulte (MA progressive / APP / post-AVC),
+    // extracteur PDF dédié (/api/extract-betl-pdf) avec 8 épreuves I-VIII +
+    // ébauche orale + comportements (Annexe 1) + profil discours (Annexe 2).
+    // Activation prod après audit complet (cf. CLAUDE.md).
+    showAllEpreuveComments: true,
   },
   'PREDIMEM': {
     nom: 'PREDIMEM',

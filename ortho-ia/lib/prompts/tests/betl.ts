@@ -1,4 +1,5 @@
 import type { TestModule } from './types'
+import { BETL_HILLIS_CARAMAZZA } from '@/lib/prompts/knowledge/betl-hillis-caramazza'
 
 /**
  * Module BETL — Batterie d'Évaluation des Troubles Lexicaux.
@@ -11,6 +12,15 @@ import type { TestModule } from './types'
  * Le contenu de `regles_specifiques` est extrait littéralement du manuel —
  * la BETL est un outil propriétaire informatisé, ces règles permettent à
  * l'IA de générer un CRBO conforme à l'usage prévu par les auteurs.
+ *
+ * Refonte 2026-06 :
+ * - Injection du module knowledge `BETL_HILLIS_CARAMAZZA` (modèle théorique
+ *   central pour caractériser lexico-sémantique vs lexico-phonologique).
+ *   Demande Laurie : "Pour la rédaction des conclusions BETL, se baser
+ *   surtout sur le schéma d'Hillis et Caramazza présents dans le manuel BETL".
+ * - Section MODE RENOUVELLEMENT adulte (suivi MA progressive, APP
+ *   variantes logopénique et sémantique, post-AVC en récupération).
+ * - Activation prod (retrait `betaDisabled`).
  */
 export const betl: TestModule = {
   nom: 'BETL',
@@ -345,5 +355,79 @@ Les profils ci-dessous sont issus de l'étude de validation externe officielle (
 **Précautions rédactionnelles** :
 - Le CRBO peut être lu par le patient et sa famille — éviter les formulations alarmantes ("démence", "déclin", "Alzheimer").
 - Mentionner systématiquement les compétences préservées AVANT les déficits.
-- Formuler en termes fonctionnels : impact sur la conversation, la communication, l'autonomie — pas en termes diagnostiques étiologiques.`,
+- Formuler en termes fonctionnels : impact sur la conversation, la communication, l'autonomie — pas en termes diagnostiques étiologiques.
+
+---
+
+${BETL_HILLIS_CARAMAZZA}
+
+---
+
+#### MODE RENOUVELLEMENT — COMPARAISON STRUCTURÉE (adulte aphasique / neurodégénératif)
+
+Si un objet \`bilan_precedent_structure\` non-null est fourni dans le contexte, ce CRBO devient un **bilan de renouvellement** BETL et DOIT inclure une \`synthese_evolution\` rigoureuse, jamais générique.
+
+⚠️ **Spécificité BETL — sémantique adulte ET dépendance du contexte étiologique** :
+
+La trajectoire attendue dépend du contexte clinique :
+
+- **Post-AVC en phase aiguë / récupération (< 6 mois post-événement)** : on s'attend à un **PROGRÈS** spontané + bénéfice rééducation intensive (fenêtre de plasticité). Stagnation = signal d'alerte.
+- **Post-AVC en phase chronique (> 6 mois)** : on s'attend à de la **STABILITÉ**. Un progrès lent reste possible si PEC poursuivie. Régression = signal anormal à investiguer.
+- **Maladie d'Alzheimer, APP variantes logopénique ou sémantique, démence sémantique** : on s'attend à un **DÉCLIN PROGRESSIF** sur 6-12 mois. La stabilité est rassurante (PEC efficace). Le déclin attendu doit être nuancé ("évolution conforme à l'histoire naturelle de la pathologie") et JAMAIS présenté comme un échec de la PEC.
+- **Profil aphasie anomique modérée stable** : suivi longitudinal — la stabilité est l'objectif.
+
+Méthode obligatoire :
+
+1. **Matcher nominativement** les 8 épreuves (I à VIII) actuelles avec leurs homologues précédents. Les libellés BETL sont stables — matching strict.
+
+2. **Comparer les verdicts N/P** (Normal/Pathologique) par épreuve sur score ET temps. Mapping vers \`percentile_value\` ortho.ia :
+   - Verdict N (score) → 75 (Moyenne haute, conforme à la stratification)
+   - Verdict P (score) → 7 (Difficulté — sous le seuil P5)
+   - Verdict N (temps) → 75
+   - Verdict P (temps) → 7
+
+   Pour chaque épreuve, l'évolution se calcule sur le **score** principalement, en notant aussi l'évolution des temps (un score stable avec temps qui s'améliore = signal de récupération précoce).
+
+3. **Calculer la trajectoire d'évolution par épreuve** :
+   - **N → N** : stabilité (compétence préservée)
+   - **N → P** : régression — apparition d'une fragilité (signal d'alerte chez patient en phase chronique, attendu chez patient neurodégénératif)
+   - **P → N** : progrès net — récupération objectivée (très bon signal en post-AVC)
+   - **P → P** : stabilité d'un déficit installé. Comparer les **temps** : amélioration possible des temps sur un score qui reste P = signal d'évolution favorable
+   - **Évolution des temps** indépendamment du score : un temps qui se normalise sans changement de score est un marqueur précoce de récupération
+
+4. **Lecture en référence au modèle Hillis-Caramazza** (cf. section ci-dessus) :
+   - Le composant atteint identifié au premier bilan a-t-il évolué ?
+   - Une dissociation antérieure (atteinte lexico-phonologique avec sémantique préservée) s'est-elle généralisée (atteinte sémantique secondaire) ? → évolution péjorative typique d'une démence sémantique installée.
+   - La modalité préservée au premier bilan reste-t-elle un support de compensation ?
+
+5. **Citation nominative obligatoire** : écrire "Dénomination orale (épreuve I) : passage de Pathologique à Normal après 4 mois de PEC restitutive post-AVC, témoignant d'une récupération de l'accès au lexique phonologique de sortie", PAS "progrès observés".
+
+6. **Délai entre les bilans** à mentionner explicitement. Délais recommandés :
+   - **3 mois** : post-AVC en récupération aiguë.
+   - **6 mois** : post-AVC en récupération sub-aiguë.
+   - **12 mois** : pathologie neurodégénérative ou aphasie chronique stable.
+   - **< 3 mois** : déconseillé sauf événement intercurrent (deuxième AVC, dégradation brutale).
+
+7. **Modélisation rédactionnelle du \`resume\`** (1-3 phrases, \`synthese_evolution.resume\`) :
+
+   - **Récupération post-AVC** : *"Au regard de [N] mois écoulés depuis [l'événement initial / le bilan précédent], et [N] mois de prise en charge orthophonique intensive, une **récupération significative** est objectivée sur [épreuves]. Le composant [phonologique de sortie / d'accès au lexique] initialement atteint s'améliore, permettant désormais [...]. Poursuite de la PEC recommandée pour consolider."*
+
+   - **Stabilité aphasie chronique** : *"Au regard de [N] mois écoulés, le profil aphasique de [Prénom] reste **globalement stable**, ce qui est rassurant en phase chronique post-AVC. Le maintien des compétences sur [épreuves préservées] permet de poursuivre une PEC compensatoire ciblant [...]."*
+
+   - **Déclin neurodégénératif attendu** : *"Au regard de [N] mois écoulés, une **évolution progressive est objectivée sur [épreuves]**, conforme à l'histoire naturelle de [la pathologie suspectée par le neurologue]. Le maintien des compétences sur [épreuves préservées] permet d'envisager [stratégies de compensation / aménagements de communication]. Une réévaluation à [6-12] mois est recommandée."*
+
+   - **Décompensation inattendue** : *"Au regard de [N] mois écoulés, une dégradation est objectivée sur [épreuves], anormale dans le contexte [post-AVC chronique / suivi de plainte mnésique stable]. Cette évolution invite à investiguer les facteurs intercurrents (AVC silencieux, modification thérapeutique, intercurrence médicale). Une consultation neurologique de réévaluation est recommandée."*
+
+⛔ **NE JAMAIS** en mode renouvellement BETL :
+- Présenter un déclin neurodégénératif comme un échec de la PEC orthophonique (sémantique anxiogène pour patient/famille).
+- Conclure à une "guérison" sur la base d'un seul bilan positif post-AVC — la récupération peut être partielle ou se poursuivre.
+- Poser un diagnostic étiologique (Alzheimer, démence sémantique, APP) sur l'évolution BETL seule — toujours relais neurologique.
+- Ignorer la PEC entre les 2 bilans — c'est l'élément central du renouvellement.
+
+✅ **TOUJOURS** en mode renouvellement BETL :
+- Comparer épreuve par épreuve (citation nominative I à VIII).
+- Statuer d'abord sur les domaines RESTÉS PRÉSERVÉS (rassurant pour patient/famille).
+- Relier l'évolution au **schéma Hillis-Caramazza** (composant amélioré / dégradé).
+- Mentionner explicitement la PEC entre les 2 bilans (orthophonique : axes, fréquence, durée).
+- Conclure sur la **suite de PEC** : maintien / réorientation / arrêt si récupération complète / passage en suivi espacé pour neurodégénératif.`,
 }

@@ -27,9 +27,10 @@
  * tombe sur le textarea standard (l'ortho saisit librement).
  */
 
-import { useEffect, useMemo, useState } from 'react'
-import { BookOpenCheck, AlertCircle, ChevronDown, Lightbulb, CheckCircle2 } from 'lucide-react'
+import { useEffect, useMemo, useRef, useState } from 'react'
+import { BookOpenCheck, AlertCircle, ChevronDown, Lightbulb, CheckCircle2, FileUp, GitCompare, Loader2 } from 'lucide-react'
 import MicButton from '../MicButton'
+import type { CRBOStructure } from '@/lib/prompts'
 
 type EpreuveKey = 'I' | 'II' | 'III' | 'IV' | 'V' | 'VI' | 'VII' | 'VIII'
 type TrancheAge = '20-34' | '35-49' | '50-64' | '65-79' | '80-95'
@@ -394,6 +395,13 @@ interface Props {
   onError?: (msg: string) => void
   /** Pré-remplissage tranche d'âge depuis la DDN du formulaire parent. */
   ageEstime?: number
+  /** MODE RENOUVELLEMENT — structure du bilan précédent (extraite depuis le
+   *  bouton d'import "bilan précédent" de l'étape 4 du formulaire). Si
+   *  présente, encart d'évolution live + tableau comparatif côté Word.
+   *  Pattern aligné sur Examath / EVALEO 6-15. */
+  bilanPrecedentStructure?: CRBOStructure | null
+  /** Date du bilan précédent (ISO yyyy-mm-dd). */
+  bilanPrecedentDate?: string | null
 }
 
 function trancheFromAge(age: number): TrancheAge | '' {
@@ -411,11 +419,91 @@ function clampScore(raw: string, max: number): number {
   return Math.min(max, n)
 }
 
-export default function BetlScoresInput({ notes, onNotesChange, onResultatsChange, onError, ageEstime }: Props) {
+export default function BetlScoresInput({
+  notes,
+  onNotesChange,
+  onResultatsChange,
+  onError,
+  ageEstime,
+  bilanPrecedentStructure,
+  bilanPrecedentDate,
+}: Props) {
   const [state, setState] = useState<BetlState>(() => ({
     ...INITIAL_STATE,
     trancheAge: ageEstime ? trancheFromAge(ageEstime) : '',
   }))
+
+  // Import PDF BETL — route /api/extract-betl-pdf.
+  // Pré-remplit stratification (âge × NSC) + 8 épreuves I-VIII (score + temps
+  // + observation) + scoreOrthoVII + ébauche orale + comportements Annexe 1 +
+  // profil discours Annexe 2 depuis un rapport BETL informatisé ou scan cahier.
+  const fileInputRef = useRef<HTMLInputElement | null>(null)
+  const [importing, setImporting] = useState(false)
+  const [importInfo, setImportInfo] = useState<string | null>(null)
+
+  async function handleImportFile(file: File) {
+    setImporting(true)
+    setImportInfo(null)
+    try {
+      const fd = new FormData()
+      fd.append('file', file)
+      const res = await fetch('/api/extract-betl-pdf', { method: 'POST', body: fd })
+      const data = await res.json()
+      if (!res.ok || !data?.success) {
+        const msg = data?.error ?? "Échec de l'import PDF."
+        onError?.(msg)
+        setImportInfo(`Erreur : ${msg}`)
+        return
+      }
+      const ex = data.extracted as {
+        trancheAge: string
+        nsc: string
+        scoreOrthoVII: string
+        ebaucheOrale: string
+        comportements: string
+        profilDiscours: string
+        epreuves: Array<{
+          key: string
+          score: string
+          temps: string
+          observation: string
+        }>
+      }
+      setState(prev => {
+        const next: BetlState = {
+          trancheAge: (ex.trancheAge as TrancheAge | '') || prev.trancheAge,
+          nsc: (ex.nsc as NSC | '') || prev.nsc,
+          epreuves: { ...prev.epreuves },
+          scoreOrthoVII: ex.scoreOrthoVII || prev.scoreOrthoVII,
+          ebaucheOrale: (ex.ebaucheOrale as BetlState['ebaucheOrale']) || prev.ebaucheOrale,
+          comportements: ex.comportements || prev.comportements,
+          profilDiscours: ex.profilDiscours || prev.profilDiscours,
+        }
+        for (const item of ex.epreuves ?? []) {
+          if (!(item.key in next.epreuves)) continue
+          const k = item.key as EpreuveKey
+          const cur = next.epreuves[k]
+          next.epreuves[k] = {
+            score: item.score || cur.score,
+            temps: item.temps || cur.temps,
+            observation: item.observation || cur.observation,
+          }
+        }
+        return next
+      })
+      const nbEp = (ex.epreuves ?? []).length
+      setImportInfo(
+        `Import réussi : ${nbEp} épreuve${nbEp > 1 ? 's' : ''} pré-remplie${nbEp > 1 ? 's' : ''}. Vérifiez et complétez si besoin.`,
+      )
+    } catch (err: any) {
+      const msg = err?.message ?? "Erreur réseau durant l'import."
+      onError?.(msg)
+      setImportInfo(`Erreur : ${msg}`)
+    } finally {
+      setImporting(false)
+      if (fileInputRef.current) fileInputRef.current.value = ''
+    }
+  }
 
   // Stratification : valeurs par défaut quand l'ortho n'a pas (encore) précisé.
   // NSC 2 = segment majoritaire de la population. Tranche 50-64 = milieu de
@@ -549,6 +637,68 @@ export default function BetlScoresInput({ notes, onNotesChange, onResultatsChang
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [state.epreuves, state.trancheAge, state.nsc])
 
+  /**
+   * Live preview deltas — mode renouvellement BETL. Pattern aligné sur
+   * Examath / EVALEO 6-15. Mapping verdict → percentile_value pour comparer
+   * via la même clé d'évolution que les autres bilans :
+   *   - N (Normal) → 75 (Moyenne haute)
+   *   - P (Pathologique) → 7 (Difficulté)
+   * Matching épreuve actuelle ↔ précédente par label (le label BETL est
+   * stable entre versions du logiciel). Seuil ±10 sur percentile_value pour
+   * stable / progrès / régression.
+   */
+  const evolutionStats = useMemo(() => {
+    const hasPrev = !!(bilanPrecedentStructure
+      && bilanPrecedentStructure.domains
+      && bilanPrecedentStructure.domains.length > 0)
+    if (!hasPrev) return null
+
+    const prevIndex = new Map<string, number>()
+    for (const d of bilanPrecedentStructure!.domains) {
+      for (const e of d.epreuves) {
+        const pv = typeof e.percentile_value === 'number' ? e.percentile_value : null
+        if (pv != null) prevIndex.set(e.nom.toLowerCase().trim(), pv)
+      }
+    }
+
+    let progres = 0, stable = 0, regression = 0, nouvelles = 0
+    const progresList: string[] = []
+    const regressionList: string[] = []
+    const nouvellesList: string[] = []
+
+    for (const meta of EPREUVES) {
+      const e = state.epreuves[meta.key]
+      if (!e.score.trim()) continue
+      const v = computeVerdict(e.score, seuilScore(meta), 'score')
+      if (!v) continue
+      const currValue = v === 'N' ? 75 : 7
+
+      const prevValue = prevIndex.get(meta.label.toLowerCase().trim())
+      if (prevValue == null) {
+        nouvelles++
+        nouvellesList.push(meta.label)
+        continue
+      }
+      const delta = currValue - prevValue
+      if (delta >= 10) { progres++; progresList.push(meta.label) }
+      else if (delta <= -10) { regression++; regressionList.push(meta.label) }
+      else { stable++ }
+    }
+
+    const totalCompared = progres + stable + regression
+    return {
+      progres, stable, regression, nouvelles,
+      progresList, regressionList, nouvellesList,
+      totalCompared,
+      verdict: (() => {
+        if (progres > regression * 2 && progres >= 2) return 'progress' as const
+        if (regression > progres && regression >= 2) return 'regression' as const
+        return 'stable' as const
+      })(),
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [state.epreuves, state.trancheAge, state.nsc, bilanPrecedentStructure])
+
   return (
     <div className="space-y-4">
       {/* Bandeau intro */}
@@ -563,6 +713,132 @@ export default function BetlScoresInput({ notes, onNotesChange, onResultatsChang
           </p>
         </div>
       </div>
+
+      {/* Import PDF BETL — rapport logiciel BETL ou scan cahier rempli. */}
+      <div className="rounded-lg border border-sky-200 bg-sky-50/60 p-3">
+        <div className="flex items-start justify-between gap-3 flex-wrap">
+          <div className="flex items-start gap-2 min-w-0">
+            <FileUp size={18} className="text-sky-700 shrink-0 mt-0.5" />
+            <div className="text-sm min-w-0">
+              <p className="font-semibold text-sky-900">Importer un document BETL (optionnel)</p>
+              <p className="text-sky-800 text-xs mt-0.5 leading-relaxed">
+                Format accepté : <strong>PDF uniquement</strong> (rapport BETL informatisé ou scan du cahier rempli + Annexes 1 et 2). L&apos;extracteur dédié pré-remplit stratification (âge × NSC) + 8 épreuves I-VIII (score, temps, observation) + ébauche orale + comportements.
+              </p>
+            </div>
+          </div>
+          <div className="flex items-center gap-2 shrink-0">
+            <input
+              ref={fileInputRef}
+              type="file"
+              accept=".pdf,application/pdf"
+              onChange={(e) => {
+                const f = e.target.files?.[0]
+                if (f) handleImportFile(f)
+              }}
+              className="hidden"
+            />
+            <button
+              type="button"
+              onClick={() => fileInputRef.current?.click()}
+              disabled={importing}
+              className="inline-flex items-center gap-1.5 px-3 py-2 rounded text-sm font-medium bg-sky-600 text-white hover:bg-sky-700 disabled:bg-sky-300 disabled:cursor-wait transition"
+            >
+              {importing ? <Loader2 size={14} className="animate-spin" /> : <FileUp size={14} />}
+              {importing ? 'Extraction en cours…' : 'Choisir un fichier'}
+            </button>
+          </div>
+        </div>
+        {importInfo && (
+          <p className={`mt-2 text-xs ${importInfo.startsWith('Erreur') ? 'text-red-700' : 'text-emerald-700'}`}>
+            {importInfo}
+          </p>
+        )}
+      </div>
+
+      {/* Bandeau bilan précédent détecté (mode renouvellement). */}
+      {bilanPrecedentStructure && bilanPrecedentStructure.domains && bilanPrecedentStructure.domains.length > 0 && (
+        <div className="rounded border border-emerald-300 bg-emerald-50/70 p-2.5 flex items-start gap-2">
+          <GitCompare size={16} className="text-emerald-700 shrink-0 mt-0.5" />
+          <div className="text-[11px] text-emerald-900 leading-relaxed min-w-0">
+            <p className="font-semibold">Bilan précédent importé et détecté</p>
+            <p className="mt-0.5">
+              {bilanPrecedentStructure.domains.length} domaine
+              {bilanPrecedentStructure.domains.length > 1 ? 's' : ''} ·{' '}
+              {bilanPrecedentStructure.domains.reduce((acc, d) => acc + d.epreuves.length, 0)} épreuves précédentes
+              {bilanPrecedentDate ? ` · ${new Date(bilanPrecedentDate).toLocaleDateString('fr-FR')}` : ''}.
+              L&apos;IA calculera les évolutions épreuve par épreuve (lecture en référence au modèle Hillis-Caramazza) et le rendu Word affichera un tableau comparatif avec flèches (↑ progrès, → stable, ↓ régression).
+            </p>
+          </div>
+        </div>
+      )}
+
+      {/* Live preview deltas (mode renouvellement). */}
+      {evolutionStats && (evolutionStats.totalCompared > 0 || evolutionStats.nouvelles > 0) && (
+        <div className="rounded-lg border border-teal-300 bg-gradient-to-br from-teal-50 to-emerald-50 p-3">
+          <div className="flex items-center justify-between gap-2 mb-2 flex-wrap">
+            <p className="text-xs font-semibold text-teal-900">
+              Évolution prévue dans le CRBO — recalcul live
+            </p>
+            <span className={`text-[10px] font-bold px-2 py-0.5 rounded ${
+              evolutionStats.verdict === 'progress'
+                ? 'bg-green-200 text-green-900'
+                : evolutionStats.verdict === 'regression'
+                  ? 'bg-red-200 text-red-900'
+                  : 'bg-gray-200 text-gray-800'
+            }`}>
+              {evolutionStats.verdict === 'progress'
+                ? '✓ Progression'
+                : evolutionStats.verdict === 'regression'
+                  ? '↓ Régression'
+                  : '≈ Stable'}
+            </span>
+          </div>
+          <div className="flex flex-wrap gap-1.5 mb-2">
+            {evolutionStats.progres > 0 && (
+              <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded text-[11px] font-medium bg-green-100 text-green-800 border border-green-300">
+                <span className="font-bold">↑ {evolutionStats.progres}</span>
+                <span>progrès</span>
+              </span>
+            )}
+            {evolutionStats.stable > 0 && (
+              <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded text-[11px] font-medium bg-gray-100 text-gray-700 border border-gray-300">
+                <span className="font-bold">→ {evolutionStats.stable}</span>
+                <span>stable</span>
+              </span>
+            )}
+            {evolutionStats.regression > 0 && (
+              <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded text-[11px] font-medium bg-red-100 text-red-800 border border-red-300">
+                <span className="font-bold">↓ {evolutionStats.regression}</span>
+                <span>régression</span>
+              </span>
+            )}
+            {evolutionStats.nouvelles > 0 && (
+              <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded text-[11px] font-medium bg-blue-100 text-blue-800 border border-blue-300">
+                <span className="font-bold">✦ {evolutionStats.nouvelles}</span>
+                <span>nouvelle{evolutionStats.nouvelles > 1 ? 's' : ''}</span>
+              </span>
+            )}
+          </div>
+          {evolutionStats.progresList.length > 0 && (
+            <p className="text-[10px] text-green-900 leading-relaxed">
+              <strong>Progrès :</strong> {evolutionStats.progresList.slice(0, 5).join(' · ')}
+              {evolutionStats.progresList.length > 5 ? ` · +${evolutionStats.progresList.length - 5} autres` : ''}
+            </p>
+          )}
+          {evolutionStats.regressionList.length > 0 && (
+            <p className="text-[10px] text-red-900 leading-relaxed mt-0.5">
+              <strong>Régressions :</strong> {evolutionStats.regressionList.slice(0, 5).join(' · ')}
+              {evolutionStats.regressionList.length > 5 ? ` · +${evolutionStats.regressionList.length - 5} autres` : ''}
+            </p>
+          )}
+          {evolutionStats.nouvelles > evolutionStats.totalCompared && evolutionStats.totalCompared <= 2 && (
+            <p className="text-[10px] text-amber-800 mt-1 leading-relaxed bg-amber-50 border border-amber-200 rounded px-1.5 py-0.5">
+              ⚠ Peu d&apos;épreuves matchent entre les 2 bilans ({evolutionStats.totalCompared} comparées vs {evolutionStats.nouvelles} nouvelles).
+              Vérifiez que les libellés d&apos;épreuves du bilan précédent correspondent aux libellés BETL officiels (I-VIII).
+            </p>
+          )}
+        </div>
+      )}
 
       {/* Stratification âge × NSC */}
       <div className="rounded-lg border border-gray-200 bg-white p-3">
