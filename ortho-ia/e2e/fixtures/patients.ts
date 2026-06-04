@@ -104,7 +104,74 @@ export const FIXTURE_EXALANG_811_DYSLEXIE: CRBOFixture = {
     + "Stratégies d'évitement observées en fin de séance (demande pour aller aux toilettes).",
 }
 
+/** Cas typique CE2 — bilan langage écrit avec EVALEO 6-15.
+ *  Profil dyslexie phonologique modérée + fragilité métaphonologique.
+ *  Active la grille 7 classes officielle EVALEO (vs 6 zones Exalang),
+ *  format Anne Frouard (décret 2002-721) au diagnostic. */
+export const FIXTURE_EVALEO_DYSLEXIE: CRBOFixture = {
+  id: 'evaleo-6-15-dyslexie-ce2',
+  description: 'CE2 dyslexie phonologique (profil Anne Frouard, EVALEO 6-15)',
+  patient: {
+    prenom: 'Léa',
+    nom: 'TESTUSER',
+    ddn: '2017-04-12',
+    classe: 'CE2',
+  },
+  bilanDate: '2026-06-04',
+  bilanType: 'initial',
+  motif: 'Langage écrit',
+  medecin: {
+    prenom: 'Marie',
+    nom: 'TESTMEDECIN',
+    specialite: 'Pédiatre',
+    datePrescription: '2026-05-15',
+  },
+  anamnese:
+    "Léa est adressée pour difficultés persistantes en lecture-orthographe depuis "
+    + "le CP. Premier signalement par l'enseignante au CP-CE1. Bilan ORL normal "
+    + "(audiogramme avril 2026). Vision contrôlée annuellement, port de lunettes "
+    + "depuis 2024. Pas d'antécédents familiaux connus de troubles des apprentissages. "
+    + "Bonne entrée dans le langage oral (premiers mots vers 14 mois). "
+    + "Difficultés de décodage installées au CE1, persistantes en CE2. "
+    + "Fatigabilité scolaire notée, baisse de motivation pour la lecture. "
+    + "Estime de soi fragilisée selon les parents.",
+  testUtilise: 'EVALEO 6-15',
+  resultats:
+    "=== EVALEO 6-15 (Launay, Maeder, Roustit, Touzin — Ortho Édition 2018) ===\n"
+    + "Niveau scolaire : CE2 (~8-9 ans)\n\n"
+    + "--- Lecture identification ---\n"
+    + "Épreuve : Lecture de mots\n"
+    + "  Classe : 2 — Fragilité\n"
+    + "  Score : précision 38/40, temps classe 2\n"
+    + "Épreuve : Lecture de pseudomots\n"
+    + "  Classe : 1 — Pathologique\n"
+    + "  Score : 18/30\n"
+    + "  Observation : Décodage analytique, paralexies, lecture syllabe-syllabe.\n\n"
+    + "--- Métaphonologie ---\n"
+    + "Épreuve : Métaphonologie\n"
+    + "  Classe : 2 — Fragilité\n"
+    + "  Observation : Suppression phonémique très difficile.\n\n"
+    + "--- Production orthographe ---\n"
+    + "Épreuve : Dictée de mots\n"
+    + "  Classe : 2 — Fragilité\n"
+    + "Épreuve : Dictée de pseudomots\n"
+    + "  Classe : 1 — Pathologique\n"
+    + "  Observation : 8 erreurs ONPP (omission notation phonologique), voie d'assemblage très immature.\n"
+    + "Épreuve : Dictée de phrases\n"
+    + "  Classe : 2 — Fragilité\n"
+    + "  Observation : Erreurs ONPP, OL (orthographe lexicale) et ODM dominantes.\n\n"
+    + "--- Mémoire CT verbale ---\n"
+    + "Épreuve : Répétition de chiffres endroit\n"
+    + "  Classe : 3 — Normalité basse\n"
+    + "Épreuve : Répétition de chiffres envers\n"
+    + "  Classe : 2 — Fragilité\n",
+  comportementSeance:
+    "Léa est coopérative et attentive. Anxiété visible sur les épreuves de lecture. "
+    + "Stratégies d'évitement observées (demande de pause sur dictée pseudomots).",
+}
+
 /** Toutes les fixtures disponibles — accessibles par ID. */
 export const FIXTURES: Record<string, CRBOFixture> = {
   [FIXTURE_EXALANG_811_DYSLEXIE.id]: FIXTURE_EXALANG_811_DYSLEXIE,
+  [FIXTURE_EVALEO_DYSLEXIE.id]: FIXTURE_EVALEO_DYSLEXIE,
 }

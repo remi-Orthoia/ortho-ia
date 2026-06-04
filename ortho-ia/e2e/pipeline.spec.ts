@@ -159,6 +159,24 @@ for (const fixtureId of Object.keys(FIXTURES)) {
     saveArtifact(fixtureId, 'crbo-id.txt', crboId)
     saveArtifact(fixtureId, 'preview-sections.json', JSON.stringify(sections, null, 2))
     saveArtifact(fixtureId, 'preview-url.txt', previewUrl)
+    // Metadata pour l'analyse downstream — permet à analyze-crbo.mjs de
+    // dispatcher les règles spécifiques par bilan sans heuristique fragile.
+    saveArtifact(fixtureId, 'metadata.json', JSON.stringify({
+      fixtureId: fixture.id,
+      description: fixture.description,
+      testUtilise: fixture.testUtilise,
+      bilanType: fixture.bilanType,
+      motif: fixture.motif,
+      patientClasse: fixture.patient.classe,
+      patientAgeAtBilan: (() => {
+        const birth = new Date(fixture.patient.ddn)
+        const bilan = new Date(fixture.bilanDate)
+        let years = bilan.getFullYear() - birth.getFullYear()
+        const m = bilan.getMonth() - birth.getMonth()
+        if (m < 0 || (m === 0 && bilan.getDate() < birth.getDate())) years--
+        return years
+      })(),
+    }, null, 2))
 
     // Assertions minimales — l'analyse fine se fait dans le script Node.
     expect(crboId).toMatch(/^[0-9a-f-]{36}$/i)

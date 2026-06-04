@@ -78,18 +78,61 @@ Puis `npm run test:pipeline` — la nouvelle fixture est automatiquement testée
 
 ## Règles cliniques vérifiées par `analyze-crbo.mjs`
 
+Architecture en 2 couches : règles transverses (s'appliquent à tous les
+bilans) + règles spécifiques (par bilan, basées sur les prompts cliniques).
+
+### Couche 1+2 — Règles transverses (7)
+
 | Règle | Sévérité | Description |
 |---|---|---|
 | `no-q1-difficulte-severe` | error | Q1/P25 ≠ "Difficulté sévère" |
-| `no-ia-mention` | error | Aucune mention "Claude" / "Anthropic" / "IA" |
-| `amo-nomenclature` | warn | Conclusion mentionne AMO 8.4 / 9.4 / 11.7 |
-| `diagnostic-not-evasive` | warn | Diagnostic engagé (pas "pourrait évoquer..." court) |
-| `anamnese-completeness` | error | Anamnèse rédigée ≥ 100 chars (règle 0 anti-suppression) |
+| `no-ia-mention` | error | Aucune mention "Claude" / "Anthropic" / "IA" / "en tant qu'assistant" |
+| `no-gamification-tone` | error | Pas de "Bravo", "Bien joué", encouragements infantilisants |
 | `no-em-dash-french` | warn | Em-dash (—) rares en prose narrative |
+| `anamnese-completeness` | error | Anamnèse rédigée ≥ 150 chars (règle 0 anti-suppression) |
+| `sections-presence` | error | Diagnostic + conclusion + axes thérapeutiques présents et substantiels |
+| `no-diagnostic-evasion-without-substance` | warn | Diagnostic engagé (pas pure modalisation courte) |
 
-Pour ajouter une règle : éditer `RULES` dans `scripts/analyze-crbo.mjs`. Chaque
-règle prend `sections` (objet { sec-anamnese, sec-diagnostic, ... }) et retourne
-`null` (passe) ou `{ severity, message }`.
+### Couche 3 — Règles spécifiques Exalang 8-11 (6)
+
+Extraites de `lib/prompts/tests/exalang-8-11.ts` (sections "À NE PAS FAIRE" / "TOUJOURS FAIRE").
+
+| Règle | Sévérité | Description |
+|---|---|---|
+| `exalang811-no-dyslexia-before-ce1` | error | Pas de dyslexie ferme posée avant fin CE1 (DSM-5 persistance 18 mois) |
+| `exalang811-wisc-mentioned-if-pps` | warn | WISC-V mentionné si PPS suggéré (critère D DSM-5) |
+| `exalang811-orl-ophta-recommended` | warn | Bilan ORL / ophtalmologique mentionné (bonne pratique) |
+| `exalang811-amo-84-conclusion` | warn | AMO 8.4 cité en conclusion (nomenclature obligatoire) |
+| `exalang811-renouvellement-citation-nominale` | error | Renouvellement : citation par nom d'épreuve, pas "plusieurs progrès" |
+| `exalang811-no-recalc-from-et` | error | Pas de trace de recalcul de percentile depuis l'É-T |
+
+### Couche 3 — Règles spécifiques EVALEO 6-15 (6)
+
+Extraites de `lib/prompts/tests/evaleo-6-15.ts` (sections "INTERDICTION ABSOLUE" / "PIEGES" + format Anne Frouard décret 2002-721).
+
+| Règle | Sévérité | Description |
+|---|---|---|
+| `evaleo-uses-7-classes-not-6-zones` | warn | Grille 7 classes officielle EVALEO, pas vocabulaire Exalang ("Zone de fragilité"...) |
+| `evaleo-no-class-restatement-in-comments` | error | Pas de phrase d'intro qui re-cite la classe (4 patterns interdits) |
+| `evaleo-diagnostic-anne-frouard-length` | warn | Diagnostic ~10-15 lignes max (Anne Frouard, pas un pavé) |
+| `evaleo-amo-84-conclusion` | warn | AMO 8.4 ou 9.4 cité en conclusion |
+| `evaleo-decret-2002-721-formalism` | warn | Formalisme juridique décret 2002-721 dans conclusion |
+| `evaleo-renouvellement-citation-nominale` | error | Renouvellement : citation par nom d'épreuve |
+
+**Total : 19 règles** (7 transverses + 12 spécifiques sur 2 bilans).
+
+### Comment ajouter une règle
+
+1. **Règle transverse** : éditer le tableau `TRANSVERSE_RULES` dans `scripts/analyze-crbo.mjs`. Une règle = `{ id, description, check(sections, meta) }`. La fonction `check` retourne `null` (passe) ou `{ severity: 'error'|'warn', message }`.
+
+2. **Règle spécifique** : éditer le tableau correspondant (`EXALANG811_RULES`, `EVALEO_RULES`). Si nouveau bilan, créer un nouveau tableau + ajouter au dispatcher `BILAN_RULESETS`.
+
+### Comment étendre à un nouveau bilan
+
+1. Créer une fixture clinique dans `e2e/fixtures/patients.ts`.
+2. Créer un nouveau tableau `<BILAN>_RULES` dans `analyze-crbo.mjs` en s'inspirant de Exalang 8-11 / EVALEO.
+3. L'enregistrer dans `BILAN_RULESETS[<nom du test>]`.
+4. Re-run `npm run test:pipeline` — la nouvelle fixture est testée auto.
 
 ## Coût agrégé
 
