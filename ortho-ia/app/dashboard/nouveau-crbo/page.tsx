@@ -83,11 +83,13 @@ interface Medecin {
   usage_count: number
 }
 
+// Refonte 2026-06 (audit UX) : fusion des anciens steps 1 (Patient) et 2
+// (Médecin & motif) en un seul step "Dossier" — c'est de la saisie froide,
+// l'éclater en 2 écrans n'ajoutait aucune valeur clinique (-1 étape, -1 clic).
 const STEPS = [
-  { id: 1, name: 'Patient', description: 'Informations patient' },
-  { id: 2, name: 'Médecin', description: 'Prescripteur & motif' },
-  { id: 3, name: 'Anamnèse', description: 'Notes cliniques' },
-  { id: 4, name: 'Résultats', description: 'Tests & scores' },
+  { id: 1, name: 'Dossier',   description: 'Patient, médecin, motif' },
+  { id: 2, name: 'Anamnèse',  description: 'Notes cliniques' },
+  { id: 3, name: 'Résultats', description: 'Tests & scores' },
 ]
 const TOTAL_STEPS = STEPS.length
 
@@ -122,9 +124,9 @@ function parseMotif(motif: string): string[] {
 }
 
 function StepPhaseBadge({ step }: { step: number }) {
-  // Steps 1-3 = en séance (Patient, Médecin, Anamnèse)
-  // Step 4 = post-séance (Résultats)
-  if (step <= 3) {
+  // Steps 1-2 = en séance (Dossier, Anamnèse).
+  // Step 3 = post-séance (Résultats).
+  if (step <= 2) {
     return (
       <div className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full bg-blue-50 border border-blue-200 text-blue-700 text-xs font-medium mb-3">
         📋 En séance
@@ -146,10 +148,11 @@ function NouveauCRBOContent() {
   const [loading, setLoading] = useState(false)
   const [generating, setGenerating] = useState(false)
 
-  // Mode focus auto sur l'étape Anamnèse (étape 3 du form actuel). Cache la
-  // sidebar + header + bouton feedback, centre la zone d'édition. L'ortho
-  // entre en "écriture profonde". Désactivé dès qu'elle change d'étape.
-  useFocusMode(currentStep === 3)
+  // Mode focus auto sur l'étape Anamnèse (step 2 depuis refonte 2026-06,
+  // anciennement step 3). Cache la sidebar + header + bouton feedback,
+  // centre la zone d'édition. L'ortho entre en "écriture profonde".
+  // Désactivé dès qu'elle change d'étape.
+  useFocusMode(currentStep === 2)
 
   // Auto-scroll en haut de l'écran à chaque changement d'étape — déclenché
   // APRÈS le re-render et APRÈS l'effet useFocusMode (qui modifie la
@@ -473,7 +476,12 @@ function NouveauCRBOContent() {
             if (!savedAt || ageMs <= DRAFT_MAX_AGE_MS) {
               setFormData(prev => ({ ...prev, ...draft.formData! }))
               if (typeof draft.step === 'number' && draft.step >= 1 && draft.step <= 4) {
-                setCurrentStep(draft.step)
+                // Mapping rétrocompat brouillons 4 étapes → 3 étapes (audit
+                // UX 2026-06 : fusion anciens steps 1+2 en "Dossier"). Sans
+                // ce mapping, un brouillon stocké au step 2 ouvrirait sur le
+                // step 2 nouveau (Anamnèse) au lieu de Dossier.
+                const migrated = draft.step <= 2 ? 1 : draft.step - 1
+                setCurrentStep(migrated)
               }
               const sourceLabel = source === 'db' ? ' (récupéré depuis votre compte)' : ''
               setPrefillBanner(`Brouillon repris${sourceLabel}. Vos modifications sont sauvegardées toutes les 15 secondes.`)
@@ -770,13 +778,13 @@ function NouveauCRBOContent() {
     return () => window.removeEventListener('storage', onStorage)
   }, [draftKey])
 
-  // Raccourci clavier Cmd/Ctrl + Entrée pour générer depuis l'étape 5
+  // Raccourci clavier Cmd/Ctrl + Entrée pour générer depuis l'étape Résultats
   useEffect(() => {
     const onKey = (e: KeyboardEvent) => {
       if (
         (e.metaKey || e.ctrlKey) &&
         e.key === 'Enter' &&
-        currentStep === 4 &&
+        currentStep === 3 &&
         !generating &&
         !showResult &&
         formData.test_utilise.length > 0 &&
@@ -1289,7 +1297,10 @@ function NouveauCRBOContent() {
     if (currentStep < TOTAL_STEPS) {
       // Validation explicite par etape — les boutons "Suivant" ne sont pas
       // submit de form, donc le `required` HTML5 ne se declenche pas seul.
-      if (currentStep === 2) {
+      // Refonte 2026-06 : Patient + Médecin & motif fusionnes en step 1
+      // "Dossier", donc la validation date de prescription se declenche
+      // desormais au passage step 1 -> step 2 (Anamnese).
+      if (currentStep === 1) {
         if (!formData.medecin_date_prescription) {
           setError('Veuillez renseigner la date de prescription pour continuer.')
           return
@@ -2049,15 +2060,11 @@ function NouveauCRBOContent() {
                 )}
               </div>
             )}
-          </div>
-        )}
+            {/* Séparateur visuel entre Patient et Médecin/Motif — fusion 2026-06 */}
+            <div className="border-t border-gray-200 my-2" />
 
-        {/* Step 2: Médecin & Motif (avec banque de médecins) */}
-        {currentStep === 2 && (
-          <div className="space-y-6">
             <div>
-              <StepPhaseBadge step={2} />
-              <h2 className="text-xl font-semibold text-gray-900">Médecin prescripteur & Motif</h2>
+              <h2 className="text-xl font-semibold text-gray-900">Médecin prescripteur & motif</h2>
               <p className="mt-1 text-sm text-gray-500">Sélectionnez un médecin de votre carnet ou ajoutez-en un nouveau</p>
             </div>
 
@@ -2332,11 +2339,11 @@ function NouveauCRBOContent() {
           </div>
         )}
 
-        {/* Step 3: Anamnèse */}
-        {currentStep === 3 && (
+        {/* Step 2: Anamnèse (refonte 2026-06, ancien step 3) */}
+        {currentStep === 2 && (
           <div className="space-y-6">
             <div>
-              <StepPhaseBadge step={3} />
+              <StepPhaseBadge step={2} />
               <h2 className="text-xl font-semibold text-gray-900">
                 {formData.bilan_type === 'renouvellement' && selectedPatientId ? '📊 Évolution depuis le dernier bilan' : 'Anamnèse'}
               </h2>
@@ -2648,11 +2655,11 @@ Astuce : tapez /fatigue, /anxiete, /encouragements… pour réutiliser vos formu
           </div>
         )}
 
-        {/* Step 4: Résultats */}
-        {currentStep === 4 && (
+        {/* Step 3: Résultats (refonte 2026-06, ancien step 4) */}
+        {currentStep === 3 && (
           <div className="space-y-6">
             <div>
-              <StepPhaseBadge step={4} />
+              <StepPhaseBadge step={3} />
               <h2 className="text-xl font-semibold text-gray-900">Résultats des tests</h2>
               <p className="mt-1 text-sm text-gray-500">Sélectionnez les tests utilisés et entrez les résultats</p>
             </div>
