@@ -292,11 +292,13 @@ export const BILAN_REGISTRY: Record<string, BilanEntry> = {
     nom: 'Exalang 5-8',
     famille: 'langage_oral_ecrit',
     ageRange: '5-8 ans',
-    // Composant existe (Exalang58ScoresInput.tsx) mais retiré du registry
-    // actif 2026-05-21 sur demande utilisateur : revient à textarea libre.
-    formPath: null,
+    // Form structuré ré-activé 2026-06-04 — demande Justine pour avoir le
+    // mode renouvellement complet (tableau comparatif + flèches d'évolution).
+    // Le textarea libre ne permettait pas de produire la `epreuves[].percentile_value`
+    // structurée nécessaire au calcul des deltas par épreuve.
+    formPath: 'components/forms/Exalang58ScoresInput.tsx',
     promptPath: 'lib/prompts/tests/exalang-5-8.ts',
-    scoreSchema: 'free_text',
+    scoreSchema: 'percentile',
     wordRenderer: 'standard',
     generateRoute: '/api/generate-crbo',
   },
