@@ -21,6 +21,8 @@ import {
   Eye,
   ChevronLeft,
   ChevronRight,
+  ChevronDown,
+  Sparkles,
 } from 'lucide-react'
 
 type CRBOStatus = 'a_rediger' | 'a_relire' | 'termine'
@@ -122,6 +124,12 @@ export default function DashboardPage() {
   // (filtrés par RLS user_id) — le volume reste petit (max quelques
   // centaines par ortho), pas de scroll infini nécessaire.
   const [page, setPage] = useState(1)
+
+  // Affichage condensé par défaut : seulement les 3 derniers CRBOs.
+  // L'ortho voit son flow récent d'un coup d'œil et déplie la liste
+  // complète à la demande. Pattern Linear / Stripe / Notion.
+  const [showAllCrbos, setShowAllCrbos] = useState(false)
+  const RECENT_COUNT = 3
 
   useEffect(() => {
     fetchData()
@@ -482,27 +490,60 @@ export default function DashboardPage() {
   const safePage = Math.min(Math.max(1, page), totalPages)
   const pagedCrbos = crbos.slice((safePage - 1) * PAGE_SIZE, safePage * PAGE_SIZE)
 
+  // Vue condensée par défaut : 3 derniers CRBOs visibles. L'ortho déplie
+  // pour voir le reste (pattern Linear / Stripe / Notion). Si l'ortho a
+  // <= 3 CRBOs, on affiche tout d'office (rien à plier).
+  const canCollapse = crbos.length > RECENT_COUNT
+  const displayedCrbos = canCollapse && !showAllCrbos
+    ? crbos.slice(0, RECENT_COUNT)
+    : pagedCrbos
+  const showPagination = (showAllCrbos || !canCollapse) && totalPages > 1
+
   return (
     <div className="space-y-6 animate-fade-in">
-      {/* Header salutation + actions principales */}
-      <div className="flex flex-col sm:flex-row sm:items-end sm:justify-between gap-4">
-        <div>
-          <h1 className="text-3xl font-bold text-gray-900 dark:text-gray-100">
-            {salutation} {userName} 👋
-          </h1>
-          <p className="text-gray-500 dark:text-gray-400 mt-1.5">
-            {stats.total === 0
-              ? 'Prêt·e à générer votre premier CRBO ?'
-              : `${stats.thisMonth} CRBO${stats.thisMonth > 1 ? 's' : ''} ce mois · ${Math.floor(stats.timeSaved / 60)} h gagnées au total`}
-          </p>
-        </div>
-        <div className="flex items-center gap-2 flex-wrap">
-          <Link href="/dashboard/nouveau-crbo" className="btn-primary whitespace-nowrap">
-            <Plus size={18} />
-            Nouveau CRBO
-          </Link>
-        </div>
+      {/* Header salutation — sobre, le CTA principal est juste en dessous */}
+      <div>
+        <h1 className="text-2xl sm:text-3xl font-bold text-gray-900 dark:text-gray-100">
+          {salutation} {userName} 👋
+        </h1>
+        <p className="text-sm text-gray-500 dark:text-gray-400 mt-1">
+          {stats.total === 0
+            ? 'Prêt·e à générer votre premier CRBO ?'
+            : `${stats.thisMonth} CRBO${stats.thisMonth > 1 ? 's' : ''} ce mois · ${Math.floor(stats.timeSaved / 60)} h gagnées au total`}
+        </p>
       </div>
+
+      {/* Bandeau CTA principal "Nouveau CRBO" — symétrique aux bandeaux
+          brouillons (rounded-2xl + gradient + icône à gauche + bouton à
+          droite), mais en vert pour le signal d'action principal. C'est
+          la première chose que l'ortho voit en ouvrant l'app, et c'est
+          ce qu'elle vient chercher 95% du temps. Pattern Stripe / Linear :
+          CTA dominant en haut de page. */}
+      <Link
+        href="/dashboard/nouveau-crbo"
+        className="group block rounded-2xl border border-emerald-300 bg-gradient-to-br from-emerald-50 via-green-50 to-emerald-100 dark:border-emerald-800/40 dark:from-emerald-900/30 dark:to-emerald-900/10 p-5 hover:shadow-md hover:border-emerald-400 transition-all"
+      >
+        <div className="flex items-center gap-4">
+          <div className="w-12 h-12 rounded-xl bg-emerald-600 text-white flex items-center justify-center shrink-0 shadow-sm group-hover:scale-105 transition-transform">
+            <Plus size={24} strokeWidth={2.5} />
+          </div>
+          <div className="flex-1 min-w-0">
+            <p className="text-lg font-bold text-emerald-900 dark:text-emerald-100 flex items-center gap-2">
+              Nouveau CRBO
+              <Sparkles size={16} className="text-emerald-600 opacity-80" />
+            </p>
+            <p className="text-sm text-emerald-800/80 dark:text-emerald-200/70 mt-0.5">
+              {stats.total === 0
+                ? 'Démarrez votre premier compte rendu en 5 minutes.'
+                : 'Démarrez un nouveau compte rendu de bilan orthophonique.'}
+            </p>
+          </div>
+          <div className="hidden sm:flex items-center gap-1.5 px-4 py-2.5 rounded-lg bg-emerald-600 text-white text-sm font-semibold shadow-sm group-hover:bg-emerald-700 transition shrink-0">
+            Démarrer
+            <ChevronRight size={16} />
+          </div>
+        </div>
+      </Link>
 
       {/* Bandeaux "Brouillon en cours" — un par draft non expiré (CRBO langage,
           B-CM, B-CMado). Empilés, plus récent en premier. Sans ça l'ortho ne
@@ -579,19 +620,22 @@ export default function DashboardPage() {
         )
       })()}
 
-      {/* Liste complète des CRBOs — remplace le kanban + les widgets récents */}
+      {/* Liste des CRBOs — vue condensée 3 derniers par défaut, dépliable
+          pour voir la suite. Pattern Linear / Stripe / Notion. */}
       {stats.total > 0 && (
         <div className="card-modern overflow-hidden">
           <div className="px-5 py-4 border-b border-gray-100 dark:border-surface-dark-muted flex items-center justify-between gap-3 flex-wrap">
             <div>
               <h2 className="text-base font-semibold text-gray-900 dark:text-gray-100">
-                Tous mes CRBOs
+                {canCollapse && !showAllCrbos ? 'CRBOs récents' : 'Tous mes CRBOs'}
               </h2>
               <p className="text-xs text-gray-500 dark:text-gray-400 mt-0.5">
-                {crbos.length} compte rendu{crbos.length > 1 ? 's' : ''} — triés du plus récent au plus ancien
+                {canCollapse && !showAllCrbos
+                  ? `${RECENT_COUNT} derniers sur ${crbos.length}`
+                  : `${crbos.length} compte rendu${crbos.length > 1 ? 's' : ''} — du plus récent au plus ancien`}
               </p>
             </div>
-            {totalPages > 1 && (
+            {showPagination && (
               <p className="text-xs text-gray-500 dark:text-gray-400">
                 Page {safePage} / {totalPages}
               </p>
@@ -600,7 +644,7 @@ export default function DashboardPage() {
 
           {/* Liste : 1 ligne par CRBO */}
           <ul className="divide-y divide-gray-100 dark:divide-surface-dark-muted">
-            {pagedCrbos.map(c => {
+            {displayedCrbos.map(c => {
               const statut = STATUT_BADGE[c.statut] ?? STATUT_BADGE.a_rediger
               const downloading = downloadingId === c.id
               const deleting = deletingId === c.id
@@ -683,8 +727,31 @@ export default function DashboardPage() {
             })}
           </ul>
 
-          {/* Pagination */}
-          {totalPages > 1 && (
+          {/* Footer : soit bouton "Voir tous" (vue condensée), soit
+              pagination (vue dépliée avec > 20 CRBOs). */}
+          {canCollapse && !showAllCrbos && (
+            <button
+              type="button"
+              onClick={() => setShowAllCrbos(true)}
+              className="w-full px-5 py-3 border-t border-gray-100 dark:border-surface-dark-muted text-sm font-medium text-emerald-700 dark:text-emerald-400 hover:bg-emerald-50/50 dark:hover:bg-emerald-900/10 transition flex items-center justify-center gap-1.5"
+            >
+              Voir tous mes CRBOs ({crbos.length})
+              <ChevronDown size={15} />
+            </button>
+          )}
+
+          {canCollapse && showAllCrbos && !showPagination && (
+            <button
+              type="button"
+              onClick={() => setShowAllCrbos(false)}
+              className="w-full px-5 py-3 border-t border-gray-100 dark:border-surface-dark-muted text-sm font-medium text-gray-600 dark:text-gray-400 hover:bg-gray-50 dark:hover:bg-surface-dark-muted transition flex items-center justify-center gap-1.5"
+            >
+              Réduire aux 3 derniers
+              <ChevronDown size={15} className="rotate-180" />
+            </button>
+          )}
+
+          {showPagination && (
             <div className="px-5 py-3 border-t border-gray-100 dark:border-surface-dark-muted flex items-center justify-between">
               <button
                 type="button"
