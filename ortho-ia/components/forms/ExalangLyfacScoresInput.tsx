@@ -18,14 +18,20 @@
  */
 
 import { useEffect, useMemo, useState } from 'react'
-import { Brain, BookOpen, ChevronDown, Info } from 'lucide-react'
+import { Brain, BookOpen, ChevronDown, GitCompare, Info } from 'lucide-react'
 import MicButton from '../MicButton'
+import type { CRBOStructure } from '@/lib/prompts'
 
 interface Props {
   notes: string
   onNotesChange: (v: string) => void
   onResultatsChange: (normalized: string) => void
   onError?: (msg: string) => void
+  /** MODE RENOUVELLEMENT — structure du bilan précédent extraite depuis le
+   *  bouton d'import "bilan précédent" de l'étape 4 du wizard. */
+  bilanPrecedentStructure?: CRBOStructure | null
+  /** Date du bilan précédent (ISO yyyy-mm-dd). */
+  bilanPrecedentDate?: string | null
 }
 
 type PercentileKey =
@@ -33,21 +39,25 @@ type PercentileKey =
 
 // Grille 6 zones imposée Laurie (refonte 2026-05-ter).
 // Exalang n'affiche JAMAIS de bande <P5 — la bande la plus basse est P1-P5.
+//
+// `value` = médiane numérique de la bande (utilisée pour le calcul live des
+// deltas en mode renouvellement). Aligné sur les autres forms Exalang.
 const PERCENTILE_OPTIONS: Array<{
   key: Exclude<PercentileKey, ''>
   label: string
+  value: number
   zone: 'excellent' | 'moyenne_haute' | 'moyenne_basse' | 'fragilite' | 'difficulte' | 'difficulte_severe'
   chip: string
   text: string
 }> = [
-  { key: 'p_sup_95', label: '> P95',     zone: 'excellent',         chip: 'bg-emerald-700', text: 'text-white' },
-  { key: 'p_90_95',  label: 'P91 — P95', zone: 'excellent',         chip: 'bg-emerald-600', text: 'text-white' },
-  { key: 'p_75_90',  label: 'P76 — P90', zone: 'excellent',         chip: 'bg-emerald-500', text: 'text-white' },
-  { key: 'p_50_75',  label: 'P50 — P75', zone: 'moyenne_haute',     chip: 'bg-emerald-300', text: 'text-emerald-900' },
-  { key: 'p_25_50',  label: 'P26 — P49', zone: 'moyenne_basse',     chip: 'bg-yellow-300',  text: 'text-yellow-900' },
-  { key: 'p_10_25',  label: 'P11 — P25', zone: 'fragilite',         chip: 'bg-orange-300',  text: 'text-orange-900' },
-  { key: 'p_5_10',   label: 'P6 — P10',  zone: 'difficulte',        chip: 'bg-orange-500',  text: 'text-white' },
-  { key: 'p_inf_5',  label: 'P1 — P5',   zone: 'difficulte_severe', chip: 'bg-red-600',     text: 'text-white' },
+  { key: 'p_sup_95', label: '> P95',     value: 97, zone: 'excellent',         chip: 'bg-emerald-700', text: 'text-white' },
+  { key: 'p_90_95',  label: 'P91 — P95', value: 92, zone: 'excellent',         chip: 'bg-emerald-600', text: 'text-white' },
+  { key: 'p_75_90',  label: 'P76 — P90', value: 80, zone: 'excellent',         chip: 'bg-emerald-500', text: 'text-white' },
+  { key: 'p_50_75',  label: 'P50 — P75', value: 60, zone: 'moyenne_haute',     chip: 'bg-emerald-300', text: 'text-emerald-900' },
+  { key: 'p_25_50',  label: 'P26 — P49', value: 35, zone: 'moyenne_basse',     chip: 'bg-yellow-300',  text: 'text-yellow-900' },
+  { key: 'p_10_25',  label: 'P11 — P25', value: 18, zone: 'fragilite',         chip: 'bg-orange-300',  text: 'text-orange-900' },
+  { key: 'p_5_10',   label: 'P6 — P10',  value: 7,  zone: 'difficulte',        chip: 'bg-orange-500',  text: 'text-white' },
+  { key: 'p_inf_5',  label: 'P1 — P5',   value: 3,  zone: 'difficulte_severe', chip: 'bg-red-600',     text: 'text-white' },
 ]
 
 function percentileLabel(k: PercentileKey): string {
@@ -156,7 +166,13 @@ function emptyState(): State {
   return { contexte: '', niveau_etudes: '', epreuves: ep }
 }
 
-export default function ExalangLyfacScoresInput({ notes, onNotesChange, onResultatsChange }: Props) {
+export default function ExalangLyfacScoresInput({
+  notes,
+  onNotesChange,
+  onResultatsChange,
+  bilanPrecedentStructure,
+  bilanPrecedentDate,
+}: Props) {
   const [state, setState] = useState<State>(emptyState)
   const [expanded, setExpanded] = useState<Record<string, boolean>>({ memoire: true, langage_elabore: false, lecture: true, orthographe: true })
 
@@ -180,6 +196,60 @@ export default function ExalangLyfacScoresInput({ notes, onNotesChange, onResult
     }
     return c
   }, [state.epreuves])
+
+  /**
+   * Live preview deltas — mode renouvellement. Pattern aligné sur EVALEO.
+   */
+  const evolutionStats = useMemo(() => {
+    const hasPrev = !!(bilanPrecedentStructure
+      && bilanPrecedentStructure.domains
+      && bilanPrecedentStructure.domains.length > 0)
+    if (!hasPrev) return null
+
+    const prevIndex = new Map<string, number>()
+    for (const dPrev of bilanPrecedentStructure!.domains) {
+      for (const e of dPrev.epreuves) {
+        const pv = typeof e.percentile_value === 'number' ? e.percentile_value : null
+        if (pv != null) prevIndex.set(e.nom.toLowerCase().trim(), pv)
+      }
+    }
+
+    let progres = 0, stable = 0, regression = 0, nouvelles = 0
+    const progresList: string[] = []
+    const regressionList: string[] = []
+    const nouvellesList: string[] = []
+
+    for (const d of DOMAINES) {
+      for (const e of d.epreuves) {
+        const st = state.epreuves[e.key]
+        if (st.non_passee || st.percentile === '') continue
+        const currOpt = PERCENTILE_OPTIONS.find(o => o.key === st.percentile)
+        if (!currOpt) continue
+        const prevValue = prevIndex.get(e.label.toLowerCase().trim())
+        if (prevValue == null) {
+          nouvelles++
+          nouvellesList.push(e.label)
+          continue
+        }
+        const delta = currOpt.value - prevValue
+        if (delta >= 10) { progres++; progresList.push(e.label) }
+        else if (delta <= -10) { regression++; regressionList.push(e.label) }
+        else { stable++ }
+      }
+    }
+
+    const totalCompared = progres + stable + regression
+    return {
+      progres, stable, regression, nouvelles,
+      progresList, regressionList, nouvellesList,
+      totalCompared,
+      verdict: (() => {
+        if (progres > regression * 2 && progres >= 3) return 'progress' as const
+        if (regression > progres && regression >= 2) return 'regression' as const
+        return 'stable' as const
+      })(),
+    }
+  }, [state.epreuves, bilanPrecedentStructure])
 
   useEffect(() => {
     if (totalSaisies === 0 && !state.contexte && !state.niveau_etudes.trim()) {
@@ -270,6 +340,74 @@ export default function ExalangLyfacScoresInput({ notes, onNotesChange, onResult
           </div>
         </div>
       </div>
+
+      {bilanPrecedentStructure && bilanPrecedentStructure.domains && bilanPrecedentStructure.domains.length > 0 && (
+        <div className="rounded border border-emerald-300 bg-emerald-50/70 p-2.5 flex items-start gap-2">
+          <GitCompare size={16} className="text-emerald-700 shrink-0 mt-0.5" />
+          <div className="text-[11px] text-emerald-900 leading-relaxed min-w-0">
+            <p className="font-semibold">Bilan précédent importé et détecté</p>
+            <p className="mt-0.5">
+              {bilanPrecedentStructure.domains.length} domaine
+              {bilanPrecedentStructure.domains.length > 1 ? 's' : ''} ·{' '}
+              {bilanPrecedentStructure.domains.reduce((acc, d) => acc + d.epreuves.length, 0)} épreuves précédentes
+              {bilanPrecedentDate ? ` · ${new Date(bilanPrecedentDate).toLocaleDateString('fr-FR')}` : ''}.
+              L&apos;IA calculera les évolutions épreuve par épreuve et le rendu Word affichera un tableau comparatif avec flèches.
+            </p>
+          </div>
+        </div>
+      )}
+
+      {evolutionStats && (evolutionStats.totalCompared > 0 || evolutionStats.nouvelles > 0) && (
+        <div className="rounded-lg border border-teal-300 bg-gradient-to-br from-teal-50 to-emerald-50 p-3">
+          <div className="flex items-center justify-between gap-2 mb-2 flex-wrap">
+            <p className="text-xs font-semibold text-teal-900">Évolution prévue dans le CRBO — recalcul live</p>
+            <span className={`text-[10px] font-bold px-2 py-0.5 rounded ${
+              evolutionStats.verdict === 'progress' ? 'bg-green-200 text-green-900'
+                : evolutionStats.verdict === 'regression' ? 'bg-red-200 text-red-900'
+                : 'bg-gray-200 text-gray-800'
+            }`}>
+              {evolutionStats.verdict === 'progress' ? '✓ Progression'
+                : evolutionStats.verdict === 'regression' ? '↓ Régression'
+                : '≈ Stable'}
+            </span>
+          </div>
+          <div className="flex flex-wrap gap-1.5 mb-2">
+            {evolutionStats.progres > 0 && (
+              <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded text-[11px] font-medium bg-green-100 text-green-800 border border-green-300">
+                <span className="font-bold">↑ {evolutionStats.progres}</span><span>progrès</span>
+              </span>
+            )}
+            {evolutionStats.stable > 0 && (
+              <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded text-[11px] font-medium bg-gray-100 text-gray-700 border border-gray-300">
+                <span className="font-bold">→ {evolutionStats.stable}</span><span>stable</span>
+              </span>
+            )}
+            {evolutionStats.regression > 0 && (
+              <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded text-[11px] font-medium bg-red-100 text-red-800 border border-red-300">
+                <span className="font-bold">↓ {evolutionStats.regression}</span><span>régression</span>
+              </span>
+            )}
+            {evolutionStats.nouvelles > 0 && (
+              <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded text-[11px] font-medium bg-blue-100 text-blue-800 border border-blue-300">
+                <span className="font-bold">✦ {evolutionStats.nouvelles}</span>
+                <span>nouvelle{evolutionStats.nouvelles > 1 ? 's' : ''}</span>
+              </span>
+            )}
+          </div>
+          {evolutionStats.progresList.length > 0 && (
+            <p className="text-[10px] text-green-900 leading-relaxed">
+              <strong>Progrès :</strong> {evolutionStats.progresList.slice(0, 5).join(' · ')}
+              {evolutionStats.progresList.length > 5 ? ` · +${evolutionStats.progresList.length - 5} autres` : ''}
+            </p>
+          )}
+          {evolutionStats.regressionList.length > 0 && (
+            <p className="text-[10px] text-red-900 leading-relaxed mt-0.5">
+              <strong>Régressions :</strong> {evolutionStats.regressionList.slice(0, 5).join(' · ')}
+              {evolutionStats.regressionList.length > 5 ? ` · +${evolutionStats.regressionList.length - 5} autres` : ''}
+            </p>
+          )}
+        </div>
+      )}
 
       {totalSaisies > 0 && (
         <div className="rounded-lg border border-gray-200 bg-gray-50 p-3">

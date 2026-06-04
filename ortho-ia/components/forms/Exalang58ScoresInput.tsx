@@ -17,14 +17,24 @@
  */
 
 import { useEffect, useMemo, useRef, useState } from 'react'
-import { BookOpen, ChevronDown, FileUp, Info, Loader2 } from 'lucide-react'
+import { BookOpen, ChevronDown, FileUp, GitCompare, Info, Loader2 } from 'lucide-react'
 import MicButton from '../MicButton'
+import type { CRBOStructure } from '@/lib/prompts'
 
 interface Props {
   notes: string
   onNotesChange: (v: string) => void
   onResultatsChange: (normalized: string) => void
   onError?: (msg: string) => void
+  /** MODE RENOUVELLEMENT — structure du bilan précédent extraite depuis le
+   *  bouton d'import "bilan précédent" de l'étape 4 du wizard. Si présente,
+   *  le form affiche un encart d'évolution live (compteurs progrès / stable /
+   *  régression / nouvelles) qui reflète ce que produira le tableau comparatif
+   *  Word. Matching par label, seuil ±10 sur percentile_value — aligné sur
+   *  `lib/word-export.ts` et le prompt Exalang 5-8. */
+  bilanPrecedentStructure?: CRBOStructure | null
+  /** Date du bilan précédent (ISO yyyy-mm-dd) — affichée dans l'encart. */
+  bilanPrecedentDate?: string | null
 }
 
 type PercentileKey =
@@ -285,7 +295,14 @@ function NoteStandardChips({ value, onChange }: { value: NSKey; onChange: (v: NS
   )
 }
 
-export default function Exalang58ScoresInput({ notes, onNotesChange, onResultatsChange, onError }: Props) {
+export default function Exalang58ScoresInput({
+  notes,
+  onNotesChange,
+  onResultatsChange,
+  onError,
+  bilanPrecedentStructure,
+  bilanPrecedentDate,
+}: Props) {
   const [state, setState] = useState<State>(emptyState)
   // Modules ouverts par défaut : Langage oral + Phonologie (les plus
   // saisies en pratique). Les autres en accordéon fermé.
@@ -381,6 +398,66 @@ export default function Exalang58ScoresInput({ notes, onNotesChange, onResultats
     }
     return c
   }, [state.epreuves])
+
+  /**
+   * Live preview deltas — mode renouvellement. Calcule en temps réel les
+   * compteurs d'évolution AVANT la génération du CRBO, pour que l'ortho voie
+   * ce qui ressortira dans le tableau comparatif Word et ajuste sa saisie.
+   *
+   * Matching épreuve actuelle ↔ précédente : par label lowercase + trim.
+   * Seuil delta ±10 sur percentile_value, identique au calcul côté prompt et
+   * côté rendu Word. Pattern aligné sur Evaleo615ScoresInput.tsx:873-924.
+   */
+  const evolutionStats = useMemo(() => {
+    const hasPrev = !!(bilanPrecedentStructure
+      && bilanPrecedentStructure.domains
+      && bilanPrecedentStructure.domains.length > 0)
+    if (!hasPrev) return null
+
+    const prevIndex = new Map<string, number>()
+    for (const d of bilanPrecedentStructure!.domains) {
+      for (const e of d.epreuves) {
+        const pv = typeof e.percentile_value === 'number' ? e.percentile_value : null
+        if (pv != null) prevIndex.set(e.nom.toLowerCase().trim(), pv)
+      }
+    }
+
+    let progres = 0, stable = 0, regression = 0, nouvelles = 0
+    const progresList: string[] = []
+    const regressionList: string[] = []
+    const nouvellesList: string[] = []
+
+    for (const m of MODULES) {
+      for (const e of m.epreuves) {
+        const st = state.epreuves[e.key]
+        if (st.non_passee || st.percentile === '') continue
+        const currOpt = PERCENTILE_OPTIONS.find(o => o.key === st.percentile)
+        if (!currOpt) continue
+        const prevValue = prevIndex.get(e.label.toLowerCase().trim())
+        if (prevValue == null) {
+          nouvelles++
+          nouvellesList.push(e.label)
+          continue
+        }
+        const delta = currOpt.value - prevValue
+        if (delta >= 10) { progres++; progresList.push(e.label) }
+        else if (delta <= -10) { regression++; regressionList.push(e.label) }
+        else { stable++ }
+      }
+    }
+
+    const totalCompared = progres + stable + regression
+    return {
+      progres, stable, regression, nouvelles,
+      progresList, regressionList, nouvellesList,
+      totalCompared,
+      verdict: (() => {
+        if (progres > regression * 2 && progres >= 3) return 'progress' as const
+        if (regression > progres && regression >= 2) return 'regression' as const
+        return 'stable' as const
+      })(),
+    }
+  }, [state.epreuves, bilanPrecedentStructure])
 
   useEffect(() => {
     if (totalSaisies === 0 && !state.niveau) {
@@ -489,6 +566,96 @@ export default function Exalang58ScoresInput({ notes, onNotesChange, onResultats
           </p>
         )}
       </div>
+
+      {/* Bandeau bilan précédent détecté (mode renouvellement). Affiché
+          uniquement si le wizard a importé un bilan précédent (étape 4) et
+          l'a converti en CRBOStructure. */}
+      {bilanPrecedentStructure && bilanPrecedentStructure.domains && bilanPrecedentStructure.domains.length > 0 && (
+        <div className="rounded border border-emerald-300 bg-emerald-50/70 p-2.5 flex items-start gap-2">
+          <GitCompare size={16} className="text-emerald-700 shrink-0 mt-0.5" />
+          <div className="text-[11px] text-emerald-900 leading-relaxed min-w-0">
+            <p className="font-semibold">Bilan précédent importé et détecté</p>
+            <p className="mt-0.5">
+              {bilanPrecedentStructure.domains.length} domaine
+              {bilanPrecedentStructure.domains.length > 1 ? 's' : ''} ·{' '}
+              {bilanPrecedentStructure.domains.reduce((acc, d) => acc + d.epreuves.length, 0)} épreuves précédentes
+              {bilanPrecedentDate ? ` · ${new Date(bilanPrecedentDate).toLocaleDateString('fr-FR')}` : ''}.
+              L&apos;IA calculera automatiquement les évolutions épreuve par épreuve et le rendu Word affichera un tableau comparatif avec flèches d&apos;évolution (↑ progrès / → stable / ↓ régression).
+            </p>
+          </div>
+        </div>
+      )}
+
+      {/* Live preview deltas — visible si bilan précédent importé ET ortho
+          a déjà saisi au moins une épreuve. Autodiagnostic du matching
+          par label : si "0 progrès + 0 stable + 0 régression + X nouvelles",
+          c'est que les libellés du bilan précédent ne matchent pas. */}
+      {evolutionStats && (evolutionStats.totalCompared > 0 || evolutionStats.nouvelles > 0) && (
+        <div className="rounded-lg border border-teal-300 bg-gradient-to-br from-teal-50 to-emerald-50 p-3">
+          <div className="flex items-center justify-between gap-2 mb-2 flex-wrap">
+            <p className="text-xs font-semibold text-teal-900">
+              Évolution prévue dans le CRBO — recalcul live
+            </p>
+            <span className={`text-[10px] font-bold px-2 py-0.5 rounded ${
+              evolutionStats.verdict === 'progress'
+                ? 'bg-green-200 text-green-900'
+                : evolutionStats.verdict === 'regression'
+                  ? 'bg-red-200 text-red-900'
+                  : 'bg-gray-200 text-gray-800'
+            }`}>
+              {evolutionStats.verdict === 'progress'
+                ? '✓ Progression'
+                : evolutionStats.verdict === 'regression'
+                  ? '↓ Régression'
+                  : '≈ Stable'}
+            </span>
+          </div>
+          <div className="flex flex-wrap gap-1.5 mb-2">
+            {evolutionStats.progres > 0 && (
+              <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded text-[11px] font-medium bg-green-100 text-green-800 border border-green-300">
+                <span className="font-bold">↑ {evolutionStats.progres}</span>
+                <span>progrès</span>
+              </span>
+            )}
+            {evolutionStats.stable > 0 && (
+              <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded text-[11px] font-medium bg-gray-100 text-gray-700 border border-gray-300">
+                <span className="font-bold">→ {evolutionStats.stable}</span>
+                <span>stable</span>
+              </span>
+            )}
+            {evolutionStats.regression > 0 && (
+              <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded text-[11px] font-medium bg-red-100 text-red-800 border border-red-300">
+                <span className="font-bold">↓ {evolutionStats.regression}</span>
+                <span>régression</span>
+              </span>
+            )}
+            {evolutionStats.nouvelles > 0 && (
+              <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded text-[11px] font-medium bg-blue-100 text-blue-800 border border-blue-300">
+                <span className="font-bold">✦ {evolutionStats.nouvelles}</span>
+                <span>nouvelle{evolutionStats.nouvelles > 1 ? 's' : ''}</span>
+              </span>
+            )}
+          </div>
+          {evolutionStats.progresList.length > 0 && (
+            <p className="text-[10px] text-green-900 leading-relaxed">
+              <strong>Progrès :</strong> {evolutionStats.progresList.slice(0, 5).join(' · ')}
+              {evolutionStats.progresList.length > 5 ? ` · +${evolutionStats.progresList.length - 5} autres` : ''}
+            </p>
+          )}
+          {evolutionStats.regressionList.length > 0 && (
+            <p className="text-[10px] text-red-900 leading-relaxed mt-0.5">
+              <strong>Régressions :</strong> {evolutionStats.regressionList.slice(0, 5).join(' · ')}
+              {evolutionStats.regressionList.length > 5 ? ` · +${evolutionStats.regressionList.length - 5} autres` : ''}
+            </p>
+          )}
+          {evolutionStats.nouvelles > evolutionStats.totalCompared && evolutionStats.totalCompared <= 2 && (
+            <p className="text-[10px] text-amber-800 mt-1 leading-relaxed bg-amber-50 border border-amber-200 rounded px-1.5 py-0.5">
+              ⚠ Peu d&apos;épreuves matchent entre les 2 bilans ({evolutionStats.totalCompared} comparées vs {evolutionStats.nouvelles} nouvelles).
+              Si la majorité devraient être comparables, vérifiez que les titres d&apos;épreuves du bilan précédent correspondent aux libellés Exalang 5-8 officiels.
+            </p>
+          )}
+        </div>
+      )}
 
       <div className="rounded-lg border border-gray-200 bg-white p-4">
         <label className="flex items-center gap-2 text-sm font-semibold text-gray-900 mb-2">

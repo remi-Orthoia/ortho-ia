@@ -1,23 +1,32 @@
 'use client'
 
 /**
- * Saisie structurée Exalang 3-6 (Thibault, Helloin, Lenfant — HappyNeuron 2006).
+ * Saisie structurée Exalang 8-11 (Helloin, Lenfant, Thibault — HappyNeuron 2012).
  *
- * Population : maternelle (PS, MS, GS). Premier outil HappyNeuron pour le
- * langage oral, idéal pour les bilans de début de scolarisation et le dépistage
- * précoce du TDL.
+ * Population : enfants du CE2 au CM2 (8 à 11 ans). Outil le plus utilisé en
+ * France pour le dépistage des troubles spécifiques des apprentissages (TSA).
  *
  * Scoring : percentile HappyNeuron (P5 / P10 / P25 / P50 / P75 / P90 / P95).
- * Étalonnage par niveau scolaire (PS / MS / GS).
+ * Étalonnage par niveau scolaire (CE2 / CM1 / CM2).
  *
- * Domaines officiels : Langage oral réceptif, expressif, phonologie,
- * métaphonologie émergente, mémoire de travail verbale.
+ * Groupes officiels HappyNeuron (en-têtes alphanumériques de la feuille de
+ * résultats — DOIVENT être utilisés tels quels comme `domains[].nom` du JSON
+ * CRBO pour que le rendu Word ordonne correctement les sections) :
+ *   - A.1 Langage oral
+ *   - A.2 Métaphonologie
+ *   - B.1 Lecture
+ *   - B.2 Orthographe (closure incluse — règle Laurie)
+ *   - C.1 Mémoire
  *
- * Couplage : nouveau-crbo/page.tsx, test_utilise === ['Exalang 3-6'].
+ * Couplage : nouveau-crbo/page.tsx, test_utilise === ['Exalang 8-11'].
+ *
+ * Pattern aligné sur Exalang58ScoresInput.tsx (même structure de zones, état,
+ * niveau scolaire). Les épreuves listées ci-dessous suivent strictement
+ * lib/prompts/tests/exalang-8-11.ts (22 épreuves officielles).
  */
 
 import { useEffect, useMemo, useState } from 'react'
-import { Brain, BookOpen, ChevronDown, GitCompare, Info } from 'lucide-react'
+import { BookOpen, ChevronDown, GitCompare, Info } from 'lucide-react'
 import MicButton from '../MicButton'
 import type { CRBOStructure } from '@/lib/prompts'
 
@@ -27,7 +36,9 @@ interface Props {
   onResultatsChange: (normalized: string) => void
   onError?: (msg: string) => void
   /** MODE RENOUVELLEMENT — structure du bilan précédent extraite depuis le
-   *  bouton d'import "bilan précédent" de l'étape 4 du wizard. */
+   *  bouton d'import "bilan précédent" de l'étape 4 du wizard. Si présente,
+   *  encart d'évolution live + autodiagnostic du matching (cf. Evaleo615
+   *  ScoresInput.tsx pour le pattern de référence). */
   bilanPrecedentStructure?: CRBOStructure | null
   /** Date du bilan précédent (ISO yyyy-mm-dd). */
   bilanPrecedentDate?: string | null
@@ -86,53 +97,73 @@ interface Groupe {
   epreuves: Epreuve[]
 }
 
+/** 5 groupes officiels HappyNeuron Exalang 8-11 + 22 épreuves selon le cahier
+ *  de passation et le module prompt `lib/prompts/tests/exalang-8-11.ts`. */
 const GROUPES: Groupe[] = [
   {
     code: 'A.1',
-    label: 'Langage oral — Réceptif',
-    description: 'Lexique passif et compréhension des structures de phrases.',
+    label: 'Langage oral',
+    description: 'Compréhension orale, lexique, fluences verbales — versants réceptif et expressif.',
     epreuves: [
-      { key: 'designation_lexique',     label: 'Désignation (lexique réceptif)', hint: 'Stock lexical passif — sensible à la sous-exposition' },
-      { key: 'comp_phrases_courtes',    label: 'Compréhension de phrases courtes', hint: 'Prédictrice de la compréhension écrite future' },
-      { key: 'comp_morphosyntaxique',   label: 'Compréhension morphosyntaxique', hint: 'Marqueur TDL si déficit sévère' },
+      { key: 'comp_orale_phrases',    label: 'Compréhension orale de phrases',     hint: 'Prédicteur de la compréhension écrite' },
+      { key: 'comp_orale_textes',     label: 'Compréhension orale de textes',      hint: 'Inférences, modèle mental du texte' },
+      { key: 'denomination_images',   label: 'Dénomination d\'images',             hint: 'Lexique expressif imagé — décalage avec désignation = manque du mot' },
+      { key: 'designation_sur_def',   label: 'Désignation sur définition',         hint: 'Lexique réceptif fin' },
+      { key: 'lexique_reception',     label: 'Lexique en réception',               hint: 'Stock lexical passif' },
+      { key: 'fluence_phonemique',    label: 'Fluence phonémique (lettre, 1 min)', hint: 'Profil dysexécutif si > sémantique' },
+      { key: 'fluence_semantique',    label: 'Fluence sémantique (animaux, 1 min)', hint: 'Profil dysexécutif si < phonémique. Analyser clusters + switches' },
     ],
   },
   {
     code: 'A.2',
-    label: 'Langage oral — Expressif',
-    description: 'Dénomination, production syntaxique, répétition.',
+    label: 'Métaphonologie',
+    description: 'Conscience phonologique fine — prédicteur n°1 de la réussite en langage écrit.',
     epreuves: [
-      { key: 'denomination_lexique',    label: 'Dénomination (lexique expressif)', hint: 'Stock lexical actif. Décalage marqué désignation/dénomination = manque du mot' },
-      { key: 'production_syntaxique',   label: 'Production syntaxique (phrases à partir d\'images)', hint: 'Pauvreté syntaxique = marqueur TDL' },
-      { key: 'repetition_mots_phrases', label: 'Répétition de mots et phrases',  hint: 'Encodage phonologique + MdT' },
-      { key: 'repetition_logatomes',    label: 'Répétition de logatomes',         hint: 'Marqueur le plus sensible des difficultés phonologiques futures — prédicteur dyslexie' },
+      { key: 'meta_acronymes',        label: 'Métaphonologie — acronymes',          hint: 'Manipulation explicite de phonèmes' },
+      { key: 'meta_rimes',            label: 'Métaphonologie — rimes',              hint: 'Acquises dès la MS-GS' },
+      { key: 'meta_suppression',      label: 'Métaphonologie — suppression phonémique', hint: 'La plus sensible et la plus prédictive. Déficit = marqueur fort dyslexie' },
     ],
   },
   {
     code: 'B.1',
-    label: 'Métaphonologie émergente',
-    description: 'Conscience phonologique émergente : rimes (acquises MS-GS), syllabes (acquises GS).',
+    label: 'Lecture',
+    description: 'Voies d\'assemblage et d\'adressage, leximétrie, compréhension écrite.',
     epreuves: [
-      { key: 'meta_rimes',              label: 'Métaphonologie — rimes',          hint: 'Acquises en MS-GS (3.5-5.5 ans)', tag: 'MS-GS' },
-      { key: 'meta_syllabes',           label: 'Métaphonologie — syllabes (segmentation, fusion)', hint: 'Acquises en GS. Absence GS = alerte langage écrit', tag: 'GS' },
-      { key: 'conscience_ecrit',        label: 'Conscience de l\'écrit émergente', hint: 'Concept de lettre, mot, phrase, orientation' },
+      { key: 'lecture_mots_freq',     label: 'Lecture de mots fréquents',            hint: 'Voie d\'adressage — doit être rapide et exacte au CE2+' },
+      { key: 'lecture_mots_irreg',    label: 'Lecture de mots irréguliers',          hint: 'Voie d\'adressage / mémoire orthographique. Déficit = dyslexie de surface' },
+      { key: 'lecture_non_mots',      label: 'Lecture de non-mots (logatomes écrits)', hint: 'Voie d\'assemblage. Déficit = dyslexie phonologique (marqueur central)' },
+      { key: 'leximetrie',            label: 'Leximétrie (vitesse de lecture en contexte)', hint: 'CE2 90-120 / CM1 110-140 / CM2 130-160 mots/min' },
+      { key: 'decision_lexico',       label: 'Décision lexico-morphologique',         hint: 'Accès au lexique orthographique sans lecture à voix haute' },
+      { key: 'comp_ecrite_texte',     label: 'Compréhension écrite de texte',         hint: 'À croiser avec comp. orale (préservée = trouble spécifique langage écrit)' },
+    ],
+  },
+  {
+    code: 'B.2',
+    label: 'Orthographe',
+    description: 'Dictée, closure de texte, copie différée — production écrite.',
+    epreuves: [
+      { key: 'dra_dictee',            label: 'DRA — Dictée de Rédaction Abrégée',     hint: 'Analyse qualitative : erreurs phonologiques / lexicales / grammaticales' },
+      { key: 'closure_texte',         label: 'Closure de texte',                       hint: 'À CLASSER EN B.2 ORTHOGRAPHE (règle Laurie). Mobilise compréhension écrite + production' },
+      { key: 'copie_differee',        label: 'Copie différée',                         hint: 'Transcription, buffer graphémique, mémoire orthographique court terme' },
     ],
   },
   {
     code: 'C.1',
-    label: 'Mémoire de travail verbale',
-    description: 'Empan auditif endroit, boucle phonologique.',
+    label: 'Mémoire',
+    description: 'Mémoire de travail verbale — boucle phonologique + administrateur central.',
     epreuves: [
-      { key: 'empan_auditif_endroit',   label: 'Empan auditif endroit',           hint: 'Boucle phonologique, MdT verbale' },
+      { key: 'empan_endroit',         label: 'Empan auditif endroit',                  hint: 'Boucle phonologique. Seuil vigilance < 4 à 8 ans, < 5 à 10 ans' },
+      { key: 'empan_envers',          label: 'Empan auditif envers',                   hint: 'Administrateur central. Envers très inférieur à endroit = TDAH possible' },
+      { key: 'rep_logatomes',         label: 'Répétition de logatomes',                hint: 'Distingue atteinte boucle phonologique vs trouble articulatoire' },
     ],
   },
 ]
 
 const NIVEAU_OPTIONS = [
-  { key: '',   label: '— choisir —' },
-  { key: 'PS', label: 'Petite Section (~3 ans)' },
-  { key: 'MS', label: 'Moyenne Section (~4 ans)' },
-  { key: 'GS', label: 'Grande Section (~5 ans)' },
+  { key: '',     label: '— choisir —' },
+  { key: 'CE2',  label: 'CE2 (~8-9 ans)' },
+  { key: 'CM1',  label: 'CM1 (~9-10 ans)' },
+  { key: 'CM2',  label: 'CM2 (~10-11 ans)' },
 ] as const
 
 interface EpreuveState {
@@ -185,7 +216,7 @@ function PercentileChips({ value, onChange }: { value: PercentileKey; onChange: 
   )
 }
 
-export default function Exalang36ScoresInput({
+export default function Exalang811ScoresInput({
   notes,
   onNotesChange,
   onResultatsChange,
@@ -193,7 +224,7 @@ export default function Exalang36ScoresInput({
   bilanPrecedentDate,
 }: Props) {
   const [state, setState] = useState<State>(emptyState)
-  const [expanded, setExpanded] = useState<Record<string, boolean>>({ 'A.1': true, 'A.2': true, 'B.1': true, 'C.1': false })
+  const [expanded, setExpanded] = useState<Record<string, boolean>>({ 'A.1': true, 'A.2': true, 'B.1': true, 'B.2': false, 'C.1': false })
 
   const totalSaisies = useMemo(() => {
     let n = 0
@@ -218,7 +249,8 @@ export default function Exalang36ScoresInput({
 
   /**
    * Live preview deltas — mode renouvellement. Pattern aligné sur EVALEO
-   * (cf. Evaleo615ScoresInput.tsx:873-924). Matching par label, ±10.
+   * (cf. Evaleo615ScoresInput.tsx:873-924). Matching épreuve actuelle ↔
+   * précédente par label lowercase+trim, seuil ±10 sur percentile_value.
    */
   const evolutionStats = useMemo(() => {
     const hasPrev = !!(bilanPrecedentStructure
@@ -277,7 +309,7 @@ export default function Exalang36ScoresInput({
       return
     }
     const lines: string[] = []
-    lines.push('=== Exalang 3-6 (Thibault, Helloin, Lenfant — HappyNeuron 2006) ===')
+    lines.push('=== Exalang 8-11 (Helloin, Lenfant, Thibault — HappyNeuron 2012) ===')
     if (state.niveau) {
       lines.push(`Niveau scolaire : ${NIVEAU_OPTIONS.find(o => o.key === state.niveau)?.label}`)
       lines.push('')
@@ -324,11 +356,10 @@ export default function Exalang36ScoresInput({
       <div className="flex items-start gap-2 p-3 rounded-lg border border-indigo-200 bg-indigo-50">
         <BookOpen size={18} className="text-indigo-600 shrink-0 mt-0.5" />
         <div className="text-sm">
-          <p className="font-semibold text-indigo-900">Saisie structurée Exalang 3-6 — maternelle (PS / MS / GS)</p>
+          <p className="font-semibold text-indigo-900">Saisie structurée Exalang 8-11 — 5 groupes officiels (A.1, A.2, B.1, B.2, C.1)</p>
           <p className="text-indigo-700 text-xs mt-0.5 leading-relaxed">
-            Reportez la zone HappyNeuron lue sur la feuille de résultats. Étalonnage par niveau (PS / MS / GS).
+            Reportez la zone HappyNeuron lue sur la feuille de résultats. Étalonnage par niveau (CE2 / CM1 / CM2).
             Cochez « non passée » pour exclure une épreuve. Q1 = P25 = NORMAL, jamais déficitaire.
-            <strong> Pas de diagnostic de dyslexie à cet âge</strong> — préférer « fragilité émergente » et réévaluation.
           </p>
         </div>
       </div>
@@ -343,12 +374,11 @@ export default function Exalang36ScoresInput({
           onChange={(e) => setState(s => ({ ...s, niveau: e.target.value as State['niveau'] }))}
           className="w-full sm:w-64 px-3 py-2 border border-gray-300 rounded text-sm focus:outline-none focus:ring-2 focus:ring-indigo-400"
         >
-          {NIVEAU_OPTIONS.map(o => (
-            <option key={o.key} value={o.key}>{o.label}</option>
-          ))}
+          {NIVEAU_OPTIONS.map(o => (<option key={o.key} value={o.key}>{o.label}</option>))}
         </select>
       </div>
 
+      {/* Bandeau bilan précédent détecté (mode renouvellement). */}
       {bilanPrecedentStructure && bilanPrecedentStructure.domains && bilanPrecedentStructure.domains.length > 0 && (
         <div className="rounded border border-emerald-300 bg-emerald-50/70 p-2.5 flex items-start gap-2">
           <GitCompare size={16} className="text-emerald-700 shrink-0 mt-0.5" />
@@ -359,40 +389,50 @@ export default function Exalang36ScoresInput({
               {bilanPrecedentStructure.domains.length > 1 ? 's' : ''} ·{' '}
               {bilanPrecedentStructure.domains.reduce((acc, d) => acc + d.epreuves.length, 0)} épreuves précédentes
               {bilanPrecedentDate ? ` · ${new Date(bilanPrecedentDate).toLocaleDateString('fr-FR')}` : ''}.
-              L&apos;IA calculera les évolutions épreuve par épreuve et le rendu Word affichera un tableau comparatif avec flèches.
+              L&apos;IA calculera les évolutions épreuve par épreuve et le rendu Word affichera un tableau comparatif avec flèches (↑ progrès / → stable / ↓ régression).
             </p>
           </div>
         </div>
       )}
 
+      {/* Live preview deltas (mode renouvellement). */}
       {evolutionStats && (evolutionStats.totalCompared > 0 || evolutionStats.nouvelles > 0) && (
         <div className="rounded-lg border border-teal-300 bg-gradient-to-br from-teal-50 to-emerald-50 p-3">
           <div className="flex items-center justify-between gap-2 mb-2 flex-wrap">
-            <p className="text-xs font-semibold text-teal-900">Évolution prévue dans le CRBO — recalcul live</p>
+            <p className="text-xs font-semibold text-teal-900">
+              Évolution prévue dans le CRBO — recalcul live
+            </p>
             <span className={`text-[10px] font-bold px-2 py-0.5 rounded ${
-              evolutionStats.verdict === 'progress' ? 'bg-green-200 text-green-900'
-                : evolutionStats.verdict === 'regression' ? 'bg-red-200 text-red-900'
-                : 'bg-gray-200 text-gray-800'
+              evolutionStats.verdict === 'progress'
+                ? 'bg-green-200 text-green-900'
+                : evolutionStats.verdict === 'regression'
+                  ? 'bg-red-200 text-red-900'
+                  : 'bg-gray-200 text-gray-800'
             }`}>
-              {evolutionStats.verdict === 'progress' ? '✓ Progression'
-                : evolutionStats.verdict === 'regression' ? '↓ Régression'
-                : '≈ Stable'}
+              {evolutionStats.verdict === 'progress'
+                ? '✓ Progression'
+                : evolutionStats.verdict === 'regression'
+                  ? '↓ Régression'
+                  : '≈ Stable'}
             </span>
           </div>
           <div className="flex flex-wrap gap-1.5 mb-2">
             {evolutionStats.progres > 0 && (
               <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded text-[11px] font-medium bg-green-100 text-green-800 border border-green-300">
-                <span className="font-bold">↑ {evolutionStats.progres}</span><span>progrès</span>
+                <span className="font-bold">↑ {evolutionStats.progres}</span>
+                <span>progrès</span>
               </span>
             )}
             {evolutionStats.stable > 0 && (
               <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded text-[11px] font-medium bg-gray-100 text-gray-700 border border-gray-300">
-                <span className="font-bold">→ {evolutionStats.stable}</span><span>stable</span>
+                <span className="font-bold">→ {evolutionStats.stable}</span>
+                <span>stable</span>
               </span>
             )}
             {evolutionStats.regression > 0 && (
               <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded text-[11px] font-medium bg-red-100 text-red-800 border border-red-300">
-                <span className="font-bold">↓ {evolutionStats.regression}</span><span>régression</span>
+                <span className="font-bold">↓ {evolutionStats.regression}</span>
+                <span>régression</span>
               </span>
             )}
             {evolutionStats.nouvelles > 0 && (
@@ -416,72 +456,72 @@ export default function Exalang36ScoresInput({
           )}
           {evolutionStats.nouvelles > evolutionStats.totalCompared && evolutionStats.totalCompared <= 2 && (
             <p className="text-[10px] text-amber-800 mt-1 leading-relaxed bg-amber-50 border border-amber-200 rounded px-1.5 py-0.5">
-              ⚠ Peu d&apos;épreuves matchent ({evolutionStats.totalCompared} comparées vs {evolutionStats.nouvelles} nouvelles). Vérifiez les libellés du bilan précédent.
+              ⚠ Peu d&apos;épreuves matchent entre les 2 bilans ({evolutionStats.totalCompared} comparées vs {evolutionStats.nouvelles} nouvelles).
+              Vérifiez que les titres d&apos;épreuves du bilan précédent correspondent aux libellés Exalang 8-11 officiels.
             </p>
           )}
         </div>
       )}
 
+      {/* Synthèse zones — affichée dès qu'une épreuve est saisie. */}
       {totalSaisies > 0 && (
         <div className="rounded-lg border border-gray-200 bg-gray-50 p-3">
           <p className="text-xs font-semibold text-gray-700 mb-2">
-            Répartition par zone — {totalSaisies}/{totalEpreuves} épreuves saisies
+            Synthèse — {totalSaisies}/{totalEpreuves} épreuves saisies
           </p>
-          <div className="flex flex-wrap gap-1.5">
-            {(['excellent', 'moyenne_haute', 'moyenne_basse', 'fragilite', 'difficulte', 'difficulte_severe'] as const).map(z => {
-              const n = zoneCounts[z]
-              if (n === 0) return null
-              const label = { excellent: 'Excellent', moyenne_haute: 'Moyenne haute', moyenne_basse: 'Moyenne basse', fragilite: 'Zone de fragilité', difficulte: 'Difficulté', difficulte_severe: 'Difficulté sévère' }[z]
-              const chip = { excellent: 'bg-emerald-700 text-white', moyenne_haute: 'bg-emerald-400 text-white', moyenne_basse: 'bg-yellow-300 text-yellow-900', fragilite: 'bg-orange-300 text-orange-900', difficulte: 'bg-orange-500 text-white', difficulte_severe: 'bg-red-600 text-white' }[z]
-              return (
-                <span key={z} className={`inline-flex items-center gap-1 px-2 py-0.5 rounded text-xs font-medium ${chip}`}>
-                  <span className="font-bold">{n}</span>
-                  <span>{label}</span>
-                </span>
-              )
-            })}
+          <div className="flex flex-wrap gap-1.5 text-xs">
+            {zoneCounts.excellent > 0 && <span className="bg-emerald-600 text-white px-2 py-0.5 rounded font-medium">{zoneCounts.excellent} Excellent</span>}
+            {zoneCounts.moyenne_haute > 0 && <span className="bg-emerald-300 text-emerald-900 px-2 py-0.5 rounded font-medium">{zoneCounts.moyenne_haute} Moy. haute</span>}
+            {zoneCounts.moyenne_basse > 0 && <span className="bg-yellow-300 text-yellow-900 px-2 py-0.5 rounded font-medium">{zoneCounts.moyenne_basse} Moy. basse</span>}
+            {zoneCounts.fragilite > 0 && <span className="bg-orange-300 text-orange-900 px-2 py-0.5 rounded font-medium">{zoneCounts.fragilite} Fragilité</span>}
+            {zoneCounts.difficulte > 0 && <span className="bg-orange-500 text-white px-2 py-0.5 rounded font-medium">{zoneCounts.difficulte} Difficulté</span>}
+            {zoneCounts.difficulte_severe > 0 && <span className="bg-red-600 text-white px-2 py-0.5 rounded font-medium">{zoneCounts.difficulte_severe} Difficulté sévère</span>}
           </div>
         </div>
       )}
 
+      {/* Groupes en accordéons */}
       {GROUPES.map(g => {
         const open = expanded[g.code]
+        const gSaisies = g.epreuves.filter(e => {
+          const st = state.epreuves[e.key]
+          return !st.non_passee && st.percentile !== ''
+        }).length
         return (
           <div key={g.code} className="rounded-lg border border-gray-200 bg-white">
             <button
               type="button"
               onClick={() => setExpanded(prev => ({ ...prev, [g.code]: !prev[g.code] }))}
-              className="w-full px-4 py-3 flex items-center justify-between gap-3 text-left hover:bg-gray-50"
+              className="w-full flex items-center justify-between gap-3 px-4 py-3 hover:bg-gray-50"
             >
-              <div className="min-w-0">
+              <div className="flex-1 min-w-0 text-left">
                 <p className="text-sm font-semibold text-gray-900">
-                  <span className="text-indigo-600 font-mono mr-2">{g.code}</span>
+                  <span className="font-mono text-indigo-600 mr-2">{g.code}</span>
                   {g.label}
+                  <span className="ml-2 text-xs font-normal text-gray-500">
+                    · {gSaisies}/{g.epreuves.length} saisies
+                  </span>
                 </p>
                 <p className="text-xs text-gray-500 mt-0.5">{g.description}</p>
               </div>
-              <ChevronDown size={16} className={`shrink-0 transition-transform ${open ? '' : '-rotate-90'}`} />
+              <ChevronDown size={16} className={`text-gray-400 shrink-0 transition-transform ${open ? '' : '-rotate-90'}`} />
             </button>
 
             {open && (
-              <div className="border-t border-gray-100 px-4 py-3 space-y-2">
+              <div className="border-t border-gray-100 p-4 space-y-3">
                 {g.epreuves.map(e => {
                   const st = state.epreuves[e.key]
                   return (
-                    <div key={e.key} className="rounded bg-gray-50/50 border border-gray-100 p-2">
-                      <div className="flex items-start justify-between gap-2 flex-wrap mb-1.5">
+                    <div key={e.key} className={`rounded border ${st.non_passee ? 'border-gray-200 bg-gray-50 opacity-60' : 'border-gray-200 bg-white'} p-3`}>
+                      <div className="flex items-start justify-between gap-3 flex-wrap mb-2">
                         <div className="flex-1 min-w-0">
-                          <p className="text-xs font-semibold text-gray-800 flex items-center gap-1.5">
+                          <p className="text-sm font-medium text-gray-900 flex items-center gap-2 flex-wrap">
                             {e.label}
-                            {e.tag && (
-                              <span className="text-[9px] font-medium text-gray-500 px-1 py-0.5 rounded bg-white border border-gray-200">
-                                {e.tag}
-                              </span>
-                            )}
+                            {e.tag && <span className="text-[10px] uppercase tracking-wide bg-indigo-100 text-indigo-700 px-1.5 py-0.5 rounded">{e.tag}</span>}
                           </p>
-                          {e.hint && <p className="text-[10px] text-gray-500">{e.hint}</p>}
+                          {e.hint && <p className="text-xs text-gray-500 mt-0.5">{e.hint}</p>}
                         </div>
-                        <label className="text-[10px] text-gray-600 flex items-center gap-1 shrink-0">
+                        <label className="text-xs text-gray-600 flex items-center gap-1.5 shrink-0 cursor-pointer">
                           <input
                             type="checkbox"
                             checked={st.non_passee}
@@ -491,33 +531,47 @@ export default function Exalang36ScoresInput({
                           Non passée
                         </label>
                       </div>
+
                       {!st.non_passee && (
-                        <>
-                          <PercentileChips value={st.percentile} onChange={(v) => setField(e.key, 'percentile', v)} />
-                          <div className="grid sm:grid-cols-2 gap-1.5 mt-1.5">
+                        <div className="space-y-2">
+                          {/* Chip percentile */}
+                          <div>
+                            <p className="text-[11px] font-medium text-gray-600 mb-1">Percentile / zone HappyNeuron :</p>
+                            <PercentileChips
+                              value={st.percentile}
+                              onChange={(v) => setField(e.key, 'percentile', v)}
+                            />
+                          </div>
+
+                          {/* Champs optionnels */}
+                          <div className="grid sm:grid-cols-2 gap-2">
                             <input
                               type="text"
                               value={st.score_brut}
                               onChange={(ev) => setField(e.key, 'score_brut', ev.target.value)}
-                              placeholder="Score brut (opt.)"
-                              className="px-2 py-1 border border-gray-200 rounded text-[11px]"
+                              placeholder="Score brut (optionnel)"
+                              className="px-2 py-1 border border-gray-300 rounded text-xs"
                             />
                             <input
                               type="text"
                               value={st.temps}
                               onChange={(ev) => setField(e.key, 'temps', ev.target.value)}
-                              placeholder="Temps (opt.)"
-                              className="px-2 py-1 border border-gray-200 rounded text-[11px]"
+                              placeholder="Temps (optionnel)"
+                              className="px-2 py-1 border border-gray-300 rounded text-xs"
                             />
                           </div>
-                          <textarea
-                            value={st.observation}
-                            onChange={(ev) => setField(e.key, 'observation', ev.target.value)}
-                            rows={1}
-                            placeholder="Observation : stratégie, type d'erreurs, attitude…"
-                            className="w-full mt-1.5 px-2 py-1 border border-gray-200 rounded text-[11px] leading-relaxed resize-y"
-                          />
-                        </>
+
+                          {/* Observation */}
+                          <div className="flex items-start gap-2">
+                            <textarea
+                              value={st.observation}
+                              onChange={(ev) => setField(e.key, 'observation', ev.target.value)}
+                              rows={2}
+                              placeholder="Observation : stratégies, type d'erreurs, attitude…"
+                              className="flex-1 px-2 py-1 border border-gray-300 rounded text-xs leading-relaxed resize-y"
+                            />
+                          </div>
+                        </div>
                       )}
                     </div>
                   )
@@ -528,10 +582,11 @@ export default function Exalang36ScoresInput({
         )
       })}
 
+      {/* Notes globales (comportement, fatigabilité, etc.) */}
       <div className="rounded-lg border border-gray-200 bg-white p-4">
         <div className="flex items-center justify-between mb-1">
           <label className="text-sm font-medium text-gray-800">
-            Notes globales sur la séance (comportement, communication non verbale, attention)
+            Notes globales sur la séance (comportement, fatigabilité, stratégies)
           </label>
           <MicButton value={notes} onChange={onNotesChange} />
         </div>
@@ -539,26 +594,9 @@ export default function Exalang36ScoresInput({
           value={notes}
           onChange={(e) => onNotesChange(e.target.value)}
           rows={3}
-          placeholder="Ex. enfant intéressé par les images, pointage présent, peu de communication spontanée. Premiers mots tardifs signalés par les parents (> 24 mois)…"
+          placeholder="Ex. élève coopératif, fatigue notable sur l'épreuve de leximétrie, stratégie de relecture spontanée…"
           className="w-full px-3 py-2 border border-gray-300 rounded text-sm leading-relaxed resize-y focus:outline-none focus:ring-2 focus:ring-indigo-400"
         />
-      </div>
-
-      <div className="rounded-lg border border-amber-200 bg-amber-50 p-3">
-        <div className="flex items-start gap-2">
-          <Brain size={16} className="text-amber-700 shrink-0 mt-0.5" />
-          <div className="text-xs text-amber-900 leading-relaxed">
-            <p className="font-semibold mb-1">Rappels cliniques Exalang 3-6</p>
-            <ul className="list-disc list-inside space-y-0.5">
-              <li><strong>Pas de diagnostic de TDL définitif avant 5 ans</strong> — préférer « retard simple » avec réévaluation à 6 mois.</li>
-              <li><strong>Bilan ORL impératif</strong> à cet âge (otites séro-muqueuses fréquentes).</li>
-              <li>Multiples composantes Déficitaire + premiers mots tardifs (au-delà de 24 mois) + phrases tardives (au-delà de 36 mois) → orientation CRTLA.</li>
-              <li>Langage oral déficitaire + interaction / pragmatique atteintes (pointage, attention conjointe) → orientation CRA ou pédopsychiatrie pour suspicion TSA.</li>
-              <li>Répétition de logatomes très sensible — marqueur précoce de fragilité phonologique / dyslexie future.</li>
-              <li>Coordination PMI, crèche, école maternelle, orthoptie systématique.</li>
-            </ul>
-          </div>
-        </div>
       </div>
     </div>
   )

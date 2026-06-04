@@ -25,6 +25,7 @@ import Evaleo615ScoresInput from '@/components/forms/Evaleo615ScoresInput'
 import Evalo26ScoresInput from '@/components/forms/Evalo26ScoresInput'
 import Exalang36ScoresInput from '@/components/forms/Exalang36ScoresInput'
 import Exalang58ScoresInput from '@/components/forms/Exalang58ScoresInput'
+import Exalang811ScoresInput from '@/components/forms/Exalang811ScoresInput'
 import PrediFexScoresInput from '@/components/forms/PrediFexScoresInput'
 import BecdScoresInput from '@/components/forms/BecdScoresInput'
 import BiaScoresInput from '@/components/forms/BiaScoresInput'
@@ -3021,12 +3022,24 @@ Astuce : tapez /fatigue, /anxiete, /encouragements… pour réutiliser vos formu
                           <Exalang36ScoresInput
                             {...sharedNotesProps}
                             onResultatsChange={(v) => handleTestSlotChange('Exalang 3-6', v)}
+                            bilanPrecedentStructure={formData.bilan_precedent_structure ?? null}
+                            bilanPrecedentDate={formData.bilan_precedent_date ?? null}
                           />
                         )}
                         {test === 'Exalang 5-8' && (
                           <Exalang58ScoresInput
                             {...sharedNotesProps}
                             onResultatsChange={(v) => handleTestSlotChange('Exalang 5-8', v)}
+                            bilanPrecedentStructure={formData.bilan_precedent_structure ?? null}
+                            bilanPrecedentDate={formData.bilan_precedent_date ?? null}
+                          />
+                        )}
+                        {test === 'Exalang 8-11' && (
+                          <Exalang811ScoresInput
+                            {...sharedNotesProps}
+                            onResultatsChange={(v) => handleTestSlotChange('Exalang 8-11', v)}
+                            bilanPrecedentStructure={formData.bilan_precedent_structure ?? null}
+                            bilanPrecedentDate={formData.bilan_precedent_date ?? null}
                           />
                         )}
                         {test === 'PrediFex' && (
@@ -3057,6 +3070,8 @@ Astuce : tapez /fatigue, /anxiete, /encouragements… pour réutiliser vos formu
                           <ExalangLyfacScoresInput
                             {...sharedNotesProps}
                             onResultatsChange={(v) => handleTestSlotChange('Exalang Lyfac', v)}
+                            bilanPrecedentStructure={formData.bilan_precedent_structure ?? null}
+                            bilanPrecedentDate={formData.bilan_precedent_date ?? null}
                           />
                         )}
                       </div>
