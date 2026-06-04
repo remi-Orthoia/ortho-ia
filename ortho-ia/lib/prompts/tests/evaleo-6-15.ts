@@ -267,9 +267,9 @@ Enora, exemples ortho-edition). Colonne "principaux UNIQUEMENT" exhaustive.
 
 | Epreuve | Sous-scores PRINCIPAUX (eux seuls comptent) | Sous-scores a IGNORER pour \`interpretation\` |
 |---|---|---|
-| Lecture de mots | Score total /44, Temps total | Score serie 1/2, Temps serie 1/2, Variables |
-| **Lecture de pseudomots** | **Score /22 ET Temps — PRINCIPAUX EXCLUSIFS** | Effets de lexicalite |
-| Evalouette / La Mouette / Le Pingouin | Score mots correctement lus (efficience, NMCL) — UN SEUL PRINCIPAL. ⚠️ NE PAS confondre avec la ligne "Resultat ... niveau de la classe : CE1 X / CE2 X" sous le tableau : le chiffre apres "CE1"/"CE2" est le **trimestre du niveau scolaire equivalent** (CE1 T1, CE2 T3...), PAS la classe sept-classes EVALEO. La classe se lit UNIQUEMENT sur les X marques dans le tableau de cotation. | Vitesse, % corrects/lus, Indice degradation |
+| **Lecture de mots** | ⚠️ **REGLE DUAL** (cf. section dediee plus bas) : Score total /44 → 1re ligne "(précision)", Temps total → 2e ligne "(vitesse)". Le min(Score, Temps) **NE S'APPLIQUE PLUS** quand le form fournit les 2 classes separement. | Score serie 1/2, Temps serie 1/2, Variables |
+| **Lecture de pseudomots** | ⚠️ **REGLE DUAL** (idem Lecture de mots) : Score /22 → ligne "(précision)", Temps → ligne "(vitesse)". Min ABROGE quand les 2 classes sont fournies. | Effets de lexicalite |
+| Evalouette / La Mouette / Le Pingouin | Score mots correctement lus (efficience, NMCL) — UN SEUL PRINCIPAL. ⚠️ NE PAS confondre avec la ligne "Resultat ... niveau de la classe : CE1 X / CE2 X" sous le tableau : le chiffre apres "CE1"/"CE2" est le **trimestre du niveau scolaire equivalent** (CE1 T1, CE2 T3...), PAS la classe sept-classes EVALEO. La classe se lit UNIQUEMENT sur les X marques dans le tableau de cotation. **Le niveau scolaire equivalent (si fourni via \`niveau_equivalent\` ou directement dans la saisie) doit etre concatene dans le champ \`score\`** — cf. section dediee plus bas. | Vitesse, % corrects/lus, Indice degradation |
 | EVAL2M | Score d'efficience | Vitesse |
 | Comprehension ecrite (mots/phrases/paragraphe/texte) | Score total (+ Temps si present) | Sous-scores fins (inferences, coreferences) |
 | Dictee de pseudomots | Score pseudomots corrects | Temps, ONPP |
@@ -332,11 +332,26 @@ Enora, exemples ortho-edition). Colonne "principaux UNIQUEMENT" exhaustive.
 - min(cl2, cl7) = cl2 → \`interpretation = "Classe 2 - Fragilite"\`.
 - ❌ NE PAS sortir cl3 (moyenne implicite cl2+cl1+cl7) ni cl7 (haut) ni cl1.
 
-**Exemple C — Lecture de pseudomots** :
-- Sous-scores : **Score 18/22 cl3, Temps 73s cl2**.
-- Principaux : Score ET Temps (les 2).
-- min(cl3, cl2) = cl2 → \`interpretation = "Classe 2 - Fragilite"\`.
-- ❌ NE PAS sortir cl3 en ignorant le Temps.
+**Exemple C — Lecture de pseudomots (NOUVELLE REGLE DUAL — applicable AUSSI a Lecture de mots)** :
+- Le form transmet :
+  > \`Classe EVALEO (precision) : Classe 3 (Norme) — P21 - P38\`
+  > \`Classe EVALEO (vitesse) : Classe 2 (Fragilite) — P7 - P20\`
+  > \`Score brut : 18/22\`
+  > \`Temps : 73s\`
+- Tu DOIS emettre DEUX entrees consecutives dans \`domains[].epreuves[]\` :
+  1. \`{ "nom": "Lecture de pseudomots (précision)", "score": "18/22",
+        "percentile": "P30", "percentile_value": 30,
+        "interpretation": "Classe 3 - Norme", "commentaire": "" }\`
+  2. \`{ "nom": "Lecture de pseudomots (vitesse)",  "score": "73s",
+        "percentile": "P13", "percentile_value": 13,
+        "interpretation": "Classe 2 - Fragilite",
+        "commentaire": "<commentaire ciblant la dimension vitesse>" }\`
+- ❌ NE PAS faire min(cl3, cl2) = cl2 et emettre UNE seule ligne (ancienne
+  regle ABROGEE pour lecture_mots et lecture_pseudomots).
+- ❌ NE PAS utiliser l'em-dash (\`—\`) dans le suffixe — strictement
+  \` (précision)\` / \` (vitesse)\` entre parentheses.
+- Le commentaire pour la dimension en classe 1-3 cible sa dimension propre
+  (precision = voie d'assemblage ; vitesse = automatisation, fluence).
 
 **Exemple D — Repetition de chiffres endroit/envers** :
 - Sous-scores : **Empan endroit = 4 cl1, Empan envers = 3 cl1**, Score endroit
