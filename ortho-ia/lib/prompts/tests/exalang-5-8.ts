@@ -403,6 +403,63 @@ Méthode obligatoire :
 
 ---
 
+#### MAPPING INTER-BATTERIE — changement de test entre les 2 bilans
+
+Quand \`bilan_precedent_structure\` provient d'une batterie DIFFÉRENTE de celle du bilan actuel (typique en pédiatrie sur plusieurs années : Exalang 3-6 → 5-8 en GS-CP, Exalang 5-8 → 8-11 en CE2, Exalang vers EVALEO entre 6 et 15 ans, ou EVALEO 6-15 → Exalang 8-11 selon le choix de l'ortho), tu DOIS matcher les épreuves par **compétence évaluée**, PAS par libellé strict.
+
+##### Table d'équivalences (libellés \`↔\` matchables comme épreuves comparables)
+
+**Lecture — identification de mots**
+- "Lecture de mots" [Exalang 5-8] ↔ "Lecture de mots fréquents" [Exalang 8-11] ↔ "Lecture de mots" [EVALEO]
+- "Lecture de logatomes" [Exalang 5-8] ↔ "Lecture de non-mots" [Exalang 8-11] ↔ "Lecture de pseudomots" [EVALEO]
+- "Leximétrie" : libellé stable sur Exalang 8-11 / Lyfac
+
+**Métaphonologie**
+- "Métaphonologie — rimes" / "Rimes" : libellé stable Exalang 3-6 / 5-8 / 8-11 / EVALEO — match strict possible.
+- "Métaphonologie — syllabes" [Exalang 3-6] ↔ "Comptage syllabique" + "Segmentation-fusion syllabique" [Exalang 5-8]
+- "Métaphonologie — suppression phonémique" [Exalang 8-11] ↔ "Inversion phonémique" [Exalang 5-8] ↔ "Métaphonologie" [EVALEO]
+
+**Mémoire de travail verbale**
+- "Empan auditif endroit" [Exalang 3-6 / 8-11 / Lyfac] ↔ "Empan de chiffres endroit" [Exalang 5-8] ↔ "Répétition de chiffres endroit/envers" [EVALEO, contient les 2 dimensions]
+- "Empan envers" / "Chiffres à l'envers" : matchable Exalang 5-8 / 8-11 / Lyfac / EVALEO
+- "Répétition de logatomes" : libellé stable Exalang 3-6 / 5-8 / 8-11 / EVALEO — match strict possible.
+
+**Langage oral — réceptif**
+- "Désignation (lexique réceptif)" [Exalang 3-6] ↔ "Désignation sur définition" [Exalang 8-11] ↔ "Désignation d'images" [EVALEO]
+- "Compréhension morphosyntaxique" [Exalang 3-6] ↔ "Compréhension orale de phrases" [Exalang 5-8 / 8-11] ↔ "Compréhension orale de phrases" [EVALEO]
+- "Compréhension de récit" [Exalang 5-8] ↔ "Compréhension orale de textes" [Exalang 8-11]
+
+**Langage oral — expressif**
+- "Dénomination (lexique expressif)" [Exalang 3-6] ↔ "Dénomination" [Exalang 5-8] ↔ "Dénomination d'images" [Exalang 8-11] ↔ "Dénomination Lexique — phonologie" [EVALEO]
+- "Fluence sémantique" : libellé stable Exalang 5-8 / 8-11 / EVALEO (équivalent : "Flexibilité lexicale" [Lyfac])
+- "Fluence phonémique" : libellé stable Exalang 5-8 / 8-11 / EVALEO
+
+**Orthographe**
+- "Closure de mots" [Exalang 5-8] ↔ "Dictée de mots" [EVALEO]
+- "Transcription de logatomes" [Exalang 5-8] ↔ "Dictée de pseudomots" [EVALEO]
+- "Texte à compléter" [Exalang 5-8] ↔ "DRA — Dictée de Rédaction Abrégée" [Exalang 8-11] ↔ "Dictée de phrases" [EVALEO]
+
+##### ⚠️ Faux équivalents — NE PAS APPARIER
+
+- "Closure de mots" [Exalang 5-8] ≠ "Closure de texte" [Exalang 8-11] : la première est une production lexicale, la seconde une compréhension contextuelle.
+- "Lecture de texte" [Exalang 5-8 mi-CP] ≠ "Leximétrie" [Exalang 8-11] : la première est une lecture compréhension globale, la seconde est purement vitesse.
+- "Approche implicite de la lecture" [Exalang 5-8] ≠ "Conscience de l'écrit" [Exalang 3-6] : recouvrement partiel seulement, pas d'équivalence directe.
+- Bilan adulte (PREDIMEM / PrediFex / PrediLac / Lyfac) ↔ bilan enfant (Exalang / EVALEO) : **aucun matching cross-population**.
+
+##### Règles pour les épreuves orphelines
+
+- **Épreuve actuelle SANS équivalent dans le bilan précédent** → la signaler dans \`synthese_evolution.nouvelles\` (et non dans progres/regression).
+- **Épreuve du bilan précédent SANS équivalent dans l'actuel** → l'ignorer (le bilan actuel ne mesure plus cette compétence).
+- **NE JAMAIS** conclure à un progrès ou une régression massive sur les épreuves orphelines — c'est de la non-comparabilité, pas une évolution clinique.
+
+##### Ratio de comparabilité — à mentionner dans \`synthese_evolution.resume\`
+
+Calcule \`(nombre d'épreuves comparables) / (nombre d'épreuves actuelles)\`. Adapte la 1re phrase du \`resume\` :
+
+- **≥ 80 %** : *"L'évolution est documentée par [X] épreuves comparables sur [Y]."*
+- **50-79 %** : *"L'évolution porte sur [X] épreuves sur [Y] (les autres étant spécifiques à la nouvelle batterie)."*
+- **< 50 %** : *"La comparaison directe est limitée ([X] épreuves sur [Y]) du fait du changement de batterie entre les 2 bilans. La synthèse repose davantage sur la trajectoire globale et le jugement clinique de l'orthophoniste."*
+
 #### NOMENCLATURE AMO — Mention OBLIGATOIRE en conclusion
 
 Le CRBO DOIT inclure dans la conclusion 1 phrase (2 lignes max) précisant la nomenclature AMO applicable :

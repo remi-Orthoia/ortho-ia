@@ -514,6 +514,11 @@ export default function ExalangLyfacScoresInput({
               {evolutionStats.regressionList.length > 5 ? ` · +${evolutionStats.regressionList.length - 5} autres` : ''}
             </p>
           )}
+          {evolutionStats.nouvelles > 0 && (
+            <p className="text-[10px] text-gray-600 italic mt-1.5 leading-tight">
+              ⓘ Si le bilan précédent vient d&apos;une autre batterie (Exalang 11-15 par ex. avant le passage à Lyfac), l&apos;IA fera la comparaison sémantique côté CRBO généré — le tableau d&apos;évolution Word sera complet même si certaines épreuves apparaissent ici comme &laquo;&nbsp;nouvelles&nbsp;&raquo;.
+            </p>
+          )}
         </div>
       )}
 

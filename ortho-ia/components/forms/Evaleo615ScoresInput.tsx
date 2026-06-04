@@ -1439,6 +1439,11 @@ export default function Evaleo615ScoresInput({
               Si la majorité devraient être comparables, vérifiez que les titres d&apos;épreuves du bilan précédent correspondent aux libellés EVALEO officiels.
             </p>
           )}
+          {evolutionStats.nouvelles > 0 && (
+            <p className="text-[10px] text-gray-600 italic mt-1.5 leading-tight">
+              ⓘ Si le bilan précédent vient d&apos;une autre batterie (Exalang 5-8 / 8-11 par ex.), l&apos;IA fera la comparaison sémantique côté CRBO généré — le tableau d&apos;évolution Word sera complet même si certaines épreuves apparaissent ici comme &laquo;&nbsp;nouvelles&nbsp;&raquo;.
+            </p>
+          )}
         </div>
       )}
 

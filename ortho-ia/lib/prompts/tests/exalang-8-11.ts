@@ -202,6 +202,60 @@ Méthode obligatoire :
 5. **Citation nominative obligatoire** : écrire "Boucle phonologique P25 vers P50 (progrès)", PAS "plusieurs progrès observés".
 6. **Délai entre les bilans** à mentionner explicitement ("Au regard de N mois de prise en charge"). Si délai < 6 mois sans PEC active, ne pas conclure à une rééducation efficace (effet test/retest).
 
+---
+
+#### MAPPING INTER-BATTERIE — changement de test entre les 2 bilans
+
+Quand \`bilan_precedent_structure\` provient d'une batterie DIFFÉRENTE de celle du bilan actuel (typique : Exalang 5-8 → 8-11 en CE2, ou Exalang 8-11 → 11-15 en 6e, ou EVALEO → Exalang 8-11 selon le choix de l'ortho), tu DOIS matcher les épreuves par **compétence évaluée**, PAS par libellé strict.
+
+##### Table d'équivalences (libellés \`↔\` matchables comme épreuves comparables)
+
+**Lecture — identification de mots**
+- "Lecture de mots" [Exalang 5-8] ↔ "Lecture de mots fréquents" [Exalang 8-11] ↔ "Lecture de mots" [EVALEO]
+- "Lecture de logatomes" [Exalang 5-8] ↔ "Lecture de non-mots" [Exalang 8-11] ↔ "Lecture de pseudomots" [EVALEO]
+- "Leximétrie" : libellé stable Exalang 8-11 / Lyfac
+
+**Métaphonologie**
+- "Métaphonologie — rimes" : libellé stable 3-6 / 5-8 / 8-11 / EVALEO — match strict.
+- "Métaphonologie — syllabes" [3-6] ↔ "Comptage syllabique" + "Segmentation-fusion syllabique" [5-8]
+- "Métaphonologie — suppression phonémique" [8-11] ↔ "Inversion phonémique" [5-8] ↔ "Métaphonologie" [EVALEO]
+
+**Mémoire de travail verbale**
+- "Empan auditif endroit" [3-6 / 8-11 / Lyfac] ↔ "Empan de chiffres endroit" [5-8] ↔ "Répétition de chiffres endroit/envers" [EVALEO]
+- "Empan envers" : matchable 5-8 / 8-11 / Lyfac / EVALEO
+- "Répétition de logatomes" : libellé stable — match strict.
+
+**Langage oral**
+- "Désignation (lexique réceptif)" [3-6] ↔ "Désignation sur définition" [8-11] ↔ "Désignation d'images" [EVALEO]
+- "Compréhension orale de phrases" : matchable 5-8 / 8-11 / EVALEO
+- "Compréhension de récit" [5-8] ↔ "Compréhension orale de textes" [8-11]
+- "Dénomination" [5-8] ↔ "Dénomination d'images" [8-11] ↔ "Dénomination Lexique — phonologie" [EVALEO]
+
+**Orthographe**
+- "Closure de mots" [5-8] ↔ "Dictée de mots" [EVALEO]
+- "Transcription de logatomes" [5-8] ↔ "Dictée de pseudomots" [EVALEO]
+- "Texte à compléter" [5-8] ↔ "DRA — Dictée de Rédaction Abrégée" [8-11] ↔ "Dictée de phrases" [EVALEO]
+
+##### ⚠️ Faux équivalents — NE PAS APPARIER
+
+- "Closure de mots" [5-8] ≠ "Closure de texte" [8-11] : production lexicale vs compréhension contextuelle.
+- "Lecture de texte" [5-8 mi-CP] ≠ "Leximétrie" [8-11] : compréhension globale vs vitesse pure.
+- Bilan adulte (PREDIMEM / PrediFex / PrediLac / Lyfac) ↔ bilan enfant (Exalang / EVALEO) : **aucun matching cross-population**.
+
+##### Règles pour les épreuves orphelines
+
+- **Épreuve actuelle SANS équivalent dans le bilan précédent** → la signaler dans \`synthese_evolution.nouvelles\` (et non progres/regression). Ex. : "Lecture de mots irréguliers" [8-11] est nouvelle si le précédent était un Exalang 5-8 (qui ne sépare pas mots fréquents/irréguliers).
+- **Épreuve du bilan précédent SANS équivalent dans l'actuel** → l'ignorer.
+- **NE JAMAIS** conclure à un progrès / régression massif sur les épreuves orphelines — c'est de la non-comparabilité.
+
+##### Ratio de comparabilité — à mentionner dans \`synthese_evolution.resume\`
+
+Calcule \`(épreuves comparables) / (épreuves actuelles)\`. Adapte la 1re phrase du \`resume\` :
+
+- **≥ 80 %** : *"L'évolution est documentée par [X] épreuves comparables sur [Y]."*
+- **50-79 %** : *"L'évolution porte sur [X] épreuves sur [Y] (les autres étant spécifiques à la nouvelle batterie)."*
+- **< 50 %** : *"La comparaison directe est limitée ([X] épreuves sur [Y]) du fait du changement de batterie entre les 2 bilans. La synthèse repose davantage sur la trajectoire globale et le jugement clinique de l'orthophoniste."*
+
 #### NOMENCLATURE AMO — Mention OBLIGATOIRE en conclusion
 
 Le CRBO DOIT inclure dans la conclusion 1 phrase (2 lignes max) précisant la nomenclature AMO applicable :

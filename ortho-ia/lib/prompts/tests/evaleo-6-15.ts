@@ -1013,6 +1013,62 @@ Si le \`Test precedent\` est explicitement "EVALEO 6-15" (ou si non renseigné m
 
 ---
 
+#### 🆕 MAPPING INTER-BATTERIE — changement de test entre les 2 bilans (renouvellement)
+
+Quand \`bilan_precedent_structure\` provient d'une batterie DIFFÉRENTE d'EVALEO 6-15 (cas fréquent : suivi Exalang 5-8 → EVALEO en CE2, Exalang 8-11 → EVALEO en CM2/6e, ou Exalang 11-15 → EVALEO sur le tard), tu DOIS matcher les épreuves par **compétence évaluée**, PAS par libellé strict.
+
+##### Table d'équivalences (libellés \`↔\` matchables comme épreuves comparables)
+
+**Lecture — identification de mots**
+- "Lecture de mots" [EVALEO] ↔ "Lecture de mots" [Exalang 5-8] ↔ "Lecture de mots fréquents" [Exalang 8-11]
+- "Lecture de pseudomots" [EVALEO] ↔ "Lecture de logatomes" [Exalang 5-8] ↔ "Lecture de non-mots" [Exalang 8-11]
+- "Evalouette" / "La Mouette" / "Le Pingouin" [EVALEO] : pas d'équivalent direct dans Exalang (texte signifiant vs identification de mots). Considérer comme nouvelles si bilan précédent Exalang.
+- "EVAL2M" [EVALEO] ↔ "Leximétrie" [Exalang 8-11 / Lyfac] (vitesse de lecture en contexte)
+
+**Métaphonologie**
+- "Rimes" [EVALEO] : libellé stable 3-6 / 5-8 / 8-11 / EVALEO — match strict possible.
+- "Métaphonologie" [EVALEO] (manipulation explicite) ↔ "Métaphonologie — suppression phonémique" [Exalang 8-11] ↔ "Inversion phonémique" [Exalang 5-8]
+- "Epiphonologie" [EVALEO] (manipulation implicite) ↔ "Métaphonologie — syllabes" [Exalang 3-6] ↔ "Comptage syllabique" + "Segmentation-fusion syllabique" [Exalang 5-8]
+- "Conscience articulatoire" [EVALEO] : pas d'équivalent direct dans Exalang.
+
+**Mémoire de travail verbale**
+- "Répétition de chiffres endroit/envers" [EVALEO, contient les 2 dimensions] ↔ "Empan auditif endroit" + "Empan auditif envers" [Exalang 8-11] ↔ "Empan de chiffres endroit" + "Chiffres à l'envers" [Exalang 5-8] ↔ "Empan auditif endroit" [Exalang 3-6]
+- "Répétition de logatomes" [EVALEO] : libellé stable 3-6 / 5-8 / 8-11 / EVALEO — match strict possible.
+
+**Langage oral**
+- "Dénomination Lexique — phonologie" [EVALEO] ↔ "Dénomination d'images" [Exalang 8-11] ↔ "Dénomination" [Exalang 5-8] ↔ "Dénomination (lexique expressif)" [Exalang 3-6]
+- "Désignation d'images" [EVALEO] ↔ "Désignation sur définition" [Exalang 8-11] ↔ "Désignation (lexique réceptif)" [Exalang 3-6]
+- "Compréhension orale de phrases" [EVALEO] : libellé stable 5-8 / 8-11 / EVALEO — match strict.
+- "Fluence sémantique" / "Fluence phonémique" [EVALEO] : libellés stables 5-8 / 8-11 / EVALEO — match strict.
+
+**Orthographe**
+- "Dictée de mots" [EVALEO] ↔ "Closure de mots" [Exalang 5-8]
+- "Dictée de pseudomots" [EVALEO] ↔ "Transcription de logatomes" [Exalang 5-8]
+- "Dictée de phrases" [EVALEO] ↔ "Texte à compléter" [Exalang 5-8] ↔ "DRA — Dictée de Rédaction Abrégée" [Exalang 8-11]
+- "Fluence orthographique" [EVALEO] : pas d'équivalent direct dans Exalang.
+
+##### ⚠️ Faux équivalents — NE PAS APPARIER
+
+- "Closure de mots" [Exalang 5-8] ≠ "Closure de texte" [Exalang 8-11] : production lexicale vs compréhension contextuelle.
+- "Lecture de texte" [Exalang 5-8 mi-CP] ≠ "Leximétrie" [Exalang 8-11] : compréhension globale vs vitesse pure.
+- Bilan adulte (PREDIMEM / PrediFex / PrediLac / Lyfac) ↔ EVALEO : **aucun matching cross-population**. EVALEO est pédiatrique (6-15 ans). Si le bilan précédent est adulte, signaler l'incohérence dans \`resume\` et traiter le bilan EVALEO comme initial.
+
+##### Règles pour les épreuves orphelines
+
+- **Épreuve actuelle EVALEO SANS équivalent dans le bilan précédent** → la signaler dans \`synthese_evolution.nouvelles\`. Ex. : "Evalouette" / "Mouette" / "Pingouin" sont nouvelles si le précédent était Exalang (Exalang n'a pas de lecture de texte signifiant équivalent).
+- **Épreuve du bilan précédent SANS équivalent EVALEO** → l'ignorer (le bilan actuel ne mesure plus cette compétence).
+- **NE JAMAIS** conclure à un progrès / régression massif sur les épreuves orphelines — c'est de la non-comparabilité.
+
+##### Ratio de comparabilité — à mentionner dans \`synthese_evolution.resume\`
+
+Calcule \`(épreuves EVALEO comparables) / (épreuves EVALEO actuelles)\`. EVALEO étant la batterie la plus riche en épreuves spécifiques (Evalouette/Mouette/Pingouin, EVAL2M, Conscience articulatoire, Fluence orthographique...), le ratio est souvent **inférieur à 60 %** quand le bilan précédent vient d'un Exalang. C'est attendu — à signaler dans le \`resume\` :
+
+- **≥ 80 %** : *"L'évolution est documentée par [X] épreuves comparables sur [Y]."* (cas EVALEO → EVALEO, rare)
+- **50-79 %** : *"L'évolution porte sur [X] épreuves sur [Y] (les autres étant spécifiques à EVALEO)."*
+- **< 50 %** : *"La comparaison directe est limitée ([X] épreuves sur [Y]) du fait du passage à EVALEO depuis [batterie précédente]. La synthèse repose davantage sur la trajectoire globale et le jugement clinique de l'orthophoniste."*
+
+---
+
 #### 🆕 TRIMESTRE ET FICHE ANAMNÈSE EVALEO (form ortho.ia)
 
 **Trimestre (T1 / T2 / T3)**

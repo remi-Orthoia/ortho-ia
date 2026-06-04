@@ -523,6 +523,11 @@ export default function Exalang36ScoresInput({
               ⚠ Peu d&apos;épreuves matchent ({evolutionStats.totalCompared} comparées vs {evolutionStats.nouvelles} nouvelles). Vérifiez les libellés du bilan précédent.
             </p>
           )}
+          {evolutionStats.nouvelles > 0 && (
+            <p className="text-[10px] text-gray-600 italic mt-1.5 leading-tight">
+              ⓘ Si le bilan précédent vient d&apos;une autre batterie (Exalang 5-8 par ex. après passage en CP), l&apos;IA fera la comparaison sémantique côté CRBO généré — le tableau d&apos;évolution Word sera complet même si certaines épreuves apparaissent ici comme &laquo;&nbsp;nouvelles&nbsp;&raquo;.
+            </p>
+          )}
         </div>
       )}
 

@@ -223,6 +223,54 @@ Méthode obligatoire :
 6. **Spécificité jeune adulte** : à cet âge, les troubles installés sont peu réversibles ; un renouvellement Lyfac vise davantage à **objectiver la stabilité du trouble** pour le maintien des aménagements aux examens qu'à mesurer une rééducation active. Tenir compte de ce contexte dans la formulation de la 'synthese_evolution.resume'.
 7. **Délai entre les bilans** à mentionner explicitement ("Au regard de N mois écoulés depuis le précédent bilan").
 
+---
+
+#### MAPPING INTER-BATTERIE — changement de test entre les 2 bilans
+
+Quand \`bilan_precedent_structure\` provient d'une batterie DIFFÉRENTE de celle du bilan actuel (typique pour Lyfac : passage d'un Exalang 11-15 → Lyfac à 15 ans+ pour aménagements d'examens, ou suivi post-PEC enfance avec changement de batterie), tu DOIS matcher les épreuves par **compétence évaluée**, PAS par libellé strict.
+
+##### Table d'équivalences pertinentes pour Lyfac
+
+**Lecture**
+- "Lecture de mots" : matchable Exalang 5-8 / 8-11 (mots fréquents) / EVALEO / Lyfac
+- "Lecture de logatomes" / "Lecture de non-mots" / "Lecture de pseudomots" : matchable entre batteries.
+- "Leximétrie" : libellé stable Exalang 8-11 / 11-15 / Lyfac
+- "Compréhension de texte" [Lyfac] ↔ "Compréhension écrite de texte" [Exalang 8-11 / EVALEO]
+- "Repérage" [Lyfac] : pas d'équivalent direct dans les batteries enfant — considérer comme nouvelle.
+
+**Mémoire de travail**
+- "Empan endroit" : matchable Exalang 3-6 / 5-8 / 8-11 / Lyfac
+- "Empan envers" : matchable Exalang 5-8 / 8-11 / Lyfac / EVALEO
+- "Empan visuel" [Lyfac] : pas d'équivalent direct.
+
+**Langage élaboré**
+- "Flexibilité lexicale" [Lyfac] ↔ "Fluence sémantique" [Exalang 5-8 / 8-11 / EVALEO]
+- "Consignes orales" [Lyfac] ↔ "Compréhension orale de phrases" [Exalang 5-8 / 8-11 / EVALEO] (recouvrement partiel)
+- "Inférences" [Lyfac] ↔ "Métaphores & expressions idiomatiques" [EVALEO] (recouvrement partiel)
+
+**Orthographe**
+- "Texte à choix multiple" / "Complétion de phrases" [Lyfac] ↔ "Texte à compléter" [Exalang 5-8] ↔ "DRA — Dictée de Rédaction Abrégée" [Exalang 8-11] ↔ "Dictée de phrases" [EVALEO]
+- "Synthèse orthographique" [Lyfac] : score global, pas d'équivalent direct.
+
+##### ⚠️ Faux équivalents — NE PAS APPARIER
+
+- Bilan adulte (PREDIMEM / PrediFex / PrediLac) ↔ Lyfac : **les protocoles adultes n'ont pas la même cible clinique**. PREDIMEM = mémoire dépistage adulte ; PrediFex = exécutif adulte ; PrediLac = lecture adulte aphasie / APP. Lyfac = lycéens / étudiants suivi langage écrit. Pas de matching automatique.
+- "Repérage" [Lyfac] ≠ "Compréhension de texte" — la première est prise d'informations rapide, la seconde est compréhension narrative.
+
+##### Règles pour les épreuves orphelines
+
+- **Épreuve actuelle SANS équivalent dans le bilan précédent** → la signaler dans \`synthese_evolution.nouvelles\`.
+- **Épreuve du bilan précédent SANS équivalent dans l'actuel** → l'ignorer.
+- **NE JAMAIS** conclure à un progrès / régression massif sur les épreuves orphelines.
+
+##### Ratio de comparabilité — à mentionner dans \`synthese_evolution.resume\`
+
+Pour Lyfac, ce ratio est souvent **inférieur à 80 %** car la batterie a des épreuves spécifiques (Repérage, Empan visuel, Synthèse orthographique) sans équivalent dans les batteries enfant. C'est attendu, à signaler dans le \`resume\`.
+
+- **≥ 80 %** : *"L'évolution est documentée par [X] épreuves comparables sur [Y]."*
+- **50-79 %** : *"L'évolution porte sur [X] épreuves sur [Y] (les autres étant spécifiques à Lyfac)."*
+- **< 50 %** : *"La comparaison directe est limitée ([X] épreuves sur [Y]) du fait du passage à la batterie Lyfac. La synthèse repose davantage sur la trajectoire globale et le jugement clinique."*
+
 #### NOMENCLATURE AMO — Mention OBLIGATOIRE en conclusion
 
 Le CRBO DOIT inclure dans la conclusion 1 phrase (2 lignes max) précisant la nomenclature AMO applicable, OU mentionner explicitement l'absence de PEC active si le bilan vise uniquement à objectiver les aménagements :
