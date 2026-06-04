@@ -357,6 +357,15 @@ export const BILAN_REGISTRY: Record<string, BilanEntry> = {
   },
   'Exalang Lyfac': {
     nom: 'Exalang Lyfac',
+    // Grisé 2026-06 — le form et le prompt existent depuis longtemps mais
+    // n'ont PAS encore reçu la refonte sur la base du manuel officiel
+    // (contrairement à Exalang 5-8 refondu sur le manuel Orthomotus 2010).
+    // À débloquer une fois `docs/Bilans Sources/manuel exalang Lyfac.pdf`
+    // lu et le module aligné (épreuves officielles, niveaux d'étalonnage,
+    // sous-scores spécifiques, hints cliniques per-épreuve). Le code en
+    // l'état reste utilisable mais pourrait produire des CRBO de qualité
+    // hétérogène vs la batterie réelle.
+    betaDisabled: true,
     famille: 'langage_oral_ecrit',
     ageRange: 'lycée / fac',
     formPath: 'components/forms/ExalangLyfacScoresInput.tsx',
