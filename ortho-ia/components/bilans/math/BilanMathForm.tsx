@@ -84,9 +84,6 @@ export default function BilanMathForm({ grille }: BilanMathFormProps) {
   const [generatingEpreuveId, setGeneratingEpreuveId] = useState<string | null>(null)
   const [generatedCRBO, setGeneratedCRBO] = useState<string | null>(null)
   const [isGeneratingCRBO, setIsGeneratingCRBO] = useState(false)
-  // Texte CRBO accumulé pendant le streaming SSE. Permet d'afficher la
-  // génération en direct plutôt qu'un spinner.
-  const [streamingCRBO, setStreamingCRBO] = useState('')
   // Mode d'affichage de la preview : 'word' = aperçu fidèle du Word à
   // exporter (par défaut), 'edit' = textarea brute pour ajuster le markdown.
   const [previewMode, setPreviewMode] = useState<'word' | 'edit'>('word')
@@ -582,7 +579,6 @@ export default function BilanMathForm({ grille }: BilanMathFormProps) {
     })
 
     setIsGeneratingCRBO(true)
-    setStreamingCRBO('')
     try {
       // Streaming SSE : on consomme les `text_delta` au fil de la génération
       // pour afficher le CRBO se rédigeant en direct (markdown progressif).
@@ -639,8 +635,9 @@ export default function BilanMathForm({ grille }: BilanMathFormProps) {
           let parsed: any
           try { parsed = JSON.parse(line) } catch { continue }
           if (parsed.type === 'delta' && typeof parsed.text === 'string') {
+            // Accumulé en mémoire pour le fallback finalText, mais plus
+            // affiché à l'utilisateur (overlay GenerationLoader uniquement).
             accumulated += parsed.text
-            setStreamingCRBO(accumulated)
           } else if (parsed.type === 'complete' && typeof parsed.text === 'string') {
             finalText = parsed.text
           } else if (parsed.type === 'error') {
@@ -667,7 +664,6 @@ export default function BilanMathForm({ grille }: BilanMathFormProps) {
       toast.error(e?.message || 'Erreur réseau.')
     } finally {
       setIsGeneratingCRBO(false)
-      setStreamingCRBO('')
     }
   }
 
@@ -1077,10 +1073,10 @@ export default function BilanMathForm({ grille }: BilanMathFormProps) {
         </div>
       </footer>
 
-      {/* Overlay de génération : aligne sur celui des autres bilans
-          (composant GenerationLoader partagé), plutôt qu'un rendu live du
-          texte streamé. Le streaming SSE continue côté serveur, on accumule
-          en streamingCRBO en arrière-plan ; seul l'affichage change. */}
+      {/* Overlay de génération : composant GenerationLoader partagé (charte
+          ortho.ia : sage / terracotta / cream). Le streaming SSE est consommé
+          en arrière-plan pour récupérer le texte final, mais le contenu en
+          cours de rédaction n'est plus affiché à l'utilisateur. */}
       <GenerationLoader visible={isGeneratingCRBO} />
 
       {/* Preview CRBO */}

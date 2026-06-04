@@ -35,7 +35,7 @@ import type { CRBOFormData } from '@/lib/types'
 import { drawHappyNeuronChart, computeChartHeight, computeChartWidth, type ChartGroup } from '@/lib/chart'
 import { downloadCRBOWord, SEUILS, getPercentileColor, seuilFor, formatPercentileForDisplay, seuilForCell, getPercentileColorForCell } from '@/lib/word-export'
 import MicButton from '@/components/MicButton'
-import StreamingCRBO from '@/components/StreamingCRBO'
+import GenerationLoader from '@/components/GenerationLoader'
 import { playPrintAnimation } from '@/components/PrintAnimation'
 import { playSuccessSound, playSwoosh } from '@/lib/sounds'
 import { applyVocabToObject } from '@/lib/vocab-perso'
@@ -215,8 +215,6 @@ export default function ResultatsPage() {
   // rendus comme épreuves d'un domaine unique "MoCA — Profil cognitif" — on
   // mappe leur commentaire par épreuve.nom.
   const [mocaEpreuveComments, setMocaEpreuveComments] = useState<Record<string, string>>({})
-  // Buffer SSE accumulé pendant la génération streaming. Vidé au reset.
-  const [streamingBuffer, setStreamingBuffer] = useState('')
   // Modal post-génération : propose de chaîner un second bilan pour le même
   // patient (cas typique : screening MoCA → bilan langagier plus profond
   // type BETL). Évite de ressaisir patient + médecin pour le second CRBO.
@@ -301,14 +299,13 @@ export default function ResultatsPage() {
     if (generating) return
     setGenerating(true)
     setError('')
-    setStreamingBuffer('')
 
     try {
       // ============ PHASE 2 : SYNTHÈSE (streaming SSE) ============
-      // Plutôt qu'attendre 30-60s de spinner, on consomme un flux SSE qui
-      // remonte le texte token-par-token au fur et à mesure que Claude
-      // rédige. Visuel : sections (diagnostic / recommandations) se
-      // remplissent en direct, avec highlight des termes cliniques.
+      // On consomme un flux SSE pour récupérer la synthèse finale dès qu'elle
+      // est prête (event `complete`). Le contenu textuel intermédiaire (events
+      // `delta`) n'est plus affiché à l'utilisateur — l'overlay GenerationLoader
+      // partagé prend le relais visuellement pendant toute la durée.
       const response = await fetch('/api/generate-crbo?stream=1', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
@@ -341,7 +338,6 @@ export default function ResultatsPage() {
       if (!reader) throw new Error("Streaming non supporté par ce navigateur.")
       const decoder = new TextDecoder()
       let sseBuffer = ''
-      let accumulated = ''
       let synthesized: SynthesizedCRBO | null = null
       let streamError: string | null = null
 
@@ -357,10 +353,9 @@ export default function ResultatsPage() {
           const dataLine = evt.replace(/^data:\s*/, '')
           let parsed: any
           try { parsed = JSON.parse(dataLine) } catch { continue }
-          if (parsed.type === 'delta' && typeof parsed.partial === 'string') {
-            accumulated += parsed.partial
-            setStreamingBuffer(accumulated)
-          } else if (parsed.type === 'complete' && parsed.synthesized) {
+          // Les events `delta` sont ignorés (plus d'affichage live) — seul
+          // l'event `complete` porte la synthèse finale exploitable.
+          if (parsed.type === 'complete' && parsed.synthesized) {
             synthesized = parsed.synthesized as SynthesizedCRBO
           } else if (parsed.type === 'error') {
             streamError = parsed.message || 'Erreur streaming'
@@ -980,39 +975,10 @@ export default function ResultatsPage() {
         </div>
       </div>
 
-      {/* Overlay streaming : affiché pendant la génération de la synthèse.
-          Remplace l'attente passive (spinner 30-60s) par un visuel actif
-          où l'ortho voit le diagnostic / recommandations se rédiger en
-          direct, avec highlight des termes cliniques. */}
-      {generating && (
-        <div
-          style={{
-            position: 'fixed',
-            inset: 0,
-            background: 'rgba(15, 23, 42, 0.55)',
-            backdropFilter: 'blur(4px)',
-            zIndex: 100,
-            display: 'flex',
-            alignItems: 'center',
-            justifyContent: 'center',
-            padding: 24,
-            animation: 'fade-in-overlay 220ms ease',
-          }}
-        >
-          <StreamingCRBO
-            accumulated={streamingBuffer}
-            active={generating}
-            isMoca={(Array.isArray(fd.test_utilise) ? fd.test_utilise : [fd.test_utilise || '']).length === 1
-              && (Array.isArray(fd.test_utilise) ? fd.test_utilise[0] : fd.test_utilise) === 'MoCA'}
-          />
-          <style jsx>{`
-            @keyframes fade-in-overlay {
-              from { opacity: 0; }
-              to { opacity: 1; }
-            }
-          `}</style>
-        </div>
-      )}
+      {/* Overlay de génération : composant GenerationLoader partagé, aligné
+          sur celui des autres bilans (charte ortho.ia : sage / terracotta /
+          cream, étapes Lecture → Analyse → Rédaction → Recommandations). */}
+      <GenerationLoader visible={generating} />
 
       {/* Modale de chaînage post-CRBO — propose un second bilan pour le même
           patient. Particulièrement utile après un MoCA (screening) qui
