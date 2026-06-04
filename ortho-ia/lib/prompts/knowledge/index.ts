@@ -55,9 +55,15 @@ import {
 import { EVALEO_METHODOLOGY } from './evaleo-method'
 import { BETL_HILLIS_CARAMAZZA } from './betl-hillis-caramazza'
 
-/** Catégorisation des tests pour le sélecteur de knowledge. */
+/** Catégorisation des tests pour le sélecteur de knowledge.
+ *  Exalang 5-8 est listé dans les 5 buckets (oral + écrit + lecture +
+ *  orthographe) : la batterie couvre les 35 épreuves de langage oral ET écrit
+ *  (cf. registry famille 'langage_oral_ecrit'), donc bénéficie des arbres
+ *  décisionnels et des effets lecture/orthographe au même titre qu'Exalang
+ *  8-11 / 11-15 / EVALEO. */
 const LANGAGE_ECRIT_TESTS = new Set([
   'EVALEO 6-15',
+  'Exalang 5-8',
   'Exalang 8-11',
   'Exalang 11-15',
   'Exalang Lyfac',
@@ -86,6 +92,7 @@ const COGNITIF_ADULTE_TESTS = new Set([
 ])
 const LECTURE_TESTS = new Set([
   'EVALEO 6-15',
+  'Exalang 5-8',
   'Exalang 8-11',
   'Exalang 11-15',
   'Exalang Lyfac',
