@@ -16,8 +16,8 @@
  * Couplage : nouveau-crbo/page.tsx, test_utilise === ['Exalang 5-8'].
  */
 
-import { useEffect, useMemo, useState } from 'react'
-import { BookOpen, ChevronDown, Info } from 'lucide-react'
+import { useEffect, useMemo, useRef, useState } from 'react'
+import { BookOpen, ChevronDown, FileUp, Info, Loader2 } from 'lucide-react'
 import MicButton from '../MicButton'
 
 interface Props {
@@ -285,13 +285,81 @@ function NoteStandardChips({ value, onChange }: { value: NSKey; onChange: (v: NS
   )
 }
 
-export default function Exalang58ScoresInput({ notes, onNotesChange, onResultatsChange }: Props) {
+export default function Exalang58ScoresInput({ notes, onNotesChange, onResultatsChange, onError }: Props) {
   const [state, setState] = useState<State>(emptyState)
   // Modules ouverts par défaut : Langage oral + Phonologie (les plus
   // saisies en pratique). Les autres en accordéon fermé.
   const [expanded, setExpanded] = useState<Record<string, boolean>>({
     M1: true, M2: true, M3: false, M4: false, M5: false, M6: false, M7: false,
   })
+
+  // Import PDF Exalang 5-8 — route /api/extract-exalang-5-8-pdf.
+  // Pré-remplit l'état du form depuis un rapport informatisé HappyNeuron Pro
+  // ou un scan de cahier de passation. Mêmes contraintes que l'import EVALEO :
+  // PDF uniquement (docx / image refusés côté route pour préserver la grille
+  // tabulaire et les bandes de percentile).
+  const fileInputRef = useRef<HTMLInputElement | null>(null)
+  const [importing, setImporting] = useState(false)
+  const [importInfo, setImportInfo] = useState<string | null>(null)
+
+  async function handleImportFile(file: File) {
+    setImporting(true)
+    setImportInfo(null)
+    try {
+      const fd = new FormData()
+      fd.append('file', file)
+      const res = await fetch('/api/extract-exalang-5-8-pdf', { method: 'POST', body: fd })
+      const data = await res.json()
+      if (!res.ok || !data?.success) {
+        const msg = data?.error ?? 'Échec de l\'import PDF.'
+        onError?.(msg)
+        setImportInfo(`Erreur : ${msg}`)
+        return
+      }
+      const ex = data.extracted as {
+        niveau: string
+        epreuves: Array<{
+          key: string
+          percentile: string
+          note_standard: string
+          score_brut: string
+          temps: string
+          observation: string
+          non_passee: boolean
+        }>
+      }
+      setState(prev => {
+        const next: State = {
+          niveau: (ex.niveau || prev.niveau) as State['niveau'],
+          epreuves: { ...prev.epreuves },
+        }
+        for (const item of ex.epreuves ?? []) {
+          if (!next.epreuves[item.key]) continue // clé inconnue → ignorer
+          const cur = next.epreuves[item.key]
+          next.epreuves[item.key] = {
+            percentile: (item.percentile as PercentileKey) || cur.percentile,
+            note_standard: (item.note_standard as NSKey) || cur.note_standard,
+            score_brut: item.score_brut || cur.score_brut,
+            temps: item.temps || cur.temps,
+            observation: item.observation || cur.observation,
+            non_passee: !!item.non_passee,
+          }
+        }
+        return next
+      })
+      const epreuvesImported = (ex.epreuves ?? []).length
+      setImportInfo(
+        `Import réussi : ${epreuvesImported} épreuve${epreuvesImported > 1 ? 's' : ''} pré-remplie${epreuvesImported > 1 ? 's' : ''}. Vérifiez et complétez si besoin.`,
+      )
+    } catch (err: any) {
+      const msg = err?.message ?? 'Erreur réseau durant l\'import.'
+      onError?.(msg)
+      setImportInfo(`Erreur : ${msg}`)
+    } finally {
+      setImporting(false)
+      if (fileInputRef.current) fileInputRef.current.value = ''
+    }
+  }
 
   const totalSaisies = useMemo(() => {
     let n = 0
@@ -376,6 +444,50 @@ export default function Exalang58ScoresInput({ notes, onNotesChange, onResultats
             Reportez la zone et / ou la Note Standard lues sur la feuille de résultats du logiciel. Étalonnage par niveau scolaire (GSM, mi-CP, CP-CE1, CE1-CE2). Q1 = P25 = Zone de fragilité, jamais Difficulté.
           </p>
         </div>
+      </div>
+
+      {/* Import PDF Exalang 5-8 — rapport HappyNeuron Pro ou scan du cahier
+          de passation. Pre-remplit niveau d'etalonnage + percentile +
+          Note Standard + score brut + temps + observation pour les 35
+          epreuves. PDF uniquement (docx/image refuses cote route). */}
+      <div className="rounded-lg border border-sky-200 bg-sky-50/60 p-3">
+        <div className="flex items-start justify-between gap-3 flex-wrap">
+          <div className="flex items-start gap-2 min-w-0">
+            <FileUp size={18} className="text-sky-700 shrink-0 mt-0.5" />
+            <div className="text-sm min-w-0">
+              <p className="font-semibold text-sky-900">Importer un document Exalang 5-8 (optionnel)</p>
+              <p className="text-sky-800 text-xs mt-0.5 leading-relaxed">
+                Format accepté : <strong>PDF uniquement</strong> (rapport de cotation HappyNeuron Pro, scan du cahier de passation rempli, ou bilan déjà rédigé exporté en PDF). Si vous avez un Word, exportez-le en PDF avant import (Fichier &gt; Exporter &gt; PDF).
+              </p>
+            </div>
+          </div>
+          <div className="flex items-center gap-2 shrink-0">
+            <input
+              ref={fileInputRef}
+              type="file"
+              accept=".pdf,application/pdf"
+              onChange={(e) => {
+                const f = e.target.files?.[0]
+                if (f) handleImportFile(f)
+              }}
+              className="hidden"
+            />
+            <button
+              type="button"
+              onClick={() => fileInputRef.current?.click()}
+              disabled={importing}
+              className="inline-flex items-center gap-1.5 px-3 py-2 rounded text-sm font-medium bg-sky-600 text-white hover:bg-sky-700 disabled:bg-sky-300 disabled:cursor-wait transition"
+            >
+              {importing ? <Loader2 size={14} className="animate-spin" /> : <FileUp size={14} />}
+              {importing ? 'Extraction en cours…' : 'Choisir un fichier'}
+            </button>
+          </div>
+        </div>
+        {importInfo && (
+          <p className={`mt-2 text-xs ${importInfo.startsWith('Erreur') ? 'text-red-700' : 'text-emerald-700'}`}>
+            {importInfo}
+          </p>
+        )}
       </div>
 
       <div className="rounded-lg border border-gray-200 bg-white p-4">
