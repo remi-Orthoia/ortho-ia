@@ -219,7 +219,18 @@ export async function POST(request: NextRequest) {
     }
 
     const body = await request.json()
-    const phase: CRBOPhase = (body.phase === 'extract' || body.phase === 'synthesize') ? body.phase : 'full'
+    // Phase 'pipeline' (refonte 2026-06, étape 2/4 fusion /resultats → /preview) :
+    // chaîne extract + synthesize en interne, un seul stream SSE pour le
+    // client. Évite le double aller-retour /resultats. Le type CRBOPhase
+    // partagé reste à 3 valeurs ('extract'/'synthesize'/'full') car
+    // buildSystemPrompt n'a pas besoin de connaître 'pipeline' — on appelle
+    // buildSystemPrompt('extract') puis buildSystemPrompt('synthesize') en
+    // séquence localement.
+    type CRBOPhaseExt = CRBOPhase | 'pipeline'
+    const phase: CRBOPhaseExt =
+      body.phase === 'extract' || body.phase === 'synthesize' || body.phase === 'pipeline'
+        ? body.phase
+        : 'full'
     // Defaut universel 'synthetique' depuis 2026-06-04 (retour ortho : le mode
     // 'complet' produit des CRBO trop longs en pratique, l'UI selector a ete
     // retire du formulaire). On accepte encore explicitement 'complet' pour
@@ -487,7 +498,13 @@ export async function POST(request: NextRequest) {
       phase === 'synthesize' && anonymizedExtracted
         ? scoresFromDomains(anonymizedExtracted.domains as any)
         : {}
-    const baseSystemText = buildSystemPrompt(tests, phase, format, knowledgeScores)
+    // Pour phase='pipeline', baseSystemText/systemBlocks sont calculés mais
+    // jamais utilisés (le pipeline construit ses propres prompts en interne
+    // via buildSystemPrompt('extract') puis buildSystemPrompt('synthesize') —
+    // cf. branche pipeline plus bas). On substitue 'extract' comme placeholder
+    // neutre pour satisfaire le typage CRBOPhase strict, sans effet de bord.
+    const phaseForLegacyPrompt: CRBOPhase = phase === 'pipeline' ? 'extract' : phase
+    const baseSystemText = buildSystemPrompt(tests, phaseForLegacyPrompt, format, knowledgeScores)
     const systemBlocks = fewShotBlock
       ? [
           {
@@ -520,9 +537,13 @@ export async function POST(request: NextRequest) {
     //   { type: "delta", partial: "..." }     (rehydraté, accumulé côté client)
     //   { type: "complete", phase, synthesized | structure | crbo }
     //   { type: "error", message }
+    // phase=pipeline EXIGE le streaming SSE (~40-80s d'attente cumulée,
+    // un retour JSON synchrone ferait timeout côté client). On force isStream
+    // pour ce mode même si stream=1 absent — c'est délibéré.
     const isStream =
-      request.nextUrl.searchParams.get('stream') === '1' &&
-      (phase === 'synthesize' || phase === 'full')
+      (request.nextUrl.searchParams.get('stream') === '1' &&
+        (phase === 'synthesize' || phase === 'full'))
+      || phase === 'pipeline'
 
     if (isStream) {
       const encoder = new TextEncoder()
@@ -539,6 +560,247 @@ export async function POST(request: NextRequest) {
         return out
       }
 
+      // ============ Branche PIPELINE (extract → synthesize en cascade) ============
+      // Activé par phase=pipeline. Fait les 2 phases côté serveur dans une
+      // seule requête SSE pour le client. Le client reçoit :
+      //   { type: 'start' }
+      //   { type: 'progress', stage: 'extracting' }    (~5s, dès l'envoi à Claude)
+      //   { type: 'progress', stage: 'synthesizing' }  (après extract terminé)
+      //   { type: 'delta', partial: '...' }            (deltas du synthesize)
+      //   { type: 'complete', phase: 'pipeline', extracted, synthesized }
+      //   { type: 'error', message }
+      //
+      // Réutilise EXTRACT_CRBO_TOOL pour la phase 1 puis SYNTHESIZE_TOOL pour
+      // la phase 2, comme les paths phase=extract et phase=synthesize. Aucune
+      // règle métier modifiée — c'est juste un chaînage transparent.
+      if (phase === 'pipeline') {
+        const pipelineStream = new ReadableStream({
+          async start(controller) {
+            const send = (obj: unknown) => {
+              try {
+                controller.enqueue(encoder.encode(`data: ${JSON.stringify(obj)}\n\n`))
+              } catch {
+                // client déconnecté
+              }
+            }
+            try {
+              send({ type: 'start' })
+              send({ type: 'progress', stage: 'extracting' })
+
+              // ───── Phase 1 : extract (non-stream, ~10-30s) ─────
+              const extractUserPrompt = buildExtractPrompt(baseInputs)
+              const extractSystemText = buildSystemPrompt(tests, 'extract', format, {})
+              const extractMessage = await withRetry(
+                () => anthropic.messages.create(
+                  {
+                    model: 'claude-sonnet-4-6',
+                    max_tokens: 8192,
+                    system: [
+                      { type: 'text', text: extractSystemText, cache_control: { type: 'ephemeral' as const } },
+                    ],
+                    tools: [EXTRACT_CRBO_TOOL],
+                    tool_choice: { type: 'tool', name: 'extract_crbo_data' },
+                    messages: [{ role: 'user', content: extractUserPrompt }],
+                  },
+                  { signal: abortController.signal },
+                ),
+                {
+                  maxAttempts: 3,
+                  initialDelayMs: 1500,
+                  signal: abortController.signal,
+                },
+              )
+              const extractTool = extractMessage.content.find(
+                (b: any): b is Anthropic.ToolUseBlock => b.type === 'tool_use',
+              )
+              if (!extractTool || extractTool.name !== 'extract_crbo_data') {
+                send({ type: 'error', message: "Phase 1 (extraction des résultats) : aucune structure exploitable." })
+                return
+              }
+              const rawExtracted = extractTool.input as ExtractedCRBO
+
+              // Rehydrate et nettoie l'extracted pour l'envoi au client à la fin.
+              // Identique au path phase=extract retourné en JSON (lignes 738-750).
+              const extractedForClient: ExtractedCRBO = (() => {
+                const partialStruct: CRBOStructure = {
+                  anamnese_redigee: rawExtracted.anamnese_redigee || '',
+                  motif_reformule: rawExtracted.motif_reformule || '',
+                  domains: rawExtracted.domains || [],
+                  diagnostic: '',
+                  recommandations: '',
+                  conclusion: '',
+                }
+                const rehydrated = rehydrate(partialStruct, reverseMap)
+                return {
+                  anamnese_redigee: stripLeakedTags(rehydrated.anamnese_redigee || ''),
+                  motif_reformule: stripLeakedTags(rehydrated.motif_reformule || ''),
+                  domains: (rehydrated.domains || []).map((d) => ({
+                    ...d,
+                    commentaire: stripLeakedTags(d.commentaire || ''),
+                    epreuves: (d.epreuves || []).map((e) => ({
+                      ...e,
+                      interpretation: stripLeakedTags(e.interpretation || ''),
+                      commentaire: e.commentaire ? stripLeakedTags(e.commentaire) : e.commentaire,
+                    })),
+                  })),
+                }
+              })()
+
+              // ───── Phase 2 : synthesize (streaming, ~30-90s) ─────
+              send({ type: 'progress', stage: 'synthesizing' })
+
+              // Anonymize l'extracted avant le 2e call Claude (cf. ligne 339).
+              // Pas d'edits ortho ici car aucune pause entre les 2 phases —
+              // l'ortho éditera après sur /preview/[id].
+              const safeExtracted: ExtractedCRBO = {
+                anamnese_redigee: sanitizeFreeText(rawExtracted.anamnese_redigee),
+                motif_reformule: sanitizeFreeText(rawExtracted.motif_reformule),
+                domains: (rawExtracted.domains || []).map((d) => ({
+                  ...d,
+                  commentaire: sanitizeFreeText(d.commentaire),
+                  epreuves: d.epreuves,
+                })),
+              }
+
+              const synthesizeUserPrompt = buildSynthesizePrompt({
+                patient_prenom: baseInputs.patient_prenom,
+                patient_nom: baseInputs.patient_nom,
+                patient_age: baseInputs.patient_age,
+                patient_classe: baseInputs.patient_classe,
+                bilan_date_display: baseInputs.bilan_date_display,
+                bilan_type: baseInputs.bilan_type,
+                medecin_nom: baseInputs.medecin_nom,
+                medecin_tel: baseInputs.medecin_tel,
+                anamnese_validee: safeExtracted.anamnese_redigee,
+                motif_valide: safeExtracted.motif_reformule || '',
+                domains: safeExtracted.domains,
+                ortho_comments: undefined,
+                test_utilise: tests.join(', '),
+                notes_analyse: baseInputs.notes_analyse,
+                comportement_seance: baseInputs.comportement_seance,
+                duree_seance_minutes: baseInputs.duree_seance_minutes,
+                evolution_notes: baseInputs.evolution_notes,
+                bilan_precedent_structure: anonymizedPrevStructure,
+                bilan_precedent_date: baseInputs.bilan_precedent_date,
+                bilan_precedent_anamnese: baseInputs.bilan_precedent_anamnese
+                  ? scrubText(baseInputs.bilan_precedent_anamnese, scrubList) ?? baseInputs.bilan_precedent_anamnese
+                  : undefined,
+              })
+
+              const synthSystemText = buildSystemPrompt(
+                tests,
+                'synthesize',
+                format,
+                scoresFromDomains(safeExtracted.domains as any),
+              )
+              const synthSystemBlocks = fewShotBlock
+                ? [
+                    { type: 'text' as const, text: synthSystemText, cache_control: { type: 'ephemeral' as const } },
+                    { type: 'text' as const, text: fewShotBlock, cache_control: { type: 'ephemeral' as const } },
+                  ]
+                : [
+                    { type: 'text' as const, text: synthSystemText, cache_control: { type: 'ephemeral' as const } },
+                  ]
+
+              const synthStream = anthropic.messages.stream(
+                {
+                  model: 'claude-sonnet-4-6',
+                  max_tokens: 16384,
+                  system: synthSystemBlocks,
+                  tools: [SYNTHESIZE_TOOL],
+                  tool_choice: { type: 'tool', name: 'synthesize_crbo' },
+                  messages: [{ role: 'user', content: synthesizeUserPrompt }],
+                },
+                { signal: abortController.signal },
+              )
+
+              for await (const event of synthStream as any) {
+                if (
+                  event?.type === 'content_block_delta' &&
+                  event.delta?.type === 'input_json_delta' &&
+                  typeof event.delta.partial_json === 'string'
+                ) {
+                  send({ type: 'delta', partial: rehydratePartial(event.delta.partial_json) })
+                }
+              }
+
+              const synthFinal = await synthStream.finalMessage()
+              const synthTool = synthFinal.content.find(
+                (b: any): b is Anthropic.ToolUseBlock => b.type === 'tool_use',
+              )
+              if (!synthTool || synthTool.name !== 'synthesize_crbo') {
+                send({ type: 'error', message: "Phase 2 (synthèse clinique) : aucune structure exploitable." })
+                return
+              }
+
+              const rawSynth = synthTool.input as SynthesizedCRBO
+              // Pipeline cleanup miroir du path synthesize SSE (lignes 587-625).
+              const tempStruct: CRBOStructure = {
+                anamnese_redigee: '',
+                motif_reformule: '',
+                domains: [],
+                diagnostic: rawSynth.diagnostic || '',
+                recommandations: rawSynth.recommandations || '',
+                conclusion: rawSynth.conclusion || '',
+                points_forts: rawSynth.points_forts || '',
+                difficultes_identifiees: rawSynth.difficultes_identifiees || '',
+                axes_therapeutiques: rawSynth.axes_therapeutiques || [],
+                pap_suggestions: rawSynth.pap_suggestions,
+                bilans_complementaires: rawSynth.bilans_complementaires || [],
+                synthese_evolution: rawSynth.synthese_evolution ?? null,
+              }
+              const rehydratedSynth = rehydrate(tempStruct, reverseMap)
+              const domain_commentaires = rehydrate(
+                Array.isArray(rawSynth.domain_commentaires) ? rawSynth.domain_commentaires : [],
+                reverseMap,
+              )
+              const synthesizedForClient: SynthesizedCRBO = {
+                points_forts: stripLeakedTags(rehydratedSynth.points_forts ?? ''),
+                difficultes_identifiees: stripLeakedTags(rehydratedSynth.difficultes_identifiees ?? ''),
+                diagnostic: stripLeakedTags(rehydratedSynth.diagnostic),
+                recommandations: stripLeakedTags(rehydratedSynth.recommandations),
+                axes_therapeutiques: (rehydratedSynth.axes_therapeutiques ?? []).map(stripLeakedTags),
+                conclusion: stripLeakedTags(rehydratedSynth.conclusion),
+                pap_suggestions: (rehydratedSynth.pap_suggestions ?? []).map(stripLeakedTags),
+                bilans_complementaires: (rehydratedSynth.bilans_complementaires ?? []).map(stripLeakedTags),
+                domain_commentaires: (domain_commentaires as any[]).map((dc) => ({
+                  ...dc,
+                  commentaire: stripLeakedTags(dc?.commentaire ?? ''),
+                })),
+                synthese_evolution: rehydratedSynth.synthese_evolution ?? null,
+                reasoning_clinical: (rawSynth as any).reasoning_clinical ?? null,
+              }
+
+              send({
+                type: 'complete',
+                phase: 'pipeline',
+                extracted: extractedForClient,
+                synthesized: synthesizedForClient,
+              })
+            } catch (err: any) {
+              logger.error('generate-crbo (pipeline)', err)
+              send({ type: 'error', message: err?.message?.slice(0, 200) || "Erreur pipeline" })
+            } finally {
+              clearTimeout(timeoutId)
+              try { controller.close() } catch {}
+            }
+          },
+          cancel() {
+            abortController.abort()
+          },
+        })
+
+        return new Response(pipelineStream, {
+          headers: {
+            'Content-Type': 'text/event-stream; charset=utf-8',
+            'Cache-Control': 'no-cache, no-transform',
+            'Connection': 'keep-alive',
+            'X-Accel-Buffering': 'no',
+          },
+        })
+      }
+
+      // ============ Branche LEGACY (extract / synthesize / full single-shot) ============
       const sseStream = new ReadableStream({
         async start(controller) {
           const send = (obj: unknown) => {
