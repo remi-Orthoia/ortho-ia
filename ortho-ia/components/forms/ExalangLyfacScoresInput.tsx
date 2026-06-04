@@ -17,8 +17,8 @@
  * Couplage : nouveau-crbo/page.tsx, test_utilise === ['Exalang Lyfac'].
  */
 
-import { useEffect, useMemo, useState } from 'react'
-import { Brain, BookOpen, ChevronDown, GitCompare, Info } from 'lucide-react'
+import { useEffect, useMemo, useRef, useState } from 'react'
+import { Brain, BookOpen, ChevronDown, FileUp, GitCompare, Info, Loader2 } from 'lucide-react'
 import MicButton from '../MicButton'
 import type { CRBOStructure } from '@/lib/prompts'
 
@@ -170,11 +170,78 @@ export default function ExalangLyfacScoresInput({
   notes,
   onNotesChange,
   onResultatsChange,
+  onError,
   bilanPrecedentStructure,
   bilanPrecedentDate,
 }: Props) {
   const [state, setState] = useState<State>(emptyState)
   const [expanded, setExpanded] = useState<Record<string, boolean>>({ memoire: true, langage_elabore: false, lecture: true, orthographe: true })
+
+  // Import PDF Exalang Lyfac — route /api/extract-exalang-lyfac-pdf.
+  const fileInputRef = useRef<HTMLInputElement | null>(null)
+  const [importing, setImporting] = useState(false)
+  const [importInfo, setImportInfo] = useState<string | null>(null)
+
+  async function handleImportFile(file: File) {
+    setImporting(true)
+    setImportInfo(null)
+    try {
+      const fd = new FormData()
+      fd.append('file', file)
+      const res = await fetch('/api/extract-exalang-lyfac-pdf', { method: 'POST', body: fd })
+      const data = await res.json()
+      if (!res.ok || !data?.success) {
+        const msg = data?.error ?? 'Échec de l\'import PDF.'
+        onError?.(msg)
+        setImportInfo(`Erreur : ${msg}`)
+        return
+      }
+      const ex = data.extracted as {
+        contexte: string
+        niveau_etudes: string
+        epreuves: Array<{
+          key: string
+          percentile: string
+          score_brut: string
+          temps: string
+          vitesse_mots_min: string
+          observation: string
+          non_passee: boolean
+        }>
+      }
+      setState(prev => {
+        const next: State = {
+          contexte: (ex.contexte || prev.contexte) as State['contexte'],
+          niveau_etudes: (ex.niveau_etudes || prev.niveau_etudes).toString(),
+          epreuves: { ...prev.epreuves },
+        }
+        for (const item of ex.epreuves ?? []) {
+          if (!next.epreuves[item.key]) continue
+          const cur = next.epreuves[item.key]
+          next.epreuves[item.key] = {
+            percentile: (item.percentile as PercentileKey) || cur.percentile,
+            score_brut: item.score_brut || cur.score_brut,
+            temps: item.temps || cur.temps,
+            vitesse_mots_min: item.vitesse_mots_min || cur.vitesse_mots_min,
+            observation: item.observation || cur.observation,
+            non_passee: !!item.non_passee,
+          }
+        }
+        return next
+      })
+      const epreuvesImported = (ex.epreuves ?? []).length
+      setImportInfo(
+        `Import réussi : ${epreuvesImported} épreuve${epreuvesImported > 1 ? 's' : ''} pré-remplie${epreuvesImported > 1 ? 's' : ''}. Vérifiez et complétez si besoin.`,
+      )
+    } catch (err: any) {
+      const msg = err?.message ?? 'Erreur réseau durant l\'import.'
+      onError?.(msg)
+      setImportInfo(`Erreur : ${msg}`)
+    } finally {
+      setImporting(false)
+      if (fileInputRef.current) fileInputRef.current.value = ''
+    }
+  }
 
   const totalSaisies = useMemo(() => {
     let n = 0
@@ -310,6 +377,47 @@ export default function ExalangLyfacScoresInput({
             le critère majeur. Q1 = P25 = NORMAL.
           </p>
         </div>
+      </div>
+
+      {/* Import PDF Exalang Lyfac. */}
+      <div className="rounded-lg border border-sky-200 bg-sky-50/60 p-3">
+        <div className="flex items-start justify-between gap-3 flex-wrap">
+          <div className="flex items-start gap-2 min-w-0">
+            <FileUp size={18} className="text-sky-700 shrink-0 mt-0.5" />
+            <div className="text-sm min-w-0">
+              <p className="font-semibold text-sky-900">Importer un document Exalang Lyfac (optionnel)</p>
+              <p className="text-sky-800 text-xs mt-0.5 leading-relaxed">
+                Format accepté : <strong>PDF uniquement</strong> (rapport HappyNeuron Pro ou scan cahier).
+              </p>
+            </div>
+          </div>
+          <div className="flex items-center gap-2 shrink-0">
+            <input
+              ref={fileInputRef}
+              type="file"
+              accept=".pdf,application/pdf"
+              onChange={(e) => {
+                const f = e.target.files?.[0]
+                if (f) handleImportFile(f)
+              }}
+              className="hidden"
+            />
+            <button
+              type="button"
+              onClick={() => fileInputRef.current?.click()}
+              disabled={importing}
+              className="inline-flex items-center gap-1.5 px-3 py-2 rounded text-sm font-medium bg-sky-600 text-white hover:bg-sky-700 disabled:bg-sky-300 disabled:cursor-wait transition"
+            >
+              {importing ? <Loader2 size={14} className="animate-spin" /> : <FileUp size={14} />}
+              {importing ? 'Extraction en cours…' : 'Choisir un fichier'}
+            </button>
+          </div>
+        </div>
+        {importInfo && (
+          <p className={`mt-2 text-xs ${importInfo.startsWith('Erreur') ? 'text-red-700' : 'text-emerald-700'}`}>
+            {importInfo}
+          </p>
+        )}
       </div>
 
       <div className="rounded-lg border border-gray-200 bg-white p-4 space-y-3">
