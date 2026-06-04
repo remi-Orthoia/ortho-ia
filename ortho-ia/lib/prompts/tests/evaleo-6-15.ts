@@ -374,6 +374,96 @@ phrases complexes), c'est un signal clinique majeur — le commentaire DOIT
 le signaler explicitement (sans changer \`interpretation\` qui reste la classe
 la plus basse).
 
+#### 🆕 DOUBLE LIGNE LECTURE PRECISION / VITESSE (lecture_mots, lecture_pseudomots)
+
+Le form ortho.ia EVALEO peut transmettre pour \`Lecture de mots\` ou
+\`Lecture de pseudomots\` DEUX classes distinctes plutot qu'une seule :
+
+\`\`\`
+Épreuve : Lecture de mots
+  Classe EVALEO (precision) : Classe 2 (Fragilite) — P7 - P20
+  Classe EVALEO (vitesse) : Classe 5 (Norme) — P63 - P80
+  Score brut : 38/44
+  Temps : 62s
+\`\`\`
+
+(retour Cindy 2026-06 : Anna-Jane lit "tres tres vite mais au detriment de
+la qualite/precision" — un mono-percentile masquait cette dissociation
+clinique majeure).
+
+🔒 **REGLE** : quand l'entree contient simultanement
+\`Classe EVALEO (precision)\` ET \`Classe EVALEO (vitesse)\` pour la meme
+epreuve, tu DOIS emettre **DEUX entrees consecutives** dans
+\`domains[].epreuves[]\` :
+
+\`\`\`json
+{ "nom": "Lecture de mots (précision)", "score": "38/44", "percentile": "P13",
+  "percentile_value": 13, "interpretation": "Classe 2 - Fragilité",
+  "commentaire": "..." },
+{ "nom": "Lecture de mots (vitesse)",  "score": "62s",   "percentile": "P71",
+  "percentile_value": 71, "interpretation": "Classe 5 - Norme",
+  "commentaire": "" }
+\`\`\`
+
+Conventions :
+- \`nom\` = libelle officiel EVALEO suivi de \` (précision)\` ou \` (vitesse)\`
+  (parentheses, minuscules, accent aigu).
+- \`score\` : pour la ligne precision = score brut (ex. "38/44") ; pour la
+  ligne vitesse = temps (ex. "62s").
+- \`percentile\` / \`percentile_value\` / \`interpretation\` : derives de la classe
+  de la dimension respective (precision pour la 1re ligne, vitesse pour la 2e).
+- \`commentaire\` : remplir UNIQUEMENT pour la(les) dimension(s) en classe 1-3
+  (< P50). Le commentaire cible SA dimension (precision = voie d'adressage /
+  d'assemblage / lexique ortho ; vitesse = automatisation, fluence, debit).
+  Si une dimension est en norme (classe 4-7), \`commentaire = ""\`.
+- Si la dissociation precision/vitesse est forte (≥ 3 classes d'ecart, ex.
+  cl 2 + cl 5), tu peux le mentionner dans le commentaire de la dimension
+  fragile ("dissociation marquee precision/vitesse, evoquant une...") OU
+  dans le \`diagnostic\` final selon ce qui sert mieux la synthese.
+
+⛔ **NE PAS** :
+- Fusionner les 2 classes en une seule (avec min ou moyenne) — la regle
+  classique "interpretation = min des principaux" ne s'applique PLUS quand
+  le form fournit explicitement les 2 dimensions separement.
+- Renommer le suffixe ("Lecture de mots — precision" avec em-dash, ou
+  "Lecture mots prec." abreviation) — strictement \` (précision)\` /
+  \` (vitesse)\` entre parentheses.
+- Inventer une dimension absente : si le form ne fournit que
+  \`Classe EVALEO\` (sans le suffixe \`(precision)\` ni \`(vitesse)\`), emettre
+  UNE seule ligne sans suffixe, comme avant.
+
+#### 🆕 NIVEAU SCOLAIRE EQUIVALENT (Evalouette, Mouette, Pingouin)
+
+Le form EVALEO peut transmettre, pour ces 3 epreuves uniquement, une ligne :
+
+\`\`\`
+Niveau scolaire equivalent EVALEO : CE1 T1
+\`\`\`
+
+Cette info provient de la ligne sous le tableau de cotation EVALEO
+("Resultat <Test> correspondant au niveau de la classe : CE1 1" — le \`1\`
+est le TRIMESTRE, pas la classe sept-classes).
+
+🔒 **REGLE** : quand cette ligne est presente, tu DOIS la concatener dans
+le champ \`score\` de l'epreuve correspondante, format :
+
+\`\`\`json
+{ "nom": "La Mouette - Lecture de texte signifiant (test)",
+  "score": "95 mots/min (équivalent CE1 T1)",
+  "percentile": "...", "percentile_value": ..., "interpretation": "...",
+  "commentaire": "..." }
+\`\`\`
+
+- Si le score brut est present : \`"<score brut> (équivalent CE1 T1)"\`.
+- Si pas de score brut : \`"(équivalent CE1 T1)"\` tout seul.
+- Parentheses, minuscules pour "équivalent", accent aigu.
+
+⛔ **NE PAS** mettre le niveau scolaire equivalent dans \`interpretation\` ou
+\`percentile\` — ces 2 champs restent strictement reserves a la classe
+sept-classes EVALEO (cf. Exemples E et F ci-dessus). Le niveau scolaire
+equivalent est une info clinique complementaire pour l'ortho, qui figure
+dans la colonne Score du tableau Word.
+
 #### SCORING (general)
 
 - Resultats en **classes EVALEO** (1 a 7) OU **notes standardisees** selon les epreuves.

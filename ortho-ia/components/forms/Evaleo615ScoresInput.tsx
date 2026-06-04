@@ -364,6 +364,26 @@ interface EpreuveState {
   effets?: EpreuveEffets
   /** Qualification des erreurs (uniquement pour les dictees). */
   erreurs?: EpreuveErreurs
+  /** Classe EVALEO de la VITESSE (uniquement pour `lecture_mots` et
+   *  `lecture_pseudomots`, ou autre epreuve a double sous-score
+   *  precision/vitesse declaree dans EPREUVES_AVEC_VITESSE_PRECISION).
+   *  `percentile` ci-dessus encode la classe de la PRECISION (Score total).
+   *  Ce champ encode la classe du TEMPS total. Quand les 2 sont renseignes,
+   *  le form serialise les 2 separement et Claude emet 2 lignes distinctes
+   *  dans le rapport Word ("Lecture de mots (precision)" / "Lecture de
+   *  mots (vitesse)"). Sinon, une seule ligne sans suffixe. Ajoute 2026-06
+   *  apres retour Cindy (Anna-Jane lit tres vite mais avec une precision
+   *  en zone d'alerte — le mono-percentile masquait cette dissociation). */
+  percentile_vitesse?: PercentileKey
+  /** Niveau scolaire equivalent EVALEO (uniquement Evalouette / Mouette /
+   *  Pingouin — lecture de texte signifiant ou non signifiant). Texte libre
+   *  type "CE1 T1", "CM2 T3" recopie de la ligne sous le tableau de cotation
+   *  EVALEO : "Resultat <Test> correspondant au niveau de la classe :
+   *  CE1 1". Le chiffre apres CE1/CE2 est le TRIMESTRE du niveau scolaire
+   *  equivalent — PAS la classe sept-classes (qui reste dans `percentile`).
+   *  Claude l'inclut dans le champ `score` du tableau Word sous forme
+   *  "<score brut> (equivalent CE1 T1)". Ajoute 2026-06 apres retour Cindy. */
+  niveau_equivalent?: string
 }
 
 /**
@@ -422,6 +442,17 @@ const ERREURS_CHAMPS: Array<{ key: keyof EpreuveErreurs; label: string; hint: st
 const EPREUVES_AVEC_EFFETS = new Set(['lecture_mots', 'lecture_pseudomots'])
 /** Cle des epreuves qui declenchent la saisie des ERREURS qualifiees. */
 const EPREUVES_AVEC_ERREURS = new Set(['dictee_mots', 'dictee_pseudomots', 'dictee_phrases'])
+/** Cle des epreuves a DOUBLE sous-score principal (Score total + Temps total)
+ *  selon le tableau officiel EVALEO. Pour ces epreuves, l'ortho peut saisir
+ *  DEUX classes distinctes (precision via `percentile`, vitesse via
+ *  `percentile_vitesse`). Si les 2 sont renseignees, le Word rendra 2 lignes
+ *  separees. */
+const EPREUVES_AVEC_VITESSE_PRECISION = new Set(['lecture_mots', 'lecture_pseudomots'])
+/** Cle des epreuves de lecture de texte produisant un "niveau scolaire
+ *  equivalent" sous le tableau de cotation EVALEO. Cf. cahier EVALEO p. ~,
+ *  ligne du type "Resultat Mouette correspondant au niveau de la classe :
+ *  CE1 1". */
+const EPREUVES_AVEC_NIVEAU_EQUIVALENT = new Set(['evalouette', 'mouette_test', 'pingouin_retest'])
 
 function emptyEffets(): EpreuveEffets {
   return {
@@ -539,6 +570,8 @@ function emptyState(): State {
     const base: EpreuveState = { percentile: '', score_brut: '', temps: '', observation: '', non_passee: false }
     if (EPREUVES_AVEC_EFFETS.has(e.key)) base.effets = emptyEffets()
     if (EPREUVES_AVEC_ERREURS.has(e.key)) base.erreurs = emptyErreurs()
+    if (EPREUVES_AVEC_VITESSE_PRECISION.has(e.key)) base.percentile_vitesse = ''
+    if (EPREUVES_AVEC_NIVEAU_EQUIVALENT.has(e.key)) base.niveau_equivalent = ''
     ep[e.key] = base
   }
   return { niveau: '', trimestre: '', anamnese: emptyAnamnese(), comparaison: emptyComparaison(), epreuves: ep }
@@ -732,6 +765,8 @@ export default function Evaleo615ScoresInput({
           non_passee: boolean
           effets?: EpreuveEffets
           erreurs?: EpreuveErreurs
+          percentile_vitesse?: string
+          niveau_equivalent?: string
         }>
       }
       // Fusion : ecrase le state avec les donnees extraites (l'ortho peut
@@ -768,6 +803,12 @@ export default function Evaleo615ScoresInput({
             ...(EPREUVES_AVEC_ERREURS.has(item.key)
               ? { erreurs: { ...(cur.erreurs ?? emptyErreurs()), ...(item.erreurs ?? {}) } }
               : {}),
+            ...(EPREUVES_AVEC_VITESSE_PRECISION.has(item.key)
+              ? { percentile_vitesse: (item.percentile_vitesse as PercentileKey) || cur.percentile_vitesse || '' }
+              : {}),
+            ...(EPREUVES_AVEC_NIVEAU_EQUIVALENT.has(item.key)
+              ? { niveau_equivalent: (item.niveau_equivalent ?? cur.niveau_equivalent ?? '').toString().trim() }
+              : {}),
           }
         }
         return next
@@ -789,12 +830,17 @@ export default function Evaleo615ScoresInput({
     for (const s of SECTIONS) for (const sd of s.subdomains) for (const e of sd.epreuves) {
       const st = state.epreuves[e.key]
       if (st.non_passee) continue
-      if (st.percentile !== '') n++
+      // Une epreuve est consideree saisie des qu'une classe est selectionnee
+      // (precision OU vitesse pour les epreuves a double sous-score).
+      if (st.percentile !== '' || !!st.percentile_vitesse) n++
     }
     return n
   }, [state.epreuves])
 
-  /** Compteurs par classe EVALEO (7 classes officielles). */
+  /** Compteurs par classe EVALEO (7 classes officielles). Pour les epreuves
+   *  a double sous-score precision/vitesse, chaque dimension renseignee
+   *  compte pour 1 dans la repartition (coherent avec le fait que le rapport
+   *  Word affichera 2 lignes distinctes). */
   const classeCounts = useMemo(() => {
     const c: Record<Exclude<PercentileKey, ''>, number> = {
       classe_7: 0, classe_6: 0, classe_5: 0, classe_4: 0, classe_3: 0, classe_2: 0, classe_1: 0,
@@ -803,6 +849,7 @@ export default function Evaleo615ScoresInput({
       const st = state.epreuves[e.key]
       if (st.non_passee) continue
       if (st.percentile && st.percentile in c) c[st.percentile as Exclude<PercentileKey, ''>]++
+      if (st.percentile_vitesse && st.percentile_vitesse in c) c[st.percentile_vitesse as Exclude<PercentileKey, ''>]++
     }
     return c
   }, [state.epreuves])
@@ -958,7 +1005,9 @@ export default function Evaleo615ScoresInput({
         for (const e of sd.epreuves) {
           const st = state.epreuves[e.key]
           if (st.non_passee) continue
-          const hasData = st.percentile !== '' || st.score_brut.trim() || st.temps.trim() || st.observation.trim()
+          const hasVitesse = !!st.percentile_vitesse
+          const hasNiveauEq = !!(st.niveau_equivalent && st.niveau_equivalent.trim())
+          const hasData = st.percentile !== '' || st.score_brut.trim() || st.temps.trim() || st.observation.trim() || hasVitesse || hasNiveauEq
           if (!hasData) continue
           if (!sectionPrinted) {
             lines.push(`=== ${s.label} ===`)
@@ -970,6 +1019,10 @@ export default function Evaleo615ScoresInput({
           }
           const tag = e.tag ? ` (${e.tag})` : ''
           lines.push(`Épreuve : ${e.label}${tag}`)
+          // Si l'epreuve a 2 classes distinctes (precision + vitesse), on
+          // labelise chacune pour que Claude emette 2 lignes separees dans
+          // la sortie structuree (cf. evaleo-6-15.ts section DUAL LECTURE).
+          const splitVitesse = EPREUVES_AVEC_VITESSE_PRECISION.has(e.key) && hasVitesse
           if (st.percentile !== '') {
             // Format EVALEO natif officiel : "Classe 4 (Norme) — P39-P62".
             // Pour les classes 3, 4, 5 le libelle est "Norme" tout court
@@ -980,10 +1033,23 @@ export default function Evaleo615ScoresInput({
             const lbl = classeEvaleoLabel(st.percentile)
             const full = classeEvaleoFullLabel(st.percentile)
             const range = classeEvaleoRange(st.percentile)
-            lines.push(`  Classe EVALEO : ${lbl} (${full}) — ${range}`)
+            const labelClasse = splitVitesse ? 'Classe EVALEO (precision)' : 'Classe EVALEO'
+            lines.push(`  ${labelClasse} : ${lbl} (${full}) — ${range}`)
+          }
+          if (splitVitesse) {
+            const lblV = classeEvaleoLabel(st.percentile_vitesse!)
+            const fullV = classeEvaleoFullLabel(st.percentile_vitesse!)
+            const rangeV = classeEvaleoRange(st.percentile_vitesse!)
+            lines.push(`  Classe EVALEO (vitesse) : ${lblV} (${fullV}) — ${rangeV}`)
           }
           if (st.score_brut.trim()) lines.push(`  Score brut : ${st.score_brut.trim()}`)
           if (st.temps.trim()) lines.push(`  Temps : ${st.temps.trim()}`)
+          // Niveau scolaire equivalent EVALEO (Evalouette / Mouette / Pingouin).
+          // Claude doit le concatener dans le champ `score` du tableau Word
+          // sous forme "<score brut> (equivalent CE1 T1)".
+          if (hasNiveauEq) {
+            lines.push(`  Niveau scolaire equivalent EVALEO : ${st.niveau_equivalent!.trim()}`)
+          }
           // L1 : effets de lecture serialises de facon structuree pour Claude
           if (st.effets) {
             const e_ = st.effets
@@ -1420,7 +1486,14 @@ export default function Evaleo615ScoresInput({
                   const subKey = `${s.id}_${sd.id}`
                   const subOpen = expandedSub[subKey] ?? false
                   // Auto-open si une épreuve a déjà une donnée
-                  const hasData = sd.epreuves.some(e => state.epreuves[e.key].percentile !== '' || state.epreuves[e.key].observation.trim() || state.epreuves[e.key].non_passee)
+                  const hasData = sd.epreuves.some(e => {
+                    const st = state.epreuves[e.key]
+                    return st.percentile !== ''
+                      || !!st.percentile_vitesse
+                      || !!(st.niveau_equivalent && st.niveau_equivalent.trim())
+                      || !!st.observation.trim()
+                      || st.non_passee
+                  })
                   const effOpen = subOpen || hasData
                   return (
                     <div key={sd.id} className="rounded border border-gray-200 bg-gray-50/50">
@@ -1467,7 +1540,30 @@ export default function Evaleo615ScoresInput({
 
                                 {!st.non_passee && (
                                   <>
-                                    <PercentileChips value={st.percentile} onChange={(v) => setField(e.key, 'percentile', v)} />
+                                    {EPREUVES_AVEC_VITESSE_PRECISION.has(e.key) ? (
+                                      <div className="space-y-1.5">
+                                        <div>
+                                          <p className="text-[10px] font-semibold text-gray-700 mb-0.5">
+                                            Précision (Score total)
+                                          </p>
+                                          <PercentileChips value={st.percentile} onChange={(v) => setField(e.key, 'percentile', v)} />
+                                        </div>
+                                        <div>
+                                          <p className="text-[10px] font-semibold text-gray-700 mb-0.5">
+                                            Vitesse (Temps total)
+                                          </p>
+                                          <PercentileChips
+                                            value={st.percentile_vitesse ?? ''}
+                                            onChange={(v) => setField(e.key, 'percentile_vitesse', v)}
+                                          />
+                                        </div>
+                                        <p className="text-[10px] text-gray-500 italic leading-tight">
+                                          EVALEO fournit deux classes distinctes pour cette épreuve. Saisissez les deux pour qu&apos;elles apparaissent en lignes séparées dans le rapport Word.
+                                        </p>
+                                      </div>
+                                    ) : (
+                                      <PercentileChips value={st.percentile} onChange={(v) => setField(e.key, 'percentile', v)} />
+                                    )}
                                     <div className="grid sm:grid-cols-2 gap-1.5 mt-1.5">
                                       <input
                                         type="text"
@@ -1484,6 +1580,20 @@ export default function Evaleo615ScoresInput({
                                         className="px-2 py-1 border border-gray-200 rounded text-[11px]"
                                       />
                                     </div>
+                                    {/* Niveau scolaire equivalent EVALEO (Evalouette / Mouette / Pingouin).
+                                        Cf. ligne sous le tableau de cotation EVALEO : "Resultat <Test>
+                                        correspondant au niveau de la classe : CE1 1" (= "CE1 T1"). */}
+                                    {EPREUVES_AVEC_NIVEAU_EQUIVALENT.has(e.key) && (
+                                      <div className="mt-1.5">
+                                        <input
+                                          type="text"
+                                          value={st.niveau_equivalent ?? ''}
+                                          onChange={(ev) => setField(e.key, 'niveau_equivalent', ev.target.value)}
+                                          placeholder="Niveau scolaire équivalent EVALEO (ex. CE1 T1, CM2 T3), lu sous le tableau"
+                                          className="w-full px-2 py-1 border border-gray-200 rounded text-[11px]"
+                                        />
+                                      </div>
+                                    )}
                                     {/* L1 : effets en lecture (mots / pseudomots) */}
                                     {st.effets && EPREUVES_AVEC_EFFETS.has(e.key) && (
                                       <EffetsEditor

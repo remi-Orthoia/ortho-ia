@@ -105,6 +105,14 @@ export interface EvaleoExtracted {
       seg: string
       hom: string
     }
+    /** Classe EVALEO de la VITESSE (Temps total) pour `lecture_mots` et
+     *  `lecture_pseudomots`. `percentile` ci-dessus reste la classe de la
+     *  PRECISION (Score total). Quand les 2 sont presents, le rapport
+     *  affichera 2 lignes distinctes. */
+    percentile_vitesse?: string
+    /** Niveau scolaire equivalent EVALEO pour `evalouette`, `mouette_test`,
+     *  `pingouin_retest`. Format texte type "CE1 T1", "CM2 T3". */
+    niveau_equivalent?: string
   }>
 }
 
@@ -185,6 +193,15 @@ export const EVALEO_EXTRACT_TOOL: Anthropic.Tool = {
                 seg:  { type: 'string', description: 'Segmentation' },
                 hom:  { type: 'string', description: 'Homophones' },
               },
+            },
+            percentile_vitesse: {
+              type: 'string',
+              enum: ['', 'classe_7', 'classe_6', 'classe_5', 'classe_4', 'classe_3', 'classe_2', 'classe_1'],
+              description: 'UNIQUEMENT pour key in [lecture_mots, lecture_pseudomots]. Classe EVALEO de la VITESSE (Temps total). `percentile` reste la classe de la PRECISION (Score total). Recopier la classe affichee dans la colonne du Temps total (cf. tableau de cotation EVALEO). Si seul un sous-score est visible, laisser ce champ vide.',
+            },
+            niveau_equivalent: {
+              type: 'string',
+              description: 'UNIQUEMENT pour key in [evalouette, mouette_test, pingouin_retest]. Niveau scolaire equivalent EVALEO lu sous le tableau de cotation, ligne "Resultat <Test> correspondant au niveau de la classe : CE1 1" (= "CE1 trimestre 1"). FORMAT NORMALISE ortho.ia : "CP T1", "CP T3", "CE1 T1", "CE1 T2", "CE1 T3", "CE2 T1"...  → assembler la classe + " T" + numero de trimestre. Vide si la ligne est absente du document. ATTENTION : ne PAS confondre avec la classe sept-classes (qui est dans `percentile`).',
             },
           },
           required: ['key', 'percentile', 'score_brut', 'temps', 'observation', 'non_passee'],
@@ -327,8 +344,8 @@ complementaire a ignorer pour \`percentile\`.
 
 | Epreuve (key) | Sous-scores PRINCIPAUX (et eux seuls) | Sous-scores a IGNORER pour \`percentile\` |
 |---|---|---|
-| \`lecture_mots\` | Score total /44, Temps total | Score serie 1/2, Temps serie 1/2, Variables (consistance, frequence, longueur) |
-| \`lecture_pseudomots\` | **Score /22 ET Temps** (les 2 sont principaux — prendre la PIRE) | Effets de lexicalite (diff score, diff temps) |
+| \`lecture_mots\` | **PRECISION (Score total /44) → \`percentile\` ET VITESSE (Temps total) → \`percentile_vitesse\`** (ne PAS prendre le min — extraire les 2 classes separement, cf. section dediee §3.bis) | Score serie 1/2, Temps serie 1/2, Variables (consistance, frequence, longueur) |
+| \`lecture_pseudomots\` | **PRECISION (Score /22) → \`percentile\` ET VITESSE (Temps) → \`percentile_vitesse\`** (idem : extraire les 2 separement, ne PAS prendre le min) | Effets de lexicalite (diff score, diff temps) |
 | \`evalouette\`, \`mouette_test\`, \`pingouin_retest\` | Score mots correctement lus (efficience, NMCL) — **un seul principal** | Vitesse, % corrects/lus, Indice degradation |
 | \`eval2m\` | Score d'efficience | Vitesse |
 | \`comp_ecrite_phrases\` | Score total /15 | — (un seul) |
@@ -370,12 +387,13 @@ complementaire a ignorer pour \`percentile\`.
 - ❌ NE PAS prendre cl3 (moyenne implicite des 3 sous-scores) ni cl7 (la classe
   haute) ni cl1 (sous-score Mots en erreur).
 
-**Exemple C — \`lecture_pseudomots\`** :
+**Exemple C — \`lecture_pseudomots\` (NOUVELLE REGLE — extraction DUAL)** :
 - PDF montre : Score /22 = 18/22 cl3, Temps = 73 sec cl2.
-- Etape 1 : principaux = Score ET Temps (les 2).
-- Etape 2 : Score = cl3, Temps = cl2.
-- Etape 3 : min(cl3, cl2) = cl2 → \`percentile = 'classe_2'\`.
-- ❌ NE PAS prendre cl3 (en ignorant le Temps).
+- Extraction : \`percentile = 'classe_3'\` (precision) ET
+  \`percentile_vitesse = 'classe_2'\` (vitesse).
+- ⚠️ NE PAS prendre le min — extrais les 2 classes separement. Le rapport
+  final affichera 2 lignes distinctes ("Lecture de pseudomots (precision)"
+  et "Lecture de pseudomots (vitesse)"). Idem pour \`lecture_mots\`.
 
 **Exemple D — \`rep_chiffres_endroit_envers\`** :
 - PDF montre : Empan endroit cl1, Empan envers cl1, Score endroit cl2, Score
@@ -425,6 +443,54 @@ corrigera s'il y a une exception.
 
 **non_passee** : true uniquement si explicitement marque "NP" / "non passee" /
 "non realisee" / "NT" / "-". Defaut false.
+
+# 3.bis. DUAL PRECISION/VITESSE (lecture_mots, lecture_pseudomots) + NIVEAU SCOLAIRE EQUIVALENT (evalouette, mouette_test, pingouin_retest)
+
+**Champs additionnels OPTIONNELS** (laisse vide si non determinable) :
+
+## \`percentile_vitesse\` — UNIQUEMENT pour \`lecture_mots\` et \`lecture_pseudomots\`
+
+EVALEO fournit pour ces 2 epreuves DEUX sous-scores principaux distincts : un
+score de PRECISION (Score total /44 ou /22) et un score de VITESSE (Temps
+total). Au lieu de fusionner les 2 en un seul \`percentile\` (ancienne regle
+"min" — desormais ABROGEE pour ces 2 epreuves), tu DOIS extraire les 2 classes
+separement :
+
+- \`percentile\` = classe EVALEO du SCORE TOTAL (precision).
+- \`percentile_vitesse\` = classe EVALEO du TEMPS TOTAL (vitesse).
+
+Exemple : PDF montre Score 18/22 en colonne 3, Temps 73s en colonne 2 du
+tableau de cotation \`lecture_pseudomots\` → \`percentile = 'classe_3'\` ET
+\`percentile_vitesse = 'classe_2'\`.
+
+Si seul UN des 2 sous-scores est visible/lisible dans le PDF, remplis ce
+champ-la et laisse l'autre vide. Le form ortho.ia preremplira en consequence.
+
+## \`niveau_equivalent\` — UNIQUEMENT pour \`evalouette\`, \`mouette_test\`, \`pingouin_retest\`
+
+Le cahier EVALEO affiche pour ces 3 epreuves, **sous le tableau de cotation**,
+une ligne du type :
+
+> \`Resultat <Test> correspondant au niveau de la classe : CE1 1\`
+
+Le chiffre apres le niveau scolaire (CE1/CE2/CM1...) est le **TRIMESTRE** du
+niveau de lecture equivalent — il N'EST PAS la classe sept-classes EVALEO
+(piege classique, cf. Exemples E et F ci-dessus).
+
+🔒 **Tu DOIS** :
+1. Extraire la classe sept-classes depuis le tableau de cotation (colonnes
+   1-7) → \`percentile\` (typiquement "classe_2" pour un enfant en difficulte
+   de lecture).
+2. Extraire en PLUS la ligne du niveau scolaire equivalent et la convertir
+   au format normalise ortho.ia → \`niveau_equivalent\`.
+
+**Format normalise** : "\`<NIVEAU> T<N>\`" sans espaces autour du T.
+- "CE1 1" → \`niveau_equivalent = 'CE1 T1'\`
+- "CE2 3" → \`niveau_equivalent = 'CE2 T3'\`
+- "CM1 2" → \`niveau_equivalent = 'CM1 T2'\`
+
+Si la ligne "correspondant au niveau de la classe :" n'apparait pas dans le
+PDF → \`niveau_equivalent = ''\`.
 
 # 4. EFFETS EN LECTURE (lecture_mots, lecture_pseudomots)
 
@@ -692,9 +758,7 @@ export function evaleoExtractedToCrboStructure(
 
   const domains = Array.from(byDomain.entries()).map(([nom, eps]) => ({
     nom,
-    epreuves: eps.map(ep => {
-      const percentileValue = CLASSE_TO_PERCENTILE_VALUE[ep.percentile] ?? 50
-      const interpretation = CLASSE_TO_LABEL[ep.percentile] ?? ''
+    epreuves: eps.flatMap(ep => {
       const label = EVALEO_KEY_TO_LABEL[ep.key] ?? ep.key
       const obsParts: string[] = []
       if (ep.observation?.trim()) obsParts.push(ep.observation.trim())
@@ -706,15 +770,55 @@ export function evaleoExtractedToCrboStructure(
         const s = summarizeErreurs(ep.erreurs)
         if (s) obsParts.push(s)
       }
-      return {
+      const baseCommentaire = obsParts.length > 0 ? obsParts.join(' ') : undefined
+
+      // CAS DUAL — lecture_mots / lecture_pseudomots avec precision+vitesse :
+      // emet 2 lignes distinctes pour matcher le rapport Word actuel.
+      const hasDual = (ep.key === 'lecture_mots' || ep.key === 'lecture_pseudomots')
+        && ep.percentile_vitesse && ep.percentile_vitesse in CLASSE_TO_PERCENTILE_VALUE
+        && ep.percentile && ep.percentile in CLASSE_TO_PERCENTILE_VALUE
+      if (hasDual) {
+        return [
+          {
+            nom: `${label} (précision)`,
+            score: ep.score_brut || '',
+            et: null,
+            percentile: ep.percentile,
+            percentile_value: CLASSE_TO_PERCENTILE_VALUE[ep.percentile],
+            interpretation: CLASSE_TO_LABEL[ep.percentile] ?? '',
+            commentaire: baseCommentaire,
+          },
+          {
+            nom: `${label} (vitesse)`,
+            score: ep.temps ? `${ep.temps}` : '',
+            et: null,
+            percentile: ep.percentile_vitesse!,
+            percentile_value: CLASSE_TO_PERCENTILE_VALUE[ep.percentile_vitesse!],
+            interpretation: CLASSE_TO_LABEL[ep.percentile_vitesse!] ?? '',
+            commentaire: undefined,
+          },
+        ]
+      }
+
+      // CAS NIVEAU EQUIVALENT — Evalouette / Mouette / Pingouin :
+      // concatene le niveau scolaire equivalent dans le score field.
+      const hasNiveauEq = (ep.key === 'evalouette' || ep.key === 'mouette_test' || ep.key === 'pingouin_retest')
+        && ep.niveau_equivalent && ep.niveau_equivalent.trim()
+      const scoreField = hasNiveauEq
+        ? (ep.score_brut?.trim()
+            ? `${ep.score_brut.trim()} (équivalent ${ep.niveau_equivalent!.trim()})`
+            : `(équivalent ${ep.niveau_equivalent!.trim()})`)
+        : (ep.score_brut || '')
+
+      return [{
         nom: label,
-        score: ep.score_brut || '',
+        score: scoreField,
         et: null,
         percentile: ep.percentile,
-        percentile_value: percentileValue,
-        interpretation,
-        commentaire: obsParts.length > 0 ? obsParts.join(' ') : undefined,
-      }
+        percentile_value: CLASSE_TO_PERCENTILE_VALUE[ep.percentile] ?? 50,
+        interpretation: CLASSE_TO_LABEL[ep.percentile] ?? '',
+        commentaire: baseCommentaire,
+      }]
     }),
     commentaire: '',
   }))
