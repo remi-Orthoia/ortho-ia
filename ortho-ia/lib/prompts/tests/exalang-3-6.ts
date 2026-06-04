@@ -77,33 +77,117 @@ Exalang n'affiche JAMAIS de bande <P5. Bornes inclusives de part et d'autre (P25
 - Syllabes (segmentation) : acquises en GS.
 - Absence à la GS = alerte langage écrit.
 
+#### CRITÈRES DSM-5 — TDL (Trouble Développemental du Langage)
+
+Le **TDL** (anciennement "dysphasie") est défini par 4 critères DSM-5 (309.39 / F80.2) :
+- **A.** Difficultés persistantes d'acquisition et d'utilisation du langage (vocabulaire réduit, structures syntaxiques pauvres, capacités narratives limitées).
+- **B.** Capacités langagières substantiellement et quantitativement inférieures à celles attendues pour l'âge (sous le 10e percentile sur les épreuves standardisées, persistance > 6 mois).
+- **C.** Apparition des symptômes en période de développement précoce.
+- **D.** Difficultés non attribuables à un déficit auditif, à un trouble moteur, à un trouble neurologique ou à un déficit cognitif global (efficience intellectuelle non verbale dans la norme).
+
+⚠️ **À 3-6 ans, le diagnostic différentiel central** : Retard Simple de Langage (évolutif) vs TDL persistant. Ne PAS conclure à un TDL définitif avant 5 ans révolus, sauf profil sévère et persistant malgré stimulation. Avant 5 ans, formuler en **"évocateur d'un TDL"** ou **"profil compatible avec un TDL à confirmer"**.
+
+#### TRAJECTOIRE DÉVELOPPEMENTALE — attendus par âge
+
+Cadre de référence pour situer les performances de l'enfant dans son couloir développemental (manuel HappyNeuron Exalang 3-6 + DSM-5 + Bishop 2017) :
+
+**3 ans révolus (PS)** :
+- Phrases de 3 mots minimum, intelligibilité ~75% par un étranger.
+- Stock lexical ~ 500 mots productifs, 1000+ réceptifs.
+- Compréhension de consignes simples à 2 étapes.
+- Émergence des rimes simples.
+
+**4 ans révolus (MS)** :
+- Phrases complexes, "parce que", "quand", emploi des temps (présent + passé).
+- Stock lexical ~ 1500 mots productifs.
+- Récit court avec ordre temporel.
+- Rimes acquises, syllabes en perspective.
+
+**5 ans révolus (GS)** :
+- Récits structurés (introduction / développement / fin).
+- Conscience phonologique : rimes + syllabes acquises (segmentation et fusion).
+- Émergence des phonèmes (commence sur les attaques).
+- Lexique productif > 2000 mots, compréhension complexe (consignes 3-4 étapes).
+
+**6 ans révolus (CP)** :
+- Conscience phonémique active (suppression de phonème, premier graphème → premier phonème).
+- Récit narratif fluide.
+- **Tout déficit métaphonologique majeur en début CP est un drapeau rouge pour la dyslexie à venir.**
+
+#### FACTEURS DE RISQUE — à intégrer dans l'analyse
+
+Si l'anamnèse mentionne un ou plusieurs facteurs, le pondérer dans la conclusion (NE PAS le rendre déterministe — un enfant peut avoir des facteurs de risque sans pathologie, et vice-versa) :
+
+- **Antécédents familiaux** de troubles du langage / dyslexie / TDA — pondère vers TDL persistant ou risque dyslexie.
+- **Sexe masculin** (ratio 3:1 pour le TDL).
+- **Prématurité** (< 37 SA) ou faible poids de naissance.
+- **Otites séro-muqueuses à répétition** dans les 18 premiers mois — toujours demander statut audiométrique récent.
+- **Bilinguisme** : ne PAS sur-diagnostiquer un TDL chez un enfant bilingue. Demander si **les deux langues sont touchées** (critère DSM-5). Si une seule langue déficitaire et l'autre préservée → c'est une question d'exposition, pas un TDL.
+- **Sous-exposition langagière** (écrans excessifs, faible interaction adulte-enfant) — pondérer la sévérité du tableau et privilégier la guidance avant la PEC intensive.
+
 #### 🎯 PROFILS TYPES
 
-**Profil 1 — Développement normal avec fragilité**
-- Performances globalement dans la norme, 1 composante en limite basse
-- Pas de retard global
-- **Interprétation** : surveillance, guidance parentale, pas de PEC immédiate.
+**Profil 1 — Développement normal avec fragilité isolée**
+- Performances globalement dans la norme, 1 composante en limite basse (P11-P25).
+- Pas de retard global, pas de plainte forte des parents.
+- **Conclusion** : variation interindividuelle, surveillance.
+- **Conduite à tenir** : guidance parentale (livres, jeux symboliques, qualité d'interaction), pas de PEC immédiate. Réévaluation à 6-12 mois si la fragilité persiste ou s'aggrave.
 
-**Profil 2 — Retard Simple de Langage**
-- Plusieurs composantes en Fragile, profil homogène
-- Enfant évolutif avec stimulation
-- **Interprétation** : guidance + réévaluation à 6 mois avant conclusion définitive.
+**Profil 2 — Retard Simple de Langage (3-4 ans)**
+- Plusieurs composantes en Zone de fragilité ou Moyenne basse, profil homogène (toutes les composantes au même niveau, sans creux brutal).
+- Enfant évolutif, plaintes parentales mais bonne compréhension globale, communication non verbale préservée.
+- Anamnèse : premiers mots vers 18-24 mois, phrases vers 30-36 mois.
+- **Conclusion formulation prudente** : *"Le profil de [Prénom] évoque un retard simple de langage, sans argument à ce stade pour un trouble développemental persistant. Une guidance orthophonique et une réévaluation à 6 mois permettront de préciser la trajectoire évolutive."*
+- **Conduite à tenir** : guidance parentale renforcée + 6-10 séances orthophonie à visée diagnostique. Réévaluation à 6 mois impérative avant conclusion définitive.
 
-**Profil 3 — TDL émergent (3-4 ans)**
-- Multi-composantes Déficitaire, profil hétérogène
-- Premiers mots tardifs signalés dans l'anamnèse
-- **Interprétation** : PEC orthophonique hebdomadaire recommandée, orientation CRTLA si sévère.
+**Profil 3 — TDL persistant émergent (4-6 ans)**
+- Multi-composantes en Difficulté ou Difficulté sévère, profil hétérogène (creux marqués sur certains domaines).
+- Premiers mots tardifs (> 24 mois) et/ou phrases tardives (> 36 mois).
+- Persistance malgré stimulation antérieure (guidance ou PEC déjà initiée).
+- Plainte scolaire à l'école maternelle, isolement social possible.
+- **Conclusion** : *"Les résultats sont compatibles avec un Trouble Développemental du Langage (TDL) émergent, à confirmer lors d'une réévaluation à 12 mois. Les critères DSM-5 (A) difficultés persistantes, (B) sous le 10e percentile, (C) apparition précoce, sont aujourd'hui réunis."*
+- **Conduite à tenir** : PEC orthophonique hebdomadaire 45 min, 30 séances initiales puis bilan d'étape. Orientation CRTLA si sévérité importante ou tableau atypique. Anticiper le diagnostic différentiel TSA (cf. Profil 5).
 
-**Profil 4 — Trouble phonologique pur**
-- Phonologie / logatomes : Pathologique
-- Autres domaines préservés
-- Intelligibilité réduite par les pairs
-- **Interprétation** : trouble phonologique. PEC ciblée, vigilance CP.
+**Profil 4 — Trouble phonologique isolé**
+- Phonologie / Répétition de logatomes : Difficulté sévère.
+- Autres domaines (lexique, morphosyntaxe, métaphonologie, mémoire de travail) préservés.
+- Intelligibilité réduite par les pairs et les enseignants (~ 50-60% à 4 ans).
+- Phonèmes attendus à 4 ans encore non acquis (/r/, /ʃ/, /ʒ/, groupes consonantiques).
+- Pas d'inquiétude sur la compréhension orale.
+- **Conclusion** : *"[Prénom] présente un trouble phonologique isolé, caractérisé par une intelligibilité réduite secondaire à des difficultés d'organisation et de production des phonèmes. Les autres composantes du langage sont préservées."*
+- **Conduite à tenir** : PEC phonologique ciblée (méthodes type Borel-Maisonny, gestes Borel, paires minimales, conscience phonologique), 20-30 séances. Vigilance pré-CP : si la phonologie reste fragile en GS, anticipation d'un risque dyslexie phonologique.
 
-**Profil 5 — Alerte TSA**
-- Langage oral + interaction / pragmatique : Déficitaire
-- Communication non verbale aussi atteinte (pointage, attention conjointe)
-- **Interprétation** : **orientation CRA ou pédopsychiatrie urgente**. Ne pas rester sur un diagnostic de TDL simple chez un enfant qui présente aussi des signes de trouble de la communication sociale.
+**Profil 5 — Alerte trouble de la communication sociale / TSA**
+- Langage oral atteint **+ pragmatique altérée** (pas de question, écholalie, langage stéréotypé, néologismes).
+- Communication non verbale aussi atteinte : pointage protodéclaratif absent ou tardif, attention conjointe pauvre, contact oculaire fuyant, gestes peu utilisés.
+- Anamnèse : intérêts restreints, routines rigides, hypersensibilités sensorielles.
+- Pendant le bilan : difficulté de coopération, comportements répétitifs, langage non communicatif.
+- **Conclusion** : *"Au-delà du tableau langagier, [Prénom] présente des signes évocateurs d'un trouble de la communication sociale, à investiguer en priorité. Une orientation vers un CRA (Centre Ressources Autisme) ou une consultation de pédopsychiatrie spécialisée est recommandée avant la mise en place d'une PEC orthophonique isolée."*
+- **Conduite à tenir** : **orientation CRA / pédopsychiatrie URGENTE** (délai 6-18 mois). NE PAS rester sur un diagnostic de TDL simple. La PEC orthophonique peut démarrer en parallèle mais sera secondaire à l'évaluation TSA. Coordination obligatoire avec l'école et la PMI.
+
+**Profil 6 — Trouble pragmatique isolé (rare à cet âge mais à connaître)**
+- Composantes formelles (lexique, syntaxe, phonologie) préservées.
+- Pragmatique altérée : difficultés conversationnelles, peu de respect des tours de parole, persévérations thématiques.
+- Pas de comportements TSA marqués (à différencier).
+- **Conduite à tenir** : PEC orthophonique pragmatique (jeux de rôle, scripts sociaux). Bilan psychologique pour éliminer un TSA léger / Asperger.
+
+#### À NE PAS FAIRE — pièges classiques en bilan 3-6 ans
+
+⛔ Poser un diagnostic de TDL **avant 5 ans révolus** sauf profil sévère et persistant. Avant 5 ans, l'enfant est dans une fenêtre d'évolution maximale — privilégier "évocateur de TDL" et la réévaluation à 6 mois.
+⛔ Recalculer un percentile depuis l'É-T (Q1 = P25, jamais "Difficulté sévère").
+⛔ Conclure à un TDL chez un enfant bilingue sans avoir vérifié si **les deux langues** sont touchées.
+⛔ Confondre un trouble phonologique isolé (intelligibilité réduite, lexique préservé) avec un TDL global.
+⛔ Ignorer les signes pragmatiques évocateurs de TSA. La PEC orthophonique seule ne suffit pas si le tableau est mixte.
+⛔ Recommander une PEC intensive avant 4 ans sans avoir tenté la guidance parentale (en cas de profil léger / retard simple).
+
+#### TOUJOURS FAIRE — bonnes pratiques 3-6 ans
+
+✅ Demander un bilan **ORL avec audiogramme récent** (les otites séro-muqueuses sont fréquentes à cet âge et impactent l'acquisition phonologique).
+✅ Demander un examen ophtalmologique / orthoptique (vision = condition préalable à la lecture).
+✅ Coordonner avec l'**école maternelle** (enseignante, ATSEM) et la **PMI** si pertinent.
+✅ Si bilinguisme, documenter explicitement le statut linguistique des 2 langues (langue dominante, exposition, niveau dans chaque langue).
+✅ Mentionner la **trajectoire développementale attendue** dans le rapport ("à 4 ans, on attend X ; ici on observe Y").
+✅ Proposer une **réévaluation à 6 mois** si profil incertain ou émergent.
 
 #### ARTICULATION
 - **Complément** : EVALO 2-6, BILO 3-6, N-EEL pour les 3-6 ans.

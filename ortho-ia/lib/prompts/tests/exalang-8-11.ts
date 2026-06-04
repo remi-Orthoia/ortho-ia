@@ -138,6 +138,24 @@ Exalang n'affiche JAMAIS de bande <P5 ; la valeur minimale est P5 et est incluse
 
 ---
 
+#### CRITÈRES DSM-5 — Trouble Spécifique des Apprentissages avec Déficit en Lecture (dyslexie)
+
+Le diagnostic de dyslexie (DSM-5 315.00 / F81.0) repose sur 4 critères :
+- **A.** Difficultés persistantes (au moins 6 mois) à apprendre les compétences scolaires, malgré une intervention ciblée, sur **au moins l'un des symptômes** :
+  - Lecture imprécise ou lente et laborieuse (déchiffrage, lecture à voix haute hésitante).
+  - Difficultés à comprendre le sens de ce qui est lu.
+  - Difficultés en orthographe.
+  - Difficultés en expression écrite.
+  - Difficultés à maîtriser le sens des nombres, à calculer (= dyscalculie associée).
+  - Difficultés en raisonnement mathématique.
+- **B.** Compétences scolaires concernées **substantiellement et quantitativement inférieures** à celles attendues pour l'âge chronologique (sous le 10e percentile sur les épreuves standardisées).
+- **C.** Difficultés débutant **pendant les années scolaires** mais peuvent ne devenir pleinement manifestes que lorsque les exigences dépassent les capacités limitées de l'individu (typiquement en cycle 3 ou au collège).
+- **D.** Difficultés NON mieux expliquées par : déficience intellectuelle, troubles visuels ou auditifs non corrigés, autres troubles mentaux ou neurologiques, adversité psychosociale, manque de maîtrise de la langue, manque d'enseignement scolaire approprié.
+
+⚠️ **À 8-11 ans** : le diagnostic de dyslexie peut être posé à partir de la **fin du CE1** (février au plus tôt), après au moins **18 mois d'apprentissage formel de la lecture**. Avant, formuler en *"profil compatible avec une dyslexie en cours d'émergence, à confirmer en début CE2"*. Le diagnostic ferme nécessite **WISC-V** (efficience intellectuelle non verbale dans la norme — critère D).
+
+Spécifier le **sous-type** dans la conclusion : phonologique (voie d'assemblage) / de surface (voie d'adressage) / mixte. Voir profils types ci-dessous.
+
 #### 🎯 PROFILS TYPES
 
 **PROFIL 1 — Dyslexie phonologique (70% des dyslexies développementales)**
@@ -172,6 +190,59 @@ Exalang n'affiche JAMAIS de bande <P5 ; la valeur minimale est P5 et est incluse
 - **Diagnostic** : "Le profil orthophonique est compatible avec une dyslexie développementale, associée à des signes évocateurs d'un trouble de l'attention. Un bilan neuropsychologique complémentaire est fortement indiqué pour préciser le diagnostic."
 - **PEC** : PEC orthophonique + orientation NEUROPSY prioritaire. Coordination avec pédopsychiatre / neuropédiatre si prescription méthylphénidate envisagée.
 - **Aménagements** : PPS avec AESH souvent nécessaire. Pauses, chronométrage adapté, consignes écrites ET orales.
+
+**PROFIL 4 — Dyslexie de surface (5-10% des dyslexies, plus rare)**
+- Lecture mots fréquents : Limite basse / Fragile.
+- Lecture mots irréguliers : **Déficitaire à Pathologique** (marqueur central — incapacité à mémoriser l'orthographe).
+- Lecture non-mots : Limite basse / Normale (voie d'assemblage préservée).
+- Régularisations à la lecture ("femme" lu /fɛm/ comme "fer" + "me"), "monsieur" lu /mɔ̃sjœʁ/.
+- DRA : erreurs **lexicales** dominantes (mots usuels mal orthographiés alors que phonétiquement plausibles : "porto" pour "porteau").
+- Mémoire orthographique pauvre.
+- **Diagnostic** : *"Les résultats sont compatibles avec un profil de dyslexie-dysorthographie développementale de type surface (lexical), caractérisé par une atteinte de la voie d'adressage et une mémoire orthographique fragile."*
+- **PEC** : entraînement intensif du lexique orthographique (lectures répétées, copie active, dictée à choix multiples). 30-40 séances. Travailler la conscience morphologique (radicaux, suffixes).
+- **Aménagements** : tolérance orthographique. Correcteur orthographique autorisé en évaluation. PAP au minimum.
+
+**PROFIL 5 — Lecteur lent sans dyslexie ("dyslexie résolue" ou simple lenteur exécutive)**
+- Métaphonologie : Normale.
+- Lecture mots fréquents / non-mots / irréguliers : Normale en exactitude, **Fragile en temps**.
+- Leximétrie : **Fragile** (lenteur en lecture en contexte) — souvent le seul marqueur.
+- Compréhension écrite : préservée si on laisse le temps.
+- Empan envers : potentiellement Fragile (lenteur exécutive).
+- Histoire scolaire : dyslexie diagnostiquée au CP-CE1 et bien rééduquée, ou bien jamais diagnostiquée mais perçue comme "lecteur lent".
+- **Diagnostic** : *"La lecture de [Prénom] est exacte mais demeure lente. Le profil est compatible avec une dyslexie initialement diagnostiquée [et compensée] / avec une lenteur de traitement exécutif. La fluence de lecture reste un facteur limitant face aux exigences scolaires croissantes."*
+- **PEC** : PEC orthophonique allégée (1 séance / 15 jours), focus automatisation lexicale + lectures répétées. 20-30 séances. Travailler la fluence (intonation, regroupement en groupes de souffle).
+- **Aménagements** : temps majoré 1/3 systématique (Brevet, Bac), photocopies des cours.
+
+**PROFIL 6 — Trouble de la compréhension écrite isolé (sous-diagnostiqué)**
+- Métaphonologie : Normale.
+- Lecture mots / non-mots / irréguliers : Normales (lecture de surface préservée).
+- Leximétrie : Normale.
+- **Compréhension écrite de texte : Déficitaire à Pathologique** (marqueur central).
+- Compréhension orale : variable — préservée = trouble spécifique du langage écrit ; déficitaire = trouble global du langage à explorer.
+- Histoire scolaire : "lit bien mais ne retient pas", difficultés en français / histoire / SVT.
+- **Diagnostic** : *"Les compétences de décodage et de fluence de lecture sont préservées. En revanche, [Prénom] présente un trouble de la compréhension écrite avec impact sur l'accès au sens des textes complexes. Ce profil est distinct de la dyslexie classique et justifie une prise en charge orthophonique spécifique."*
+- **PEC** : PEC centrée sur les **inférences**, les **modèles mentaux** de textes, le **vocabulaire abstrait**. Matériel adapté (textes courts, questionnement métacognitif). 30 séances initiales.
+- **Aménagements** : énoncés reformulés, questions reformulées, schématisation autorisée, temps supplémentaire de lecture.
+
+#### À NE PAS FAIRE — pièges classiques en bilan 8-11 ans
+
+⛔ Recalculer un percentile depuis l'É-T (Q1 = P25 = Zone de fragilité, JAMAIS "Difficulté sévère").
+⛔ Poser un diagnostic de dyslexie **avant la fin du CE1** (février au plus tôt) — la persistance des difficultés sur 18 mois d'apprentissage formel est un critère DSM-5.
+⛔ Poser un diagnostic de dyslexie sans **WISC-V** récent (critère D : exclure le trouble cognitif global).
+⛔ Conclure à une dyslexie quand l'enfant n'est pas un **francophone natif** ou est en situation d'apprentissage récent du français (critère D du DSM-5 : exclure le manque de maîtrise de la langue).
+⛔ Confondre une dyslexie de surface (rare, 5-10%) avec une dyslexie phonologique (majoritaire, 70%). L'analyse DRA + lecture mots irréguliers vs non-mots est centrale.
+⛔ Sur-diagnostiquer une dyslexie chez un lecteur lent SANS atteinte phonologique (Profil 5) — il s'agit alors d'une lenteur de traitement exécutive, pas d'une dyslexie active.
+⛔ Ignorer un trouble de la compréhension écrite isolé (Profil 6) en disant "il lit bien". Toujours objectiver la **compréhension** en complément du décodage.
+
+#### TOUJOURS FAIRE — bonnes pratiques 8-11 ans
+
+✅ Croiser la **compréhension orale** et la **compréhension écrite** : orale OK + écrite KO = trouble du langage écrit spécifique ; les deux KO = trouble global du langage.
+✅ Analyser **qualitativement le DRA** : erreurs phonologiques / lexicales / grammaticales en proportions. Cette analyse oriente le sous-type de dyslexie/dysorthographie.
+✅ Comparer **fluence phonémique vs fluence sémantique** : phono > sémantique = profil dysexécutif ; sémantique > phono = trouble lexico-sémantique.
+✅ Vérifier **empan envers** vs **empan endroit** : envers < endroit −1.5 = signal TDA(H) à investiguer.
+✅ Demander un bilan **WISC-V** récent (< 2 ans) avant tout PPS / aménagements lourds.
+✅ Demander un bilan **ophtalmologique / orthoptique** à jour.
+✅ Coordonner avec l'**école** (enseignant, RASED, médecin scolaire) — les aménagements PAP nécessitent un dossier coordonné.
 
 ---
 
