@@ -29,6 +29,11 @@ import type { Locale } from './locales'
 
 const BLOG_DIR = path.join(process.cwd(), 'content', 'blog')
 
+export interface FaqItem {
+  question: string
+  answer: string
+}
+
 export interface PostMeta {
   slug: string
   title: string
@@ -45,6 +50,7 @@ export interface PostMeta {
   locale: Locale        // défaut: 'fr-FR'
   canonicalSlug?: string
   isPillar: boolean     // défaut: false
+  faq?: FaqItem[]       // optionnel: alimente le JSON-LD FAQPage (rich snippets Google)
 }
 
 export interface Post {
@@ -95,6 +101,13 @@ export function getPostBySlug(slug: string): Post {
     locale: (['fr-FR', 'fr-BE', 'fr-CH'].includes(data.locale) ? data.locale : 'fr-FR') as Locale,
     canonicalSlug: typeof data.canonicalSlug === 'string' ? data.canonicalSlug : undefined,
     isPillar: data.isPillar === true,
+    faq: Array.isArray(data.faq)
+      ? data.faq
+          .filter((q: unknown): q is FaqItem =>
+            !!q && typeof (q as FaqItem).question === 'string' && typeof (q as FaqItem).answer === 'string'
+          )
+          .map((q: FaqItem) => ({ question: q.question, answer: q.answer }))
+      : undefined,
   }
 
   return { meta, html }

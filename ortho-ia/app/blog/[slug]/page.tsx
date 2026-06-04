@@ -94,6 +94,18 @@ export default function BlogPostPage({ params }: PageProps) {
     ],
   }
 
+  const faqLd = post.meta.faq && post.meta.faq.length > 0
+    ? {
+        '@context': 'https://schema.org',
+        '@type': 'FAQPage',
+        mainEntity: post.meta.faq.map((q) => ({
+          '@type': 'Question',
+          name: q.question,
+          acceptedAnswer: { '@type': 'Answer', text: q.answer },
+        })),
+      }
+    : null
+
   return (
     <>
       <Header />
@@ -101,6 +113,9 @@ export default function BlogPostPage({ params }: PageProps) {
       <Footer />
       <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(jsonLd) }} />
       <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(breadcrumbLd) }} />
+      {faqLd && (
+        <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(faqLd) }} />
+      )}
     </>
   )
 }
