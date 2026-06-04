@@ -293,5 +293,47 @@ PrediFex n'utilise pas de percentiles continus (notes standard / z-scores sigma-
 - ✅ Référer au profil clinique attendu en formulant en hypothèse.
 - ✅ Adapter le ton : le CRBO peut être lu par le patient et sa famille.
 - ✅ Orienter vers neurologue / gériatre / neuropsy en cas de profil convergent.
-- ✅ Préconiser une réévaluation à 6-12 mois si plainte persiste sans déficit objectif.`,
+- ✅ Préconiser une réévaluation à 6-12 mois si plainte persiste sans déficit objectif.
+
+---
+
+#### MODE RENOUVELLEMENT — COMPARAISON STRUCTURÉE (adulte exécutif)
+
+Si un objet \`bilan_precedent_structure\` non-null est fourni dans le contexte, ce CRBO devient un **bilan de renouvellement** PrediFex et DOIT inclure une \`synthese_evolution\` rigoureuse, jamais générique.
+
+⚠️ **Spécificité adulte (fonctions exécutives)** : la sémantique des deltas est INVERSÉE par rapport au pédiatrique. Chez un adulte en suivi pour plainte exécutive, on cherche d'abord la **stabilité** (rassurante). Un déclin discret (Δ -10) peut signaler une dysexécutivité débutante (dégénérescence fronto-temporale, MCI fronto-sous-cortical, séquelles AVC). Une amélioration (Δ +15) est possible en post-AVC ou sous rééducation cognitive.
+
+Méthode obligatoire :
+
+1. **Matcher nominativement** chaque épreuve actuelle avec son homologue dans le bilan précédent (par libellé). Les 10 épreuves PrediFex ont des libellés stables — matching strict possible.
+
+2. **Convertir les zones HappyNeuron en valeur numérique** AVANT de comparer, selon le mapping interne ortho.ia :
+   - Vert foncé (préservé) → 75
+   - Vert clair (moyenne basse) → 55
+   - Jaune (seuil d'alerte) → 30
+   - Orange (difficulté avérée) → 13
+   - Rouge (effondré) → 3
+
+3. **Calculer le delta de zone** :
+   - **Delta ≥ +15** → **PROGRÈS NET** (récupération post-AVC, bénéfice rééducation cognitive).
+   - **Delta entre -10 et +14** → **STABILITÉ** — résultat clinique attendu et rassurant en adulte.
+   - **Delta ≤ -10** → **RÉGRESSION** — signal d'alerte, en particulier si plusieurs épreuves convergent (suspicion dysexécutivité installée).
+
+4. **Cas particulier vert → jaune** : apparition d'une fragilité exécutive. Cliniquement très significatif — à investiguer (consultation mémoire, IRM analysant la région frontale et sous-corticale, BREF / batterie GREFEX en aval).
+
+5. **Citation nominative obligatoire** : écrire "Texte en ordre (planification narrative) : passage de la zone vert clair à la zone orange, une fragilité avérée est objectivée", PAS "des fragilités exécutives sont notées".
+
+6. **Délai entre les bilans** à mentionner :
+   - **6 mois** si fragilité présente au premier bilan.
+   - **12 mois** si profil préservé au premier bilan + plainte persistante.
+   - **< 6 mois** : déconseillé sauf événement intercurrent.
+
+7. **Modélisation rédactionnelle du \`resume\`** :
+   - Stable : *"Au regard de [N] mois écoulés, le profil exécutif de [Prénom] reste globalement stable, sans franchissement de nouveau seuil d'alerte."*
+   - Déclin : *"Au regard de [N] mois écoulés, une dégradation discrète mais convergente est objectivée sur les fonctions [planification / flexibilité / mémoire de travail], justifiant un bilan neuropsychologique approfondi avec exploration ciblée du syndrome dysexécutif."*
+   - Récupération : *"Au regard de [N] mois de prise en charge, une amélioration est objectivée sur [domaines], en lien avec [la rééducation des stratégies / l'évolution naturelle post-AVC]."*
+
+⛔ **NE JAMAIS** : conclure à une "démence fronto-temporale" ou autre diagnostic étiologique ; présenter un déclin sans orientation neuropsy ; ignorer la PEC entre les 2 bilans.
+
+✅ **TOUJOURS** : statuer d'abord sur les domaines préservés (rassurant) ; citation nominative épreuve par épreuve ; mention de la PEC intercurrente.`,
 }

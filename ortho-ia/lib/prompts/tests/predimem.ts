@@ -309,5 +309,55 @@ PREDIMEM n'utilise pas de percentiles continus (notes standards / z-scores sigma
 - Formuler en termes fonctionnels (impact sur la vie quotidienne, autonomie, communication).
 - "Hypothèse de diagnostic" en titre de synthèse (PAS "Diagnostic").
 - Verbes de modalisation systématiques : "est compatible avec…", "évoque…", "suggère…", "à explorer / caractériser / confirmer".
-- Toujours rappeler : "Cette évaluation est un dépistage : elle oriente, elle ne conclut pas."`,
+- Toujours rappeler : "Cette évaluation est un dépistage : elle oriente, elle ne conclut pas."
+
+---
+
+#### MODE RENOUVELLEMENT — COMPARAISON STRUCTURÉE (adulte)
+
+Si un objet \`bilan_precedent_structure\` non-null est fourni dans le contexte, ce CRBO devient un **bilan de renouvellement** PREDIMEM et DOIT inclure une \`synthese_evolution\` rigoureuse, jamais générique.
+
+⚠️ **Spécificité adulte** : la sémantique des deltas est INVERSÉE par rapport au pédiatrique. En cognition adulte, on cherche d'abord la **stabilité** (rassurante chez un MCI / post-AVC / suivi de plainte mnésique persistante). Un déclin discret (Δ -10) peut être cliniquement significatif et signal d'alerte. Une amélioration (Δ +10) est probable en post-AVC en phase de récupération ou sous PEC, mais peut aussi être de la variabilité test-retest.
+
+Méthode obligatoire :
+
+1. **Matcher nominativement** chaque épreuve actuelle avec son homologue dans le bilan précédent (par libellé). Les 11 épreuves PREDIMEM ont des libellés stables — matching strict possible.
+
+2. **Convertir les zones HappyNeuron en valeur numérique** AVANT de comparer, selon le mapping interne ortho.ia (cf. \`percentile_value\` documenté plus haut) :
+   - Vert foncé (préservé, > M-1σ) → 75
+   - Vert clair (moyenne basse) → 55
+   - Jaune (seuil d'alerte, M-1.5σ) → 30
+   - Orange (difficulté avérée, M-2 à M-3σ) → 13
+   - Rouge (effondré, ≤ M-3σ) → 3
+
+3. **Calculer le delta de zone** (sur la valeur numérique 0-100) :
+   - **Delta ≥ +15** → **PROGRÈS NET** (signaler dans \`synthese_evolution.progres\`). Ex. : zone orange → vert clair = +42. Récupération post-AVC ou bénéfice de la PEC.
+   - **Delta entre -10 et +14** → **STABILITÉ** (signaler dans \`synthese_evolution.stagnation\`). En adulte, la stabilité est un résultat clinique attendu et rassurant — la formuler comme telle ("Le profil mnésique reste stable, ce qui est rassurant dans le contexte de plainte mnésique persistante").
+   - **Delta ≤ -10** → **RÉGRESSION** (signaler dans \`synthese_evolution.regression\`). En adulte, un déclin même modéré est un signal d'alerte — formuler avec prudence et orienter ("Une fragilité supplémentaire est objectivée sur [épreuve], qui pourrait évoquer une évolution dyscognitive. Un bilan neuropsychologique approfondi est recommandé pour caractériser cette évolution.").
+
+4. **Cas particulier vert → jaune** : Δ -45 ≈ apparition d'une fragilité. Cliniquement très significatif — à investiguer en priorité (consultation mémoire spécialisée, IRM si non récente).
+
+5. **Citation nominative obligatoire** : écrire "Mémoire d'un texte LU : passage de la zone vert clair (P55) à la zone jaune (P30), un déclin objectivé est noté", PAS "plusieurs régressions observées".
+
+6. **Délai entre les bilans** à mentionner explicitement ("Au regard de N mois écoulés depuis le précédent dépistage"). Pour PREDIMEM, le délai recommandé est :
+   - **6 mois** : si fragilité présente au premier bilan (suivi de monitorage rapproché).
+   - **12 mois** : si profil préservé au premier bilan + plainte persistante (suivi de surveillance).
+   - **< 6 mois** : déconseillé sauf événement intercurrent (AVC, traumatisme, modification thérapeutique majeure) — risque d'effet test-retest masquant un déclin réel.
+
+7. **Modélisation rédactionnelle du \`resume\`** (1 phrase intro \`synthese_evolution.resume\`) :
+   - Si profil globalement stable : *"Au regard de [N] mois écoulés depuis le précédent dépistage, le profil mnésique de [Prénom] reste globalement stable, sans franchissement de nouveau seuil d'alerte — ce qui est rassurant dans le contexte de [plainte mnésique persistante / suivi post-AVC / autre]."*
+   - Si déclin objectivé : *"Au regard de [N] mois écoulés, une dégradation discrète mais convergente est objectivée sur [domaines], justifiant une orientation vers un bilan neuropsychologique approfondi pour caractérisation."*
+   - Si récupération : *"Au regard de [N] mois de prise en charge orthophonique, une amélioration significative est objectivée sur [domaines], en lien avec [le travail réalisé sur les stratégies de récupération / l'évolution naturelle post-AVC]."*
+
+⛔ **NE JAMAIS** en mode renouvellement :
+- Conclure à une "évolution vers la maladie d'Alzheimer" ou tout diagnostic étiologique. PREDIMEM ne permet pas ce niveau de conclusion.
+- Formuler un déclin sans recommandation d'orientation (consultation mémoire / neuropsy).
+- Présenter une amélioration comme certaine sans tenir compte de la variabilité test-retest.
+- Mentionner un effet test-retest à charge ("la patiente connaissait déjà le test") en première intention — c'est dévalorisant. Le manuel HappyNeuron ne mentionne pas d'effet test-retest documenté à 6 mois minimum.
+
+✅ **TOUJOURS** en mode renouvellement :
+- Comparer épreuve par épreuve (citation nominative).
+- Statuer d'abord sur les domaines RESTÉS PRÉSERVÉS (rassurant) avant les déclins.
+- Mentionner la PEC entre les 2 bilans (orthophonique, neuropsychologique, médicamenteuse) si l'anamnèse la précise.
+- Si l'ortho a saisi la trajectoire dans son textarea libre, l'intégrer textuellement dans le résumé.`,
 }

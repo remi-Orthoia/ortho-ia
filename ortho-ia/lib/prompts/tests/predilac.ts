@@ -221,5 +221,48 @@ PrediLac n'utilise pas de percentiles continus (notes standard / z-scores sigma-
 - ✅ Reporter score + temps + vitesse de lecture systématiquement.
 - ✅ Préciser le sous-type (phonologique / surface / mixte / compréhension isolée) en hypothèse.
 - ✅ Articuler avec PREDIMEM + PrediFex si disponibles (gamme PREDI complète).
-- ✅ Orienter vers neurologue / gériatre / neuropsy si profil convergent.`,
+- ✅ Orienter vers neurologue / gériatre / neuropsy si profil convergent.
+
+---
+
+#### MODE RENOUVELLEMENT — COMPARAISON STRUCTURÉE (adulte lecture)
+
+Si un objet \`bilan_precedent_structure\` non-null est fourni dans le contexte, ce CRBO devient un **bilan de renouvellement** PrediLac et DOIT inclure une \`synthese_evolution\` rigoureuse, jamais générique.
+
+⚠️ **Spécificité adulte (lecture)** : la sémantique des deltas est INVERSÉE par rapport au pédiatrique. Chez un adulte en suivi pour plainte de lecture (post-AVC pariétal gauche, suspicion APP variant logopénique, dyslexie compensée en décompensation), on cherche la **stabilité** (rassurante). Un déclin de la voie d'adressage ou d'assemblage signe une APP en installation ou une décompensation post-AVC. Une amélioration sous rééducation est documentée.
+
+Méthode obligatoire :
+
+1. **Matcher nominativement** chaque épreuve actuelle avec son homologue précédent (par libellé). Les épreuves PrediLac ont des libellés stables.
+
+2. **Convertir les zones HappyNeuron en valeur numérique** AVANT de comparer :
+   - Vert foncé (préservé) → 75
+   - Vert clair (moyenne basse) → 55
+   - Jaune (seuil d'alerte) → 30
+   - Orange (difficulté avérée) → 13
+   - Rouge (effondré) → 3
+
+3. **Calculer le delta de zone** :
+   - **Delta ≥ +15** → **PROGRÈS NET** (récupération post-AVC, bénéfice rééducation orthophonique des voies de lecture).
+   - **Delta entre -10 et +14** → **STABILITÉ** — résultat clinique attendu en adulte.
+   - **Delta ≤ -10** → **RÉGRESSION** — signal d'alerte, en particulier si plusieurs épreuves de la même voie convergent (suspicion APP / décompensation).
+
+4. **Cas particulier voie d'adressage vs assemblage** : attention au sous-type qui se précise. Ex. : si la voie d'adressage seule décline (lecture de mots irréguliers chute, lecture de logatomes stable), évoquer une **APP variant logopénique** ou une atteinte sélective de la mémoire orthographique. Si les 2 voies déclinent, suspicion d'évolution dyscognitive plus globale.
+
+5. **Vitesse de lecture** : à comparer systématiquement entre les 2 bilans. Un ralentissement isolé sans baisse de précision peut être un marqueur sub-clinique précoce.
+
+6. **Citation nominative obligatoire** : écrire "Lecture de mots irréguliers : passage du vert clair à l'orange, voie d'adressage en déclin", PAS "fragilité de la lecture observée".
+
+7. **Délai entre les bilans** à mentionner :
+   - **6 mois** si fragilité présente au premier bilan.
+   - **12 mois** si profil préservé + plainte persistante.
+
+8. **Modélisation rédactionnelle du \`resume\`** :
+   - Stable : *"Au regard de [N] mois écoulés, le profil de lecture de [Prénom] reste globalement stable, sans franchissement de nouveau seuil d'alerte."*
+   - Déclin de la voie d'adressage : *"Au regard de [N] mois écoulés, un déclin sélectif de la voie d'adressage est objectivé (lecture de mots irréguliers en zone orange contre vert clair précédemment), évoquant une atteinte de la mémoire orthographique à explorer (consultation mémoire, IRM ciblée)."*
+   - Récupération : *"Au regard de [N] mois de prise en charge orthophonique centrée sur [voie d'adressage / d'assemblage], une amélioration est objectivée sur [épreuves]."*
+
+⛔ **NE JAMAIS** : conclure à une APP / alexie pure ; présenter un déclin sans orientation neurologique.
+
+✅ **TOUJOURS** : statuer d'abord sur les voies préservées ; citation nominative par épreuve ; comparer la vitesse de lecture ; mention de la PEC orthophonique intercurrente si applicable.`,
 }
