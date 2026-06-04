@@ -275,6 +275,61 @@ Le manuel propose une démarche diagnostique différentielle pour la dyscalculie
 
 ---
 
+#### MODE RENOUVELLEMENT — COMPARAISON STRUCTURÉE (pédiatrique)
+
+Si un objet \`bilan_precedent_structure\` non-null est fourni dans le contexte, ce CRBO devient un **bilan de renouvellement** Examath et DOIT inclure une \`synthese_evolution\` rigoureuse, jamais générique.
+
+⚠️ **Spécificité pédiatrique** : contrairement aux adultes (PREDIMEM/PrediFex), l'évolution attendue chez l'enfant en rééducation est **un progrès** (l'objectif de la PEC). La stabilité doit être analysée : effet PEC stagnant ? maturation insuffisante ? trouble installé résistant ? Une régression est anormale et doit être investiguée (décrochage scolaire, fatigue, intercurrence).
+
+Méthode obligatoire :
+
+1. **Matcher nominativement** chaque épreuve actuelle avec son homologue dans le bilan précédent (par libellé). Les 40 épreuves Examath ont des libellés stables — matching strict possible.
+
+2. **Convertir les percentiles en valeur numérique** AVANT de comparer (médiane de la bande affichée par HappyNeuron) :
+   - \`p_sup_95\` → 97
+   - \`p_90_95\` → 92
+   - \`p_75_90\` → 80
+   - \`p_50_75\` → 60
+   - \`p_25_50\` → 35
+   - \`p_10_25\` → 18
+   - \`p_5_10\` → 7
+   - \`p_inf_5\` → 3
+
+3. **Calculer le delta percentile** :
+   - **Delta ≥ +10** → **PROGRÈS NET** (signaler dans \`synthese_evolution.progres\`). Effet positif de la PEC ou de la maturation.
+   - **Delta entre -10 et +9** → **STAGNATION** (signaler dans \`synthese_evolution.stagnation\`). À analyser : effet PEC insuffisant ? résistance au travail ?
+   - **Delta ≤ -10** → **RÉGRESSION** (signaler dans \`synthese_evolution.regression\`). Signal d'alerte chez l'enfant — toujours suspect, à investiguer (décrochage scolaire, fatigue cognitive, intercurrence, trouble associé non identifié).
+
+4. **Cas particulier passage de seuil de pathologie** (P > 10 → P ≤ 10) : franchissement du seuil pathologique vers le bas. Cliniquement très significatif — caractériser ce qui a changé entre les 2 bilans (fatigue ? nouvelle complexité scolaire au passage de classe ? trouble associé ?).
+
+5. **Cas particulier sortie de pathologie** (P ≤ 10 → P > 10) : franchissement positif du seuil pathologique. Indicateur fort d'efficacité PEC. Le mentionner explicitement dans le \`resume\` ("L'épreuve [...] sort du seuil de pathologie : passage de P5 à P25, témoignant d'un bénéfice direct de la PEC sur la voie ciblée.").
+
+6. **Citation nominative obligatoire** : écrire "Ligne numérique : P10 → P35 (+25, progrès net post-rééducation du sens du nombre)", PAS "plusieurs progrès observés".
+
+7. **Délai entre les bilans** à mentionner explicitement ("Au regard de N mois écoulés depuis le précédent bilan / N mois de prise en charge orthophonique"). Pour Examath, le délai recommandé est :
+   - **6-9 mois** : si dyscalculie diagnostiquée, suivi rééducation.
+   - **12 mois** : suivi d'un profil de fragilité non pathologique (réévaluation à distance).
+   - **< 6 mois** : déconseillé sauf cas particulier (échec scolaire, changement de PEC) — risque effet test-retest.
+
+8. **Modélisation rédactionnelle du \`resume\`** (1-3 phrases intro \`synthese_evolution.resume\`) :
+   - Si profil avec progrès significatifs sur les axes ciblés par la PEC : *"Au regard de [N] mois de prise en charge orthophonique centrée sur [habiletés numériques / faits arithmétiques / problèmes verbalisés], une évolution favorable est objectivée sur [épreuves clés], témoignant d'un bénéfice direct du travail rééducatif. Certains domaines restent fragiles ([liste]), justifiant la poursuite de la PEC."*
+   - Si stagnation : *"Au regard de [N] mois de prise en charge, le profil mathématique de [Prénom] reste globalement stable, sans franchissement de nouveau seuil. La stagnation observée invite à reconsidérer les axes thérapeutiques actuels [proposer alternatives : intensification, ateliers cognitifs, orientation neuropsy si suspicion comorbidité]."*
+   - Si régression : *"Au regard de [N] mois écoulés depuis le précédent bilan, une dégradation est objectivée sur [épreuves], anormale chez l'enfant et invitant à investiguer les facteurs intercurrents (charge scolaire, fatigue, trouble associé non identifié). Un bilan complémentaire [neuropsychologique / médical] est recommandé."*
+
+⛔ **NE JAMAIS** en mode renouvellement Examath :
+- Conclure à une "guérison" de la dyscalculie sur la base d'un seul bilan positif. La dyscalculie est un trouble développemental — la PEC vise la compensation, pas la disparition.
+- Présenter un progrès comme certain sans tenir compte de la variabilité test-retest et de la maturation naturelle (notamment au passage CE2 → CM1).
+- Ignorer la PEC réalisée entre les 2 bilans (orthophonique, scolaire, soutien) — c'est l'élément central du renouvellement.
+
+✅ **TOUJOURS** en mode renouvellement :
+- Comparer épreuve par épreuve (citation nominative).
+- Statuer d'abord sur les domaines en PROGRÈS (effet de réassurance ortho/parent/enfant) avant les stagnations/régressions.
+- Mentionner explicitement la PEC entre les 2 bilans (orthophonique : axes, fréquence ; scolaire : aménagements, soutien) si l'anamnèse la précise.
+- Si l'ortho a saisi la trajectoire dans son textarea libre, l'intégrer textuellement dans le résumé.
+- Conclure sur la **suite de PEC** : maintien des axes / réorientation / intensification / arrêt si profil normalisé.
+
+---
+
 #### À NE JAMAIS FAIRE EN EXAMATH
 
 - ❌ Conclure à une dyscalculie sur une seule épreuve déficitaire en M5 — c'est typiquement secondaire.

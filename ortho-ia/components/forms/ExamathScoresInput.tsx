@@ -23,14 +23,22 @@
  */
 
 import { useEffect, useMemo, useRef, useState } from 'react'
-import { Brain, Calculator, ChevronDown, FileUp, Info, Loader2 } from 'lucide-react'
+import { Brain, Calculator, ChevronDown, FileUp, GitCompare, Info, Loader2 } from 'lucide-react'
 import MicButton from '../MicButton'
+import type { CRBOStructure } from '@/lib/prompts'
 
 interface Props {
   notes: string
   onNotesChange: (v: string) => void
   onResultatsChange: (normalized: string) => void
   onError?: (msg: string) => void
+  /** MODE RENOUVELLEMENT — structure du bilan précédent extraite depuis le
+   *  bouton d'import "bilan précédent" de l'étape 4 du wizard. Si présente,
+   *  encart d'évolution live + autodiagnostic du matching. Pattern aligné
+   *  sur Evaleo615ScoresInput.tsx. */
+  bilanPrecedentStructure?: CRBOStructure | null
+  /** Date du bilan précédent (ISO yyyy-mm-dd). */
+  bilanPrecedentDate?: string | null
 }
 
 /** Identifiant stable d'une épreuve. Format : `m{module}_{slug}`. */
@@ -511,7 +519,14 @@ function PercentileChips({
   )
 }
 
-export default function ExamathScoresInput({ notes, onNotesChange, onResultatsChange, onError }: Props) {
+export default function ExamathScoresInput({
+  notes,
+  onNotesChange,
+  onResultatsChange,
+  onError,
+  bilanPrecedentStructure,
+  bilanPrecedentDate,
+}: Props) {
   const [state, setState] = useState<State>(emptyState)
   const [expanded, setExpanded] = useState<Record<string, boolean>>({
     m1: true, m2: false, m3: false, m4: false, m5: false, m6: false,
@@ -623,6 +638,76 @@ export default function ExamathScoresInput({ notes, onNotesChange, onResultatsCh
     }
     return c
   }, [state.epreuves])
+
+  /**
+   * Live preview deltas — mode renouvellement. Pattern aligné sur les autres
+   * forms pédiatriques (EVALEO, Exalang 5-8 / 8-11). Matching épreuve actuelle
+   * ↔ précédente par label lowercase+trim ; seuil ±10 sur percentile_value.
+   * Pour Examath, le percentile_value vient directement de PERCENTILE_OPTIONS.value.
+   */
+  const evolutionStats = useMemo(() => {
+    const hasPrev = !!(bilanPrecedentStructure
+      && bilanPrecedentStructure.domains
+      && bilanPrecedentStructure.domains.length > 0)
+    if (!hasPrev) return null
+
+    const prevIndex = new Map<string, number>()
+    for (const d of bilanPrecedentStructure!.domains) {
+      for (const e of d.epreuves) {
+        const pv = typeof e.percentile_value === 'number' ? e.percentile_value : null
+        if (pv != null) prevIndex.set(e.nom.toLowerCase().trim(), pv)
+      }
+    }
+
+    let progres = 0, stable = 0, regression = 0, nouvelles = 0
+    const progresList: string[] = []
+    const regressionList: string[] = []
+    const nouvellesList: string[] = []
+
+    for (const m of MODULES) {
+      for (const e of m.epreuves) {
+        const st = state.epreuves[e.key]
+        if (st.non_passee) continue
+        // Matching basé sur le percentile principal de l'épreuve. Pour les
+        // épreuves à subtests, on prend le percentile moyen des subtests cotés.
+        let currValue: number | null = null
+        if (st.percentile !== '') {
+          currValue = PERCENTILE_OPTIONS.find(o => o.key === st.percentile)?.value ?? null
+        } else if (e.subtests && e.subtests.length > 0) {
+          const subValues = e.subtests
+            .map(s => PERCENTILE_OPTIONS.find(o => o.key === st.subtests[s.key]?.percentile)?.value)
+            .filter((v): v is number => typeof v === 'number')
+          if (subValues.length > 0) {
+            currValue = Math.round(subValues.reduce((a, b) => a + b, 0) / subValues.length)
+          }
+        }
+        if (currValue == null) continue
+
+        const prevValue = prevIndex.get(e.label.toLowerCase().trim())
+        if (prevValue == null) {
+          nouvelles++
+          nouvellesList.push(e.label)
+          continue
+        }
+        const delta = currValue - prevValue
+        if (delta >= 10) { progres++; progresList.push(e.label) }
+        else if (delta <= -10) { regression++; regressionList.push(e.label) }
+        else { stable++ }
+      }
+    }
+
+    const totalCompared = progres + stable + regression
+    return {
+      progres, stable, regression, nouvelles,
+      progresList, regressionList, nouvellesList,
+      totalCompared,
+      verdict: (() => {
+        if (progres > regression * 2 && progres >= 3) return 'progress' as const
+        if (regression > progres && regression >= 2) return 'regression' as const
+        return 'stable' as const
+      })(),
+    }
+  }, [state.epreuves, bilanPrecedentStructure])
 
   // Émet la string normalisée à chaque changement.
   useEffect(() => {
@@ -780,6 +865,91 @@ export default function ExamathScoresInput({ notes, onNotesChange, onResultatsCh
           </p>
         )}
       </div>
+
+      {/* Bandeau bilan précédent détecté (mode renouvellement). */}
+      {bilanPrecedentStructure && bilanPrecedentStructure.domains && bilanPrecedentStructure.domains.length > 0 && (
+        <div className="rounded border border-emerald-300 bg-emerald-50/70 p-2.5 flex items-start gap-2">
+          <GitCompare size={16} className="text-emerald-700 shrink-0 mt-0.5" />
+          <div className="text-[11px] text-emerald-900 leading-relaxed min-w-0">
+            <p className="font-semibold">Bilan précédent importé et détecté</p>
+            <p className="mt-0.5">
+              {bilanPrecedentStructure.domains.length} domaine
+              {bilanPrecedentStructure.domains.length > 1 ? 's' : ''} ·{' '}
+              {bilanPrecedentStructure.domains.reduce((acc, d) => acc + d.epreuves.length, 0)} épreuves précédentes
+              {bilanPrecedentDate ? ` · ${new Date(bilanPrecedentDate).toLocaleDateString('fr-FR')}` : ''}.
+              L&apos;IA calculera les évolutions épreuve par épreuve et le rendu Word affichera un tableau comparatif avec flèches (↑ progrès / → stable / ↓ régression).
+            </p>
+          </div>
+        </div>
+      )}
+
+      {/* Live preview deltas (mode renouvellement). */}
+      {evolutionStats && (evolutionStats.totalCompared > 0 || evolutionStats.nouvelles > 0) && (
+        <div className="rounded-lg border border-teal-300 bg-gradient-to-br from-teal-50 to-emerald-50 p-3">
+          <div className="flex items-center justify-between gap-2 mb-2 flex-wrap">
+            <p className="text-xs font-semibold text-teal-900">
+              Évolution prévue dans le CRBO — recalcul live
+            </p>
+            <span className={`text-[10px] font-bold px-2 py-0.5 rounded ${
+              evolutionStats.verdict === 'progress'
+                ? 'bg-green-200 text-green-900'
+                : evolutionStats.verdict === 'regression'
+                  ? 'bg-red-200 text-red-900'
+                  : 'bg-gray-200 text-gray-800'
+            }`}>
+              {evolutionStats.verdict === 'progress'
+                ? '✓ Progression'
+                : evolutionStats.verdict === 'regression'
+                  ? '↓ Régression'
+                  : '≈ Stable'}
+            </span>
+          </div>
+          <div className="flex flex-wrap gap-1.5 mb-2">
+            {evolutionStats.progres > 0 && (
+              <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded text-[11px] font-medium bg-green-100 text-green-800 border border-green-300">
+                <span className="font-bold">↑ {evolutionStats.progres}</span>
+                <span>progrès</span>
+              </span>
+            )}
+            {evolutionStats.stable > 0 && (
+              <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded text-[11px] font-medium bg-gray-100 text-gray-700 border border-gray-300">
+                <span className="font-bold">→ {evolutionStats.stable}</span>
+                <span>stable</span>
+              </span>
+            )}
+            {evolutionStats.regression > 0 && (
+              <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded text-[11px] font-medium bg-red-100 text-red-800 border border-red-300">
+                <span className="font-bold">↓ {evolutionStats.regression}</span>
+                <span>régression</span>
+              </span>
+            )}
+            {evolutionStats.nouvelles > 0 && (
+              <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded text-[11px] font-medium bg-blue-100 text-blue-800 border border-blue-300">
+                <span className="font-bold">✦ {evolutionStats.nouvelles}</span>
+                <span>nouvelle{evolutionStats.nouvelles > 1 ? 's' : ''}</span>
+              </span>
+            )}
+          </div>
+          {evolutionStats.progresList.length > 0 && (
+            <p className="text-[10px] text-green-900 leading-relaxed">
+              <strong>Progrès :</strong> {evolutionStats.progresList.slice(0, 5).join(' · ')}
+              {evolutionStats.progresList.length > 5 ? ` · +${evolutionStats.progresList.length - 5} autres` : ''}
+            </p>
+          )}
+          {evolutionStats.regressionList.length > 0 && (
+            <p className="text-[10px] text-red-900 leading-relaxed mt-0.5">
+              <strong>Régressions :</strong> {evolutionStats.regressionList.slice(0, 5).join(' · ')}
+              {evolutionStats.regressionList.length > 5 ? ` · +${evolutionStats.regressionList.length - 5} autres` : ''}
+            </p>
+          )}
+          {evolutionStats.nouvelles > evolutionStats.totalCompared && evolutionStats.totalCompared <= 2 && (
+            <p className="text-[10px] text-amber-800 mt-1 leading-relaxed bg-amber-50 border border-amber-200 rounded px-1.5 py-0.5">
+              ⚠ Peu d&apos;épreuves matchent entre les 2 bilans ({evolutionStats.totalCompared} comparées vs {evolutionStats.nouvelles} nouvelles).
+              Vérifiez que les titres d&apos;épreuves du bilan précédent correspondent aux libellés Examath officiels.
+            </p>
+          )}
+        </div>
+      )}
 
       {/* Niveau scolaire (stratification officielle de l'étalonnage) */}
       <div className="rounded-lg border border-gray-200 bg-white p-4">
