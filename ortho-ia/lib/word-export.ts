@@ -458,6 +458,15 @@ export async function generateCRBOWord(payload: WordExportPayload): Promise<Blob
   const hideDomainCommentaire = _testListForOrder.some(
     (t) => BILAN_REGISTRY[t]?.hideDomainCommentaire === true,
   )
+  // showAllEpreuveComments : si l'un des tests du bilan l'active (EVALEO 6-15),
+  // les commentaires d'épreuve s'affichent SANS le filtre `percentile_value < 50`
+  // par défaut. Tous les commentaires non vides remontent dans le Word, y
+  // compris pour les épreuves en norme — utile pour ne pas perdre les
+  // annotations type "elle saute des lignes" sur une épreuve en classe 4-5
+  // (retour Cindy 2026-06).
+  const showAllEpreuveComments = _testListForOrder.some(
+    (t) => BILAN_REGISTRY[t]?.showAllEpreuveComments === true,
+  )
   const orderedDomains = hasStructure
     ? (preserveOrder ? structure!.domains : sortDomainsByFamily(structure!.domains))
     : []
@@ -1372,13 +1381,18 @@ export async function generateCRBOWord(payload: WordExportPayload): Promise<Blob
       // clinique de l'IA. Format : « **Nom épreuve** — commentaire ».
       // Le commentaire est rempli par l'IA en phase d'extraction quand
       // percentile_value < 50 (cf. system-base.ts).
-      const epreuvesFragiles = domain.epreuves.filter(
-        (e) => typeof e.percentile_value === 'number'
-          && e.percentile_value < 50
-          && e.commentaire
-          && e.commentaire.trim().length > 0,
+      //
+      // EXCEPTION `showAllEpreuveComments` (EVALEO 6-15) : le filtre P<50 est
+      // levé pour ce bilan — toutes les épreuves avec un commentaire non vide
+      // remontent, y compris en zone de norme. Cf. retour Cindy 2026-06 sur
+      // les observations type "elle saute des lignes" qui se perdaient.
+      const epreuvesAvecCommentaire = domain.epreuves.filter(
+        (e) => e.commentaire
+          && e.commentaire.trim().length > 0
+          && (showAllEpreuveComments
+            || (typeof e.percentile_value === 'number' && e.percentile_value < 50)),
       )
-      for (const e of epreuvesFragiles) {
+      for (const e of epreuvesAvecCommentaire) {
         const epCleaned = (e.commentaire || '')
           .trim()
           .replace(/^\**\s*observations?\s+cliniques?\s*:\s*\**\s*/i, '')

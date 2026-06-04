@@ -166,7 +166,7 @@ export const EVALEO_EXTRACT_TOOL: Anthropic.Tool = {
             },
             score_brut: { type: 'string', description: 'Score brut tel qu\'affiche, format libre (ex. "23/30", "78", "12,5"). Vide si absent.' },
             temps:      { type: 'string', description: 'Temps en secondes (ou millisecondes pour empan_visuo_attentionnel). Vide si absent.' },
-            observation:{ type: 'string', description: 'Observation qualitative associee (strategie, type d\'erreur, attitude). Vide si absente.' },
+            observation:{ type: 'string', description: 'Observation qualitative associee a cette epreuve : annotations libres de l\'ortho dans la marge du PDF, types d\'erreurs notes ("saute des lignes", "confusion b/d", "regle du m/b/p non maitrisee", "lecture analytique segment par segment"), strategies observees, exemples d\'erreurs verbatim. Recopier au plus pres du verbatim ortho — c\'est crucial pour que ces annotations remontent dans le Word genere (le rendu EVALEO affiche desormais TOUS les commentaires d\'epreuve, pas seulement ceux des epreuves fragiles). Vide si vraiment absente.' },
             non_passee: { type: 'boolean', description: 'true si l\'epreuve est explicitement marquee "non passee" / "NP" / "NT". Defaut false.' },
             effets: {
               type: 'object',
@@ -518,6 +518,55 @@ Si le PDF affiche les compteurs par type d'erreur pour les dictees, extraire :
 
 Format : compteur numerique en string ("0", "1", "3", "12"). Vide si non
 present dans le PDF.
+
+# 5.bis. ANNOTATIONS LIBRES / COMMENTAIRES ORTHO — RECOPIE-LES INTEGRALEMENT
+
+🔒 **REGLE IMPORTANTE (ajoutee 2026-06)** : le rendu Word EVALEO affiche
+desormais TOUS les commentaires d'epreuve non vides — pas seulement ceux
+des epreuves fragiles (classes 1-2-3). Donc chaque annotation libre que
+tu trouves dans le PDF doit absolument etre recopiee dans le champ
+\`observation\` de l'epreuve correspondante. Sinon elle se PERD a l'export
+Word et l'ortho est obligee de la redicter (cas Cindy 2026-06).
+
+**Sources d'annotations a parcourir systematiquement dans le PDF** :
+
+1. **Marge du tableau de cotation** : commentaires manuscrits ou tapes a
+   cote de chaque epreuve ("saute 2 lignes", "confusion b/d", "lecture
+   syllabique tres laborieuse", "anxiete sur les chronos", "redemande la
+   consigne 3 fois", "decrochage attentionnel sur la moitie 2", etc.).
+
+2. **Sections "Observations" / "Commentaires" / "Notes ortho"** : parfois
+   regroupees en bas de page ou en fin de section. Toutes les annotations
+   doivent etre dispatchees vers la \`observation\` de l'epreuve concernee.
+
+3. **Types d'erreurs nommes** : "confusions visuelles (b/d, p/q, m/n)",
+   "erreurs de segmentation", "oublis de lettres muettes", "regles
+   contextuelles non acquises (g doux, c doux)", "homophones grammaticaux
+   confondus", "accents oublies / inverses".
+
+4. **Exemples d'erreurs verbatim** : si l'ortho a note des exemples
+   precis ("ecrit 'cadau' pour 'cadeau'", "lit 'mouton' au lieu de
+   'mouchoir'"), recopier verbatim entre guillemets dans
+   \`observation\`. Ces exemples sont des indices cliniques majeurs.
+
+5. **Strategies observees** : "recours systematique au decodage",
+   "compensation par contexte", "lecture par devinette", "stratégie de
+   relecture finale", "demande systematique a l'examinateur".
+
+6. **Attitudes / comportements** : "fatigabilite marquee a partir de
+   l'epreuve N", "evite les epreuves chronometrees", "anxiete",
+   "decouragement", "renonce des qu'elle ne sait pas".
+
+⚠️ **NE PAS** :
+- Filtrer / resumer / paraphraser les annotations courtes — recopie au
+  verbatim. Ce qui sortira dans le Word est plus utile en raw qu'apres
+  reformulation IA.
+- Coller toutes les annotations sur une seule epreuve "fourre-tout" : il
+  faut les dispatcher vers la \`observation\` de l'epreuve a laquelle
+  elles se rapportent (l'ortho les a annotees a cote d'une epreuve
+  precise dans 95 % des cas).
+- Ignorer une annotation parce que l'epreuve est en classe 4-7 — la
+  nouvelle regle EVALEO fait remonter TOUS les commentaires.
 
 # 6. PRINCIPES GENERAUX
 

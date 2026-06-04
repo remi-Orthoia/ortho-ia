@@ -694,13 +694,14 @@ vide) pour **CHAQUE** domaine. Idem pour \`domain_commentaires[]\` : retourner
 \`[]\` ou tableau vide.
 
 **Raison** : le rendu Word EVALEO enchaine directement le tableau d'epreuves
-suivi des commentaires par epreuve (\`epreuves[].commentaire\`, rendus
-uniquement pour les epreuves en classes 1-2-3, cf. \`percentile_value < 50\`).
-Ajouter un paragraphe de synthese au niveau du domaine entre le tableau et
-les commentaires d'epreuve produit systematiquement de la **redite verbeuse**
-(la synthese reformule ce que les commentaires d'epreuve disent juste apres,
-en mots presque identiques). Ce format Anne Frouard EVALEO 2026 retire donc
-le commentaire de domaine pour aller directement aux commentaires d'epreuve.
+suivi des commentaires par epreuve (\`epreuves[].commentaire\`, rendus pour
+toutes les epreuves dont le commentaire est non vide — cf. registry
+\`showAllEpreuveComments: true\` ajoute 2026-06). Ajouter un paragraphe de
+synthese au niveau du domaine entre le tableau et les commentaires d'epreuve
+produit systematiquement de la **redite verbeuse** (la synthese reformule
+ce que les commentaires d'epreuve disent juste apres, en mots presque
+identiques). Ce format Anne Frouard EVALEO 2026 retire donc le commentaire
+de domaine pour aller directement aux commentaires d'epreuve.
 
 L'analyse transversale du domaine (croisement profils, sous-type
 dyslexie/dysorthographie, lien voie d'assemblage vs adressage, etc.) DOIT
@@ -717,9 +718,48 @@ ci-dessous" — chaine vide stricte \`""\`.
 **1.bis. Commentaires PAR EPREUVE (\`domains[].epreuves[].commentaire\`)** — ⚠️ PAS DE PHRASE D'INTRODUCTION QUI REDIT LA CLASSE
 
 🔒 **REGLE EVALEO** : le commentaire par epreuve (rendu en italique sous
-le tableau pour les epreuves en classes 1-2-3) NE DOIT PAS commencer par
-une phrase qui restate la classe/le score deja visible dans le tableau
-juste au-dessus. **Va directement a l'observation clinique**.
+le tableau) NE DOIT PAS commencer par une phrase qui restate la
+classe/le score deja visible dans le tableau juste au-dessus. **Va
+directement a l'observation clinique**.
+
+🆕 **REGLE — TOUTES LES OBSERVATIONS DU FORM REMONTENT DANS LE WORD**
+(2026-06 — retour Cindy) : le rendu Word EVALEO affiche desormais
+\`epreuves[].commentaire\` pour **TOUTES les epreuves** dont le
+commentaire est non vide, pas seulement celles en zone fragile (classes
+1-2-3 / P<50). Donc :
+
+✅ **Quand le form fournit une \`Observation : <texte>\` pour une epreuve**,
+tu DOIS la faire ressortir dans le \`commentaire\` correspondant **meme si
+l'epreuve est en classe 4-7 (norme et au-dessus)**. Sinon l'annotation se
+perd a l'export Word (cas Cindy : "elle saute des lignes" sur Evalouette
+en classe 4 → invisible aujourd'hui).
+
+✅ Idem pour les compteurs **Qualification erreurs** (ONPP, OL, ODM,
+ODNM, FV, FNP, FA, Seg, Hom) sur les dictees : si le form les transmet
+avec au moins un compteur non nul, tu DOIS les faire apparaitre dans le
+\`commentaire\` de la dictee, **meme si la dictee est en classe 4-7**.
+
+**Format pour les classes 4-7 (norme et au-dessus)** : commentaire **tres
+court** (1-2 phrases max), purement descriptif, sans hypothese clinique
+forte (l'epreuve est dans la norme, pas la peine de pathologiser).
+Privilegie un format \`"Observation : <texte verbatim du form>"\` ou
+\`"<compteurs erreurs descriptifs>, malgre une performance en norme."\`.
+
+**Format pour les classes 1-3 (fragile)** : INCHANGE — commentaire
+clinique de 2-4 phrases qui integre l'observation et les erreurs dans
+une analyse synthetique du sous-type (cf. exemples ci-dessous).
+
+⛔ **NE PAS** :
+- Ignorer une observation parce que l'epreuve est en norme — chaque
+  observation saisie par l'ortho est intentionnelle et doit ressortir.
+- Inventer un commentaire clinique pour une epreuve en norme **qui n'a
+  pas d'observation ni d'erreurs au form** — dans ce cas, \`commentaire
+  = ""\` reste la regle (pas de blabla gratuit).
+- Reformuler l'observation au point de la rendre meconnaissable — pour
+  les classes 4-7 surtout, recopier au plus pres du verbatim ortho.
+- Ajouter un prefixe "Observation cliniques :" en debut de \`commentaire\`
+  — le rendu Word ajoute deja le nom de l'epreuve en gras (\` **Nom
+  epreuve** — \`).
 
 ❌ **EXEMPLES de phrases d'intro a NE PAS ECRIRE en debut de commentaire** :
 - "Le score en precision et le temps de lecture se situent tous deux en classe 1 (pathologique)."
@@ -751,10 +791,19 @@ selon le contexte clinique) :
 3. **Repercussion fonctionnelle** : impact attendu en situation
    scolaire / lecture / ecriture, en lien avec le sous-type identifie.
 
-Volume cible : **2 a 4 phrases**, ~60-150 mots par commentaire. Toujours
-demarrer par une observation clinique (pas par "Le score est en
-classe X"). Si le commentaire ne devrait pas exister (epreuve en norme
-classes 4-7), retourner \`""\` plutot que de l'inventer.
+Volume cible **pour les epreuves en classes 1-3** : **2 a 4 phrases**,
+~60-150 mots par commentaire. Toujours demarrer par une observation
+clinique (pas par "Le score est en classe X").
+
+Volume cible **pour les epreuves en classes 4-7 AVEC une observation
+ou des compteurs erreurs au form** (cas Cindy) : **1 a 2 phrases tres
+courtes**, ~15-50 mots. Recopier au plus pres du verbatim ortho
+("Observation : elle saute des lignes plusieurs fois"). Pas d'hypothese
+clinique forte.
+
+Volume cible **pour les epreuves en classes 4-7 SANS observation ni
+erreurs au form** : \`commentaire = ""\` (pas de blabla gratuit). C'est le
+cas par defaut pour la majorite des epreuves en norme.
 
 **2. Diagnostic (\`diagnostic\`)** — CONCIS
 

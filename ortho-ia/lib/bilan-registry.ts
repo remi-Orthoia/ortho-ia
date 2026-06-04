@@ -157,6 +157,17 @@ export interface BilanEntry {
    *  le LLM tend à re-rédiger une synthèse de domaine). Piloté par
    *  lib/word-export.ts. */
   hideDomainCommentaire?: boolean
+  /** Si true, le rendu Word affiche les `epreuves[].commentaire` non vides
+   *  pour TOUTES les épreuves du tableau, sans le filtre par défaut
+   *  `percentile_value < 50`. EVALEO (retour Cindy 2026-06) : les observations
+   *  saisies dans le form (ou extraites du PDF) doivent toutes remonter dans
+   *  le rapport — y compris pour une épreuve en norme — sinon une annotation
+   *  type "elle saute des lignes" ou "type d'erreurs : confusion b/d" sur
+   *  une épreuve en classe 4-5 est perdue à l'export. Le prompt EVALEO
+   *  instruit l'IA à toujours peupler `commentaire` quand le form fournit
+   *  une observation ou des compteurs d'erreurs non nuls, même hors zone
+   *  fragile. Piloté par lib/word-export.ts. */
+  showAllEpreuveComments?: boolean
 }
 
 // ============================================================================
@@ -277,6 +288,13 @@ export const BILAN_REGISTRY: Record<string, BilanEntry> = {
     // Justine 2026-06-03 ou la synthese reapparait sur les renouvellements
     // malgre l'instruction prompt). Garde defensive cote renderer.
     hideDomainCommentaire: true,
+    // EVALEO : tous les commentaires d'epreuve remontent dans le Word, pas
+    // seulement ceux des epreuves fragiles (P<50). Retour Cindy 2026-06 :
+    // "j'avais rempli des commentaires comme 'elle saute des lignes' et
+    // quand on telecharge le word ca n'apparait plus". Le prompt EVALEO
+    // instruit l'IA a peupler `commentaire` chaque fois que le form fournit
+    // une observation ou des compteurs d'erreurs, hors zone fragile compris.
+    showAllEpreuveComments: true,
   },
   'Exalang 3-6': {
     nom: 'Exalang 3-6',
@@ -306,9 +324,12 @@ export const BILAN_REGISTRY: Record<string, BilanEntry> = {
     nom: 'Exalang 8-11',
     famille: 'langage_oral_ecrit',
     ageRange: '8-11 ans',
-    formPath: null,
+    // Form structuré ajouté 2026-06-04 — demande Justine pour avoir le mode
+    // renouvellement complet (tableau comparatif + flèches d'évolution).
+    // 22 épreuves officielles, 5 groupes (A.1, A.2, B.1, B.2, C.1).
+    formPath: 'components/forms/Exalang811ScoresInput.tsx',
     promptPath: 'lib/prompts/tests/exalang-8-11.ts',
-    scoreSchema: 'free_text',
+    scoreSchema: 'percentile',
     wordRenderer: 'standard',
     generateRoute: '/api/generate-crbo',
   },
