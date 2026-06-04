@@ -1,6 +1,7 @@
 import type { Metadata } from 'next'
 import { Fraunces, Inter_Tight, Inter, Manrope, Poppins, Caveat } from 'next/font/google'
 import './globals.css'
+import './article.css'
 import CookieBanner from '@/components/CookieBanner'
 
 // ===== Fonts du design system Stéphanie =====

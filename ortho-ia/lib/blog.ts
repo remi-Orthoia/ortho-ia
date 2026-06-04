@@ -42,6 +42,9 @@ export interface PostMeta {
   tags: string[]
   coverImage?: string
   readingTime: number  // minutes (estimé à 200 wpm)
+  /** Q/R optionnelles depuis le frontmatter — alimentent le JSON-LD
+   *  FAQPage (éligibilité rich snippets Google). */
+  faq?: { question: string; answer: string }[]
 }
 
 export interface Post {
@@ -85,6 +88,11 @@ export function getPostBySlug(slug: string): Post {
     tags: Array.isArray(data.tags) ? data.tags : [],
     coverImage: typeof data.coverImage === 'string' ? data.coverImage : undefined,
     readingTime: estimateReadingTime(content),
+    faq: Array.isArray(data.faq)
+      ? data.faq
+          .filter((q: any) => q && typeof q.question === 'string' && typeof q.answer === 'string')
+          .map((q: any) => ({ question: q.question, answer: q.answer }))
+      : undefined,
   }
 
   return { meta, html }

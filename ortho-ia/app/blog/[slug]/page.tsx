@@ -75,6 +75,18 @@ export default function BlogPostPage({ params }: PageProps) {
     mainEntityOfPage: `https://ortho-ia.vercel.app/blog/${meta.slug}`,
   }
 
+  // JSON-LD FAQPage — éligibilité rich snippets Google quand l'article
+  // contient un bloc Q/R dans son frontmatter.
+  const faqLd = meta.faq && meta.faq.length > 0 ? {
+    '@context': 'https://schema.org',
+    '@type': 'FAQPage',
+    mainEntity: meta.faq.map((q) => ({
+      '@type': 'Question',
+      name: q.question,
+      acceptedAnswer: { '@type': 'Answer', text: q.answer },
+    })),
+  } : null
+
   return (
     <div style={{ background: 'var(--bg-canvas)', minHeight: '100vh' }}>
       <Header />
@@ -163,6 +175,12 @@ export default function BlogPostPage({ params }: PageProps) {
         type="application/ld+json"
         dangerouslySetInnerHTML={{ __html: JSON.stringify(jsonLd) }}
       />
+      {faqLd && (
+        <script
+          type="application/ld+json"
+          dangerouslySetInnerHTML={{ __html: JSON.stringify(faqLd) }}
+        />
+      )}
     </div>
   )
 }
