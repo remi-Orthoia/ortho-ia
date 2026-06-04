@@ -33,8 +33,8 @@
  * `test_utilise === ['PREDIMEM']`.
  */
 
-import { useEffect, useMemo, useState } from 'react'
-import { Brain, ChevronDown, AlertCircle, Info } from 'lucide-react'
+import { useEffect, useMemo, useRef, useState } from 'react'
+import { Brain, ChevronDown, AlertCircle, FileUp, Info, Loader2 } from 'lucide-react'
 import MicButton from '../MicButton'
 
 interface Props {
@@ -542,8 +542,80 @@ function parseScoreInt(raw: string, max: number): number {
   return Math.min(max, n)
 }
 
-export default function PredimemScoresInput({ notes, onNotesChange, onResultatsChange, onError: _onError }: Props) {
+export default function PredimemScoresInput({ notes, onNotesChange, onResultatsChange, onError }: Props) {
   const [state, setState] = useState<State>(emptyState)
+
+  // Import PDF PREDIMEM — route /api/extract-predimem-pdf.
+  // Pre-remplit tranche d'age + NSC + 11 epreuves (zone HappyNeuron + sous-scores
+  // + temps + observation) depuis un rapport HappyNeuron Pro ou scan cahier.
+  const fileInputRef = useRef<HTMLInputElement | null>(null)
+  const [importing, setImporting] = useState(false)
+  const [importInfo, setImportInfo] = useState<string | null>(null)
+
+  async function handleImportFile(file: File) {
+    setImporting(true)
+    setImportInfo(null)
+    try {
+      const fd = new FormData()
+      fd.append('file', file)
+      const res = await fetch('/api/extract-predimem-pdf', { method: 'POST', body: fd })
+      const data = await res.json()
+      if (!res.ok || !data?.success) {
+        const msg = data?.error ?? 'Échec de l\'import PDF.'
+        onError?.(msg)
+        setImportInfo(`Erreur : ${msg}`)
+        return
+      }
+      const ex = data.extracted as {
+        trancheAge: string
+        nsc: string
+        epreuves: Array<{
+          key: string
+          zone: string
+          scores: Record<string, string>
+          temps: string
+          observation: string
+          non_passee: boolean
+        }>
+      }
+      setState(prev => {
+        const next: State = {
+          trancheAge: (ex.trancheAge || prev.trancheAge) as State['trancheAge'],
+          nsc: (ex.nsc || prev.nsc) as State['nsc'],
+          epreuves: { ...prev.epreuves },
+        }
+        for (const item of ex.epreuves ?? []) {
+          if (!(item.key in next.epreuves)) continue
+          const cur = next.epreuves[item.key as EpreuveKey]
+          // Merge scores : ne pas ecraser les saisies existantes si le PDF est vide.
+          const mergedScores: Record<string, string> = { ...cur.scores }
+          for (const [k, v] of Object.entries(item.scores ?? {})) {
+            if (v && v.toString().trim()) mergedScores[k] = v.toString()
+          }
+          next.epreuves[item.key as EpreuveKey] = {
+            scores: mergedScores,
+            zone: (item.zone as ZoneKey) || cur.zone,
+            temps: item.temps || cur.temps,
+            observation: item.observation || cur.observation,
+            cochedQuickObs: cur.cochedQuickObs,
+            non_passee: !!item.non_passee,
+          }
+        }
+        return next
+      })
+      const epreuvesImported = (ex.epreuves ?? []).length
+      setImportInfo(
+        `Import réussi : ${epreuvesImported} épreuve${epreuvesImported > 1 ? 's' : ''} pré-remplie${epreuvesImported > 1 ? 's' : ''}. Vérifiez et complétez si besoin.`,
+      )
+    } catch (err: any) {
+      const msg = err?.message ?? 'Erreur réseau durant l\'import.'
+      onError?.(msg)
+      setImportInfo(`Erreur : ${msg}`)
+    } finally {
+      setImporting(false)
+      if (fileInputRef.current) fileInputRef.current.value = ''
+    }
+  }
 
   const totalEpreuvesSaisies = useMemo(() => {
     let count = 0
@@ -745,6 +817,47 @@ export default function PredimemScoresInput({ notes, onNotesChange, onResultatsC
             stratifiées (âge × NSC) sont gérées par HappyNeuron — ortho.ia ne recalcule pas le seuil d&apos;alerte.
           </p>
         </div>
+      </div>
+
+      {/* Import PDF PREDIMEM — rapport HappyNeuron Pro ou scan cahier. */}
+      <div className="rounded-lg border border-sky-200 bg-sky-50/60 p-3">
+        <div className="flex items-start justify-between gap-3 flex-wrap">
+          <div className="flex items-start gap-2 min-w-0">
+            <FileUp size={18} className="text-sky-700 shrink-0 mt-0.5" />
+            <div className="text-sm min-w-0">
+              <p className="font-semibold text-sky-900">Importer un document PREDIMEM (optionnel)</p>
+              <p className="text-sky-800 text-xs mt-0.5 leading-relaxed">
+                Format accepté : <strong>PDF uniquement</strong> (rapport HappyNeuron Pro ou scan cahier rempli). L&apos;extracteur dédié pré-remplit tranche d&apos;âge + NSC + zones HappyNeuron + sous-scores des 11 épreuves.
+              </p>
+            </div>
+          </div>
+          <div className="flex items-center gap-2 shrink-0">
+            <input
+              ref={fileInputRef}
+              type="file"
+              accept=".pdf,application/pdf"
+              onChange={(e) => {
+                const f = e.target.files?.[0]
+                if (f) handleImportFile(f)
+              }}
+              className="hidden"
+            />
+            <button
+              type="button"
+              onClick={() => fileInputRef.current?.click()}
+              disabled={importing}
+              className="inline-flex items-center gap-1.5 px-3 py-2 rounded text-sm font-medium bg-sky-600 text-white hover:bg-sky-700 disabled:bg-sky-300 disabled:cursor-wait transition"
+            >
+              {importing ? <Loader2 size={14} className="animate-spin" /> : <FileUp size={14} />}
+              {importing ? 'Extraction en cours…' : 'Choisir un fichier'}
+            </button>
+          </div>
+        </div>
+        {importInfo && (
+          <p className={`mt-2 text-xs ${importInfo.startsWith('Erreur') ? 'text-red-700' : 'text-emerald-700'}`}>
+            {importInfo}
+          </p>
+        )}
       </div>
 
       {/* Stratification obligatoire (âge × NSC) */}
