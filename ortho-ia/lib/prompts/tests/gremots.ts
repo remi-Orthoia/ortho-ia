@@ -264,12 +264,34 @@ sémantique, etc. relèvent du neurologue). Le CRBO GréMots formule en
 "profil compatible avec…", suivi des éléments objectivés et de
 l'**orientation vers le neurologue référent**.
 
+🔒 **TERMINOLOGIE OFFICIELLE OBLIGATOIRE** : utiliser **EXACTEMENT** les
+termes Gorno-Tempini et al. 2011 dans le diagnostic. JAMAIS de variante
+laxiste.
+
+| Bon terme (officiel) | Termes INTERDITS |
+|---|---|
+| **APP sémantique** ou **aphasie progressive primaire de variante sémantique** | "démence sémantique" seul, "trouble sémantique" |
+| **APP non fluente** ou **aphasie progressive primaire de variante non fluente / agrammatique** | "aphasie non fluente" sans APP, "agrammatisme isolé" |
+| **APP logopénique** ou **aphasie progressive primaire de variante logopénique** | "aphasie logopénique" sans APP (vague), "trouble logopénique" |
+
+🔒 **RÈGLE DURE NSC × TRANCHE D'ÂGE** : la 1ère phrase du diagnostic DOIT
+expliciter **l'étalonnage utilisé** au format :
+> "Comparativement à la population de référence (NSC [1/2/3] × tranche
+> d'âge [50-59 / 60-69 / 70-79 / 80+] ans), [Prénom] présente un profil
+> compatible avec [hypothèse diagnostique]..."
+
+C'est la convention GréMots officielle (manuel section 8). Sans cette
+mention, l'étalonnage n'est pas objectivé et le diagnostic est juridiquement
+fragile.
+
 Patterns d'orientation diagnostique à formuler :
 
 **APP sémantique (suspicion)** :
 - Anomie sévère + déficit massif compréhension de mots + perte des
   connaissances encyclopédiques (personnes célèbres) + préservation de la
   répétition et de la syntaxe.
+- Ratio fluence sémantique / fluence phonémique **< 0.7** très suggestif
+  (à expliciter dans la prose quand observé).
 
 **APP non fluente (suspicion)** :
 - Trouble articulatoire / agrammatisme + réduction lexicale et syntaxique
@@ -278,6 +300,8 @@ Patterns d'orientation diagnostique à formuler :
 **APP logopénique (suspicion)** :
 - Anomie modérée + déficit massif répétition de phrases + déficit lecture
   / écriture logatomes + préservation de la syntaxe et de la sémantique.
+- Dissociation **répétition de mots préservée vs répétition de phrases
+  effondrée** = marqueur quasi-pathognomonique, à expliciter verbatim.
 
 **MA débutante (suspicion langagière)** :
 - Manque du mot modéré + déficit fluence sémantique + préservation initiale
@@ -313,12 +337,24 @@ neurodégénérative, la cotation NGAP appropriée est :
 **30 AMO 9,4** : bilan + suivi des troubles du langage chez l'adulte
 (aphasie, troubles linguistiques d'origine neurologique).
 
-Format attendu (verbatim) :
+🔒 **OBLIGATOIRE EN CONCLUSION (verbatim)** : Le CRBO GréMots DOIT inclure
+dans le champ \`conclusion\` la phrase suivante, en paragraphe 1, AVANT la
+formule juridique de remise :
+
 > "La rééducation s'inscrit dans le cadre de la nomenclature AMO 9,4
 > (rééducation des troubles du langage et de la parole chez l'adulte)."
 
-⚠️ NE PAS confondre avec AMO 11.7 (cognition mathématique) ou AMO 12,1
-(langage écrit pédiatrique).
+Cette mention est **inconditionnelle** pour les bilans GréMots en France
+(pays par défaut). Sans elle, le CRBO n'est pas exploitable pour la
+demande de remboursement assurance maladie.
+
+⚠️ NE PAS confondre avec AMO 11.7 (cognition mathématique, Examath),
+AMO 12,1 (langage écrit pédiatrique EVALEO) ou AMO 8,4 (langage oral
+pédiatrique).
+
+⚠️ Pour les pays non-FR (BE/CH/LU), le fragment administratif spécifique
+prime sur cette mention (INAMI catégorie B/E pour BE, convention SLPS pour
+CH, CNS pour LU). Voir country-administratif.ts.
 
 #### À NE JAMAIS FAIRE EN GréMOTS
 

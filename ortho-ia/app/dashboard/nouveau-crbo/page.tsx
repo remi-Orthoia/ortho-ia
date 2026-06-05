@@ -30,6 +30,7 @@ import Exalang58ScoresInput from '@/components/forms/Exalang58ScoresInput'
 import Exalang811ScoresInput from '@/components/forms/Exalang811ScoresInput'
 import Exalang1115ScoresInput from '@/components/forms/Exalang1115ScoresInput'
 import PrediFexScoresInput from '@/components/forms/PrediFexScoresInput'
+import GremotsScoresInput from '@/components/forms/GremotsScoresInput'
 import BecdScoresInput from '@/components/forms/BecdScoresInput'
 import BiaScoresInput from '@/components/forms/BiaScoresInput'
 import PrediLacScoresInput from '@/components/forms/PrediLacScoresInput'
@@ -3283,6 +3284,12 @@ Astuce : tapez /fatigue, /anxiete, /encouragements… pour réutiliser vos formu
                             onResultatsChange={(v) => handleTestSlotChange('PrediFex', v)}
                             bilanPrecedentStructure={formData.bilan_precedent_structure ?? null}
                             bilanPrecedentDate={formData.bilan_precedent_date ?? null}
+                          />
+                        )}
+                        {test === 'GréMots' && (
+                          <GremotsScoresInput
+                            {...sharedNotesProps}
+                            onResultatsChange={(v) => handleTestSlotChange('GréMots', v)}
                           />
                         )}
                         {test === 'BECD' && (

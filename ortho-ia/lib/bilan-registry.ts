@@ -275,19 +275,20 @@ export const BILAN_REGISTRY: Record<string, BilanEntry> = {
     generateRoute: '/api/generate-crbo',
   },
   // GréMots, batterie spécialisée pathologies neurodégénératives (MA / APP /
-  // DLFT). V1 2026-06-05 sans formulaire structuré dédié (formPath: null →
-  // textarea générique free_text), V2 prévue avec un composant React dédié
-  // similaire à PrediFexScoresInput pour la saisie structurée des 22 épreuves.
+  // DLFT). V2 2026-06-05 avec composant React dédié GremotsScoresInput.tsx
+  // (saisie structurée des 22 épreuves × Score Strict / Score Large / Erreur
+  // + temps + percentile + observation, stratification NSC × tranche d'âge).
   // Source : manuel GréMots Béziy et al. 2016 + cahier HappyNeuron 2021.
   'GréMots': {
     nom: 'GréMots',
     label: 'GréMots — Évaluation du langage dans les pathologies neurodégénératives',
     famille: 'adulte',
-    formPath: null,
+    formPath: 'components/forms/GremotsScoresInput.tsx',
     promptPath: 'lib/prompts/tests/gremots.ts',
-    scoreSchema: 'free_text',
+    scoreSchema: 'percentile',
     wordRenderer: 'standard',
     generateRoute: '/api/generate-crbo',
+    showAllEpreuveComments: true,
   },
 
   // ===== Langage écrit / mixte (enfant + ado) =====

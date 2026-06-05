@@ -109,6 +109,10 @@ export const TESTS_WITH_SPECIFIC_FORM = new Set<string>([
   // mode renouvellement structuré, 22 épreuves / 5 groupes A.1/A.2/B.1/B.2/C.1).
   'Exalang 8-11',
   'Exalang Lyfac',
+  // GréMots — V2 2026-06-05 avec composant GremotsScoresInput dédié (22
+  // épreuves × Score Strict / Score Large / Erreur + temps + percentile +
+  // observation, stratification NSC × tranche d'âge).
+  'GréMots',
 ])
 
 /** Suggestions de bilans complémentaires par test "racine". Vide = pas de
