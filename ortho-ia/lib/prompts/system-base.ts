@@ -467,6 +467,31 @@ Tu utilises l'outil \`extract_crbo_data\`. Ton rôle se limite STRICTEMENT à :
    - Pour chaque épreuve : nom, score, et (écart-type), percentile (notation telle que dans le PDF), percentile_value (numérique 0-100), interpretation (Excellent / Moyenne haute / Moyenne basse / Zone de fragilité / Difficulté / Difficulté sévère selon la grille 6 zones).
    - \`commentaire\` clinique INITIAL pour CHAQUE domaine (3-4 lignes), c'est la suggestion qui pré-remplit la textarea de l'ortho.
 
+🔒 **PARSING DES FORMATS MULTI-SCORES** : certains bilans utilisent un scoring à plusieurs composantes par épreuve. Quand tu vois ces patterns dans le \`resultats\` brut, EXTRAIRE INTÉGRALEMENT, ne JAMAIS remplir avec "À renseigner" ou "Score non renseigné" si la donnée est présente.
+
+**Format GréMots** (scoring 3 niveaux Strict / Large / Erreur, manuel collectif GréMots section 2.4) :
+> "Répétition de mots : 19/20 P62 (Moyenne haute) (temps 105 s) [Strict 18 + Large 1, 1 erreur(s)] — observation"
+
+Décodage :
+- \`score\` : "19/20 (Strict 18 + Large 1, 1 erreur)" — Score Strict TOTAL = Strict + Large.
+- \`percentile\` : "P62"
+- \`percentile_value\` : 62
+- \`interpretation\` : "Moyenne haute"
+- \`commentaire\` : texte après "—" + observation qualitative.
+
+Mapping range → Px et value (cohérent avec la grille 6 zones Laurie) :
+- P76-P100 / Excellent → "P85", value 85
+- P50-P75 / Moyenne haute → "P62", value 62
+- P26-P49 / Moyenne basse → "P37", value 37
+- P11-P25 / Zone de fragilité → "P18", value 18
+- P6-P10 / Difficulté → "P8", value 8
+- P1-P5 / Difficulté sévère → "P3", value 3
+
+**Format BETL** (verdict N/P par épreuve, manuel Tran 2015) :
+> "I. Dénomination orale d'images : 32/54 (P) — paraphasies sémantiques"
+
+Décodage : score = "32/54", percentile = "P" → percentile_value = 5 (zone pathologique) ou value = 60 si "N" (norme).
+
 ⛔ **TU NE DOIS PAS** produire de diagnostic, de recommandations, de PAP, de conclusion à ce stade. Ces sections seront générées en phase 2.`
 
 const SYNTHESIZE_PHASE_INSTRUCTIONS = `

@@ -1735,21 +1735,51 @@ export async function generateCRBOWord(payload: WordExportPayload): Promise<Blob
     // des autres). Solution : aucun gras conditionnel.
     const papLimit = isSynthetique ? 10 : 6
     const paps = (s.pap_suggestions ?? []).filter(p => p && p.trim().length > 0).slice(0, papLimit)
+    // Détecte un patient adulte pour adapter le libellé : la section
+    // "Aménagements pédagogiques" / "scolaires" ne convient pas à un adulte
+    // en bilan neurodégénératif (BETL, GréMots, PREDIMEM, PrediFex, BIA,
+    // BECD, PrediLac). On bascule sur "Aménagements de vie quotidienne et
+    // de communication" + phrase introductive adaptée. Critère : classe
+    // "adulte" OU age >= 18 (déduit de la DDN). Aligné registry famille
+    // 'adulte'.
+    const isAdultePatient = (() => {
+      const classe = (formData.patient_classe || '').toLowerCase().trim()
+      if (classe === 'adulte' || classe === 'adultes' || classe === 'senior') return true
+      if (formData.patient_ddn) {
+        const ddn = new Date(formData.patient_ddn)
+        if (!isNaN(ddn.getTime())) {
+          const ref = formData.bilan_date ? new Date(formData.bilan_date) : new Date()
+          const ageYears = (ref.getTime() - ddn.getTime()) / (365.25 * 24 * 3600 * 1000)
+          if (ageYears >= 18) return true
+        }
+      }
+      return false
+    })()
     if (paps.length > 0) {
       const legacyRegex = /^\*\*([^*]+)\*\*\s*[—–-]\s*(.+)$/
+      const titleSyntheAdulte = 'Aménagements de vie quotidienne et de communication'
+      const titleSyntheEnfant = 'Aménagements pédagogiques proposés'
+      const titleCompletEnfant = 'Aménagements scolaires conseillés'
+      const sectionTitle = isAdultePatient
+        ? titleSyntheAdulte
+        : (isSynthetique ? titleSyntheEnfant : titleCompletEnfant)
+      const introPhraseAdulte = "Des aménagements de vie quotidienne et de communication de ce type pourraient être mis en place pour soutenir l'autonomie et limiter l'impact des troubles dans les interactions familiales, sociales et professionnelles."
+      const introPhraseEnfant = "Des aménagements pédagogiques de ce type pourraient être mis en place pour limiter l'impact des troubles en situation scolaire."
+      const introPhrase = isAdultePatient ? introPhraseAdulte : introPhraseEnfant
       children.push(new Paragraph({
         children: [new TextRun({
-          text: isSynthetique ? 'Aménagements pédagogiques proposés' : 'Aménagements scolaires conseillés',
+          text: sectionTitle,
           bold: true, size: FONT_SIZE_NORMAL, font: FONT, color: COLOR_GREEN,
         })],
         spacing: { before: 240, after: 100 },
       }))
-      // Phrase introductive imposée Laurie (2026-05) avant les bullets.
+      // Phrase introductive imposée Laurie (2026-05) avant les bullets ;
+      // adaptée à l'adulte si patient_classe='adulte' ou âge ≥ 18 ans.
       children.push(new Paragraph({
         alignment: AlignmentType.BOTH,
         spacing: { after: 120 },
         children: [new TextRun({
-          text: "Des aménagements pédagogiques de ce type pourraient être mis en place pour limiter l'impact des troubles en situation scolaire.",
+          text: introPhrase,
           size: FONT_SIZE_NORMAL, font: FONT,
         })],
       }))

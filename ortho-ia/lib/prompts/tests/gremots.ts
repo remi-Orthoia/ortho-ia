@@ -329,6 +329,64 @@ Pour chaque domaine, structure :
   NSC × âge.
 - Mention qualitative des erreurs observées (typologie BETL applicable).
 
+#### FORMAT D'EXTRACTION DES RÉSULTATS GréMots (règle pour phase EXTRACT)
+
+🔒 **OBLIGATOIRE pour la phase EXTRACT** : si le champ \`resultats\` du
+formulaire contient des données GréMots au format suivant (issu du
+formulaire structuré ou d'un copier-coller du logiciel HappyNeuron Pro),
+EXTRAIRE TOUS les scores :
+
+> "Répétition de mots : 19/20 P62 (Moyenne haute) (temps 105 s) [Strict 18 + Large 1, 1 erreur(s)] — P50-P75 préservé"
+
+Décodage attendu :
+- Score brut → champ \`score\` : "19/20 (Strict 18 + Large 1, 1 erreur)"
+- Percentile → champ \`percentile\` : "P62"
+- percentile_value → 62 (mapping P62 → 62)
+- interpretation → "Moyenne haute"
+- commentaire → "P50-P75 préservé" + toute observation qualitative
+
+**Mapping percentile range → percentile_value (Px)** :
+- P76-P100 / Excellent → P85, value 85
+- P50-P75 / Moyenne haute → P62, value 62
+- P26-P49 / Moyenne basse → P37, value 37
+- P11-P25 / Zone de fragilité → P18, value 18
+- P6-P10 / Difficulté → P8, value 8
+- P1-P5 / Difficulté sévère → P3, value 3
+
+⛔ NE PAS mettre "À renseigner" ou "Score non renseigné" si les données
+sont présentes au format ci-dessus. C'est un cas d'usage GréMots standard.
+
+#### MENTIONS OBLIGATOIRES DANS LE DIAGNOSTIC GréMots
+
+🔒 La phase **synthesize** DOIT inclure dans le diagnostic ou les
+points_forts / difficultes_identifiees les éléments suivants quand
+applicables :
+
+1. **Ratio fluence sémantique / phonémique** (chiffré explicitement quand
+   les 2 sont passées) :
+   > "Le ratio fluence sémantique (X items) / fluence phonémique (Y items)
+   > = Z, [< 0.7 hautement suggestif d'APP sémantique / proche de 1 plus
+   > compatible avec un trouble exécutif ou autre]."
+
+2. **Citation paraphasies verbatim** quand l'ortho a saisi des exemples
+   dans le \`commentaire\` d'épreuve de dénomination :
+   > "Ex. : « cible » → « production patient » (paraphasie [sémantique /
+   > formelle / mixte], dénomination vide, conduite d'approche…)."
+
+3. **Score Strict TOTAL global** si tous les scores sont disponibles :
+   > "Score Strict TOTAL batterie = Σ(Strict) + Σ(Large) = X/Y points
+   > (convention manuel GréMots section 2.4)."
+
+4. **Dissociation explicite** entre composantes préservées vs atteintes,
+   formulée comme :
+   > "Préservation [composante phonologique / syntaxique / sémantique]
+   > contrastant avec une atteinte massive de [composante atteinte],
+   > pattern cohérent avec une suspicion d'APP [variante]."
+
+5. **Mention "à confirmer par bilan neuropsychologique et consultation
+   neurologique spécialisée"** : OBLIGATOIRE car le diagnostic étiologique
+   ne relève pas de l'orthophonie.
+
 #### NOMENCLATURE AMO / NGAP (orthophonie France)
 
 Pour les bilans GréMots dans le cadre d'une suspicion de pathologie
