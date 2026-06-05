@@ -20,6 +20,7 @@ import { becd } from './becd'
 import { bia } from './bia'
 import { predilac } from './predilac'
 import { exalangLyfac } from './exalang-lyfac'
+import { gremots } from './gremots'
 
 export const TEST_REGISTRY: Record<string, TestModule> = {
   'Exalang 3-6': exalang36,
@@ -43,6 +44,7 @@ export const TEST_REGISTRY: Record<string, TestModule> = {
   'BIA': bia,
   'PrediLac': predilac,
   'Exalang Lyfac': exalangLyfac,
+  'GréMots': gremots,
 }
 
 export function getTestModule(nom: string): TestModule | null {

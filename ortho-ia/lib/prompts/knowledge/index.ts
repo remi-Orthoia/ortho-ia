@@ -108,6 +108,7 @@ const COGNITIF_ADULTE_TESTS = new Set([
   'BIA',
   'BECD',
   'BETL',
+  'GréMots',
 ])
 const LECTURE_TESTS = new Set([
   'EVALEO 6-15',

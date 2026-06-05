@@ -73,7 +73,7 @@ export const TEST_FAMILIES: TestFamily[] = [
     label: 'Adultes & seniors',
     icon: '👨‍🦳',
     description: 'Langage, aphasie, mémoire, fonctions exécutives, parole',
-    tests: ['BETL', 'BIA', 'PREDIMEM', 'PrediFex', 'PrediLac', 'BECD'],
+    tests: ['BETL', 'BIA', 'PREDIMEM', 'PrediFex', 'PrediLac', 'BECD', 'GréMots'],
   },
   {
     id: 'autres',
@@ -143,6 +143,10 @@ export const COMPLEMENTARY_BILANS: Record<string, { tests: string[]; rationale: 
   BIA: {
     tests: ['MoCA', 'BECD', 'PrediLac'],
     rationale: 'L\'aphasie (BIA) se croise avec la dysarthrie (BECD), le screening cognitif (MoCA), et la lecture adulte (PrediLac).',
+  },
+  'GréMots': {
+    tests: ['MoCA', 'PREDIMEM', 'PrediFex'],
+    rationale: 'Suspicion de pathologie neurodégénérative (MA / APP / DLFT). Croiser GréMots avec un screening cognitif (MoCA), la mémoire (PREDIMEM) et les fonctions exécutives (PrediFex) pour situer le profil langagier dans le tableau cognitif global. Orientation neurologue + bilan neuropsychologique systématique.',
   },
 
   // ===== ENFANT / ADOLESCENT =====
