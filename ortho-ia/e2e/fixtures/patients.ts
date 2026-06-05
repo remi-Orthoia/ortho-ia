@@ -435,6 +435,127 @@ export const FIXTURE_EXAMATH: CRBOFixture = {
   comportementSeance: "Tom coopératif, comprend bien les consignes orales. Compte sur les doigts persistant. Anxiété sur le calcul posé, demande à passer à l'oral. Fatigabilité importante sur le module 3.",
 }
 
+// ============================================================================
+// 66 ans — GréMots, suspicion APP sémantique (anomie + déficit sémantique)
+// ============================================================================
+export const FIXTURE_GREMOTS_APP_SEMANTIQUE: CRBOFixture = {
+  id: 'gremots-app-semantique-66a',
+  description: '66 ans suspicion APP sémantique, anomie sévère + déficit lexique (GréMots)',
+  patient: { prenom: 'Henri', nom: 'TESTUSER', ddn: '1960-04-22', classe: 'adulte' },
+  bilanDate: '2026-06-05',
+  bilanType: 'initial',
+  motif: 'Cognitif',
+  medecin: { prenom: 'Claire', nom: 'TESTMEDECIN', specialite: 'Neurologue', datePrescription: '2026-05-20' },
+  anamnese:
+    "Monsieur TESTUSER, 66 ans, droitier, ancien architecte (NSC 3). Adressé par son neurologue suite à "
+    + "une plainte d'aggravation progressive du manque du mot depuis ~24 mois, sans antécédent vasculaire. "
+    + "L'épouse signale une difficulté croissante à nommer des objets familiers, à reconnaître des visages "
+    + "de personnes connues (collègues, amis distants), une appauvrissement du vocabulaire en conversation. "
+    + "Pas d'antécédents neurologiques ni familiaux notables. IRM cérébrale récente : atrophie temporale "
+    + "antérieure gauche modérée. Pas d'AVC. Conduite automobile arrêtée par décision personnelle il y a "
+    + "6 mois. Autonome pour les actes de la vie quotidienne. Demande d'évaluation langagière dans le cadre "
+    + "d'un bilan diagnostique de pathologie neurodégénérative (suspicion APP).",
+  testUtilise: 'GréMots',
+  resultats:
+    "=== GréMots (Béziy, Pariente, Tran, Macoir et al. — De Boeck Supérieur 2016 / HappyNeuron 2021) ===\n"
+    + "Stratification : NSC 3 × tranche d'âge 60-69 ans\n\n"
+    + "1. Entretien / Langage spontané (qualitatif) :\n"
+    + "Fluidité préservée, débit normal, mais discours appauvri lexicalement, recours fréquent à des "
+    + "mots passe-partout (« chose », « truc »), périphrases, hyperonymes. Pas de trouble articulatoire. "
+    + "Pas d'agrammatisme. Conscience modérée du trouble.\n\n"
+    + "2. Répétition de mots : Score Strict 18/20, Score Large 1/20, Erreur 1/20 → P50-P75 (préservé)\n"
+    + "3. Répétition de phrases : Score Strict 14/15, Score Large 1/15 → P50-P75 (préservé)\n"
+    + "4. Fluences verbes (1 min) : 9 verbes → P11-P25 (zone de fragilité)\n"
+    + "5. Fluences fruits (1 min) : 5 items → P1-P5 (difficulté sévère, marqueur APP sémantique)\n"
+    + "6. Fluences lettre V (1 min) : 11 mots → P26-P49 (moyenne basse, préservée vs sémantique)\n"
+    + "7. Exécution d'ordres : Score Strict 22/30 → P11-P25 (zone de fragilité)\n"
+    + "8. Dénomination orale d'objets : Score Strict 14/40, Score Large 6/40, Erreur 20/40 → P1-P5\n"
+    + "   Erreurs typiques : paraphasies sémantiques (« animal » pour zèbre, « fruit » pour ananas), "
+    + "circonlocutions sémantiques fréquentes (« c'est petit, pour rassembler des papiers » pour trombone), "
+    + "dénominations vides (« truc », « machin »).\n"
+    + "9. Dénomination orale d'actions : Score Strict 22/40, Score Large 5/40, Erreur 13/40 → P11-P25\n"
+    + "10. Dénomination de personnes célèbres : Score Strict 4/30, Erreur 26/30 → P1-P5 (effondrement)\n"
+    + "    Erreurs : ne reconnaît plus De Gaulle, Brigitte Bardot, Jean Reno ; produit « un homme connu », "
+    + "« une dame ». Atteinte sélective majeure du savoir biographique.\n"
+    + "11. Élaboration de phrases : Score Strict 14/15 → P50-P75 (syntaxe préservée)\n"
+    + "12. Discours narratif : Score total 18/30 → P11-P25 (appauvrissement lexical, structure préservée)\n"
+    + "13. Compréhension syntaxique : Score Strict 25/30 → P26-P49\n"
+    + "14. Lecture à voix haute de mots : Score Strict 32/40 (8 régularisations sur mots irréguliers : "
+    + "« femme » lu /fɛm/, « monsieur » lu /mɔ̃sjœʁ/) → P11-P25\n"
+    + "15. Lecture à voix haute de logatomes : Score Strict 18/20 → P50-P75 (voie d'assemblage préservée)\n"
+    + "16. Vérification mot oral / photo : Score Strict 28/40 → P11-P25 (erreurs sur distracteurs sémantiques)\n"
+    + "17. Écriture automatique : Score Strict 8/10 → P26-P49\n"
+    + "18. Écriture sous dictée de mots : Score Strict 30/40 (régularisations sur mots irréguliers) → P11-P25\n"
+    + "19. Écriture sous dictée de logatomes : Score Strict 18/20 → P50-P75\n"
+    + "20. Écriture sous dictée de phrases : Score Strict 22/30 → P26-P49\n"
+    + "21. Compréhension de texte écrit : Score Strict 14/20 → P11-P25\n"
+    + "22. Vérification mot écrit / photo : Score Strict 26/40 → P11-P25\n\n"
+    + "Profil synthétique : dissociation atteinte sémantique massive (fluence fruits, dénomination objets, "
+    + "personnes célèbres, vérification mot-image, lecture/écriture de mots irréguliers) vs préservation "
+    + "phonologique (répétition mots/phrases, fluence phonémique, lecture/écriture de logatomes) et "
+    + "syntaxique (élaboration de phrases, compréhension syntaxique).",
+  comportementSeance: "M. TESTUSER coopératif, conscient des difficultés, frustration visible sur les épreuves de dénomination. Fatigabilité légère en fin de séance.",
+}
+
+// ============================================================================
+// 71 ans — GréMots, suspicion APP logopénique (déficit massif répétition phrases)
+// ============================================================================
+export const FIXTURE_GREMOTS_APP_LOGOPENIQUE: CRBOFixture = {
+  id: 'gremots-app-logopenique-71a',
+  description: '71 ans suspicion APP logopénique, déficit MdT phonologique (GréMots)',
+  patient: { prenom: 'Geneviève', nom: 'TESTUSER', ddn: '1955-09-15', classe: 'adulte' },
+  bilanDate: '2026-06-05',
+  bilanType: 'initial',
+  motif: 'Cognitif',
+  medecin: { prenom: 'Marc', nom: 'TESTMEDECIN', specialite: 'Neurologue', datePrescription: '2026-05-15' },
+  anamnese:
+    "Madame TESTUSER, 71 ans, droitière, ancienne professeur des écoles (NSC 3). Adressée par son neurologue "
+    + "suite à une plainte du conjoint et de sa fille pour un manque du mot de plus en plus marqué depuis "
+    + "~18 mois, des difficultés à suivre une conversation rapide ou à plusieurs interlocuteurs, des "
+    + "demandes de répétition fréquentes (les médecins ont vérifié l'audition, normale). Pas d'antécédents "
+    + "vasculaires. IRM cérébrale récente : atrophie pariéto-temporale gauche modérée. Pas d'amyloïdose "
+    + "objectivée à ce stade. Conduite automobile arrêtée, vie quotidienne autonome avec un peu d'aide pour "
+    + "les tâches administratives.",
+  testUtilise: 'GréMots',
+  resultats:
+    "=== GréMots (Béziy, Pariente, Tran, Macoir et al. — De Boeck Supérieur 2016 / HappyNeuron 2021) ===\n"
+    + "Stratification : NSC 3 × tranche d'âge 70-79 ans\n\n"
+    + "1. Entretien / Langage spontané (qualitatif) :\n"
+    + "Fluidité modérément réduite, hésitations, manque du mot avec circonlocutions formelles « ça commence "
+    + "par...», demande fréquente de répétition des questions de l'examinateur. Pas d'agrammatisme. "
+    + "Sémantique préservée.\n\n"
+    + "2. Répétition de mots : Score Strict 17/20, Score Large 2/20, Erreur 1/20 → P26-P49\n"
+    + "3. Répétition de phrases : Score Strict 4/15, Score Large 2/15, Erreur 9/15 → P1-P5 (EFFONDREMENT)\n"
+    + "   Erreurs typiques : simplification syntaxique, omission de mots-fonction sur phrases > 6 mots, "
+    + "demandes de répétition systématiques sur phrases longues. Marqueur clé APP logopénique.\n"
+    + "4. Fluences verbes (1 min) : 12 verbes → P26-P49\n"
+    + "5. Fluences fruits (1 min) : 14 items → P26-P49 (préservée, vs APP sémantique)\n"
+    + "6. Fluences lettre V (1 min) : 9 mots → P11-P25\n"
+    + "7. Exécution d'ordres : Score Strict 19/30 → P11-P25 (échecs sur ordres complexes 2-3 étapes)\n"
+    + "8. Dénomination orale d'objets : Score Strict 30/40, Score Large 4/40, Erreur 6/40 → P26-P49\n"
+    + "   Erreurs : paraphasies formelles (« lapin » pour sapin), conduites d'approche formelles "
+    + "(« un archi, un ati... artichaut »), circonlocutions formelles (« ça commence par H »).\n"
+    + "9. Dénomination orale d'actions : Score Strict 32/40 → P26-P49\n"
+    + "10. Dénomination de personnes célèbres : Score Strict 22/30 → P50-P75 (préservée, vs APP sémantique)\n"
+    + "11. Élaboration de phrases : Score Strict 11/15, Score Large 2/15 → P26-P49 (légère réduction)\n"
+    + "12. Discours narratif : Score total 22/30 → P26-P49\n"
+    + "13. Compréhension syntaxique : Score Strict 18/30 → P1-P5 (effondrement structures complexes)\n"
+    + "14. Lecture à voix haute de mots : Score Strict 38/40 → P50-P75 (préservée)\n"
+    + "15. Lecture à voix haute de logatomes : Score Strict 12/20 → P6-P10 (déficit voie assemblage)\n"
+    + "16. Vérification mot oral / photo : Score Strict 36/40 → P26-P49 (sémantique préservée)\n"
+    + "17. Écriture automatique : Score Strict 9/10 → P50-P75\n"
+    + "18. Écriture sous dictée de mots : Score Strict 32/40 → P26-P49\n"
+    + "19. Écriture sous dictée de logatomes : Score Strict 8/20 → P1-P5 (effondrement)\n"
+    + "20. Écriture sous dictée de phrases : Score Strict 12/30 → P1-P5 (charge MdT)\n"
+    + "21. Compréhension de texte écrit : Score Strict 12/20 → P11-P25\n"
+    + "22. Vérification mot écrit / photo : Score Strict 35/40 → P26-P49\n\n"
+    + "Profil synthétique : dissociation atteinte massive de la MÉMOIRE DE TRAVAIL PHONOLOGIQUE "
+    + "(répétition de phrases, lecture/écriture de logatomes, compréhension syntaxique des structures "
+    + "complexes) vs PRÉSERVATION sémantique (vérification mot-image, dénomination personnes célèbres, "
+    + "fluence sémantique).",
+  comportementSeance: "Mme TESTUSER coopérative, attentive, demande des répétitions fréquentes, conscience préservée du trouble, stratégies de compensation actives (relecture, autocorrection).",
+}
+
 /** Toutes les fixtures disponibles — accessibles par ID. */
 export const FIXTURES: Record<string, CRBOFixture> = {
   [FIXTURE_EXALANG_1115_DYSLEXIE.id]: FIXTURE_EXALANG_1115_DYSLEXIE,
@@ -447,4 +568,6 @@ export const FIXTURES: Record<string, CRBOFixture> = {
   [FIXTURE_PREDIMEM.id]: FIXTURE_PREDIMEM,
   [FIXTURE_PREDIFEX.id]: FIXTURE_PREDIFEX,
   [FIXTURE_EXAMATH.id]: FIXTURE_EXAMATH,
+  [FIXTURE_GREMOTS_APP_SEMANTIQUE.id]: FIXTURE_GREMOTS_APP_SEMANTIQUE,
+  [FIXTURE_GREMOTS_APP_LOGOPENIQUE.id]: FIXTURE_GREMOTS_APP_LOGOPENIQUE,
 }
