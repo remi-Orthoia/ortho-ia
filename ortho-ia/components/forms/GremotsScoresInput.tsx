@@ -33,8 +33,8 @@
  * V2 livrée 2026-06-05 (après V1 free_text textarea générique).
  */
 
-import { useEffect, useMemo, useState } from 'react'
-import { Brain, ChevronDown } from 'lucide-react'
+import { useEffect, useMemo, useRef, useState } from 'react'
+import { Brain, ChevronDown, FileUp, Loader2 } from 'lucide-react'
 
 interface Props {
   notes: string
@@ -184,7 +184,7 @@ const parseInt0 = (s: string): number => {
   return Number.isFinite(n) && n >= 0 ? n : 0
 }
 
-export default function GremotsScoresInput({ notes, onNotesChange, onResultatsChange }: Props) {
+export default function GremotsScoresInput({ notes, onNotesChange, onResultatsChange, onError }: Props) {
   const [state, setState] = useState<State>(initialState)
   const [expanded, setExpanded] = useState<Record<EpreuveKey, boolean>>(() =>
     EPREUVES.reduce((acc, e) => {
@@ -192,6 +192,74 @@ export default function GremotsScoresInput({ notes, onNotesChange, onResultatsCh
       return acc
     }, {} as Record<EpreuveKey, boolean>)
   )
+
+  // Import PDF GréMots — route /api/extract-gremots-pdf.
+  const fileInputRef = useRef<HTMLInputElement | null>(null)
+  const [importing, setImporting] = useState(false)
+  const [importInfo, setImportInfo] = useState<string | null>(null)
+
+  async function handleImportFile(file: File) {
+    setImporting(true)
+    setImportInfo(null)
+    try {
+      const fd = new FormData()
+      fd.append('file', file)
+      const res = await fetch('/api/extract-gremots-pdf', { method: 'POST', body: fd })
+      const data = await res.json()
+      if (!res.ok || !data?.success) {
+        const msg = data?.error ?? "Échec de l'import PDF."
+        onError?.(msg)
+        setImportInfo(`Erreur : ${msg}`)
+        return
+      }
+      const ex = data.extracted as {
+        nsc: string
+        trancheAge: string
+        epreuves: Array<{
+          key: string
+          strict: string
+          large: string
+          erreur: string
+          temps: string
+          percentile: string
+          observation: string
+          qualitative_only: string
+        }>
+      }
+      setState((prev) => {
+        const next: State = {
+          nsc: (ex.nsc || prev.nsc) as State['nsc'],
+          trancheAge: (ex.trancheAge || prev.trancheAge) as State['trancheAge'],
+          epreuves: { ...prev.epreuves },
+        }
+        for (const item of ex.epreuves ?? []) {
+          if (!(item.key in next.epreuves)) continue
+          const cur = next.epreuves[item.key as EpreuveKey]
+          next.epreuves[item.key as EpreuveKey] = {
+            strict: item.strict || cur.strict,
+            large: item.large || cur.large,
+            erreur: item.erreur || cur.erreur,
+            temps: item.temps || cur.temps,
+            percentile: (item.percentile as Percentile) || cur.percentile,
+            observation: item.observation || cur.observation,
+            qualitative_only: item.qualitative_only || cur.qualitative_only,
+          }
+        }
+        return next
+      })
+      const epreuvesImported = (ex.epreuves ?? []).length
+      setImportInfo(
+        `Import réussi : ${epreuvesImported} épreuve${epreuvesImported > 1 ? 's' : ''} pré-remplie${epreuvesImported > 1 ? 's' : ''}. Vérifiez et complétez si besoin.`,
+      )
+    } catch (err: any) {
+      const msg = err?.message ?? "Erreur réseau durant l'import."
+      onError?.(msg)
+      setImportInfo(`Erreur : ${msg}`)
+    } finally {
+      setImporting(false)
+      if (fileInputRef.current) fileInputRef.current.value = ''
+    }
+  }
 
   const updateEpreuve = (key: EpreuveKey, patch: Partial<EpreuveState>) => {
     setState((s) => ({
@@ -325,6 +393,51 @@ export default function GremotsScoresInput({ notes, onNotesChange, onResultatsCh
           Cotation 3 scores : <strong>Score Strict</strong> (1ère intention), <strong>Score Large</strong> (2e intention),
           <strong> Erreur</strong>. Score Strict TOTAL = Strict + Large (manuel section 2.4).
         </p>
+      </div>
+
+      {/* Import PDF / Word (converti en PDF) */}
+      <div className="rounded-lg border border-sky-200 bg-sky-50/60 p-4">
+        <div className="flex items-start gap-3">
+          <FileUp size={18} className="text-sky-700 shrink-0 mt-0.5" />
+          <div className="flex-1 min-w-0">
+            <p className="text-sm font-medium text-sky-900 mb-1">
+              Importer un rapport PDF HappyNeuron ou un cahier de passation scanné
+            </p>
+            <p className="text-xs text-sky-800/90 mb-3">
+              L&apos;IA extrait automatiquement la stratification NSC × tranche d&apos;âge et les scores
+              des 22 épreuves (Strict / Large / Erreur + temps + percentile + observations). Vérifiez
+              et complétez après import. Les documents Word doivent être convertis en PDF préalablement.
+            </p>
+            <input
+              ref={fileInputRef}
+              type="file"
+              accept=".pdf,application/pdf"
+              className="hidden"
+              onChange={(ev) => {
+                const f = ev.target.files?.[0]
+                if (f) void handleImportFile(f)
+              }}
+            />
+            <button
+              type="button"
+              onClick={() => fileInputRef.current?.click()}
+              disabled={importing}
+              className="inline-flex items-center gap-2 px-3 py-1.5 text-sm font-medium bg-sky-600 text-white rounded-md hover:bg-sky-700 disabled:opacity-50 disabled:cursor-not-allowed"
+            >
+              {importing ? <Loader2 size={14} className="animate-spin" /> : <FileUp size={14} />}
+              {importing ? 'Extraction en cours…' : 'Importer un PDF'}
+            </button>
+            {importInfo && (
+              <p
+                className={`mt-2 text-xs ${
+                  importInfo.startsWith('Erreur') ? 'text-red-700' : 'text-emerald-700'
+                }`}
+              >
+                {importInfo}
+              </p>
+            )}
+          </div>
+        </div>
       </div>
 
       {/* Stratification NSC × tranche d'âge */}
