@@ -1,19 +1,38 @@
 import type { TestModule } from './types'
 
+/**
+ * Exalang 8-11, Référentiel aligné sur le cahier de passation officiel
+ * (Thibault, Lenfant, Helloin — HappyNeuron 2012).
+ *
+ * Source de vérité : `docs/Bilans Sources/cahier de passation exalang 8-11.pdf`
+ * (sommaire et structure des 6 modules officiels). Tout changement de
+ * structure (modules, épreuves, scoring) doit être confronté à ce cahier.
+ *
+ * Refonte 2026-06-05 (audit Explore) : la liste précédente couvrait ~50 % des
+ * épreuves officielles et contenait des inventions :
+ *   - "Métaphonologie, acronymes" n'existe pas (le cahier liste métaphonologie
+ *     syllabique et phonémique).
+ *   - "DRA, Dictée de Rédaction Abrégée" et "Copie différée" ne sont pas dans
+ *     Exalang 8-11 (probable confusion avec EVALEO ou ODEDYS).
+ *   - "Désignation sur définition" et "Lexique en réception" sont des
+ *     reformulations floues des épreuves officielles (Catégorisation
+ *     lexico-sémantique, Relations sémantiques, Décision lexico-morphologique).
+ * Ajout des modules officiels complets : Phonologie/Attention/Mémoire (6),
+ * Lexique (6), Langage oral (5), Lecture (5), Orthographe (4), Compétences
+ * transversales (5). Total 31 épreuves cotées.
+ */
 export const exalang811: TestModule = {
   nom: 'Exalang 8-11',
   editeur: 'HappyNeuron',
-  auteurs: 'Helloin, Lenfant, Thibault',
+  auteurs: 'Thibault, Lenfant, Helloin',
   annee: 2012,
   domaines: [
-    'Langage oral, versant réceptif',
-    'Langage oral, versant expressif',
-    'Langage écrit, lecture',
-    'Langage écrit, orthographe / production',
-    'Mémoire de travail verbale',
-    'Métaphonologie',
-    'Fonctions exécutives verbales (fluences, flexibilité)',
-    'Accès lexical / sémantique',
+    'Phonologie, attention et mémoire',
+    'Lexique',
+    'Langage oral',
+    'Lecture',
+    'Orthographe',
+    'Compétences transversales',
   ],
   // Groupes officiels HappyNeuron (en-têtes alphanumériques de la feuille de résultats).
   // Doivent être utilisés tels quels comme `domains[].nom` dans le CRBO généré.
@@ -24,35 +43,46 @@ export const exalang811: TestModule = {
     { code: 'B.2', nom: 'Orthographe' },
     { code: 'C.1', nom: 'Mémoire' },
   ],
+  // Modules et épreuves officiels du cahier de passation (HappyNeuron 2012).
+  // NE PAS reformuler, NE PAS fusionner.
   epreuves: [
-    // Mémoire de travail
-    'Empan auditif endroit (boucle phonologique)',
-    'Empan auditif envers (administrateur central)',
+    // MODULE PHONOLOGIE, ATTENTION ET MEMOIRE
+    'Empan auditif endroit',
+    'Empan auditif envers',
+    'Empan visuel',
     'Répétition de logatomes',
-    // Métaphonologie
-    'Métaphonologie, acronymes',
-    'Métaphonologie, rimes',
-    'Métaphonologie, suppression phonémique',
-    // Langage oral
-    'Compréhension orale de phrases',
-    'Compréhension orale de textes',
-    'Dénomination d\'images',
-    'Désignation sur définition',
-    'Lexique en réception',
-    // Fonctions exécutives verbales
-    'Fluence phonémique (lettre, 1 min)',
-    'Fluence sémantique (animaux, 1 min)',
-    // Langage écrit, lecture (B.1)
-    'Lecture de mots fréquents',
-    'Lecture de mots irréguliers',
-    'Lecture de non-mots (logatomes écrits)',
-    'Leximétrie (vitesse de lecture en contexte)',
+    'Métaphonologie syllabique',
+    'Métaphonologie phonémique',
+    // MODULE LEXIQUE
+    'Fluence phonémique',
+    'Fluence sémantique',
     'Décision lexico-morphologique',
-    'Compréhension écrite de texte',
-    // Langage écrit, orthographe / production (B.2, closure incluse)
-    'DRA, Dictée de Rédaction Abrégée (mots, phrases)',
+    'Relations sémantiques',
+    'Catégorisation lexico-sémantique',
+    'Lexique mathématique',
+    // MODULE LANGAGE ORAL
+    'Complétion de phrases (oral)',
+    'Compréhension de phrases',
+    'Complétion imagée',
+    'Compréhension de récit',
+    'Jugement morphosyntaxique',
+    // MODULE LECTURE
+    'Lecture de mots',
+    'Lecture de non-mots',
+    'Compréhension de phrases en images',
+    'Leximétrie',
+    'Compréhension de texte',
+    // MODULE ORTHOGRAPHE
+    'Complétion de phrases (écrit)',
+    'Jugement lexical orthographique',
+    'Correction de phrases',
     'Closure de texte',
-    'Copie différée',
+    // MODULE COMPETENCES TRANSVERSALES
+    'Compréhension écrite',
+    'Traitement visuo-spatial',
+    'Dénomination rapide automatisée',
+    'Habiletés pragmatiques et discursives',
+    'Screening logico-mathématique',
   ],
   regles_specifiques: `### EXALANG 8-11, Référentiel clinique complet (niveau senior)
 
@@ -102,9 +132,10 @@ Exalang n'affiche JAMAIS de bande <P5 ; la valeur minimale est P5 et est incluse
 - Performance faible + empan endroit faible → forte présomption de trouble phonologique.
 - Noter les **longueurs échouées** (3, 4, 5 syllabes) → cible pour la rééducation.
 
-**MÉTAPHONOLOGIE** (acronymes, rimes, suppression phonémique)
-- Épreuve **prédictive n°1** de la réussite en langage écrit.
-- Suppression phonémique = la plus sensible et la plus prédictive.
+**MÉTAPHONOLOGIE SYLLABIQUE ET PHONÉMIQUE**
+- 2 épreuves officielles distinctes dans le cahier (p. 5) : Métaphonologie syllabique (inversion, appariement, discrimination, segmentation-fusion de syllabes) et Métaphonologie phonémique (appariement phonèmes finaux, suppression de phonèmes, comptage de phonèmes, remplacement de phonèmes, inversion de phonèmes).
+- Épreuves **prédictives n°1** de la réussite en langage écrit.
+- Suppression phonémique = la plus sensible et la plus prédictive du module phonémique.
 - Déficit métaphonologique à 8-9 ans → marqueur **fort** de dyslexie développementale, même sans plainte scolaire explicite.
 - Un déficit isolé à la suppression phonémique justifie un suivi préventif de 6 à 12 mois.
 
@@ -129,11 +160,16 @@ Exalang n'affiche JAMAIS de bande <P5 ; la valeur minimale est P5 et est incluse
 - À placer dans B.1 Lecture (entrée écrite à décoder + comprendre).
 - Toujours croiser avec la compréhension orale : si orale préservée et écrite déficitaire → trouble spécifique du langage écrit ; si les deux déficitaires → trouble global du langage.
 
-**DRA (Dictée)**
-- Analyse **qualitative** des erreurs :
-  - Phonologiques (omission, substitution, inversion) → voie d'assemblage immature.
+**MODULE ORTHOGRAPHE** (Complétion de phrases écrit, Jugement lexical orthographique, Correction de phrases, Closure de texte)
+- Exalang 8-11 n'a PAS d'épreuve de dictée stricto sensu. Les compétences orthographiques sont évaluées par 4 épreuves :
+  - **Complétion de phrases (écrit)** : production de la forme grammaticale attendue (temps verbal, anaphore, etc.). Évalue la morphologie flexionnelle en production écrite.
+  - **Jugement lexical orthographique** : reconnaissance des mots correctement orthographiés vs incorrects. Évalue la mémoire orthographique en réception.
+  - **Correction de phrases** : identification et correction d'erreurs orthographiques (lexicales, grammaticales, accord). Évalue la conscience orthographique active.
+  - **Closure de texte** : compléter les mots manquants d'un texte porteur de sens (production écrite contextualisée).
+- Analyse **qualitative** des erreurs sur ces 4 épreuves :
+  - Phonologiques (omission, substitution, inversion de phonèmes en transcription) → voie d'assemblage immature.
   - Lexicales (mots irréguliers mal orthographiés) → voie d'adressage immature.
-  - Grammaticales (accord sujet-verbe, pluriels) → fragilité morphosyntaxique.
+  - Grammaticales (accord sujet-verbe, pluriels, désinences verbales) → fragilité morphosyntaxique.
 - Comptabiliser les types d'erreurs dominantes plutôt que le nombre total.
 
 ---
@@ -166,7 +202,7 @@ Spécifier le **sous-type** dans la conclusion : phonologique (voie d'assemblage
 - Lecture non-mots : **Déficitaire à Pathologique** (marqueur central)
 - Lecture mots irréguliers : Fragile (par compensation lexicale)
 - Leximétrie : Déficitaire (lenteur)
-- DRA : erreurs phonologiques dominantes
+- Complétion de phrases (écrit) + Correction de phrases : erreurs phonologiques dominantes
 - **Diagnostic** : "Les résultats sont compatibles avec un profil de dyslexie-dysorthographie développementale de type phonologique, caractérisé par une atteinte de la voie d'assemblage et une fragilité métaphonologique sous-jacente."
 - **PEC** : conscience phonémique + automatisation code grapho-phonémique + lecture répétée. 30 séances réévaluées à mi-parcours.
 - **Aménagements** : PAP, temps majoré 1/3, police OpenDyslexic/Arial 14.
@@ -177,7 +213,7 @@ Spécifier le **sous-type** dans la conclusion : phonologique (voie d'assemblage
 - Lecture mots irréguliers : Déficitaire (voie d'adressage faible)
 - Lecture non-mots : Déficitaire (voie d'assemblage faible)
 - Métaphonologie : Déficitaire
-- Mémoire orthographique faible : échec sur mots irréguliers au DRA
+- Mémoire orthographique faible : échec sur mots irréguliers en Jugement lexical orthographique et Correction de phrases
 - Leximétrie : Pathologique (très lente)
 - **Diagnostic** : "Les deux voies de lecture (adressage et assemblage) sont significativement déficitaires, dénotant un profil de dyslexie-dysorthographie développementale mixte, de sévérité marquée."
 - **PEC** : PEC intensive bi-hebdomadaire, 40-50 séances, double axe (phono + lexical).
@@ -196,7 +232,7 @@ Spécifier le **sous-type** dans la conclusion : phonologique (voie d'assemblage
 - Lecture mots irréguliers : **Déficitaire à Pathologique** (marqueur central, incapacité à mémoriser l'orthographe).
 - Lecture non-mots : Limite basse / Normale (voie d'assemblage préservée).
 - Régularisations à la lecture ("femme" lu /fɛm/ comme "fer" + "me"), "monsieur" lu /mɔ̃sjœʁ/.
-- DRA : erreurs **lexicales** dominantes (mots usuels mal orthographiés alors que phonétiquement plausibles : "porto" pour "porteau").
+- Jugement lexical orthographique + Correction de phrases : erreurs **lexicales** dominantes (mots usuels mal orthographiés alors que phonétiquement plausibles : "porto" pour "porteau").
 - Mémoire orthographique pauvre.
 - **Diagnostic** : *"Les résultats sont compatibles avec un profil de dyslexie-dysorthographie développementale de type surface (lexical), caractérisé par une atteinte de la voie d'adressage et une mémoire orthographique fragile."*
 - **PEC** : entraînement intensif du lexique orthographique (lectures répétées, copie active, dictée à choix multiples). 30-40 séances. Travailler la conscience morphologique (radicaux, suffixes).
@@ -230,14 +266,14 @@ Spécifier le **sous-type** dans la conclusion : phonologique (voie d'assemblage
 ⛔ Poser un diagnostic de dyslexie **avant la fin du CE1** (février au plus tôt), la persistance des difficultés sur 18 mois d'apprentissage formel est un critère DSM-5.
 ⛔ Poser un diagnostic de dyslexie sans **WISC-V** récent (critère D : exclure le trouble cognitif global).
 ⛔ Conclure à une dyslexie quand l'enfant n'est pas un **francophone natif** ou est en situation d'apprentissage récent du français (critère D du DSM-5 : exclure le manque de maîtrise de la langue).
-⛔ Confondre une dyslexie de surface (rare, 5-10%) avec une dyslexie phonologique (majoritaire, 70%). L'analyse DRA + lecture mots irréguliers vs non-mots est centrale.
+⛔ Confondre une dyslexie de surface (rare, 5-10%) avec une dyslexie phonologique (majoritaire, 70%). L'analyse des épreuves d'orthographe (Jugement lexical, Correction de phrases) + lecture mots irréguliers vs non-mots est centrale.
 ⛔ Sur-diagnostiquer une dyslexie chez un lecteur lent SANS atteinte phonologique (Profil 5), il s'agit alors d'une lenteur de traitement exécutive, pas d'une dyslexie active.
 ⛔ Ignorer un trouble de la compréhension écrite isolé (Profil 6) en disant "il lit bien". Toujours objectiver la **compréhension** en complément du décodage.
 
 #### TOUJOURS FAIRE, bonnes pratiques 8-11 ans
 
 ✅ Croiser la **compréhension orale** et la **compréhension écrite** : orale OK + écrite KO = trouble du langage écrit spécifique ; les deux KO = trouble global du langage.
-✅ Analyser **qualitativement le DRA** : erreurs phonologiques / lexicales / grammaticales en proportions. Cette analyse oriente le sous-type de dyslexie/dysorthographie.
+✅ Analyser **qualitativement les épreuves d'orthographe** (Complétion de phrases écrit, Jugement lexical orthographique, Correction de phrases, Closure de texte) : erreurs phonologiques / lexicales / grammaticales en proportions. Cette analyse oriente le sous-type de dyslexie/dysorthographie.
 ✅ Comparer **fluence phonémique vs fluence sémantique** : phono > sémantique = profil dysexécutif ; sémantique > phono = trouble lexico-sémantique.
 ✅ Vérifier **empan envers** vs **empan endroit** : envers < endroit −1.5 = signal TDA(H) à investiguer.
 ✅ Demander un bilan **WISC-V** récent (< 2 ans) avant tout PPS / aménagements lourds.
@@ -300,12 +336,12 @@ Quand \`bilan_precedent_structure\` provient d'une batterie DIFFÉRENTE de celle
 - "Désignation (lexique réceptif)" [3-6] ↔ "Désignation sur définition" [8-11] ↔ "Désignation d'images" [EVALEO]
 - "Compréhension orale de phrases" : matchable 5-8 / 8-11 / EVALEO
 - "Compréhension de récit" [5-8] ↔ "Compréhension orale de textes" [8-11]
-- "Dénomination" [5-8] ↔ "Dénomination d'images" [8-11] ↔ "Dénomination Lexique, phonologie" [EVALEO]
+- "Dénomination" [5-8] ↔ "Dénomination Lexique, phonologie" [EVALEO] (Exalang 8-11 / 11-15 n'a pas d'épreuve "Dénomination d'images")
 
 **Orthographe**
 - "Closure de mots" [5-8] ↔ "Dictée de mots" [EVALEO]
 - "Transcription de logatomes" [5-8] ↔ "Dictée de pseudomots" [EVALEO]
-- "Texte à compléter" [5-8] ↔ "DRA, Dictée de Rédaction Abrégée" [8-11] ↔ "Dictée de phrases" [EVALEO]
+- "Texte à compléter" [5-8] ↔ "Complétion de phrases (écrit)" [8-11] ↔ "Complément de phrases (écrit)" [11-15] ↔ "Dictée de phrases" [EVALEO]
 
 ##### ⚠️ Faux équivalents, NE PAS APPARIER
 

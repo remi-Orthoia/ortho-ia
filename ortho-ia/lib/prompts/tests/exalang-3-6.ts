@@ -1,29 +1,63 @@
 import type { TestModule } from './types'
 
+/**
+ * Exalang 3-6, Référentiel aligné sur le cahier de passation officiel
+ * (Thibault & Helloin, Motus 2006 — réédité HappyNeuron).
+ *
+ * Source de vérité : `docs/Bilans Sources/cahier passation exalang 3-6.pdf`
+ * (sommaire et structure des 8 sections officielles). Tout changement de
+ * structure (sections, épreuves, scoring) doit être confronté à ce cahier.
+ *
+ * Refonte 2026-06-05 (audit Explore) : la liste précédente couvrait ~50 % des
+ * épreuves officielles et inventait "Conscience de l'écrit émergente"
+ * (inexistante). Ajout des 8 sections officielles avec leurs sous-épreuves :
+ * Lexique Expression, Lexique Réception, Morpho-Syntaxe Expression (4 épreuves),
+ * Morpho-Syntaxe Réception (2 épreuves), Phonologie (3 épreuves), Attention &
+ * Mémoire (3 épreuves), Compétences non-verbales (4 épreuves, critique pour
+ * le diagnostic différentiel TDL vs trouble cognitif global, critère D DSM-5).
+ */
 export const exalang36: TestModule = {
   nom: 'Exalang 3-6',
-  editeur: 'HappyNeuron',
-  auteurs: 'Helloin, Lenfant, Thibault',
+  editeur: 'HappyNeuron (ex-Motus)',
+  auteurs: 'Thibault & Helloin',
   annee: 2006,
   domaines: [
-    'Langage oral réceptif',
-    'Langage oral expressif',
-    'Lexique',
-    'Morphosyntaxe',
-    'Phonologie',
-    'Métaphonologie (émergente)',
-    'Mémoire de travail verbale',
+    'Compétences lexicales en expression',
+    'Compétences lexicales en réception',
+    'Compétences morpho-syntaxiques en expression',
+    'Compétences morpho-syntaxiques en réception',
+    'Phonologie et métaphonologie émergente',
+    'Attention et mémoire',
+    'Compétences non-verbales',
   ],
+  // Sections officielles 2 à 8 du cahier de passation, libellés EXACTS.
+  // NE PAS reformuler, NE PAS fusionner.
   epreuves: [
-    'Désignation (lexique réceptif)',
-    'Dénomination (lexique expressif)',
-    'Compréhension de phrases courtes',
-    'Production syntaxique (phrases à partir d\'images)',
-    'Répétition de mots et phrases',
+    // Section 2, Compétences Lexicales en Expression
+    'Dénomination d\'images, cotation lexique',
+    'Dénomination d\'images, cotation phonologie',
+    // Section 3, Compétences Lexicales en Réception
+    'Désignation d\'images',
+    // Section 4, Compétences Morpho-Syntaxiques en Expression
+    'Complément de phrase sur ébauche',
+    'Répétition de phrases',
+    'Production de phrases',
+    // Section 5, Compétences Morpho-Syntaxiques en Réception
+    'Compréhension de récit et rappel',
+    'Aptitudes morpho-syntaxiques',
+    // Section 6, Phonologie
     'Répétition de logatomes',
-    'Empan auditif endroit',
-    'Rimes, syllabes (pré-requis langage écrit)',
-    'Conscience de l\'écrit émergente',
+    'Gnosies auditives',
+    'Rimes vocaliques',
+    // Section 7, Attention et Mémoire
+    'Empans',
+    'Attention visuelle',
+    'Attention auditive',
+    // Section 8, Compétences non-verbales
+    'Loto sonore',
+    'Complément d\'images',
+    'Schéma corporel',
+    'Discrimination visuelle',
   ],
   regles_specifiques: `### EXALANG 3-6, Référentiel clinique complet (niveau senior)
 
@@ -243,7 +277,7 @@ Quand \`bilan_precedent_structure\` provient d'une batterie DIFFÉRENTE de celle
 - "Répétition de logatomes" : libellé stable Exalang 3-6 / 5-8 / 8-11 / EVALEO, match strict possible.
 
 **Langage oral, réceptif**
-- "Désignation (lexique réceptif)" [Exalang 3-6] ↔ "Désignation sur définition" [Exalang 8-11] ↔ "Désignation d'images" [EVALEO]
+- "Désignation d'images" [Exalang 3-6] ↔ "Désignation d'images" [EVALEO] (Exalang 8-11 / 11-15 n'a pas d'épreuve de désignation directe, ses équivalents sémantiques sont "Catégorisation lexico-sémantique" + "Relations sémantiques" + "Décision lexico-morphologique")
 - "Compréhension morphosyntaxique" [Exalang 3-6] ↔ "Compréhension orale de phrases" [Exalang 5-8 / 8-11] ↔ "Compréhension orale de phrases" [EVALEO]
 - "Compréhension de récit" [Exalang 5-8] ↔ "Compréhension orale de textes" [Exalang 8-11]
 
@@ -255,7 +289,7 @@ Quand \`bilan_precedent_structure\` provient d'une batterie DIFFÉRENTE de celle
 **Orthographe**
 - "Closure de mots" [Exalang 5-8] ↔ "Dictée de mots" [EVALEO]
 - "Transcription de logatomes" [Exalang 5-8] ↔ "Dictée de pseudomots" [EVALEO]
-- "Texte à compléter" [Exalang 5-8] ↔ "DRA, Dictée de Rédaction Abrégée" [Exalang 8-11] ↔ "Dictée de phrases" [EVALEO]
+- "Texte à compléter" [Exalang 5-8] ↔ "Complétion de phrases (écrit)" [Exalang 8-11] ↔ "Complément de phrases (écrit)" [Exalang 11-15] ↔ "Dictée de phrases" [EVALEO]
 
 ##### ⚠️ Faux équivalents, NE PAS APPARIER
 

@@ -1,19 +1,41 @@
 import type { TestModule } from './types'
 
+/**
+ * Exalang 11-15, Référentiel aligné sur le cahier de passation officiel
+ * (Helloin, Lenfant, Thibault — Orthomotus 2009, devenu HappyNeuron).
+ *
+ * Source de vérité : `docs/Bilans Sources/cahier de passation exalang 11-15.pdf`
+ * + `docs/Bilans Sources/manuel exalang 11-15.pdf`. Tout changement de
+ * structure (modules, épreuves, scoring) doit être confronté à ces documents.
+ *
+ * Refonte 2026-06-05 (audit Explore) : la liste précédente couvrait ~39 % des
+ * épreuves officielles et contenait des inventions :
+ *   - "Production écrite narrative" n'existe pas (le cahier n'a pas
+ *     d'épreuve de production écrite libre).
+ *   - "Dénomination rapide de mots complexes" est une erreur de catégorie,
+ *     le cahier liste "Lecture de mots" (pas de la dénomination).
+ *   - "Raisonnement verbal (analogies, métaphores)" est une reformulation
+ *     floue de Logique et langage + Traitement des inférences + Devinettes.
+ *   - "Empan auditif endroit et envers" et "Fluences phonémique et
+ *     sémantique" fusionnent indûment 2 épreuves distinctes chacune.
+ * Ajout des 6 modules officiels complets : Attention/Mémoire (3), Lexique &
+ * Mémoire sémantique (5), Lecture (4), Compétences orthographiques (4),
+ * Compétences langagières orales (4), Compétences transversales (6). Total
+ * 26 épreuves cotées (+ section Exemplaire patient pour Closure et
+ * Complétion).
+ */
 export const exalang1115: TestModule = {
   nom: 'Exalang 11-15',
-  editeur: 'HappyNeuron',
+  editeur: 'HappyNeuron (ex-Orthomotus)',
   auteurs: 'Helloin, Lenfant, Thibault',
   annee: 2009,
   domaines: [
-    'Langage oral, réceptif et expressif',
-    'Langage écrit, lecture fluente',
-    'Langage écrit, compréhension écrite complexe',
-    'Orthographe lexicale et grammaticale',
-    'Mémoire de travail verbale',
-    'Fonctions exécutives (fluences, flexibilité)',
-    'Raisonnement verbal',
-    'Production écrite',
+    'Attention et mémoire',
+    'Lexique et mémoire sémantique',
+    'Lecture',
+    'Compétences orthographiques',
+    'Compétences langagières orales',
+    'Compétences transversales',
   ],
   // Groupes officiels HappyNeuron Exalang 11-15 (en-têtes de la feuille de résultats).
   groupes: [
@@ -23,23 +45,46 @@ export const exalang1115: TestModule = {
     { code: 'B.2', nom: 'Orthographe / production écrite' },
     { code: 'C.1', nom: 'Mémoire et fonctions exécutives' },
   ],
+  // Modules et épreuves officiels du cahier de passation (Orthomotus 2009).
+  // NE PAS reformuler, NE PAS fusionner.
   epreuves: [
-    'Empan auditif endroit et envers',
-    'Répétition de logatomes complexes',
-    'Fluences phonémique et sémantique',
-    'Compréhension orale de textes abstraits',
-    'Dénomination rapide de mots complexes',
-    // Lecture (B.1)
-    'Lecture de mots fréquents',
-    'Lecture de mots irréguliers',
-    'Lecture de non-mots / logatomes écrits',
-    'Leximétrie en contexte (texte long)',
-    'Compréhension écrite inférentielle',
-    // Orthographe / production écrite (B.2, closure incluse)
-    'Dictée de mots, de phrases, de texte',
-    'Closure de texte complexe',
-    'Production écrite narrative',
-    'Raisonnement verbal (analogies, métaphores)',
+    // ATTENTION / MEMOIRE
+    'Empan visuel',
+    'Empan auditif endroit',
+    'Empan auditif envers',
+    'Boucle phonologique',
+    // LEXIQUE ET MEMOIRE SEMANTIQUE
+    'Polysémie en contexte',
+    'Antonymie en contexte',
+    'Fluence phonémique',
+    'Fluence sémantique',
+    'Superordination',
+    'Morphologie dérivationnelle',
+    // LECTURE
+    'Lecture de mots',
+    'Réduction d\'énoncés',
+    'Leximétrie',
+    'Lecture-Recherche',
+    // COMPETENCES ORTHOGRAPHIQUES
+    'Morphologie flexionnelle',
+    'Complément de phrases (écrit)',
+    'Texte à choix multiples',
+    'Dictée',
+    // COMPETENCES LANGAGIERES ORALES
+    'Compréhension de consignes',
+    'Rappel et compréhension de récit',
+    'Compréhension de débat',
+    'Complément de phrases (oral)',
+    // COMPETENCES TRANSVERSALES
+    'Jugement morphosyntaxique',
+    'Connecteurs et quantificateurs',
+    'Habiletés pragmatiques',
+    'Traitement des inférences',
+    'Logique et langage',
+    'Devinettes',
+    // EXEMPLAIRE PATIENT (épreuves en fin de protocole)
+    'Closure de texte',
+    'Compléter chaque phrase à l\'écrit',
   ],
   regles_specifiques: `### EXALANG 11-15, Référentiel clinique complet
 
@@ -70,10 +115,10 @@ Exalang n'affiche JAMAIS de bande <P5. Bornes inclusives de part et d'autre (P25
 #### SPÉCIFICITÉS AU COLLÈGE
 
 **Complexité accrue** : les épreuves de l'Exalang 11-15 testent des compétences plus fines que celles du primaire :
-- Compréhension inférentielle (lire entre les lignes).
-- Raisonnement verbal (analogies, métaphores).
-- Production écrite structurée (récit, argumentation).
-- Orthographe lexicale complexe (mots irréguliers, homophones grammaticaux).
+- Compréhension inférentielle (Traitement des inférences, Logique et langage, Devinettes).
+- Habiletés pragmatiques et discursives (Compréhension de débat, Habiletés pragmatiques, Connecteurs et quantificateurs).
+- Compétences orthographiques complexes (Morphologie flexionnelle, Texte à choix multiples, Dictée).
+- Lexique élaboré et mémoire sémantique (Polysémie en contexte, Antonymie en contexte, Superordination, Morphologie dérivationnelle).
 
 **Mécanismes de compensation** : les dyslexiques diagnostiqués au primaire peuvent apparaître **subcliniques** sur les épreuves simples mais **décompensés** sur les épreuves complexes ou chronométrées.
 
@@ -204,13 +249,14 @@ Quand \`bilan_precedent_structure\` provient d'une batterie DIFFÉRENTE de celle
 
 **Langage oral**
 - "Compréhension orale de phrases" : matchable 5-8 / 8-11 / 11-15 / EVALEO
-- "Compréhension de récit" [5-8] ↔ "Compréhension orale de textes" [8-11 / 11-15]
-- "Dénomination" [5-8] ↔ "Dénomination d'images" [8-11] ↔ "Dénomination Lexique, phonologie" [EVALEO]
+- "Compréhension de récit" [5-8] ↔ "Compréhension de récit" [8-11] ↔ "Rappel et compréhension de récit" [11-15]
+- "Dénomination" [5-8] ↔ "Dénomination Lexique, phonologie" [EVALEO] (l'épreuve "Dénomination d'images" ne fait pas partie d'Exalang 8-11 / 11-15)
 - "Fluence sémantique" / "Fluence phonémique" : matchable 5-8 / 8-11 / 11-15 / EVALEO
 
 **Orthographe**
-- "Texte à compléter" [5-8] ↔ "DRA, Dictée de Rédaction Abrégée" [8-11] ↔ "Dictée de phrases" [EVALEO] ↔ "Texte à choix multiple" / "Complétion de phrases" [Lyfac]
+- "Texte à compléter" [5-8] ↔ "Complétion de phrases (écrit)" [8-11] ↔ "Complément de phrases (écrit)" [11-15] ↔ "Dictée de phrases" [EVALEO] ↔ "Texte à choix multiple" / "Complétion de phrases" [Lyfac]
 - "Closure de mots" [5-8] ↔ "Dictée de mots" [EVALEO]
+- "Dictée" [11-15] ↔ "Dictée de mots / phrases / pseudomots" [EVALEO]
 
 ##### ⚠️ Faux équivalents, NE PAS APPARIER
 
