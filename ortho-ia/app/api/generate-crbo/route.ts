@@ -352,13 +352,16 @@ export async function POST(request: NextRequest) {
     // Pattern : `<` puis `/` optionnel, nom de tag, attributs optionnels
     // (`name="..."`, etc. — tout sauf `>`), `/` optionnel pour self-closing, `>`.
     //
-    // ⚠️ Escape gotcha JS : `new RegExp(\`\\s\`)` donne une regex `s` (un seul
-    // backslash dans la string est consommé comme escape), pas `\s` whitespace.
-    // Il faut DOUBLE-escape : `\\\\s` en template literal → `\\s` dans string →
-    // `\s` dans regex. L'ancienne version utilisait `\\s` (cassé) et ne
-    // matchait que les tags `</tag>` sans espace ni attributs par chance.
+    // ⚠️ Escape gotcha JS template literal : pour obtenir `\s` whitespace dans
+    // la regex finale, il faut écrire `\\s` dans la source TS. JS interprète
+    // `\\s` comme la string runtime `\s` (2 chars : backslash + s), puis
+    // RegExp interprète `\s` comme whitespace. (Une version précédente
+    // utilisait `\\\\s` = string runtime `\\s` = regex `\\s` qui cherche le
+    // LITTÉRAL backslash+s, donc ne matche aucun whitespace, donc ne strip
+    // PAS `<parameter name="...">` car l'espace avant l'attribut n'est pas
+    // matché. Cf. test-strip-leak.mjs.)
     const TAG_LEAK_RE = new RegExp(
-      `</?\\\\s*(?:${ALL_LEAK_TAGS.join('|')})(?:\\\\s+[^>]*)?\\\\s*/?\\\\s*>`,
+      `</?\\s*(?:${ALL_LEAK_TAGS.join('|')})(?:\\s+[^>]*)?\\s*/?\\s*>`,
       'gi',
     )
     const stripLeakedTags = (t: string) => t.replace(TAG_LEAK_RE, '')
