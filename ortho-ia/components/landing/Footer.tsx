@@ -15,10 +15,10 @@ const COLUMNS: Array<{ title: string; links: Array<{ label: string; href: string
   {
     title: 'Ressources',
     links: [
-      { label: 'Le Blog',       href: '/blog' },
+      { label: '📝 Blog',       href: '/blog' },
+      { label: '📚 Glossaire',  href: '/glossaire' },
+      { label: '🛠️ Outils',    href: '/outils' },
       { label: 'FAQ',           href: '/#faq' },
-      { label: 'Témoignages',   href: '/#temoignages' },
-      { label: 'Beta',          href: '/beta' },
     ],
   },
   {
@@ -40,7 +40,7 @@ export default function Footer() {
               <Logo variant="light" height={36} withoutTagline />
             </div>
             <p style={{ fontSize: 14, lineHeight: 1.6, color: 'var(--fg-2)', maxWidth: 320, margin: 0 }}>
-              La plume rapide des orthophonistes — pour vous laisser plus de temps avec vos patients.
+              La plume rapide des orthophonistes, pour vous laisser plus de temps avec vos patients.
             </p>
           </div>
           {COLUMNS.map(col => (
