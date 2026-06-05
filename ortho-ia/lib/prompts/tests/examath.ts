@@ -1,7 +1,7 @@
 import type { TestModule } from './types'
 
 /**
- * EXAMATH 8-15 — Référentiel aligné sur le manuel officiel
+ * EXAMATH 8-15, Référentiel aligné sur le manuel officiel
  * (Lafay & Helloin, HappyNeuron 2016).
  *
  * Source de vérité : `docs/Bilans Sources/Manuel examath 8-15.pdf` + cahier
@@ -26,14 +26,14 @@ export const examath: TestModule = {
   auteurs: 'Anne Lafay & Marie-Christel Helloin',
   annee: 2016,
   domaines: [
-    'Module 1 — Habiletés numériques de base',
-    'Module 2 — Numération (base 10 + décimale/fractionnaire)',
-    'Module 3 — Arithmétique',
-    'Module 4 — Mesures',
-    'Module 5 — Résolution de problèmes arithmétiques',
-    'Module 6 — Langage et raisonnement',
+    'Module 1, Habiletés numériques de base',
+    'Module 2, Numération (base 10 + décimale/fractionnaire)',
+    'Module 3, Arithmétique',
+    'Module 4, Mesures',
+    'Module 5, Résolution de problèmes arithmétiques',
+    'Module 6, Langage et raisonnement',
   ],
-  // Libellés officiels EXACTS du cahier de passation — NE PAS reformuler.
+  // Libellés officiels EXACTS du cahier de passation, NE PAS reformuler.
   epreuves: [
     // M1 (6)
     'Comparaison analogique',
@@ -42,18 +42,18 @@ export const examath: TestModule = {
     'Ligne numérique',
     'Identification de quantités',
     'Dénombrement et calcul',
-    // M2 — Numération base 10 (5)
+    // M2, Numération base 10 (5)
     'Transcodage',
     'Répétition de grands nombres',
     "Identification d'U/D/C/M",
     'Relation Arabe / Analogique U-D-C',
     'Décomposition additive',
-    // M2 — Numération décimale et fractionnaire (4, CM2+)
+    // M2, Numération décimale et fractionnaire (4, CM2+)
     'Fractions en images',
-    'Ligne numérique — Fractions',
+    'Ligne numérique, Fractions',
     "Jugement d'écriture décimale",
     'Comparaison de fractions',
-    // M3 — Arithmétique (7)
+    // M3, Arithmétique (7)
     'Opérations analogiques',
     "Jugement d'opérations",
     'Fluence arithmétique',
@@ -61,11 +61,11 @@ export const examath: TestModule = {
     'Mécanismes opératoires écrits',
     'Calcul avec fractions',
     'Estimation de résultat',
-    // M4 — Mesures (3)
+    // M4, Mesures (3)
     'Approche contextuelle des mesures',
     'Équivalence et Comparaison',
     'Problèmes de mesures',
-    // M5 — Résolution de problèmes arithmétiques (9)
+    // M5, Résolution de problèmes arithmétiques (9)
     'Combinaison +',
     'Transformation +',
     'Comparaison +',
@@ -75,15 +75,15 @@ export const examath: TestModule = {
     'Comparaison ×',
     'Problème composé',
     'Problèmes composés',
-    // M6 — Langage et raisonnement (6)
+    // M6, Langage et raisonnement (6)
     'Inférences en images',
     'Inférences logiques non verbales',
     'Inférences verbales',
     'Inférences lexicales et sémantiques',
-    'Mathématique — Lexique',
+    'Mathématique, Lexique',
     'Gestion des énoncés',
   ],
-  regles_specifiques: `### EXAMATH 8-15 — Référentiel clinique aligné sur le manuel officiel
+  regles_specifiques: `### EXAMATH 8-15, Référentiel clinique aligné sur le manuel officiel
 
 Source : Anne Lafay & Marie-Christel Helloin (HappyNeuron, 2016). 508 enfants normés. Batterie informatisée de référence pour la cognition mathématique chez les 8-15 ans (CE2 → 3e).
 
@@ -98,11 +98,11 @@ Source : Anne Lafay & Marie-Christel Helloin (HappyNeuron, 2016). 508 enfants no
 | 6e-5e  | 11-13 ans       |
 | 4e-3e  | 13-15 ans       |
 
-Les épreuves de **Numération décimale et fractionnaire** (Fractions en images, Ligne numérique — Fractions, Jugement d'écriture décimale, Comparaison de fractions) et certaines épreuves de **Arithmétique** (Jugement d'opérations, Calcul avec fractions, Estimation de résultat) ne s'appliquent qu'à partir du **CM2**.
+Les épreuves de **Numération décimale et fractionnaire** (Fractions en images, Ligne numérique, Fractions, Jugement d'écriture décimale, Comparaison de fractions) et certaines épreuves de **Arithmétique** (Jugement d'opérations, Calcul avec fractions, Estimation de résultat) ne s'appliquent qu'à partir du **CM2**.
 
 Les épreuves de **Résolution de problèmes** complexes (Proportionnalité simple composée, Proportionnalité multiple, Comparaison ×, Problème composé, Problèmes composés) sont également CM2+ ou 6e+ selon les cas.
 
-#### SCORING — PERCENTILES OFFICIELS HappyNeuron
+#### SCORING, PERCENTILES OFFICIELS HappyNeuron
 
 Le logiciel Examath fournit pour chaque épreuve / subtest :
 - **Score brut** obtenu,
@@ -114,7 +114,7 @@ Le logiciel Examath fournit pour chaque épreuve / subtest :
 - **P ≤ 10** : pathologique (au-dessous du percentile 10).
 - **P ≤ 5** : pathologie sévère.
 
-⚠️ Examath fournit aussi un **temps** pour les épreuves chronométrées (Transcodage, Fluence arithmétique, certaines proportionnalités). Un temps anormalement long sur un score préservé reste un signal clinique — la rapidité est une dimension de l'expertise mathématique.
+⚠️ Examath fournit aussi un **temps** pour les épreuves chronométrées (Transcodage, Fluence arithmétique, certaines proportionnalités). Un temps anormalement long sur un score préservé reste un signal clinique, la rapidité est une dimension de l'expertise mathématique.
 
 Conversion vers la grille 6 zones ortho.ia (mapping interne pour la couleur Word) :
 - > P95 : Excellent (vert foncé)
@@ -123,81 +123,81 @@ Conversion vers la grille 6 zones ortho.ia (mapping interne pour la couleur Word
 - P50-P75 : Moyenne haute (vert pâle, Q3 inclus)
 - P26-P49 : Moyenne basse (jaune)
 - P11-P25 : Zone de fragilité (orange clair, Q1 inclus)
-- P6-P10 : Difficulté (orange foncé) — **SEUIL PATHOLOGIE**
-- P1-P5 : Difficulté sévère (rouge) — **PATHOLOGIE SÉVÈRE**
+- P6-P10 : Difficulté (orange foncé), **SEUIL PATHOLOGIE**
+- P1-P5 : Difficulté sévère (rouge), **PATHOLOGIE SÉVÈRE**
 
-#### LES 6 MODULES — DÉTAIL DES 40 ÉPREUVES
+#### LES 6 MODULES, DÉTAIL DES 40 ÉPREUVES
 
-##### MODULE 1 — HABILETÉS NUMÉRIQUES DE BASE (6 épreuves)
+##### MODULE 1, HABILETÉS NUMÉRIQUES DE BASE (6 épreuves)
 
 **Cœur du diagnostic dyscalculie primaire** : le manuel insiste sur le **sens du nombre** (Number sense, Dehaene 2010) comme atteinte cognitive centrale de la dyscalculie développementale. Système Numérique Approximatif (SNA) + Système Numérique Précis (SNP).
 
-1. **Comparaison analogique** — Compare 2 collections de points (SNA non symbolique). Marqueur central de la dyscalculie primaire. Référence : Dehaene, Butterworth.
-2. **Relation Arabe / Analogique** (subtest Comparaison arabe) — Mise en correspondance chiffre arabe ↔ quantité analogique. Atteinte = défaut d'accès au sens du nombre depuis le code arabe (hypothèse Noël & Rousselle 2011).
-3. **Relation Oral / Analogique** (subtest Comparaison orale) — Mise en correspondance nombre oral ↔ quantité. Évalue le code verbal du nombre.
-4. **Ligne numérique** — Estimer position d'un nombre sur ligne 0-100 / 0-1000. **Très sensible** : compression logarithmique anormale après CE2 = quasi-pathognomonique (Figure 3, 4, 5 du manuel).
-5. **Identification de quantités** (subitizing) — Reconnaissance rapide de petites quantités sans dénombrement (1-4 objets). Le subitizing s'installe à 5 ans normalement.
-6. **Dénombrement et calcul** (identification + production d'une collection) — Dénombrer jusqu'à 25, produire une collection à la demande. Stratégies à noter : doigts, par groupes, comptage 1 par 1.
+1. **Comparaison analogique**, Compare 2 collections de points (SNA non symbolique). Marqueur central de la dyscalculie primaire. Référence : Dehaene, Butterworth.
+2. **Relation Arabe / Analogique** (subtest Comparaison arabe), Mise en correspondance chiffre arabe ↔ quantité analogique. Atteinte = défaut d'accès au sens du nombre depuis le code arabe (hypothèse Noël & Rousselle 2011).
+3. **Relation Oral / Analogique** (subtest Comparaison orale), Mise en correspondance nombre oral ↔ quantité. Évalue le code verbal du nombre.
+4. **Ligne numérique**, Estimer position d'un nombre sur ligne 0-100 / 0-1000. **Très sensible** : compression logarithmique anormale après CE2 = quasi-pathognomonique (Figure 3, 4, 5 du manuel).
+5. **Identification de quantités** (subitizing), Reconnaissance rapide de petites quantités sans dénombrement (1-4 objets). Le subitizing s'installe à 5 ans normalement.
+6. **Dénombrement et calcul** (identification + production d'une collection), Dénombrer jusqu'à 25, produire une collection à la demande. Stratégies à noter : doigts, par groupes, comptage 1 par 1.
 
-##### MODULE 2 — NUMÉRATION (9 épreuves)
+##### MODULE 2, NUMÉRATION (9 épreuves)
 
-**Sous-section A — Numération base 10** (5 épreuves, tous niveaux) :
+**Sous-section A, Numération base 10** (5 épreuves, tous niveaux) :
 
-7. **Transcodage** (4 subtests chronométrés) — Lecture 1-99, Lecture 99+, Dictée 1-99, Dictée 99+. **Analyse qualitative des erreurs** :
+7. **Transcodage** (4 subtests chronométrés), Lecture 1-99, Lecture 99+, Dictée 1-99, Dictée 99+. **Analyse qualitative des erreurs** :
    - Lexicales : quatorze/quarante (confusion d'étiquettes verbales)
    - Syntaxiques : 3008 écrit pour 308 (défaut de conversion arabe→verbal, fragilité positionnelle)
-8. **Répétition de grands nombres** — Boucle phonologique + code verbal du nombre. Échec = signal MdT verbale (croiser avec empan endroit Exalang).
-9. **Identification d'U/D/C/M** — Identifier unités, dizaines, centaines, milliers. Valeur positionnelle. Échec massif au CM1+ = défaut central de représentation base 10.
-10. **Relation Arabe / Analogique U-D-C** (3 subtests : production Arabe→Analogique, Analogique→Arabe, Jugement) — Représentation imagée U-D-C (cubes/barres/plaques).
-11. **Décomposition additive** — Décomposer un nombre en centaines+dizaines+unités. Maîtrise base 10.
+8. **Répétition de grands nombres**, Boucle phonologique + code verbal du nombre. Échec = signal MdT verbale (croiser avec empan endroit Exalang).
+9. **Identification d'U/D/C/M**, Identifier unités, dizaines, centaines, milliers. Valeur positionnelle. Échec massif au CM1+ = défaut central de représentation base 10.
+10. **Relation Arabe / Analogique U-D-C** (3 subtests : production Arabe→Analogique, Analogique→Arabe, Jugement), Représentation imagée U-D-C (cubes/barres/plaques).
+11. **Décomposition additive**, Décomposer un nombre en centaines+dizaines+unités. Maîtrise base 10.
 
-**Sous-section B — Numération décimale et fractionnaire** (4 épreuves, CM2+) :
+**Sous-section B, Numération décimale et fractionnaire** (4 épreuves, CM2+) :
 
-12. **Fractions en images** — Identifier fractions depuis représentations imagées (parts colorées). Conceptualisation fractionnaire de base.
-13. **Ligne numérique — Fractions** — Positionner fraction sur ligne 0-1. Plus exigeant qu'images : représentation analogique de la quantité fractionnaire.
-14. **Jugement d'écriture décimale** — Juger validité d'une écriture décimale. Détecte confusions "2,10 > 2,9".
-15. **Comparaison de fractions** — Comparer 2 fractions. Croiser avec Ligne numérique fractions.
+12. **Fractions en images**, Identifier fractions depuis représentations imagées (parts colorées). Conceptualisation fractionnaire de base.
+13. **Ligne numérique, Fractions**, Positionner fraction sur ligne 0-1. Plus exigeant qu'images : représentation analogique de la quantité fractionnaire.
+14. **Jugement d'écriture décimale**, Juger validité d'une écriture décimale. Détecte confusions "2,10 > 2,9".
+15. **Comparaison de fractions**, Comparer 2 fractions. Croiser avec Ligne numérique fractions.
 
-##### MODULE 3 — ARITHMÉTIQUE (7 épreuves)
+##### MODULE 3, ARITHMÉTIQUE (7 épreuves)
 
-16. **Opérations analogiques** — Opérations sur représentations imagées. Préservé + symbolique altéré = défaut d'accès au sens du nombre.
-17. **Jugement d'opérations** (CM2+) — Estimer plausibilité d'un résultat d'opération. Sens du nombre opérationnel.
-18. **Fluence arithmétique** (3 subtests chronométrés : Additions, Soustractions, Multiplications) — Vitesse de récupération des faits arithmétiques. **Tables défaillantes au CM1+ = signal fort dyscalculie**. Comptage sur doigts persistant après CE1 = défaut d'automatisation.
-19. **Calcul mental complexe** — Calculs multi-étapes (retenue, plusieurs opérations). Mobilise MdT + automatisation + procédures. Discriminant pour profils compensés (faits OK mais MdT faible).
-20. **Mécanismes opératoires écrits** (3 subtests : Additions, Soustractions, Multiplication) — Opérations posées sur papier. Procédure préservée = profil compensé même si calcul mental déficitaire. Erreurs systématiques (oubli retenue, sens posé inversé) = défaut procédural pur.
-21. **Calcul avec fractions** (CM2+) — Additions, soustractions, multiplications de fractions simples.
-22. **Estimation de résultat** (CM2+) — Estimer ordre de grandeur d'un résultat avant calcul. **Forte sollicitation du sens du nombre** — déficit = signal fort dyscalculie primaire.
+16. **Opérations analogiques**, Opérations sur représentations imagées. Préservé + symbolique altéré = défaut d'accès au sens du nombre.
+17. **Jugement d'opérations** (CM2+), Estimer plausibilité d'un résultat d'opération. Sens du nombre opérationnel.
+18. **Fluence arithmétique** (3 subtests chronométrés : Additions, Soustractions, Multiplications), Vitesse de récupération des faits arithmétiques. **Tables défaillantes au CM1+ = signal fort dyscalculie**. Comptage sur doigts persistant après CE1 = défaut d'automatisation.
+19. **Calcul mental complexe**, Calculs multi-étapes (retenue, plusieurs opérations). Mobilise MdT + automatisation + procédures. Discriminant pour profils compensés (faits OK mais MdT faible).
+20. **Mécanismes opératoires écrits** (3 subtests : Additions, Soustractions, Multiplication), Opérations posées sur papier. Procédure préservée = profil compensé même si calcul mental déficitaire. Erreurs systématiques (oubli retenue, sens posé inversé) = défaut procédural pur.
+21. **Calcul avec fractions** (CM2+), Additions, soustractions, multiplications de fractions simples.
+22. **Estimation de résultat** (CM2+), Estimer ordre de grandeur d'un résultat avant calcul. **Forte sollicitation du sens du nombre**, déficit = signal fort dyscalculie primaire.
 
-##### MODULE 4 — MESURES (3 épreuves)
+##### MODULE 4, MESURES (3 épreuves)
 
-23. **Approche contextuelle des mesures** — Associer une unité (cm, m, kg, l, mn, m²) à un objet ou contexte usuel. Peu spécifique en isolé — dépend de l'expérience de vie.
-24. **Équivalence et Comparaison** — Convertir entre unités (cm↔m, g↔kg) et comparer mesures. Sollicite base 10 + sens du nombre.
-25. **Problèmes de mesures** — Problèmes verbalisés mobilisant grandeurs et conversions. Croiser avec M5 pour différencier difficulté problème vs conversion d'unités.
+23. **Approche contextuelle des mesures**, Associer une unité (cm, m, kg, l, mn, m²) à un objet ou contexte usuel. Peu spécifique en isolé, dépend de l'expérience de vie.
+24. **Équivalence et Comparaison**, Convertir entre unités (cm↔m, g↔kg) et comparer mesures. Sollicite base 10 + sens du nombre.
+25. **Problèmes de mesures**, Problèmes verbalisés mobilisant grandeurs et conversions. Croiser avec M5 pour différencier difficulté problème vs conversion d'unités.
 
-##### MODULE 5 — RÉSOLUTION DE PROBLÈMES ARITHMÉTIQUES À ÉNONCÉ VERBAL (9 épreuves)
+##### MODULE 5, RÉSOLUTION DE PROBLÈMES ARITHMÉTIQUES À ÉNONCÉ VERBAL (9 épreuves)
 
 ⚠️ **Déficit isolé sur ce module = souvent secondaire** (dyslexie, trouble du langage, MdT verbale faible). Ne pas conclure à une dyscalculie primaire sur la seule base d'un échec en problèmes.
 
-26. **Combinaison +** — Composition simple. Addition à élaborer depuis l'énoncé.
-27. **Transformation +** — Ajout / retrait avec recherche d'état initial, final, ou transformation (6 sous-items). Plus exigeant que combinaison (modélisation temporelle).
-28. **Comparaison +** — "Plus que" / "Moins que" avec recherche valeur supérieure, inférieure, différence. Structures inverses ("X moins de Y que Z, Y = ?") sollicitent fortement l'inhibition du référent linguistique.
-29. **Proportionnalité simple et directe ×** — Quantité d'unités (division partage), valeur multipliée (4ᵉ proportionnelle), valeur unitaire (division regroupement).
-30. **Proportionnalité simple composée ×** (CM2+) — Proportionnalité avec étape intermédiaire.
-31. **Proportionnalité multiple ×** (6e+) — Plusieurs niveaux de variables (unités et débits).
-32. **Comparaison ×** (CM2+) — "Fois plus que" / "Fois moins que".
-33. **Problème composé** (CM2+) — Coordination de plusieurs opérations.
-34. **Problèmes composés** (6e+) — Coordination de 3+ opérations/variables.
+26. **Combinaison +**, Composition simple. Addition à élaborer depuis l'énoncé.
+27. **Transformation +**, Ajout / retrait avec recherche d'état initial, final, ou transformation (6 sous-items). Plus exigeant que combinaison (modélisation temporelle).
+28. **Comparaison +**, "Plus que" / "Moins que" avec recherche valeur supérieure, inférieure, différence. Structures inverses ("X moins de Y que Z, Y = ?") sollicitent fortement l'inhibition du référent linguistique.
+29. **Proportionnalité simple et directe ×**, Quantité d'unités (division partage), valeur multipliée (4ᵉ proportionnelle), valeur unitaire (division regroupement).
+30. **Proportionnalité simple composée ×** (CM2+), Proportionnalité avec étape intermédiaire.
+31. **Proportionnalité multiple ×** (6e+), Plusieurs niveaux de variables (unités et débits).
+32. **Comparaison ×** (CM2+), "Fois plus que" / "Fois moins que".
+33. **Problème composé** (CM2+), Coordination de plusieurs opérations.
+34. **Problèmes composés** (6e+), Coordination de 3+ opérations/variables.
 
-##### MODULE 6 — LANGAGE ET RAISONNEMENT (6 épreuves)
+##### MODULE 6, LANGAGE ET RAISONNEMENT (6 épreuves)
 
 ⚠️ **Préservation = critère différentiel important**. Déficit associé = orienter vers bilan langagier (Exalang).
 
-35. **Inférences en images** — 12 scènes images, déduction logique sans support verbal (Fonte de l'igloo, Esquimau pêcheur, Chat sur le toit, Vol de fruits, Serpent, Ours polaire, Voleur, Porte-monnaie vide, Pizza fourmis, Chocolats gourmand, Voleur attrapé, Robinson).
-36. **Inférences logiques non verbales** — Suites, analogies sur supports non verbaux. Distingue difficulté logique pure vs difficulté verbale.
-37. **Inférences verbales** — Inférences depuis énoncés verbaux. Échec ici + Inférences images préservées = trouble du langage / compréhension.
-38. **Inférences lexicales et sémantiques** — Accès lexical sémantique. Croiser avec Exalang Lexique-sémantique.
-39. **Mathématique — Lexique** — Vocabulaire spécifique math (somme, différence, produit, double, moitié, quotient, ...). Défaut isolé peut expliquer beaucoup de difficultés en problèmes verbalisés.
-40. **Gestion des énoncés** — 5 énoncés à juger possible/impossible (Bûches, Bananes, Coquillages, Soupe, Poissons). Compréhension littérale des énoncés mathématiques.
+35. **Inférences en images**, 12 scènes images, déduction logique sans support verbal (Fonte de l'igloo, Esquimau pêcheur, Chat sur le toit, Vol de fruits, Serpent, Ours polaire, Voleur, Porte-monnaie vide, Pizza fourmis, Chocolats gourmand, Voleur attrapé, Robinson).
+36. **Inférences logiques non verbales**, Suites, analogies sur supports non verbaux. Distingue difficulté logique pure vs difficulté verbale.
+37. **Inférences verbales**, Inférences depuis énoncés verbaux. Échec ici + Inférences images préservées = trouble du langage / compréhension.
+38. **Inférences lexicales et sémantiques**, Accès lexical sémantique. Croiser avec Exalang Lexique-sémantique.
+39. **Mathématique, Lexique**, Vocabulaire spécifique math (somme, différence, produit, double, moitié, quotient, ...). Défaut isolé peut expliquer beaucoup de difficultés en problèmes verbalisés.
+40. **Gestion des énoncés**, 5 énoncés à juger possible/impossible (Bûches, Bananes, Coquillages, Soupe, Poissons). Compréhension littérale des énoncés mathématiques.
 
 ---
 
@@ -264,10 +264,10 @@ Le manuel propose une démarche diagnostique différentielle pour la dyscalculie
      - Si dyscalculie primaire confirmée par M1 atteint + M3 (Fluence/Estimation/Jugement) déficitaires + M6 préservé : *"Le bilan Examath 8-15 met en évidence un **trouble spécifique des apprentissages en mathématiques (dyscalculie primaire)**, caractérisé par un déficit du sens du nombre objectivé sur les épreuves [...]. Les critères du DSM-5 (Critère A persistance ≥ 6 mois + Critère B retentissement scolaire significatif) sont réunis."*
      - Si dyscalculie secondaire suspectée : préciser le facteur (langage, MdT, TDAH) et **orienter** vers les bilans complémentaires.
      - Si trouble du raisonnement mathématique sans atteinte du calcul : formuler comme tel.
-   - JAMAIS la formule "trouble spécifique des apprentissages en langage écrit / dyslexie-dysorthographie" — non pertinente pour Examath.
+   - JAMAIS la formule "trouble spécifique des apprentissages en langage écrit / dyslexie-dysorthographie", non pertinente pour Examath.
    - Statuer d'abord sur les domaines PRÉSERVÉS, puis fragilités OBJECTIVÉES (≥ 2 épreuves convergentes minimum).
 
-4. **Recommandations** — **OVERRIDE tool-schema** : la phrase 1 imposée par le tool-schema ("Une prise en charge orthophonique est recommandée, et en parallèle la mise en place ou le renforcement des aménagements en classe") s'applique avec une nuance : pour Examath, la PEC orthophonique cible **les habiletés numériques de base** (M1) et l'automatisation des faits arithmétiques (M3) en priorité, plus l'éducation au raisonnement et à la modélisation pour les profils M5 déficitaires.
+4. **Recommandations**, **OVERRIDE tool-schema** : la phrase 1 imposée par le tool-schema ("Une prise en charge orthophonique est recommandée, et en parallèle la mise en place ou le renforcement des aménagements en classe") s'applique avec une nuance : pour Examath, la PEC orthophonique cible **les habiletés numériques de base** (M1) et l'automatisation des faits arithmétiques (M3) en priorité, plus l'éducation au raisonnement et à la modélisation pour les profils M5 déficitaires.
 
 5. **Articulation avec d'autres outils** :
    - Manuel cité : Tedi-math Grands (Noël & Grégoire, 2015), ZAREKI (Dellatolas).
@@ -275,7 +275,7 @@ Le manuel propose une démarche diagnostique différentielle pour la dyscalculie
 
 ---
 
-#### MODE RENOUVELLEMENT — COMPARAISON STRUCTURÉE (pédiatrique)
+#### MODE RENOUVELLEMENT, COMPARAISON STRUCTURÉE (pédiatrique)
 
 Si un objet \`bilan_precedent_structure\` non-null est fourni dans le contexte, ce CRBO devient un **bilan de renouvellement** Examath et DOIT inclure une \`synthese_evolution\` rigoureuse, jamais générique.
 
@@ -283,7 +283,7 @@ Si un objet \`bilan_precedent_structure\` non-null est fourni dans le contexte, 
 
 Méthode obligatoire :
 
-1. **Matcher nominativement** chaque épreuve actuelle avec son homologue dans le bilan précédent (par libellé). Les 40 épreuves Examath ont des libellés stables — matching strict possible.
+1. **Matcher nominativement** chaque épreuve actuelle avec son homologue dans le bilan précédent (par libellé). Les 40 épreuves Examath ont des libellés stables, matching strict possible.
 
 2. **Convertir les percentiles en valeur numérique** AVANT de comparer (médiane de la bande affichée par HappyNeuron) :
    - \`p_sup_95\` → 97
@@ -298,9 +298,9 @@ Méthode obligatoire :
 3. **Calculer le delta percentile** :
    - **Delta ≥ +10** → **PROGRÈS NET** (signaler dans \`synthese_evolution.progres\`). Effet positif de la PEC ou de la maturation.
    - **Delta entre -10 et +9** → **STAGNATION** (signaler dans \`synthese_evolution.stagnation\`). À analyser : effet PEC insuffisant ? résistance au travail ?
-   - **Delta ≤ -10** → **RÉGRESSION** (signaler dans \`synthese_evolution.regression\`). Signal d'alerte chez l'enfant — toujours suspect, à investiguer (décrochage scolaire, fatigue cognitive, intercurrence, trouble associé non identifié).
+   - **Delta ≤ -10** → **RÉGRESSION** (signaler dans \`synthese_evolution.regression\`). Signal d'alerte chez l'enfant, toujours suspect, à investiguer (décrochage scolaire, fatigue cognitive, intercurrence, trouble associé non identifié).
 
-4. **Cas particulier passage de seuil de pathologie** (P > 10 → P ≤ 10) : franchissement du seuil pathologique vers le bas. Cliniquement très significatif — caractériser ce qui a changé entre les 2 bilans (fatigue ? nouvelle complexité scolaire au passage de classe ? trouble associé ?).
+4. **Cas particulier passage de seuil de pathologie** (P > 10 → P ≤ 10) : franchissement du seuil pathologique vers le bas. Cliniquement très significatif, caractériser ce qui a changé entre les 2 bilans (fatigue ? nouvelle complexité scolaire au passage de classe ? trouble associé ?).
 
 5. **Cas particulier sortie de pathologie** (P ≤ 10 → P > 10) : franchissement positif du seuil pathologique. Indicateur fort d'efficacité PEC. Le mentionner explicitement dans le \`resume\` ("L'épreuve [...] sort du seuil de pathologie : passage de P5 à P25, témoignant d'un bénéfice direct de la PEC sur la voie ciblée.").
 
@@ -309,7 +309,7 @@ Méthode obligatoire :
 7. **Délai entre les bilans** à mentionner explicitement ("Au regard de N mois écoulés depuis le précédent bilan / N mois de prise en charge orthophonique"). Pour Examath, le délai recommandé est :
    - **6-9 mois** : si dyscalculie diagnostiquée, suivi rééducation.
    - **12 mois** : suivi d'un profil de fragilité non pathologique (réévaluation à distance).
-   - **< 6 mois** : déconseillé sauf cas particulier (échec scolaire, changement de PEC) — risque effet test-retest.
+   - **< 6 mois** : déconseillé sauf cas particulier (échec scolaire, changement de PEC), risque effet test-retest.
 
 8. **Modélisation rédactionnelle du \`resume\`** (1-3 phrases intro \`synthese_evolution.resume\`) :
    - Si profil avec progrès significatifs sur les axes ciblés par la PEC : *"Au regard de [N] mois de prise en charge orthophonique centrée sur [habiletés numériques / faits arithmétiques / problèmes verbalisés], une évolution favorable est objectivée sur [épreuves clés], témoignant d'un bénéfice direct du travail rééducatif. Certains domaines restent fragiles ([liste]), justifiant la poursuite de la PEC."*
@@ -317,9 +317,9 @@ Méthode obligatoire :
    - Si régression : *"Au regard de [N] mois écoulés depuis le précédent bilan, une dégradation est objectivée sur [épreuves], anormale chez l'enfant et invitant à investiguer les facteurs intercurrents (charge scolaire, fatigue, trouble associé non identifié). Un bilan complémentaire [neuropsychologique / médical] est recommandé."*
 
 ⛔ **NE JAMAIS** en mode renouvellement Examath :
-- Conclure à une "guérison" de la dyscalculie sur la base d'un seul bilan positif. La dyscalculie est un trouble développemental — la PEC vise la compensation, pas la disparition.
+- Conclure à une "guérison" de la dyscalculie sur la base d'un seul bilan positif. La dyscalculie est un trouble développemental, la PEC vise la compensation, pas la disparition.
 - Présenter un progrès comme certain sans tenir compte de la variabilité test-retest et de la maturation naturelle (notamment au passage CE2 → CM1).
-- Ignorer la PEC réalisée entre les 2 bilans (orthophonique, scolaire, soutien) — c'est l'élément central du renouvellement.
+- Ignorer la PEC réalisée entre les 2 bilans (orthophonique, scolaire, soutien), c'est l'élément central du renouvellement.
 
 ✅ **TOUJOURS** en mode renouvellement :
 - Comparer épreuve par épreuve (citation nominative).
@@ -332,7 +332,7 @@ Méthode obligatoire :
 
 #### À NE JAMAIS FAIRE EN EXAMATH
 
-- ❌ Conclure à une dyscalculie sur une seule épreuve déficitaire en M5 — c'est typiquement secondaire.
+- ❌ Conclure à une dyscalculie sur une seule épreuve déficitaire en M5, c'est typiquement secondaire.
 - ❌ Conclure à une dyscalculie primaire sans déficit en M1 (Habiletés numériques de base).
 - ❌ Plaquer le format CRBO trouble dyslexie/dysorthographie (override tool-schema).
 - ❌ Confondre Examath (test 8-15 ans informatisé) avec B-CM / B-CMado (épreuves qualitatives à pastilles).
@@ -353,17 +353,17 @@ Méthode obligatoire :
 
 Le CRBO Examath DOIT inclure dans le champ \`conclusion\` (paragraphe 1, avant la formule juridique) la nomenclature AMO :
 
-🔒 **Code AMO Examath = 11.7 — VERBATIM, RIEN D'AUTRE.**
+🔒 **Code AMO Examath = 11.7, VERBATIM, RIEN D'AUTRE.**
 
-JAMAIS 12.6, JAMAIS 11.4, JAMAIS 12.1, JAMAIS aucun autre code voisin. Ces codes sont SOIT inexistants SOIT propres à d'autres bilans (12,1 / 13,5 / 13,8 sont les codes NGAP EVALEO, par exemple). Si tu écris autre chose que 11.7 dans un CRBO Examath, c'est un bug — le CRBO ne sera pas remboursé correctement par l'Assurance Maladie.
+JAMAIS 12.6, JAMAIS 11.4, JAMAIS 12.1, JAMAIS aucun autre code voisin. Ces codes sont SOIT inexistants SOIT propres à d'autres bilans (12,1 / 13,5 / 13,8 sont les codes NGAP EVALEO, par exemple). Si tu écris autre chose que 11.7 dans un CRBO Examath, c'est un bug, le CRBO ne sera pas remboursé correctement par l'Assurance Maladie.
 
 **Format attendu (verbatim)** :
 
-"La rééducation s'inscrit dans le cadre de la nomenclature AMO 11.7 (rééducation des troubles spécifiques des apprentissages — cognition mathématique)."
+"La rééducation s'inscrit dans le cadre de la nomenclature AMO 11.7 (rééducation des troubles spécifiques des apprentissages, cognition mathématique)."
 
 Une phrase, point. Pas de justification autour, pas de paragraphe d'explication.
 
 ⚠️ Si profil de dyscalculie secondaire (à un trouble du langage), la PEC peut relever de l'AMO 8.4 (LE) ou 9.4 (LO) selon le profil principal, avec mention de la composante dyscalculique en complément.
 
-(Refonte 2026-06-05 : le prompt précédent disait "AMO 12.6" qui est un code inexistant — bug détecté en E2E. Le bon code dyscalculie est **11.7**.)`,
+(Refonte 2026-06-05 : le prompt précédent disait "AMO 12.6" qui est un code inexistant, bug détecté en E2E. Le bon code dyscalculie est **11.7**.)`,
 }

@@ -28,7 +28,7 @@ export const moca: TestModule = {
     'Rappel différé des 5 mots',
     'Orientation (date, mois, année, jour, lieu, ville)',
   ],
-  regles_specifiques: `### MoCA — Screening cognitif adulte / senior
+  regles_specifiques: `### MoCA, Screening cognitif adulte / senior
 
 **Nature du test (CRITIQUE)** : la MoCA est un **outil de dépistage de 10 minutes**, PAS un bilan diagnostique. Elle indique si une atteinte des fonctions cognitives est probable ET sur quels domaines orienter l'exploration. **Elle ne diagnostique aucune pathologie neurologique.**
 
@@ -49,7 +49,7 @@ export const moca: TestModule = {
 
 **Ajustement scolarité** : **+1 point** si le patient a ≤ 12 ans de scolarité (hors formations professionnelles). Critique pour ne pas surdiagnostiquer les patients à faible niveau scolaire. Toujours mentionner ce calibrage explicitement dans le CRBO.
 
-#### SEUILS OFFICIELS — TOTAL /30
+#### SEUILS OFFICIELS, TOTAL /30
 
 | Score total corrigé | Interprétation |
 |---------------------|----------------|
@@ -58,23 +58,23 @@ export const moca: TestModule = {
 | 10 – 17 | Atteinte modérée des fonctions cognitives |
 | < 10 | Atteinte sévère des fonctions cognitives |
 
-#### INTERPRÉTATION PAR DOMAINE — DESCRIPTION QUALITATIVE UNIQUEMENT
+#### INTERPRÉTATION PAR DOMAINE, DESCRIPTION QUALITATIVE UNIQUEMENT
 
-⚠️ **Pour la MoCA, AUCUNE étiquette "Excellent / Fragilité / Difficulté sévère" n'est utilisée** — ces zones percentile-based n'ont aucun sens pour un screening cognitif /30.
+⚠️ **Pour la MoCA, AUCUNE étiquette "Excellent / Fragilité / Difficulté sévère" n'est utilisée**, ces zones percentile-based n'ont aucun sens pour un screening cognitif /30.
 
 Dans le \`commentaire\` de chaque domaine, décris en prose, en DEUX paragraphes (voir détail plus bas, section "Pré-remplissage OBLIGATOIRE du commentaire") :
-- **Paragraphe clinique** : ce que le patient a fait correctement (en premier), les sous-items qui ont posé difficulté (avec type d'erreur si pertinent), l'implication fonctionnelle concrète au quotidien. Toujours en termes de "fragilité" / "performance abaissée" / "domaine préservé" — JAMAIS "performance déficitaire / pathologique".
-- **Paragraphe "En clair :"** : la même observation reformulée en langage courant pour le patient et son entourage (vocabulaire du quotidien, aucun jargon, ton bienveillant et factuel — ni minimisant ni alarmant).
+- **Paragraphe clinique** : ce que le patient a fait correctement (en premier), les sous-items qui ont posé difficulté (avec type d'erreur si pertinent), l'implication fonctionnelle concrète au quotidien. Toujours en termes de "fragilité" / "performance abaissée" / "domaine préservé", JAMAIS "performance déficitaire / pathologique".
+- **Paragraphe "En clair :"** : la même observation reformulée en langage courant pour le patient et son entourage (vocabulaire du quotidien, aucun jargon, ton bienveillant et factuel, ni minimisant ni alarmant).
 
 Aucune valeur numérique de pourcentage, aucune étiquette colorée : le tableau MoCA affiche uniquement Épreuve / Score / Commentaire.
 
 ---
 
-#### ⛔ RÈGLES CLINIQUES ABSOLUES — MoCA
+#### ⛔ RÈGLES CLINIQUES ABSOLUES, MoCA
 
 Ces règles s'ajoutent aux règles cliniques globales du système (pas de percentiles, pas de tirets en début de phrase, pas de rééducation dans les observations).
 
-1. **NE JAMAIS poser de diagnostic de démence, maladie d'Alzheimer, MCI (trouble cognitif léger), ou trouble neuro-cognitif majeur/léger.** La MoCA seule ne permet PAS ces diagnostics — ils relèvent du neurologue, du gériatre ou du neuropsychologue après bilan approfondi.
+1. **NE JAMAIS poser de diagnostic de démence, maladie d'Alzheimer, MCI (trouble cognitif léger), ou trouble neuro-cognitif majeur/léger.** La MoCA seule ne permet PAS ces diagnostics, ils relèvent du neurologue, du gériatre ou du neuropsychologue après bilan approfondi.
    - ❌ "Profil compatible avec une maladie d'Alzheimer débutante"
    - ❌ "Trouble cognitif léger (MCI) probable"
    - ❌ "Démence à un stade modéré"
@@ -107,31 +107,31 @@ Le CRBO d'un screening MoCA suit la structure standard mais avec un contenu adap
 
 1. **Anamnèse** : motif de la consultation cognitive (plainte mnésique, alerte de l'entourage, suivi post-AVC, etc.), antécédents médicaux pertinents, niveau de scolarité (déterminant pour l'ajustement +1).
 
-2. **Domaines** : un seul \`domain\` nommé **"MoCA — Profil cognitif"** contenant 7 épreuves (une par domaine cognitif MoCA). Chaque épreuve doit suivre EXACTEMENT cette structure :
+2. **Domaines** : un seul \`domain\` nommé **"MoCA, Profil cognitif"** contenant 7 épreuves (une par domaine cognitif MoCA). Chaque épreuve doit suivre EXACTEMENT cette structure :
 
    - \`nom\` = nom du domaine cognitif MoCA (ex: "Visuospatial / Exécutif", "Mémoire (rappel différé)", "Orientation").
    - \`score\` = score total du domaine au format "X/Y" (ex: "4/5", "5/6", "3/3").
    - \`et\` = null (la MoCA n'utilise pas d'écart-type).
-   - \`percentile\` = "" (vide — la MoCA n'utilise pas de percentile).
+   - \`percentile\` = "" (vide, la MoCA n'utilise pas de percentile).
    - \`percentile_value\` = 0 (valeur neutre, **n'est pas affichée** dans le rendu MoCA).
-   - \`interpretation\` = "" (vide — **ne JAMAIS** émettre "Excellent" / "Fragilité" / "Difficulté sévère" pour la MoCA ; ces étiquettes percentile-based n'ont pas de sens pour un screening cognitif et sont supprimées du rendu).
+   - \`interpretation\` = "" (vide, **ne JAMAIS** émettre "Excellent" / "Fragilité" / "Difficulté sévère" pour la MoCA ; ces étiquettes percentile-based n'ont pas de sens pour un screening cognitif et sont supprimées du rendu).
    - \`sous_epreuves\` : décomposition obligatoire en sous-items à 1 pt chacun (sauf domaine attention où la soustraction sérielle vaut /3). Voir tableau ci-dessous pour les items canoniques.
-   - \`commentaire\` : commentaire clinique propre à CE domaine (3-4 lignes max) — décrit la performance en termes fonctionnels, formulé prudemment (ce sera affiché aussi à côté de la ligne dans le rapport Word). Cette suggestion sera modifiable par l'orthophoniste sur la page de validation.
+   - \`commentaire\` : commentaire clinique propre à CE domaine (3-4 lignes max), décrit la performance en termes fonctionnels, formulé prudemment (ce sera affiché aussi à côté de la ligne dans le rapport Word). Cette suggestion sera modifiable par l'orthophoniste sur la page de validation.
 
    **Sous-items canoniques par domaine MoCA** (à émettre TOUS dans \`sous_epreuves\`, dans cet ordre exact) :
 
    | Domaine | Sous-items |
    |---------|------------|
-   | Visuospatial / Exécutif | Alternance (Trail B) /1 — Recopie du cube /1 — Horloge contour /1 — Horloge chiffres /1 — Horloge aiguilles /1 |
-   | Dénomination | Lion /1 — Rhinocéros /1 — Chameau /1 |
-   | Attention | Empan direct (2-1-8-5-4) /1 — Empan inverse (7-4-2) /1 — Vigilance lettre A /1 — Soustraction 100−7 /3 |
-   | Langage | Répétition phrase 1 /1 — Répétition phrase 2 /1 — Fluence lettre F /1 |
-   | Abstraction | Train-bicyclette /1 — Montre-règle /1 |
-   | Mémoire (rappel différé) | Mot 1 — visage /1 — Mot 2 — velours /1 — Mot 3 — église /1 — Mot 4 — marguerite /1 — Mot 5 — rouge /1 |
-   | Orientation | Date /1 — Mois /1 — Année /1 — Jour /1 — Lieu /1 — Ville /1 |
+   | Visuospatial / Exécutif | Alternance (Trail B) /1, Recopie du cube /1, Horloge contour /1, Horloge chiffres /1, Horloge aiguilles /1 |
+   | Dénomination | Lion /1, Rhinocéros /1, Chameau /1 |
+   | Attention | Empan direct (2-1-8-5-4) /1, Empan inverse (7-4-2) /1, Vigilance lettre A /1, Soustraction 100−7 /3 |
+   | Langage | Répétition phrase 1 /1, Répétition phrase 2 /1, Fluence lettre F /1 |
+   | Abstraction | Train-bicyclette /1, Montre-règle /1 |
+   | Mémoire (rappel différé) | Mot 1, visage /1, Mot 2, velours /1, Mot 3, église /1, Mot 4, marguerite /1, Mot 5, rouge /1 |
+   | Orientation | Date /1, Mois /1, Année /1, Jour /1, Lieu /1, Ville /1 |
 
    **Notes importantes** :
-   - Pour **Mémoire** : on ne note QUE le rappel LIBRE (score MoCA officiel). Si l'ortho a mentionné une facilitation par indice catégoriel ou choix multiple, l'inclure dans le \`commentaire\` du domaine — JAMAIS dans les sous-scores.
+   - Pour **Mémoire** : on ne note QUE le rappel LIBRE (score MoCA officiel). Si l'ortho a mentionné une facilitation par indice catégoriel ou choix multiple, l'inclure dans le \`commentaire\` du domaine, JAMAIS dans les sous-scores.
    - Pour **Attention/Soustraction 100−7** : c'est un sous-item AGRÉGÉ /3 (barème progressif officiel : 0 bonne→0, 1→1, 2-3→2, 4-5→3). Détailler les calculs effectifs (ex. "93, 85, 78, 71, 64 → 4 bonnes = 3 pts") dans le \`commentaire\`, pas en sous-sous-items.
 
    **Inférence des sous-scores** : si l'orthophoniste a indiqué un score total + une observation (ex. "horloge: aiguilles inversées" ou "rappel libre 2/5"), tu DÉCOMPOSES le score de manière plausible :
@@ -142,16 +142,16 @@ Le CRBO d'un screening MoCA suit la structure standard mais avec un contenu adap
 
    **Pré-remplissage OBLIGATOIRE du \`commentaire\` de chaque épreuve** (ce commentaire sera affiché dans la colonne « Commentaire » du tableau Word et exposé à l'orthophoniste pour validation/édition sur la page de revue).
 
-   **Structure attendue du commentaire — DEUX paragraphes séparés par une ligne vide** :
+   **Structure attendue du commentaire, DEUX paragraphes séparés par une ligne vide** :
 
-   1. **Paragraphe 1 — Lecture clinique** (1-2 lignes, ton professionnel) : décrit ce qui a été observé en termes cliniques (préservation, fragilité, type d'erreur). Sert au médecin destinataire et au dossier médical.
+   1. **Paragraphe 1, Lecture clinique** (1-2 lignes, ton professionnel) : décrit ce qui a été observé en termes cliniques (préservation, fragilité, type d'erreur). Sert au médecin destinataire et au dossier médical.
 
-   2. **Paragraphe 2 — Pour le patient et son entourage** (1-2 lignes, langage courant, AUCUN jargon) : reformule la même observation avec des mots simples du quotidien, comme si on expliquait à un proche ce que le test cherche à mesurer et ce qui s'est passé. Objectif d'acculturation : aider le patient à comprendre sans dramatiser. Préfixer ce paragraphe par **« En clair : »** (en gras dans le markdown : \`**En clair :**\`).
+   2. **Paragraphe 2, Pour le patient et son entourage** (1-2 lignes, langage courant, AUCUN jargon) : reformule la même observation avec des mots simples du quotidien, comme si on expliquait à un proche ce que le test cherche à mesurer et ce qui s'est passé. Objectif d'acculturation : aider le patient à comprendre sans dramatiser. Préfixer ce paragraphe par **« En clair : »** (en gras dans le markdown : \`**En clair :**\`).
 
    **Exemples** :
    - Horloge (score 1/3) :
      - Paragraphe 1 : "Horloge : contour et chiffres préservés ; aiguilles positionnées à 10h11 au lieu de 11h10, suggérant une fragilité de la représentation mentale du temps."
-     - Paragraphe 2 : "**En clair :** dessiner une horloge à une heure précise demande de bien se représenter l'heure dans sa tête. Madame X a tracé le cadran correctement mais a placé les aiguilles à l'envers — un petit accroc utile à noter pour la suite."
+     - Paragraphe 2 : "**En clair :** dessiner une horloge à une heure précise demande de bien se représenter l'heure dans sa tête. Madame X a tracé le cadran correctement mais a placé les aiguilles à l'envers, un petit accroc utile à noter pour la suite."
    - Mémoire (score 2/5, bénéfice à l'indice) :
      - Paragraphe 1 : "Rappel libre faible (2/5) avec nette amélioration sous indiçage catégoriel (gain de 3 points), profil compatible avec une difficulté de récupération plutôt que d'encodage."
      - Paragraphe 2 : "**En clair :** lorsqu'on demande à Madame X de retrouver les mots seule, elle bloque ; mais dès qu'on lui donne un petit coup de pouce (« un sentiment, une fleur… »), elle les retrouve. Cela suggère que l'information est bien enregistrée mais difficile à aller rechercher toute seule."
@@ -188,7 +188,7 @@ Le CRBO d'un screening MoCA suit la structure standard mais avec un contenu adap
    - Échec à l'alternance (TMT B) → "fragilité de flexibilité mentale".
    - Toujours formuler en "fragilité" / "à explorer", JAMAIS en "trouble dysexécutif avéré".
 
-4. **Recommandations** — phrase imposée pour les bilans MoCA :
+4. **Recommandations**, phrase imposée pour les bilans MoCA :
    - Si total corrigé ≥ 26 : "Le screening cognitif ne met pas en évidence d'atteinte objectivable à ce stade. Une réévaluation à 12 mois peut être envisagée si la plainte persiste ou évolue."
    - Si total corrigé < 26 : "Ce bilan de screening met en évidence [une atteinte légère / modérée / sévère] des fonctions cognitives. **Un bilan neuropsychologique approfondi est recommandé** pour caractériser le profil cognitif et orienter la prise en charge."
 

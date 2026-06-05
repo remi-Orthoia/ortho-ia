@@ -1,7 +1,7 @@
 import type { TestModule } from './types'
 
 /**
- * Module EVALEO 6-15 — Évaluation du Langage Écrit et du Langage Oral 6-15 ans.
+ * Module EVALEO 6-15, Évaluation du Langage Écrit et du Langage Oral 6-15 ans.
  *
  * Auteurs : Laurence LAUNAY, Christine MAEDER, Jacques ROUSTIT, Monique TOUZIN.
  * Éditeur : Ortho Édition. Année : 2018.
@@ -10,7 +10,7 @@ import type { TestModule } from './types'
  * + 1 livret de cotation avec exemples qualification d'erreurs (27 Mo) + 2 exemples
  * de bilans (initial + renouvellement).
  *
- * Couverture : **du CP à la 3e** (rare en français — la plupart des batteries
+ * Couverture : **du CP à la 3e** (rare en français, la plupart des batteries
  * sont scindées CP-CM2 / 6e-3e). Étalonnage français récent (2018).
  *
  * Structure officielle :
@@ -27,18 +27,18 @@ export const evaleo615: TestModule = {
   auteurs: 'L. Launay, C. Maeder, J. Roustit, M. Touzin',
   annee: 2018,
   domaines: [
-    'Langage Oral — Phonologie',
-    'Langage Oral — Métaphonologie',
-    'Langage Oral — Lexique-sémantique',
-    'Langage Oral — Morphosyntaxe',
-    'Langage Oral — Récit',
-    'Langage Oral — Pragmatique',
-    'Langage Écrit — Lecture identification',
-    'Langage Écrit — Lecture compréhension',
-    'Langage Écrit — Écriture',
-    'Langage Écrit — Orthographe',
-    'Langage Écrit — Récit',
-    'Autres — Gnosies / Visuo-attentionnel / Mémoire / Praxies / Raisonnement',
+    'Langage Oral, Phonologie',
+    'Langage Oral, Métaphonologie',
+    'Langage Oral, Lexique-sémantique',
+    'Langage Oral, Morphosyntaxe',
+    'Langage Oral, Récit',
+    'Langage Oral, Pragmatique',
+    'Langage Écrit, Lecture identification',
+    'Langage Écrit, Lecture compréhension',
+    'Langage Écrit, Écriture',
+    'Langage Écrit, Orthographe',
+    'Langage Écrit, Récit',
+    'Autres, Gnosies / Visuo-attentionnel / Mémoire / Praxies / Raisonnement',
   ],
   epreuves: [
     // ============ LANGAGE ORAL ============
@@ -47,14 +47,14 @@ export const evaleo615: TestModule = {
     'Répétition de mots complexes',
     'Répétition de pseudomots',
     'Fluence phonologique',
-    'Dénomination rapide — couleurs',
-    'Dénomination rapide — chiffres',
+    'Dénomination rapide, couleurs',
+    'Dénomination rapide, chiffres',
     // Métaphonologie
     'Conscience articulatoire',
     'Epiphonologie',
     'Métaphonologie',
     // Lexique-sémantique
-    'Dénomination Lexique — phonologie',
+    'Dénomination Lexique, phonologie',
     "Désignation d'images",
     'Production de termes génériques',
     'Compréhension de termes génériques',
@@ -81,10 +81,10 @@ export const evaleo615: TestModule = {
     'Lecture de syllabes',
     'Lecture de mots',
     'Lecture de pseudomots',
-    'EVAL2M — Lecture de mots en 2 min',
-    'Evalouette — Lecture de texte non signifiant',
-    'La Mouette — Lecture de texte signifiant (test)',
-    'Le Pingouin — Lecture de texte signifiant (retest)',
+    'EVAL2M, Lecture de mots en 2 min',
+    'Evalouette, Lecture de texte non signifiant',
+    'La Mouette, Lecture de texte signifiant (test)',
+    'Le Pingouin, Lecture de texte signifiant (retest)',
     // Lecture compréhension
     'Compréhension écrite et orale de mots',
     'Compréhension écrite de phrases',
@@ -112,16 +112,16 @@ export const evaleo615: TestModule = {
     'Effet Stroop',
     'Répétition de chiffres endroit et envers',
     'Répétition de logatomes',
-    'Rappel — Item',
-    'Rappel — sériel',
+    'Rappel, Item',
+    'Rappel, sériel',
     'Reproduction de localisation de jetons',
     'Habiletés manuelles et digitales sur imitation',
     'Praxies bucco-faciales et linguales',
-    'Inclusion — Classification',
+    'Inclusion, Classification',
     'Classification',
     "Quantification de l'inclusion",
   ],
-  regles_specifiques: `### EVALEO 6-15 — Évaluation du Langage Écrit et du Langage Oral 6-15 ans
+  regles_specifiques: `### EVALEO 6-15, Évaluation du Langage Écrit et du Langage Oral 6-15 ans
 
 Auteurs : L. Launay, C. Maeder, J. Roustit, M. Touzin (Ortho Édition 2018).
 
@@ -144,7 +144,7 @@ Les normes sont stratifiées par classe. Le cahier de passation comporte des ép
 **spécifiques par niveau** (Conversion Grapho-Phonémique au CP, Décision orthographique
 à partir du CE2, Compréhension écrite de texte à partir de la 6e, etc.).
 
-#### 🔒 GRILLE OFFICIELLE EVALEO 6-15 — 7 CLASSES (REGLE IMPERATIVE)
+#### 🔒 GRILLE OFFICIELLE EVALEO 6-15, 7 CLASSES (REGLE IMPERATIVE)
 
 EVALEO **n'utilise PAS** la grille Exalang ("Excellent / Moyenne haute /
 Difficulte severe..."). EVALEO impose sa propre grille officielle en
@@ -163,7 +163,7 @@ et representee dans la grille de cotation officielle suivante :
 
 ⚠️ **POINT CRUCIAL** : les classes 3, 4 et 5 totalisent **60 % de la population**
 et sont toutes considerees comme "**Norme**" en clinique EVALEO. **Ne JAMAIS
-parler de "norme faible / mediane / superieure"** — c'est une fabrication non
+parler de "norme faible / mediane / superieure"**, c'est une fabrication non
 officielle. Une performance en classe 3 est NORMEE, pas "limite". Une
 performance en classe 5 est NORMEE, pas "Moyenne haute". La distinction
 percentile interne (P21 vs P62 vs P80) peut nuancer la formulation ("dans la
@@ -182,7 +182,7 @@ utiliser cette nomenclature dans :
    - "Classe 7 - Tres superieure"
 
    JAMAIS "Excellent", "Moyenne haute", "Moyenne basse", "Difficulte",
-   "Difficulte severe", "Zone de fragilite" — ces termes sont **reserves a
+   "Difficulte severe", "Zone de fragilite", ces termes sont **reserves a
    Exalang** et n'existent pas dans EVALEO.
 
 2. Les commentaires de domaine (\`domains[].commentaire\` et \`domain_commentaires[]\`)
@@ -218,16 +218,16 @@ independants mais coherents.
 **Le champ \`percentile\`** (string) reste utilise pour la valeur textuelle
 brute : tu peux y mettre la plage de centiles ("P63-P80", "< P7") OU "Classe X"
 selon ce qui est plus lisible. Ne PAS y mettre "Q1", "Q3", "Med" (notation
-Exalang) — EVALEO n'utilise pas cette notation.
+Exalang), EVALEO n'utilise pas cette notation.
 
 ⚠️ Si l'ortho a saisi via le form ortho.ia, la ligne "Classe EVALEO : Classe X
 (<Libelle>) - P_-P_" arrive deja dans le bloc resultats. Recopie-la dans
 \`interpretation\` au format "Classe X - <Libelle>".
 
-#### 🔒 SCORE PRINCIPAL PAR EPREUVE — REGLE OFFICIELLE EVALEO (multi-sous-scores)
+#### 🔒 SCORE PRINCIPAL PAR EPREUVE, REGLE OFFICIELLE EVALEO (multi-sous-scores)
 
-**Source officielle** : Livret de cotation EVALEO 6-15 p. 5 — "Pastille indiquant
-la classe d'etalonnage **du score total**" — confirme par les 2 bilans exemples
+**Source officielle** : Livret de cotation EVALEO 6-15 p. 5, "Pastille indiquant
+la classe d'etalonnage **du score total**", confirme par les 2 bilans exemples
 ortho-edition (Mila 5e, Enora 5e) ou les **cellules en gras** des tableaux de
 cotation designent les scores principaux et les cellules non grasses sont des
 sous-scores d'analyse complementaire.
@@ -255,10 +255,10 @@ dissociation eventuelle.
 ✅ **PROCEDURE STRICTE EN 3 ETAPES** pour determiner la classe a reporter
 dans \`interpretation\` :
 
-1. **Etape 1 — Identifier les sous-scores PRINCIPAUX** (cf. tableau ci-dessous,
+1. **Etape 1, Identifier les sous-scores PRINCIPAUX** (cf. tableau ci-dessous,
    colonne "principaux UNIQUEMENT").
-2. **Etape 2 — Lire la classe (1-7) de chaque sous-score principal**.
-3. **Etape 3 — Reporter dans \`interpretation\` la classe LA PLUS BASSE** des
+2. **Etape 2, Lire la classe (1-7) de chaque sous-score principal**.
+3. **Etape 3, Reporter dans \`interpretation\` la classe LA PLUS BASSE** des
    sous-scores principaux (= la plus diagnostique, convention conservative
    officielle EVALEO).
 
@@ -269,7 +269,7 @@ Enora, exemples ortho-edition). Colonne "principaux UNIQUEMENT" exhaustive.
 |---|---|---|
 | **Lecture de mots** | ⚠️ **REGLE DUAL** (cf. section dediee plus bas) : Score total /44 → 1re ligne "(précision)", Temps total → 2e ligne "(vitesse)". Le min(Score, Temps) **NE S'APPLIQUE PLUS** quand le form fournit les 2 classes separement. | Score serie 1/2, Temps serie 1/2, Variables |
 | **Lecture de pseudomots** | ⚠️ **REGLE DUAL** (idem Lecture de mots) : Score /22 → ligne "(précision)", Temps → ligne "(vitesse)". Min ABROGE quand les 2 classes sont fournies. | Effets de lexicalite |
-| Evalouette / La Mouette / Le Pingouin | Score mots correctement lus (efficience, NMCL) — UN SEUL PRINCIPAL. ⚠️ NE PAS confondre avec la ligne "Resultat ... niveau de la classe : CE1 X / CE2 X" sous le tableau : le chiffre apres "CE1"/"CE2" est le **trimestre du niveau scolaire equivalent** (CE1 T1, CE2 T3...), PAS la classe sept-classes EVALEO. La classe se lit UNIQUEMENT sur les X marques dans le tableau de cotation. **Le niveau scolaire equivalent (si fourni via \`niveau_equivalent\` ou directement dans la saisie) doit etre concatene dans le champ \`score\`** — cf. section dediee plus bas. | Vitesse, % corrects/lus, Indice degradation |
+| Evalouette / La Mouette / Le Pingouin | Score mots correctement lus (efficience, NMCL), UN SEUL PRINCIPAL. ⚠️ NE PAS confondre avec la ligne "Resultat ... niveau de la classe : CE1 X / CE2 X" sous le tableau : le chiffre apres "CE1"/"CE2" est le **trimestre du niveau scolaire equivalent** (CE1 T1, CE2 T3...), PAS la classe sept-classes EVALEO. La classe se lit UNIQUEMENT sur les X marques dans le tableau de cotation. **Le niveau scolaire equivalent (si fourni via \`niveau_equivalent\` ou directement dans la saisie) doit etre concatene dans le champ \`score\`**, cf. section dediee plus bas. | Vitesse, % corrects/lus, Indice degradation |
 | EVAL2M | Score d'efficience | Vitesse |
 | Comprehension ecrite (mots/phrases/paragraphe/texte) | Score total (+ Temps si present) | Sous-scores fins (inferences, coreferences) |
 | Dictee de pseudomots | Score pseudomots corrects | Temps, ONPP |
@@ -277,22 +277,22 @@ Enora, exemples ortho-edition). Colonne "principaux UNIQUEMENT" exhaustive.
 | Dictee de phrases | Score mots corrects (avant relecture), Temps | Erreurs, scores apres relecture |
 | Decision orthographique | Score corrects | Erreurs flexions, linguistiques |
 | Recit ecrit | Nb mots, Total macrostructure, Total Microstructure, Taux erreurs orthographe | Sous-scores macro/micro/diversite |
-| **Effet Stroop** | **Temps 3 ET Temps 4 — PRINCIPAUX EXCLUSIFS** | Score 1/2/3/4, Temps 1, Temps 2 (= baseline) |
+| **Effet Stroop** | **Temps 3 ET Temps 4, PRINCIPAUX EXCLUSIFS** | Score 1/2/3/4, Temps 1, Temps 2 (= baseline) |
 | Empan visuo-attentionnel | Empan VA moyen, Total Report Chiffres | Seuil moyen identification, RC1-RC5 |
-| **Repetition de chiffres endroit/envers** | **Empan endroit ET Empan envers — PRINCIPAUX EXCLUSIFS** | Score endroit /18, Score envers /18 |
+| **Repetition de chiffres endroit/envers** | **Empan endroit ET Empan envers, PRINCIPAUX EXCLUSIFS** | Score endroit /18, Score envers /18 |
 | Repetition de logatomes | Total logatomes CV+CCV, Total syllabes CV+CCV | Empans CV/CCV, sous-scores CV/CCV |
-| Rappel - Item | Score /10 | — |
+| Rappel - Item | Score /10 |, |
 | Rappel - seriel | Score item Rappel seriel | Empan, Score images placees |
-| **Repetition de phrases complexes** | **Score phrases Morphosyntaxe (MS correctes /15 ou /16) ET Empan nombre de mots — PRINCIPAUX EXCLUSIFS** | Mots en erreur MS, Total erreurs MS |
+| **Repetition de phrases complexes** | **Score phrases Morphosyntaxe (MS correctes /15 ou /16) ET Empan nombre de mots, PRINCIPAUX EXCLUSIFS** | Mots en erreur MS, Total erreurs MS |
 | Metaphonologie | Score total metaphonologie, Temps total | Score Suppression, Contrepeteries, Temps suppression |
 | Denomination Lexique - phonologie | Total Lexique, Total temps, Gain Lexique, Total Phonologie | % phono correcte, % phono mots bien repetes |
-| Denomination rapide couleurs/chiffres | Score Denomination, Temps | — |
-| Creation de neologismes | Score, Temps | — |
-| Epreuves a score unique (Programmation orale, Comprehension orale, Repetition de pseudomots, Designation d'images, Discrimination phonologique, Fluences) | Le score unique | — |
+| Denomination rapide couleurs/chiffres | Score Denomination, Temps |, |
+| Creation de neologismes | Score, Temps |, |
+| Epreuves a score unique (Programmation orale, Comprehension orale, Repetition de pseudomots, Designation d'images, Discrimination phonologique, Fluences) | Le score unique |, |
 
-⛔ **PIEGES FREQUENTS observes en production — A CONNAITRE IMPERATIVEMENT** :
+⛔ **PIEGES FREQUENTS observes en production, A CONNAITRE IMPERATIVEMENT** :
 
-1. **Evalouette / La Mouette / Le Pingouin — Piege de la ligne "CE1 1" / "CE2 3"** :
+1. **Evalouette / La Mouette / Le Pingouin, Piege de la ligne "CE1 1" / "CE2 3"** :
    Le cahier EVALEO termine ces 3 epreuves par une phrase du type :
    > \`Resultat Mouette correspondant au niveau de la classe : CE1 1\`
 
@@ -301,10 +301,10 @@ Enora, exemples ortho-edition). Colonne "principaux UNIQUEMENT" exhaustive.
    PAS la classe sept-classes EVALEO. **N'utilise JAMAIS ce chiffre comme la
    classe**. La classe sept-classes (1-7) se lit UNIQUEMENT sur les X marques
    dans le tableau de cotation au-dessus, colonnes 1 a 7. Pour ces 3 epreuves,
-   seul le **Score mots correctement lus (efficience)** est principal — c'est
+   seul le **Score mots correctement lus (efficience)** est principal, c'est
    ce X-la qui donne la classe a reporter.
 
-2. **Effet Stroop — Piege du tableau a 8 sous-scores** :
+2. **Effet Stroop, Piege du tableau a 8 sous-scores** :
    Le tableau Stroop comporte 8 sous-scores croises (Score 1/2/3/4 + Temps
    1/2/3/4) ce qui est tres tentant pour faire une moyenne ou prendre une
    classe "intermediaire". **NE FAIS JAMAIS DE MOYENNE**. Lis UNIQUEMENT
@@ -315,16 +315,16 @@ Enora, exemples ortho-edition). Colonne "principaux UNIQUEMENT" exhaustive.
    pour Temps 3 et X en colonne 5 pour Temps 4 → \`interpretation = "Classe 3
    - Norme"\` (min des 2 principaux), JAMAIS Classe 4 (moyenne implicite).
 
-**EXEMPLES CHIFFRES — applique strictement la procedure** :
+**EXEMPLES CHIFFRES, applique strictement la procedure** :
 
-**Exemple A — Effet Stroop** :
+**Exemple A, Effet Stroop** :
 - Sous-scores : Score 1 cl7, Score 2 cl2, Score 3 cl3, Score 4 cl7, Temps 1
   cl4, Temps 2 cl2, **Temps 3 cl3, Temps 4 cl5**.
 - Principaux UNIQUEMENT : Temps 3 (cl3) ET Temps 4 (cl5).
 - min(cl3, cl5) = cl3 → \`interpretation = "Classe 3 - Norme"\`.
 - ❌ NE PAS sortir cl4 (moyenne) ni cl2 (Score 2 ou Temps 2 = sous-scores).
 
-**Exemple B — Repetition de phrases complexes** :
+**Exemple B, Repetition de phrases complexes** :
 - Sous-scores : **Score MS = 12/15 cl2**, Mots en erreur 6/75 cl1, **Empan
   nombre de mots = 13 cl7**.
 - Principaux UNIQUEMENT : Score MS (cl2) ET Empan mots (cl7). "Mots en erreur"
@@ -332,10 +332,10 @@ Enora, exemples ortho-edition). Colonne "principaux UNIQUEMENT" exhaustive.
 - min(cl2, cl7) = cl2 → \`interpretation = "Classe 2 - Fragilite"\`.
 - ❌ NE PAS sortir cl3 (moyenne implicite cl2+cl1+cl7) ni cl7 (haut) ni cl1.
 
-**Exemple C — Lecture de pseudomots (NOUVELLE REGLE DUAL — applicable AUSSI a Lecture de mots)** :
+**Exemple C, Lecture de pseudomots (NOUVELLE REGLE DUAL, applicable AUSSI a Lecture de mots)** :
 - Le form transmet :
-  > \`Classe EVALEO (precision) : Classe 3 (Norme) — P21 - P38\`
-  > \`Classe EVALEO (vitesse) : Classe 2 (Fragilite) — P7 - P20\`
+  > \`Classe EVALEO (precision) : Classe 3 (Norme), P21 - P38\`
+  > \`Classe EVALEO (vitesse) : Classe 2 (Fragilite), P7 - P20\`
   > \`Score brut : 18/22\`
   > \`Temps : 73s\`
 - Tu DOIS emettre DEUX entrees consecutives dans \`domains[].epreuves[]\` :
@@ -348,19 +348,19 @@ Enora, exemples ortho-edition). Colonne "principaux UNIQUEMENT" exhaustive.
         "commentaire": "<commentaire ciblant la dimension vitesse>" }\`
 - ❌ NE PAS faire min(cl3, cl2) = cl2 et emettre UNE seule ligne (ancienne
   regle ABROGEE pour lecture_mots et lecture_pseudomots).
-- ❌ NE PAS utiliser l'em-dash (\`—\`) dans le suffixe — strictement
+- ❌ NE PAS utiliser l'em-dash (\`—\`) dans le suffixe, strictement
   \` (précision)\` / \` (vitesse)\` entre parentheses.
 - Le commentaire pour la dimension en classe 1-3 cible sa dimension propre
   (precision = voie d'assemblage ; vitesse = automatisation, fluence).
 
-**Exemple D — Repetition de chiffres endroit/envers** :
+**Exemple D, Repetition de chiffres endroit/envers** :
 - Sous-scores : **Empan endroit = 4 cl1, Empan envers = 3 cl1**, Score endroit
   6/18 cl2, Score envers 2/18 cl2.
 - Principaux UNIQUEMENT : Empan endroit (cl1) ET Empan envers (cl1). Les
   Score endroit/envers sont IGNORES.
 - min(cl1, cl1) = cl1 → \`interpretation = "Classe 1 - Pathologique"\`.
 
-**Exemple E — La Mouette (PIEGE "CE1 X" trimestre)** :
+**Exemple E, La Mouette (PIEGE "CE1 X" trimestre)** :
 - Tableau de cotation : **Score mots correctement lus (efficience) = 95
   → X en colonne 2**, Score nombre mots lus 103 cl2, % corrects/lus 92.2% cl2,
   Indice degradation 7 cl5.
@@ -374,7 +374,7 @@ Enora, exemples ortho-edition). Colonne "principaux UNIQUEMENT" exhaustive.
 - ❌ NE PAS sortir Classe 1 en interpretant "CE1 1" comme la classe 1.
 - ❌ NE PAS sortir Classe 5 en se laissant tirer par l'Indice degradation.
 
-**Exemple F — Evalouette (variante du piege CE1 X)** :
+**Exemple F, Evalouette (variante du piege CE1 X)** :
 - Tableau : **Score mots correctement lus = 100 → X en colonne 2**, autres
   X-marks en cl2 et Indice degradation en cl5.
 - Ligne sous le tableau : \`Resultat Evalouette correspondant au niveau de
@@ -385,7 +385,7 @@ Enora, exemples ortho-edition). Colonne "principaux UNIQUEMENT" exhaustive.
 
 ⚠️ **Dissociation forte entre principaux** : si les sous-scores principaux
 sont dans des classes tres differentes (ex. cl 2 vs cl 7 pour Repetition de
-phrases complexes), c'est un signal clinique majeur — le commentaire DOIT
+phrases complexes), c'est un signal clinique majeur, le commentaire DOIT
 le signaler explicitement (sans changer \`interpretation\` qui reste la classe
 la plus basse).
 
@@ -396,14 +396,14 @@ Le form ortho.ia EVALEO peut transmettre pour \`Lecture de mots\` ou
 
 \`\`\`
 Épreuve : Lecture de mots
-  Classe EVALEO (precision) : Classe 2 (Fragilite) — P7 - P20
-  Classe EVALEO (vitesse) : Classe 5 (Norme) — P63 - P80
+  Classe EVALEO (precision) : Classe 2 (Fragilite), P7 - P20
+  Classe EVALEO (vitesse) : Classe 5 (Norme), P63 - P80
   Score brut : 38/44
   Temps : 62s
 \`\`\`
 
 (retour Cindy 2026-06 : Anna-Jane lit "tres tres vite mais au detriment de
-la qualite/precision" — un mono-percentile masquait cette dissociation
+la qualite/precision", un mono-percentile masquait cette dissociation
 clinique majeure).
 
 🔒 **REGLE** : quand l'entree contient simultanement
@@ -437,11 +437,11 @@ Conventions :
   dans le \`diagnostic\` final selon ce qui sert mieux la synthese.
 
 ⛔ **NE PAS** :
-- Fusionner les 2 classes en une seule (avec min ou moyenne) — la regle
+- Fusionner les 2 classes en une seule (avec min ou moyenne), la regle
   classique "interpretation = min des principaux" ne s'applique PLUS quand
   le form fournit explicitement les 2 dimensions separement.
-- Renommer le suffixe ("Lecture de mots — precision" avec em-dash, ou
-  "Lecture mots prec." abreviation) — strictement \` (précision)\` /
+- Renommer le suffixe ("Lecture de mots, precision" avec em-dash, ou
+  "Lecture mots prec." abreviation), strictement \` (précision)\` /
   \` (vitesse)\` entre parentheses.
 - Inventer une dimension absente : si le form ne fournit que
   \`Classe EVALEO\` (sans le suffixe \`(precision)\` ni \`(vitesse)\`), emettre
@@ -456,7 +456,7 @@ Niveau scolaire equivalent EVALEO : CE1 T1
 \`\`\`
 
 Cette info provient de la ligne sous le tableau de cotation EVALEO
-("Resultat <Test> correspondant au niveau de la classe : CE1 1" — le \`1\`
+("Resultat <Test> correspondant au niveau de la classe : CE1 1", le \`1\`
 est le TRIMESTRE, pas la classe sept-classes).
 
 🔒 **REGLE** : quand cette ligne est presente, tu DOIS la concatener dans
@@ -474,7 +474,7 @@ le champ \`score\` de l'epreuve correspondante, format :
 - Parentheses, minuscules pour "équivalent", accent aigu.
 
 ⛔ **NE PAS** mettre le niveau scolaire equivalent dans \`interpretation\` ou
-\`percentile\` — ces 2 champs restent strictement reserves a la classe
+\`percentile\`, ces 2 champs restent strictement reserves a la classe
 sept-classes EVALEO (cf. Exemples E et F ci-dessus). Le niveau scolaire
 equivalent est une info clinique complementaire pour l'ortho, qui figure
 dans la colonne Score du tableau Word.
@@ -492,106 +492,106 @@ l'épreuve **Empan visuo-attentionnel** notée en **millisecondes**.
 
 ---
 
-#### STRUCTURE OFFICIELLE — LANGAGE ORAL (LO)
+#### STRUCTURE OFFICIELLE, LANGAGE ORAL (LO)
 
 **Phonologie**
-- Répertoire phonétique — inventaire des phonèmes maîtrisés.
-- Répétition de mots complexes — encodage phonologique.
-- Répétition de pseudomots — boucle phonologique pure (cible : dyslexie phonologique).
-- Fluence phonologique — accès lexical sur critère phonémique.
-- Dénomination rapide — couleurs / chiffres — **vitesse de dénomination automatique** (marqueur dyslexique : RAN ralenti = signal fort).
+- Répertoire phonétique, inventaire des phonèmes maîtrisés.
+- Répétition de mots complexes, encodage phonologique.
+- Répétition de pseudomots, boucle phonologique pure (cible : dyslexie phonologique).
+- Fluence phonologique, accès lexical sur critère phonémique.
+- Dénomination rapide, couleurs / chiffres, **vitesse de dénomination automatique** (marqueur dyslexique : RAN ralenti = signal fort).
 
 **Métaphonologie**
-- Conscience articulatoire — geste articulatoire de chaque phonème.
-- Epiphonologie — manipulation phonologique implicite (rimes, syllabes).
-- Métaphonologie — manipulation explicite (segmentation, élision, ajout) — **prédicteur fort de la dyslexie**.
+- Conscience articulatoire, geste articulatoire de chaque phonème.
+- Epiphonologie, manipulation phonologique implicite (rimes, syllabes).
+- Métaphonologie, manipulation explicite (segmentation, élision, ajout), **prédicteur fort de la dyslexie**.
 
 **Lexique-sémantique**
-- Dénomination Lexique — phonologie (3 niveaux de difficulté) — voie d'évocation lexicale.
-- Désignation d'images (3 niveaux) — lexique réceptif.
-- Production / Compréhension de termes génériques — organisation sémantique.
-- Fluence sémantique / morphologique — accès lexical sur critère catégoriel ou morphologique.
-- Antonymes — relations sémantiques.
-- Métaphores & expressions idiomatiques — sens figuré (marqueur trouble pragmatique si déficit isolé).
-- Jugement de dérivations / Création de néologismes — morphologie dérivationnelle.
+- Dénomination Lexique, phonologie (3 niveaux de difficulté), voie d'évocation lexicale.
+- Désignation d'images (3 niveaux), lexique réceptif.
+- Production / Compréhension de termes génériques, organisation sémantique.
+- Fluence sémantique / morphologique, accès lexical sur critère catégoriel ou morphologique.
+- Antonymes, relations sémantiques.
+- Métaphores & expressions idiomatiques, sens figuré (marqueur trouble pragmatique si déficit isolé).
+- Jugement de dérivations / Création de néologismes, morphologie dérivationnelle.
 
 **Morphosyntaxe**
-- Programmation orale de phrases — syntaxe expressive.
-- Répétition de phrases complexes — MdT + syntaxe.
-- Compréhension orale de phrases — syntaxe réceptive (prédictrice de la compréhension écrite).
-- Jugement de grammaticalité et reformulation — méta-syntaxe.
+- Programmation orale de phrases, syntaxe expressive.
+- Répétition de phrases complexes, MdT + syntaxe.
+- Compréhension orale de phrases, syntaxe réceptive (prédictrice de la compréhension écrite).
+- Jugement de grammaticalité et reformulation, méta-syntaxe.
 
 **Récit oral**
-- Récit à l'oral à partir d'une histoire en images — discours narratif.
-- Compréhension orale de paragraphe (Test + Retest) — compréhension narrative longue.
+- Récit à l'oral à partir d'une histoire en images, discours narratif.
+- Compréhension orale de paragraphe (Test + Retest), compréhension narrative longue.
 
 **Pragmatique**
-- Pragmatique et communication — adéquation des productions au contexte (rare en France ; marqueur de trouble de la communication sociale).
+- Pragmatique et communication, adéquation des productions au contexte (rare en France ; marqueur de trouble de la communication sociale).
 
 ---
 
-#### STRUCTURE OFFICIELLE — LANGAGE ÉCRIT (LE)
+#### STRUCTURE OFFICIELLE, LANGAGE ÉCRIT (LE)
 
 **Lecture identification**
-- Conversion Grapho-Phonémique (CP) — décodage de base.
-- Lecture de syllabes (CP) — assemblage phonologique.
-- Lecture de mots (CP 3e trim à 3e) — voie d'adressage.
-- Lecture de pseudomots (CP 3e trim à 3e) — voie d'assemblage.
-- **EVAL2M** — Lecture de mots en 2 min (CE1 3e trim à 3e) — vitesse.
-- **Evalouette** — Lecture de texte non signifiant (CP 3e trim à 3e) — décodage pur.
-- **La Mouette** — Lecture de texte signifiant — test (CP 3e trim à 3e).
-- **Le Pingouin** — Lecture de texte signifiant — retest (CE1 à 3e).
+- Conversion Grapho-Phonémique (CP), décodage de base.
+- Lecture de syllabes (CP), assemblage phonologique.
+- Lecture de mots (CP 3e trim à 3e), voie d'adressage.
+- Lecture de pseudomots (CP 3e trim à 3e), voie d'assemblage.
+- **EVAL2M**, Lecture de mots en 2 min (CE1 3e trim à 3e), vitesse.
+- **Evalouette**, Lecture de texte non signifiant (CP 3e trim à 3e), décodage pur.
+- **La Mouette**, Lecture de texte signifiant, test (CP 3e trim à 3e).
+- **Le Pingouin**, Lecture de texte signifiant, retest (CE1 à 3e).
 
 **Lecture compréhension**
-- Compréhension écrite et orale de mots — accès lexical orthographique.
-- Compréhension écrite de phrases (CP 3e trim à CE2 / CM1 à 3e — 2 versions).
-- Compréhension écrite de paragraphe — Test + Retest (CP 3e trim à CE2 / CM1-CM2).
-- Compréhension écrite de texte — Test + Retest (6e à 3e).
+- Compréhension écrite et orale de mots, accès lexical orthographique.
+- Compréhension écrite de phrases (CP 3e trim à CE2 / CM1 à 3e, 2 versions).
+- Compréhension écrite de paragraphe, Test + Retest (CP 3e trim à CE2 / CM1-CM2).
+- Compréhension écrite de texte, Test + Retest (6e à 3e).
 
 **Écriture**
-- Copie de mots (CP) — mémoire orthographique de la forme.
-- Copie de texte (CE1 à 3e) — automatisation de l'écriture.
-- Accélération sur l'écriture d'une phrase (CE2 à 3e) — vitesse graphique.
-- Transcription & buffer graphémique (CP 3e trim à 3e) — buffer orthographique.
+- Copie de mots (CP), mémoire orthographique de la forme.
+- Copie de texte (CE1 à 3e), automatisation de l'écriture.
+- Accélération sur l'écriture d'une phrase (CE2 à 3e), vitesse graphique.
+- Transcription & buffer graphémique (CP 3e trim à 3e), buffer orthographique.
 - Grilles d'observation/synthèse du comportement scripteur (par niveau).
 
 **Orthographe**
 - Dictée de syllabes (CP).
-- Dictée de pseudomots (CE2 à 3e — 5 niveaux : CE2, CM1, CM2, 6e-5e, 4e-3e) — voie d'assemblage en écriture.
-- Dictée de mots (CP 3e trim à 3e — 7 niveaux) — voie d'adressage en écriture, orthographe lexicale.
-- Fluence orthographique — vitesse d'évocation orthographique.
-- Dictée de phrases (CE1 3e trim à 3e — 6 niveaux) — orthographe lexicale + grammaticale.
-- Décision orthographique (CE2 à 3e — 5 niveaux) — mémoire orthographique en reconnaissance.
+- Dictée de pseudomots (CE2 à 3e, 5 niveaux : CE2, CM1, CM2, 6e-5e, 4e-3e), voie d'assemblage en écriture.
+- Dictée de mots (CP 3e trim à 3e, 7 niveaux), voie d'adressage en écriture, orthographe lexicale.
+- Fluence orthographique, vitesse d'évocation orthographique.
+- Dictée de phrases (CE1 3e trim à 3e, 6 niveaux), orthographe lexicale + grammaticale.
+- Décision orthographique (CE2 à 3e, 5 niveaux), mémoire orthographique en reconnaissance.
 
 **Récit écrit**
-- Récit à l'écrit à partir d'une histoire en images (CM1 à 3e) — discours narratif écrit.
+- Récit à l'écrit à partir d'une histoire en images (CM1 à 3e), discours narratif écrit.
 
 ---
 
-#### STRUCTURE OFFICIELLE — AUTRES
+#### STRUCTURE OFFICIELLE, AUTRES
 
 **Gnosies**
-- Discrimination phonologique — gnosies auditivo-phonologiques.
-- Gnosies visuelles de figures — reconnaissance visuelle.
+- Discrimination phonologique, gnosies auditivo-phonologiques.
+- Gnosies visuelles de figures, reconnaissance visuelle.
 
 **Visuo-attentionnel**
-- Empan visuo-attentionnel (en **millisecondes**) — fenêtre attentionnelle visuelle (très lié à la dyslexie de surface).
+- Empan visuo-attentionnel (en **millisecondes**), fenêtre attentionnelle visuelle (très lié à la dyslexie de surface).
 
 **Contrôle de l'inhibition**
-- Effet Stroop — inhibition d'automatismes.
+- Effet Stroop, inhibition d'automatismes.
 
 **Mémoire à court terme**
-- Répétition de chiffres endroit et envers — empan verbal.
-- Répétition de logatomes — boucle phonologique.
-- Rappel — Item / sériel — composantes mnésiques.
-- Reproduction de localisation de jetons — mémoire visuo-spatiale.
+- Répétition de chiffres endroit et envers, empan verbal.
+- Répétition de logatomes, boucle phonologique.
+- Rappel, Item / sériel, composantes mnésiques.
+- Reproduction de localisation de jetons, mémoire visuo-spatiale.
 
 **Praxies**
 - Habiletés manuelles et digitales sur imitation.
 - Praxies bucco-faciales et linguales (à apparier avec le bilan moteur).
 
 **Raisonnement logique**
-- Inclusion — Classification.
+- Inclusion, Classification.
 - Classification.
 - Quantification de l'inclusion.
 
@@ -612,7 +612,7 @@ de reference (Justine Peyre, Anne Frouard). Tu DOIS produire \`domains[]\` du
 JSON dans cet ordre exact, en n'incluant QUE les sections pour lesquelles
 l'ortho a renseigne au moins une epreuve :
 
-**1. Langage Ecrit** — toujours en premier dans un bilan EVALEO :
+**1. Langage Ecrit**, toujours en premier dans un bilan EVALEO :
    1.1. **Lecture - Identification de mots ecrits** (Evalouette, Mouette,
         Pingouin, Lecture de mots, Lecture de pseudomots, EVAL2M, Conversion
         Grapho-Phonemique, Lecture de syllabes)
@@ -640,7 +640,7 @@ l'ortho a renseigne au moins une epreuve :
    2.5. **Epreuves sensibles a un trouble du raisonnement logique** (Inclusion,
         Classification, Quantification)
 
-**3. Langage Oral** — toujours en dernier dans le CRBO EVALEO :
+**3. Langage Oral**, toujours en dernier dans le CRBO EVALEO :
    3.1. **Morphosyntaxe** (Programmation orale de phrases, Repetition de
         phrases complexes, Comprehension orale de phrases, Jugement de
         grammaticalite et reformulation)
@@ -663,21 +663,21 @@ toutes les sections dans cet ordre.
 - Pour les sections sous-jacentes, utiliser exactement "Epreuves sensibles a
   un trouble de <X>" (pluriel "Epreuves") OU "Epreuve sensible a un trouble
   de <X>" (singulier si une seule epreuve dans la section).
-- Pour Production orthographe : NE PAS dire "Orthographe" tout court — le
+- Pour Production orthographe : NE PAS dire "Orthographe" tout court, le
   libelle officiel EVALEO est "Production orthographe".
 - Sections LO : "Morphosyntaxe", "Phonologie", "Metaphonologie",
   "Lexique-semantique", "Recit oral", "Pragmatique".
 
 Le rendu Word d'ortho.ia respecte cet ordre verbatim (option
-\`preserveDomainOrder\` du registry — pas de re-tri defensif applique).
+\`preserveDomainOrder\` du registry, pas de re-tri defensif applique).
 
 ---
 
 #### 🆕 FORMAT DE RÉDACTION EVALEO (style Anne Frouard, prose continue **CONCISE**)
 
-**SURCHARGE le format global du wizard** (système prompt principal). Quand EVALEO 6-15 est sélectionné, le rendu attendu est calqué sur le format Anne Frouard observé dans les exemples joints au module \`evaleo-method.ts\` (2 PDF + 4 Word de référence). Ce format diffère du format COMPLET générique sur 4 points concrets — applique les règles EVALEO ci-dessous **en priorité** sur les règles globales.
+**SURCHARGE le format global du wizard** (système prompt principal). Quand EVALEO 6-15 est sélectionné, le rendu attendu est calqué sur le format Anne Frouard observé dans les exemples joints au module \`evaleo-method.ts\` (2 PDF + 4 Word de référence). Ce format diffère du format COMPLET générique sur 4 points concrets, applique les règles EVALEO ci-dessous **en priorité** sur les règles globales.
 
-🔒 **RÈGLE TRANSVERSALE — CONCISION** : tous les textes produits doivent être **denses et courts**. Le style Anne Frouard EVALEO n'est PAS littéraire ni explicatif — c'est un format clinique professionnel synthétique. Pour chaque section, viser le volume cible indiqué et ne JAMAIS le dépasser de plus de 20%. Si tu hésites entre 2 phrases ou 4 phrases, prends 2. Mieux vaut être laconique et factuel que long et pédagogique. Le CRBO complet ne doit pas dépasser 3-4 pages.
+🔒 **RÈGLE TRANSVERSALE, CONCISION** : tous les textes produits doivent être **denses et courts**. Le style Anne Frouard EVALEO n'est PAS littéraire ni explicatif, c'est un format clinique professionnel synthétique. Pour chaque section, viser le volume cible indiqué et ne JAMAIS le dépasser de plus de 20%. Si tu hésites entre 2 phrases ou 4 phrases, prends 2. Mieux vaut être laconique et factuel que long et pédagogique. Le CRBO complet ne doit pas dépasser 3-4 pages.
 
 Volumes cibles par section (à respecter strictement) :
 - \`anamnese_redigee\` : 8-15 lignes (1 paragraphe dense)
@@ -687,7 +687,7 @@ Volumes cibles par section (à respecter strictement) :
 - \`recommandations\` : 8-12 lignes total
 - \`pap_suggestions\` : 4-6 items max, 1 ligne chacun
 
-**1. Commentaires de domaine (\`domains[].commentaire\` / \`domain_commentaires[]\`)** — 🚫 SUPPRIMES EN EVALEO
+**1. Commentaires de domaine (\`domains[].commentaire\` / \`domain_commentaires[]\`)**, 🚫 SUPPRIMES EN EVALEO
 
 🔒 **REGLE EVALEO** : tu DOIS retourner \`domains[].commentaire = ""\` (chaine
 vide) pour **CHAQUE** domaine. Idem pour \`domain_commentaires[]\` : retourner
@@ -695,7 +695,7 @@ vide) pour **CHAQUE** domaine. Idem pour \`domain_commentaires[]\` : retourner
 
 **Raison** : le rendu Word EVALEO enchaine directement le tableau d'epreuves
 suivi des commentaires par epreuve (\`epreuves[].commentaire\`, rendus pour
-toutes les epreuves dont le commentaire est non vide — cf. registry
+toutes les epreuves dont le commentaire est non vide, cf. registry
 \`showAllEpreuveComments: true\` ajoute 2026-06). Ajouter un paragraphe de
 synthese au niveau du domaine entre le tableau et les commentaires d'epreuve
 produit systematiquement de la **redite verbeuse** (la synthese reformule
@@ -709,21 +709,21 @@ etre concentree dans le \`diagnostic\` final, PAS repetee au niveau de chaque
 domaine.
 
 ⛔ NE PAS contourner cette regle en rajoutant le commentaire de domaine dans
-le premier commentaire d'epreuve du domaine — chaque commentaire d'epreuve
+le premier commentaire d'epreuve du domaine, chaque commentaire d'epreuve
 reste centre sur SON epreuve.
 
 ⛔ NE PAS retourner un texte du genre "Voir commentaires par epreuve
-ci-dessous" — chaine vide stricte \`""\`.
+ci-dessous", chaine vide stricte \`""\`.
 
-**1.bis. Commentaires PAR EPREUVE (\`domains[].epreuves[].commentaire\`)** — ⚠️ PAS DE PHRASE D'INTRODUCTION QUI REDIT LA CLASSE
+**1.bis. Commentaires PAR EPREUVE (\`domains[].epreuves[].commentaire\`)**, ⚠️ PAS DE PHRASE D'INTRODUCTION QUI REDIT LA CLASSE
 
 🔒 **REGLE EVALEO** : le commentaire par epreuve (rendu en italique sous
 le tableau) NE DOIT PAS commencer par une phrase qui restate la
 classe/le score deja visible dans le tableau juste au-dessus. **Va
 directement a l'observation clinique**.
 
-🆕 **REGLE — TOUTES LES OBSERVATIONS DU FORM REMONTENT DANS LE WORD**
-(2026-06 — retour Cindy) : le rendu Word EVALEO affiche desormais
+🆕 **REGLE, TOUTES LES OBSERVATIONS DU FORM REMONTENT DANS LE WORD**
+(2026-06, retour Cindy) : le rendu Word EVALEO affiche desormais
 \`epreuves[].commentaire\` pour **TOUTES les epreuves** dont le
 commentaire est non vide, pas seulement celles en zone fragile (classes
 1-2-3 / P<50). Donc :
@@ -745,21 +745,21 @@ forte (l'epreuve est dans la norme, pas la peine de pathologiser).
 Privilegie un format \`"Observation : <texte verbatim du form>"\` ou
 \`"<compteurs erreurs descriptifs>, malgre une performance en norme."\`.
 
-**Format pour les classes 1-3 (fragile)** : INCHANGE — commentaire
+**Format pour les classes 1-3 (fragile)** : INCHANGE, commentaire
 clinique de 2-4 phrases qui integre l'observation et les erreurs dans
 une analyse synthetique du sous-type (cf. exemples ci-dessous).
 
 ⛔ **NE PAS** :
-- Ignorer une observation parce que l'epreuve est en norme — chaque
+- Ignorer une observation parce que l'epreuve est en norme, chaque
   observation saisie par l'ortho est intentionnelle et doit ressortir.
 - Inventer un commentaire clinique pour une epreuve en norme **qui n'a
-  pas d'observation ni d'erreurs au form** — dans ce cas, \`commentaire
+  pas d'observation ni d'erreurs au form**, dans ce cas, \`commentaire
   = ""\` reste la regle (pas de blabla gratuit).
-- Reformuler l'observation au point de la rendre meconnaissable — pour
+- Reformuler l'observation au point de la rendre meconnaissable, pour
   les classes 4-7 surtout, recopier au plus pres du verbatim ortho.
 - Ajouter un prefixe "Observation cliniques :" en debut de \`commentaire\`
-  — le rendu Word ajoute deja le nom de l'epreuve en gras (\` **Nom
-  epreuve** — \`).
+ , le rendu Word ajoute deja le nom de l'epreuve en gras (\` **Nom
+  epreuve**, \`).
 
 ❌ **EXEMPLES de phrases d'intro a NE PAS ECRIRE en debut de commentaire** :
 - "Le score en precision et le temps de lecture se situent tous deux en classe 1 (pathologique)."
@@ -768,7 +768,7 @@ une analyse synthetique du sous-type (cf. exemples ci-dessous).
 - "Cette epreuve obtient un percentile P13."
 - "En lecture de mots, le score est cote en classe 1."
 - "Le score d'efficience est cote en classe 2."
-- "La lecture de pseudomots se situe en zone pathologique."  (refonte 2026-06-05 — pattern detecte en E2E)
+- "La lecture de pseudomots se situe en zone pathologique."  (refonte 2026-06-05, pattern detecte en E2E)
 - "La dictee de mots se situe en zone de fragilite."  (idem)
 - "La dictee de phrases se situe en classe 2."  (idem)
 
@@ -777,18 +777,18 @@ une analyse synthetique du sous-type (cf. exemples ci-dessous).
 percentile / niveau] X" est INTERDIT, **peu importe la formulation
 exacte** ("zone pathologique" ≡ "classe 1", "zone de fragilite" ≡
 "classe 2", etc.). Le tableau juste au-dessus affiche **deja** la
-classe et la couleur de fond — repeter la cotation en debut de prose
+classe et la couleur de fond, repeter la cotation en debut de prose
 est la redite que les orthos rejettent (retour utilisateur 2026-05-26).
 La phrase d'ouverture du commentaire DOIT etre une observation
 clinique, un type d'erreur, une consequence fonctionnelle, ou une
-dissociation — pas un restate du tableau.
+dissociation, pas un restate du tableau.
 
 ✅ **DEMARRE le commentaire par l'observation clinique directe** :
 - "Inversions visuelles b/p observees, regle contextuelle du g non maitrisee."
 - "Quatre erreurs ONPP signent une atteinte de la voie d'assemblage en ecriture."
 - "L'effet de longueur marque sur le temps temoigne d'une lecture analytique persistante."
 - "Six erreurs OL et 4 ODM, lexique orthographique tres insuffisamment constitue."
-- "Dissociation forte : empan en classe 7 mais score morphosyntaxique en classe 2 — atteinte ciblee sur les structures complexes."
+- "Dissociation forte : empan en classe 7 mais score morphosyntaxique en classe 2, atteinte ciblee sur les structures complexes."
 
 ✅ **3 STRUCTURES TYPES** pour le commentaire d'epreuve (1 a choisir
 selon le contexte clinique) :
@@ -815,7 +815,7 @@ Volume cible **pour les epreuves en classes 4-7 SANS observation ni
 erreurs au form** : \`commentaire = ""\` (pas de blabla gratuit). C'est le
 cas par defaut pour la majorite des epreuves en norme.
 
-**2. Diagnostic (\`diagnostic\`)** — CONCIS
+**2. Diagnostic (\`diagnostic\`)**, CONCIS
 
 ❌ NE PAS écrire un pavé de 20+ lignes. Le diagnostic Anne Frouard fait ~10-15 lignes total, pas plus.
 ❌ NE PAS structurer en "phrase formelle + phrase synthèse points d'appui / axes de fragilité" comme le format COMPLET générique le demande.
@@ -846,13 +846,13 @@ Structure obligatoire (un seul bloc, pas de sous-titres internes) :
 
 5. **Si \`difficultes_identifiees\` est rempli en sortie JSON** : retourner \`""\` pour cette clé (la synthèse points d'appui / axes de fragilité du format COMPLET global n'a PAS sa place dans le diagnostic EVALEO). Le diagnostic EVALEO se suffit à lui-même.
 
-**3. Recommandations / Projet thérapeutique (\`recommandations\` et \`axes_therapeutiques\`)** — RESSERRÉS
+**3. Recommandations / Projet thérapeutique (\`recommandations\` et \`axes_therapeutiques\`)**, RESSERRÉS
 
 ❌ NE PAS retourner \`recommandations=""\` comme le format COMPLET global le demande (suppression de la section "Projet thérapeutique").
-❌ NE PAS écrire de longues recommandations avec justification clinique par axe — le diagnostic juste au-dessus a déjà fait ce travail.
+❌ NE PAS écrire de longues recommandations avec justification clinique par axe, le diagnostic juste au-dessus a déjà fait ce travail.
 ✅ Remplir \`recommandations\` avec un **projet thérapeutique en prose très courte** (1 phrase d'intro + 1 phrase PAP, ~3-4 lignes total) suivi d'**axes en bullets non numérotés courts** (1 ligne par axe, **3-5 axes max**, pas \`1. 2. 3.\`).
 
-🔒 **REGLE IMPERATIVE EVALEO — MENTION NGAP OBLIGATOIRE** : la cotation
+🔒 **REGLE IMPERATIVE EVALEO, MENTION NGAP OBLIGATOIRE** : la cotation
 NGAP doit apparaitre DEUX FOIS dans le CRBO EVALEO :
 
 1. Dans \`conclusion\` (paragraphe 1, refonte 2026-06-05) : la mention
@@ -862,22 +862,22 @@ NGAP doit apparaitre DEUX FOIS dans le CRBO EVALEO :
    [code] ([libelle])."
    ⚠️ EVALEO utilise sa propre grille NGAP (12,1 / 13,5 / 13,8 / 10,1),
    PAS la grille AMO commune 8.4 / 9.4. Si tu ecris "AMO 8.4" dans un
-   CRBO EVALEO, c'est FAUX — utilise UNIQUEMENT 12,1 / 13,5 / 13,8 /
+   CRBO EVALEO, c'est FAUX, utilise UNIQUEMENT 12,1 / 13,5 / 13,8 /
    10,1 selon le profil diagnostique pose juste au-dessus.
 
 2. Dans \`recommandations\` (legacy, en debut de prose) : meme cotation,
    meme phrase modele. Ce champ n'est plus rendu dans le Word (decision
    Laurie 2026-05) mais reste utile pour rétrocompat DB.
 
-**NE JAMAIS omettre la cotation** — obligation legale pour la prise en
+**NE JAMAIS omettre la cotation**, obligation legale pour la prise en
 charge orthophonique remboursee.
 
-🔒 **VOLUME STRICT — mention AMO = 1 phrase / 2 lignes maximum** : la
+🔒 **VOLUME STRICT, mention AMO = 1 phrase / 2 lignes maximum** : la
 mention AMO doit tenir en **UNE SEULE PHRASE** (pas un paragraphe, pas
 2 phrases) et **2 lignes maximum** a l'affichage. NE PAS ajouter de
 justification, d'explication, de commentaire sur le choix de la NGAP,
 ni de paragraphe annexe autour de la cotation. La phrase modele
-ci-dessous respecte deja cette contrainte — recopie-la telle quelle en
+ci-dessous respecte deja cette contrainte, recopie-la telle quelle en
 remplissant les crochets, sans rien ajouter avant ni apres dans la
 meme phrase.
 
@@ -922,7 +922,7 @@ la mention la plus importante du projet therapeutique : sans elle,
 l'orthophoniste ne peut pas justifier la prise en charge a la CPAM.
 
 PAS de paragraphe explicatif sur chaque axe. PAS de repetition du
-diagnostic. Si tu hesites a mettre un 6eme axe, ne le mets pas — synthese
+diagnostic. Si tu hesites a mettre un 6eme axe, ne le mets pas, synthese
 > exhaustivite.
 
 **4. PAP / Aménagements scolaires (\`pap_suggestions\`)**
@@ -974,16 +974,16 @@ Quand le bloc inclut une section \`--- Tableau brut du bilan precedent (epreuves
    - \`percentile_value\` actuel ≤ percentile_value précédent - 10 → **régression** (↓).
    - Sinon → **stable** (→).
 
-3. **Le rendu Word produit AUTOMATIQUEMENT** un tableau comparatif avec ces flèches ↑↓→, couleurs vert/rouge/gris et delta chiffré entre les deux bilans (cf. \`lib/word-export.ts\` ligne 668). Tu n'as PAS à reproduire ce tableau dans ta sortie texte — il est généré côté rendu à partir des \`percentile_value\` actuels et précédents.
+3. **Le rendu Word produit AUTOMATIQUEMENT** un tableau comparatif avec ces flèches ↑↓→, couleurs vert/rouge/gris et delta chiffré entre les deux bilans (cf. \`lib/word-export.ts\` ligne 668). Tu n'as PAS à reproduire ce tableau dans ta sortie texte, il est généré côté rendu à partir des \`percentile_value\` actuels et précédents.
 
 4. **Ce que TU dois produire** dans le JSON :
    - \`synthese_evolution.resume\` : 2-3 phrases qui synthétisent l'évolution globale.
    - \`synthese_evolution.domaines_progres\` : liste des épreuves ↑ (delta ≥ +10).
    - \`synthese_evolution.domaines_stagnation\` : liste des épreuves → (|delta| < 10).
    - \`synthese_evolution.domaines_regression\` : liste des épreuves ↓ (delta ≤ -10).
-   - Dans les commentaires de domaine, mentionne les évolutions saillantes (ex. "La lecture de pseudomots progresse de la classe 1 a la classe 3 — bénéfice du travail métaphonologique").
+   - Dans les commentaires de domaine, mentionne les évolutions saillantes (ex. "La lecture de pseudomots progresse de la classe 1 a la classe 3, bénéfice du travail métaphonologique").
 
-**Comment traiter en phase 2 (synthesize) — règle standard renouvellement** :
+**Comment traiter en phase 2 (synthesize), règle standard renouvellement** :
 
 5. Le champ \`synthese_evolution\` du JSON CRBO DOIT être renseigné :
    - \`resume\` : 2-3 phrases qui synthétisent l'évolution globale en croisant les 3 trajectoires fournies, la PEC, et le tableau brut si présent.
@@ -991,7 +991,7 @@ Quand le bloc inclut une section \`--- Tableau brut du bilan precedent (epreuves
    - \`domaines_stagnation\` : idem stagnation.
    - \`domaines_regression\` : idem régression.
 
-6. Le \`diagnostic\` doit s'ouvrir sur une phrase d'évolution : "Par rapport au bilan du [date précédente], on observe [synthèse trajectoires]. Le profil actuel se caractérise par [diagnostic actuel]..." — puis enchaîner sur le diagnostic classique.
+6. Le \`diagnostic\` doit s'ouvrir sur une phrase d'évolution : "Par rapport au bilan du [date précédente], on observe [synthèse trajectoires]. Le profil actuel se caractérise par [diagnostic actuel]...", puis enchaîner sur le diagnostic classique.
 
 7. Les \`recommandations\` doivent **conclure sur la PEC** :
    - Si les progrès sont nets sur les axes ciblés → "La prise en charge actuelle apporte des bénéfices objectivables. Poursuite à raison de [fréquence] est recommandée pour consolider."
@@ -1037,41 +1037,41 @@ Si le \`Test precedent\` est explicitement "EVALEO 6-15" (ou si non renseigné m
 
 ---
 
-#### 🆕 MAPPING INTER-BATTERIE — changement de test entre les 2 bilans (renouvellement)
+#### 🆕 MAPPING INTER-BATTERIE, changement de test entre les 2 bilans (renouvellement)
 
 Quand \`bilan_precedent_structure\` provient d'une batterie DIFFÉRENTE d'EVALEO 6-15 (cas fréquent : suivi Exalang 5-8 → EVALEO en CE2, Exalang 8-11 → EVALEO en CM2/6e, ou Exalang 11-15 → EVALEO sur le tard), tu DOIS matcher les épreuves par **compétence évaluée**, PAS par libellé strict.
 
 ##### Table d'équivalences (libellés \`↔\` matchables comme épreuves comparables)
 
-**Lecture — identification de mots**
+**Lecture, identification de mots**
 - "Lecture de mots" [EVALEO] ↔ "Lecture de mots" [Exalang 5-8] ↔ "Lecture de mots fréquents" [Exalang 8-11]
 - "Lecture de pseudomots" [EVALEO] ↔ "Lecture de logatomes" [Exalang 5-8] ↔ "Lecture de non-mots" [Exalang 8-11]
 - "Evalouette" / "La Mouette" / "Le Pingouin" [EVALEO] : pas d'équivalent direct dans Exalang (texte signifiant vs identification de mots). Considérer comme nouvelles si bilan précédent Exalang.
 - "EVAL2M" [EVALEO] ↔ "Leximétrie" [Exalang 8-11 / Lyfac] (vitesse de lecture en contexte)
 
 **Métaphonologie**
-- "Rimes" [EVALEO] : libellé stable 3-6 / 5-8 / 8-11 / EVALEO — match strict possible.
-- "Métaphonologie" [EVALEO] (manipulation explicite) ↔ "Métaphonologie — suppression phonémique" [Exalang 8-11] ↔ "Inversion phonémique" [Exalang 5-8]
-- "Epiphonologie" [EVALEO] (manipulation implicite) ↔ "Métaphonologie — syllabes" [Exalang 3-6] ↔ "Comptage syllabique" + "Segmentation-fusion syllabique" [Exalang 5-8]
+- "Rimes" [EVALEO] : libellé stable 3-6 / 5-8 / 8-11 / EVALEO, match strict possible.
+- "Métaphonologie" [EVALEO] (manipulation explicite) ↔ "Métaphonologie, suppression phonémique" [Exalang 8-11] ↔ "Inversion phonémique" [Exalang 5-8]
+- "Epiphonologie" [EVALEO] (manipulation implicite) ↔ "Métaphonologie, syllabes" [Exalang 3-6] ↔ "Comptage syllabique" + "Segmentation-fusion syllabique" [Exalang 5-8]
 - "Conscience articulatoire" [EVALEO] : pas d'équivalent direct dans Exalang.
 
 **Mémoire de travail verbale**
 - "Répétition de chiffres endroit/envers" [EVALEO, contient les 2 dimensions] ↔ "Empan auditif endroit" + "Empan auditif envers" [Exalang 8-11] ↔ "Empan de chiffres endroit" + "Chiffres à l'envers" [Exalang 5-8] ↔ "Empan auditif endroit" [Exalang 3-6]
-- "Répétition de logatomes" [EVALEO] : libellé stable 3-6 / 5-8 / 8-11 / EVALEO — match strict possible.
+- "Répétition de logatomes" [EVALEO] : libellé stable 3-6 / 5-8 / 8-11 / EVALEO, match strict possible.
 
 **Langage oral**
-- "Dénomination Lexique — phonologie" [EVALEO] ↔ "Dénomination d'images" [Exalang 8-11] ↔ "Dénomination" [Exalang 5-8] ↔ "Dénomination (lexique expressif)" [Exalang 3-6]
+- "Dénomination Lexique, phonologie" [EVALEO] ↔ "Dénomination d'images" [Exalang 8-11] ↔ "Dénomination" [Exalang 5-8] ↔ "Dénomination (lexique expressif)" [Exalang 3-6]
 - "Désignation d'images" [EVALEO] ↔ "Désignation sur définition" [Exalang 8-11] ↔ "Désignation (lexique réceptif)" [Exalang 3-6]
-- "Compréhension orale de phrases" [EVALEO] : libellé stable 5-8 / 8-11 / EVALEO — match strict.
-- "Fluence sémantique" / "Fluence phonémique" [EVALEO] : libellés stables 5-8 / 8-11 / EVALEO — match strict.
+- "Compréhension orale de phrases" [EVALEO] : libellé stable 5-8 / 8-11 / EVALEO, match strict.
+- "Fluence sémantique" / "Fluence phonémique" [EVALEO] : libellés stables 5-8 / 8-11 / EVALEO, match strict.
 
 **Orthographe**
 - "Dictée de mots" [EVALEO] ↔ "Closure de mots" [Exalang 5-8]
 - "Dictée de pseudomots" [EVALEO] ↔ "Transcription de logatomes" [Exalang 5-8]
-- "Dictée de phrases" [EVALEO] ↔ "Texte à compléter" [Exalang 5-8] ↔ "DRA — Dictée de Rédaction Abrégée" [Exalang 8-11]
+- "Dictée de phrases" [EVALEO] ↔ "Texte à compléter" [Exalang 5-8] ↔ "DRA, Dictée de Rédaction Abrégée" [Exalang 8-11]
 - "Fluence orthographique" [EVALEO] : pas d'équivalent direct dans Exalang.
 
-##### ⚠️ Faux équivalents — NE PAS APPARIER
+##### ⚠️ Faux équivalents, NE PAS APPARIER
 
 - "Closure de mots" [Exalang 5-8] ≠ "Closure de texte" [Exalang 8-11] : production lexicale vs compréhension contextuelle.
 - "Lecture de texte" [Exalang 5-8 mi-CP] ≠ "Leximétrie" [Exalang 8-11] : compréhension globale vs vitesse pure.
@@ -1081,11 +1081,11 @@ Quand \`bilan_precedent_structure\` provient d'une batterie DIFFÉRENTE d'EVALEO
 
 - **Épreuve actuelle EVALEO SANS équivalent dans le bilan précédent** → la signaler dans \`synthese_evolution.nouvelles\`. Ex. : "Evalouette" / "Mouette" / "Pingouin" sont nouvelles si le précédent était Exalang (Exalang n'a pas de lecture de texte signifiant équivalent).
 - **Épreuve du bilan précédent SANS équivalent EVALEO** → l'ignorer (le bilan actuel ne mesure plus cette compétence).
-- **NE JAMAIS** conclure à un progrès / régression massif sur les épreuves orphelines — c'est de la non-comparabilité.
+- **NE JAMAIS** conclure à un progrès / régression massif sur les épreuves orphelines, c'est de la non-comparabilité.
 
-##### Ratio de comparabilité — à mentionner dans \`synthese_evolution.resume\`
+##### Ratio de comparabilité, à mentionner dans \`synthese_evolution.resume\`
 
-Calcule \`(épreuves EVALEO comparables) / (épreuves EVALEO actuelles)\`. EVALEO étant la batterie la plus riche en épreuves spécifiques (Evalouette/Mouette/Pingouin, EVAL2M, Conscience articulatoire, Fluence orthographique...), le ratio est souvent **inférieur à 60 %** quand le bilan précédent vient d'un Exalang. C'est attendu — à signaler dans le \`resume\` :
+Calcule \`(épreuves EVALEO comparables) / (épreuves EVALEO actuelles)\`. EVALEO étant la batterie la plus riche en épreuves spécifiques (Evalouette/Mouette/Pingouin, EVAL2M, Conscience articulatoire, Fluence orthographique...), le ratio est souvent **inférieur à 60 %** quand le bilan précédent vient d'un Exalang. C'est attendu, à signaler dans le \`resume\` :
 
 - **≥ 80 %** : *"L'évolution est documentée par [X] épreuves comparables sur [Y]."* (cas EVALEO → EVALEO, rare)
 - **50-79 %** : *"L'évolution porte sur [X] épreuves sur [Y] (les autres étant spécifiques à EVALEO)."*
@@ -1098,8 +1098,8 @@ Calcule \`(épreuves EVALEO comparables) / (épreuves EVALEO actuelles)\`. EVALE
 **Trimestre (T1 / T2 / T3)**
 
 Quand le bloc "Niveau scolaire :" contient un suffixe "— T1" / "— T2" / "— T3", tu DOIS calibrer l'interprétation des seuils intra-année. Exemples :
-- "Niveau scolaire : CE1 (~7-8 ans) — T1" → l'enfant est en TOUT DÉBUT de CE1. Les normes CE1 attendent quasiment encore les compétences de fin de CP. Un percentile P25 en T1 ne se lit pas comme un percentile P25 en T3.
-- "Niveau scolaire : CM1 — T3" → fin d'année, on attend les acquis CM1 consolidés, les seuils sont plus stricts.
+- "Niveau scolaire : CE1 (~7-8 ans), T1" → l'enfant est en TOUT DÉBUT de CE1. Les normes CE1 attendent quasiment encore les compétences de fin de CP. Un percentile P25 en T1 ne se lit pas comme un percentile P25 en T3.
+- "Niveau scolaire : CM1, T3" → fin d'année, on attend les acquis CM1 consolidés, les seuils sont plus stricts.
 
 Quand pertinent dans le commentaire d'épreuve, **mentionne le timing** : "compatible avec un début de CE1", "performances normées pour un fin de CM2", "écart à l'attendu fin de 6e modéré".
 
@@ -1124,13 +1124,13 @@ Les 8 jalons EVALEO à respecter dans l'ordre :
 7. Plainte graphisme
 8. Comorbidités et suivi en cours
 
-Si certains jalons sont vides dans la fiche, NE PAS combler par défaut — laisser la section absente du paragraphe correspondant.
+Si certains jalons sont vides dans la fiche, NE PAS combler par défaut, laisser la section absente du paragraphe correspondant.
 
 ---
 
 #### 🆕 FORMAT DES INPUTS STRUCTURÉS DU FORM ORTHO.IA
 
-Le form de saisie EVALEO d'ortho.ia transmet 2 grilles structurées en plus du percentile/score/observation classiques. **Tu DOIS les exploiter dans ton commentaire d'épreuve quand elles sont présentes** — elles encodent directement le diagnostic différentiel.
+Le form de saisie EVALEO d'ortho.ia transmet 2 grilles structurées en plus du percentile/score/observation classiques. **Tu DOIS les exploiter dans ton commentaire d'épreuve quand elles sont présentes**, elles encodent directement le diagnostic différentiel.
 
 **1. Effets HappyNeuron (lignes commençant par "Effets HappyNeuron :")**
 
@@ -1156,7 +1156,7 @@ Valeurs possibles pour chaque effet : \`Absent / Normal\`, \`Leger\`, \`Marque\`
 - Si pattern \`Longueur=Marque + Lexicalite=Marque\` et fréquence Absent → suggérer **dyslexie phonologique**.
 - Si tous les effets \`Marque\` ou \`Tres marque\` → **dyslexie mixte**.
 
-NE PAS lister les effets verbatim dans le CRBO — synthétiser : "Sa lecture est marquée par un effet de fréquence et de consistance, traduisant une voie d'adressage insuffisamment constituée."
+NE PAS lister les effets verbatim dans le CRBO, synthétiser : "Sa lecture est marquée par un effet de fréquence et de consistance, traduisant une voie d'adressage insuffisamment constituée."
 
 **2. Qualification des erreurs en dictée (lignes commençant par "Qualification erreurs :")**
 
@@ -1168,7 +1168,7 @@ Acronymes (cf. méthode EVALEO) :
 - **OL** : Orthographe Lexicale → atteinte **voie d'adressage en écriture** (signe dysorthographie **lexicale / de surface**).
 - **ODM** : Orthographe Dérivable Morphologiquement (affixes prévisibles) → atteinte de la **morphologie dérivationnelle**.
 - **ODNM** : Orthographe Dérivable Non Morphologiquement (racines, lettres muettes) → atteinte du **stock orthographique fin**.
-- **FV / FNP / FA** : Flexions Verbale / Nominale-Pronominale / Adjectivale → atteinte de l'**orthographe grammaticale** (accord) — signe dysorthographie **morphologique**.
+- **FV / FNP / FA** : Flexions Verbale / Nominale-Pronominale / Adjectivale → atteinte de l'**orthographe grammaticale** (accord), signe dysorthographie **morphologique**.
 - **Seg** : Segmentation des mots → atteinte de la frontière lexicale (mot fonction collé, mot rare segmenté).
 - **Hom** : Homophones (a/à, et/est, son/sont) → atteinte de la décision lexicale en contexte.
 
@@ -1182,7 +1182,7 @@ Acronymes (cf. méthode EVALEO) :
 
 ---
 
-#### INTERPRÉTATION CLINIQUE — DOMAINES CLÉS
+#### INTERPRÉTATION CLINIQUE, DOMAINES CLÉS
 
 **PHONOLOGIE & MÉTAPHONOLOGIE**
 - Métaphonologie + Répétition de pseudomots déficitaires → **marqueur fort de dyslexie phonologique**.
@@ -1193,13 +1193,13 @@ Acronymes (cf. méthode EVALEO) :
   - Mots ≥ Pseudomots déficitaires → **dyslexie phonologique** (voie d'assemblage atteinte).
   - Mots déficitaires ≥ Pseudomots préservés → **dyslexie de surface** (voie d'adressage atteinte).
   - Mots ET Pseudomots déficitaires → **dyslexie mixte**.
-- EVAL2M : seuils de vitesse (à recopier depuis le logiciel) — vitesse est aussi importante que la précision.
+- EVAL2M : seuils de vitesse (à recopier depuis le logiciel), vitesse est aussi importante que la précision.
 
 **ORTHOGRAPHE**
 - Dictée de pseudomots déficitaire → voie d'assemblage en orthographe altérée (dysorthographie phonologique).
 - Dictée de mots irréguliers déficitaire → voie d'adressage altérée (dysorthographie de surface).
 - Dictée de phrases : croiser orthographe lexicale (mots) et grammaticale (accords, homophones).
-- Décision orthographique : mémoire orthographique en reconnaissance — précise le sous-type.
+- Décision orthographique : mémoire orthographique en reconnaissance, précise le sous-type.
 
 **COMPRÉHENSION ÉCRITE**
 - Compréhension écrite < Compréhension orale → trouble du décodage (pas de la compréhension).
@@ -1222,7 +1222,7 @@ Acronymes (cf. méthode EVALEO) :
 
 #### 🎯 PROFILS CLINIQUES TYPES
 
-**PROFIL 1 — Dyslexie-dysorthographie développementale (phonologique)**
+**PROFIL 1, Dyslexie-dysorthographie développementale (phonologique)**
 - Métaphonologie + Répétition de pseudomots : Déficitaire.
 - Lecture de pseudomots : Très déficitaire.
 - Lecture de mots : Déficitaire (ralenti).
@@ -1231,37 +1231,37 @@ Acronymes (cf. méthode EVALEO) :
 - Compréhension écrite : Déficitaire (consécutive au déficit de décodage).
 - **Diagnostic** : "Trouble spécifique des apprentissages en langage écrit (communément appelé **dyslexie-dysorthographie**), de forme **phonologique**, caractérisé par un déficit central des compétences métaphonologiques et de la voie d'assemblage."
 
-**PROFIL 2 — Dyslexie de surface**
+**PROFIL 2, Dyslexie de surface**
 - Métaphonologie : Préservée ou Limite basse.
 - Lecture de pseudomots : Préservée (décodage assemblé OK).
 - Lecture de mots irréguliers : Déficitaire.
 - Dictée de mots irréguliers : Déficitaire.
 - Décision orthographique : Déficitaire.
-- **Diagnostic** : forme **lexicale (de surface)** — voie d'adressage atteinte.
+- **Diagnostic** : forme **lexicale (de surface)**, voie d'adressage atteinte.
 
-**PROFIL 3 — Dyslexie mixte**
+**PROFIL 3, Dyslexie mixte**
 - Métaphonologie + Pseudomots + Mots irréguliers tous déficitaires.
 - **Diagnostic** : forme **mixte**, atteinte des deux voies.
 
-**PROFIL 4 — Trouble Développemental du Langage (TDL) isolé**
+**PROFIL 4, Trouble Développemental du Langage (TDL) isolé**
 - Langage oral : Déficitaire (lexique, morphosyntaxe en réception et/ou production).
 - Métaphonologie : peut être préservée ou fragile.
 - Langage écrit : retard léger consécutif au TDL, mais pas l'épicentre du tableau.
 - Pragmatique : préservée.
 - **Diagnostic** : "Trouble Développemental du Langage à prédominance [phonologique / morphosyntaxique / lexico-sémantique]." Orientation **CRTLA** si sévère.
 
-**PROFIL 5 — Trouble de la Communication Sociale / spectre autistique**
+**PROFIL 5, Trouble de la Communication Sociale / spectre autistique**
 - Lexique et morphosyntaxe : Normal.
 - Pragmatique : Déficitaire.
 - Métaphores & expressions idiomatiques : Déficitaire.
 - Compréhension inférentielle : Déficitaire.
 - **Diagnostic** : "Profil compatible avec un trouble de la communication sociale. Orientation **bilan pluridisciplinaire** (neuropsy + pédopsychiatrie / CRA si suspicion spectre autistique) pour préciser le diagnostic."
 
-**PROFIL 6 — Dyslexie + TDL associés (comorbidité)**
+**PROFIL 6, Dyslexie + TDL associés (comorbidité)**
 - Langage oral ET langage écrit tous deux déficitaires.
 - **Diagnostic** : "Comorbidité **TDL + dyslexie-dysorthographie**. PEC orthophonique intensive et soutenue, PPS via MDPH à envisager."
 
-**PROFIL 7 — Trouble cognitif global / suspicion déficience intellectuelle**
+**PROFIL 7, Trouble cognitif global / suspicion déficience intellectuelle**
 - Déficits homogènes sur TOUTES les dimensions (oral, écrit, raisonnement logique).
 - **Diagnostic** : "Pattern compatible avec une atteinte cognitive globale. **WISC-V à demander avant toute conclusion orthophonique** pour caractériser le niveau intellectuel."
 
@@ -1294,10 +1294,10 @@ PAP automatique en cas de dyslexie ou TDL confirmé. PPS pour profils sévères 
 
 #### ⛔ À NE JAMAIS FAIRE
 
-- ❌ Conclure à une dyslexie sur la seule épreuve de Lecture de mots — toujours croiser avec pseudomots, métaphonologie, RAN.
+- ❌ Conclure à une dyslexie sur la seule épreuve de Lecture de mots, toujours croiser avec pseudomots, métaphonologie, RAN.
 - ❌ Confondre vitesse de lecture (EVAL2M) et compréhension : un enfant peut lire vite mal et inversement.
-- ❌ Ignorer la pragmatique — c'est UN apport majeur d'EVALEO vs autres batteries.
-- ❌ Diagnostiquer un TDL si seule l'écrit est touché — toujours vérifier la composante orale d'abord.
+- ❌ Ignorer la pragmatique, c'est UN apport majeur d'EVALEO vs autres batteries.
+- ❌ Diagnostiquer un TDL si seule l'écrit est touché, toujours vérifier la composante orale d'abord.
 - ❌ Renoncer au WISC-V si tout est homogènement bas (suspicion déficience intellectuelle).
 - ❌ Confondre Q1 (P25 normal) et déficitaire.
 

@@ -1,7 +1,7 @@
 import type { TestModule } from './types'
 
 /**
- * Module BECD — Batterie d'Évaluation Clinique de la Dysarthrie.
+ * Module BECD, Batterie d'Évaluation Clinique de la Dysarthrie.
  *
  * Auteurs : Dr Pascal AUZOU (neurologue) & Véronique ROLLAND-MONNOURY
  * (orthophoniste).
@@ -17,7 +17,7 @@ import type { TestModule } from './types'
  *   2. Analyse perceptive (Analyse globale + Grille perceptive)
  *   3. Analyse phonétique (Répétitions de phonèmes, mots simples, mots complexes)
  *   4. Examen de la motricité (TPI mobilisé pour analyse motrice + Grille motrice)
- *   5. Auto-évaluation (Speech Handicap Index — SHI)
+ *   5. Auto-évaluation (Speech Handicap Index, SHI)
  *   6. Analyse acoustique (relevés acoustiques instrumentaux optionnels)
  */
 export const becd: TestModule = {
@@ -35,7 +35,7 @@ export const becd: TestModule = {
   ],
   epreuves: [
     'Score Perceptif (SP)',
-    'Score d\'Intelligibilité (SI) — compréhension de mots / de phrases',
+    'Score d\'Intelligibilité (SI), compréhension de mots / de phrases',
     'Test Phonétique d\'Intelligibilité (TPI)',
     'Analyse perceptive globale',
     'Grille perceptive (33 items qualitatifs)',
@@ -43,10 +43,10 @@ export const becd: TestModule = {
     'Répétition de mots simples',
     'Répétition de mots complexes',
     'Grille motrice (mobilité des effecteurs)',
-    'Speech Handicap Index (SHI) — auto-évaluation 30 items',
+    'Speech Handicap Index (SHI), auto-évaluation 30 items',
     'Relevés acoustiques (intensité, F0, jitter, shimmer, MPT…)',
   ],
-  regles_specifiques: `### BECD — Batterie d'Évaluation Clinique de la Dysarthrie (Auzou & Rolland-Monnoury, Ortho Édition 2019)
+  regles_specifiques: `### BECD, Batterie d'Évaluation Clinique de la Dysarthrie (Auzou & Rolland-Monnoury, Ortho Édition 2019)
 
 **Population** : adultes présentant une dysarthrie de toute origine neurologique :
 - Maladie de Parkinson et syndromes parkinsoniens,
@@ -69,11 +69,11 @@ export const becd: TestModule = {
 
 | Domaine évalué | Outils disponibles |
 |----------------|--------------------|
-| **Sévérité** | Score Perceptif (SP) — toujours renseigné ; Score d'Intelligibilité (SI) ; Test Phonétique d'Intelligibilité (TPI) |
+| **Sévérité** | Score Perceptif (SP), toujours renseigné ; Score d'Intelligibilité (SI) ; Test Phonétique d'Intelligibilité (TPI) |
 | **Analyse perceptive** | Analyse globale ; Grille perceptive (33 items qualitatifs) |
 | **Analyse phonétique** | Répétitions de phonèmes isolés / mots simples / mots complexes |
 | **Examen de la motricité** | TPI mobilisé en analyse motrice ; Grille motrice (mobilité linguale, vélaire, labiale, mandibulaire, laryngée) |
-| **Auto-évaluation** | Speech Handicap Index (SHI) — 30 items |
+| **Auto-évaluation** | Speech Handicap Index (SHI), 30 items |
 | **Analyse acoustique** | Relevés instrumentaux (intensité, fréquence fondamentale F0, jitter, shimmer, temps maximum de phonation MPT, etc.) |
 
 **Stratégie d'utilisation** :
@@ -81,32 +81,32 @@ export const becd: TestModule = {
 - **Sévérité majeure** : préférer TPI (carnets de 52 mots) plutôt que SI (cartes images), Réalisation phonétique isolée plutôt que mots complexes.
 - **Sévérité légère/modérée** : SI + Mots complexes + Grille perceptive complète + SHI.
 - **SP est TOUJOURS renseigné** quelle que soit la sévérité (cotation 0-3 globale).
-- **Analyse acoustique optionnelle** — sa réalisation dépend de l'équipement et de la disponibilité (logiciels Praat, MotorSpeech, etc.).
+- **Analyse acoustique optionnelle**, sa réalisation dépend de l'équipement et de la disponibilité (logiciels Praat, MotorSpeech, etc.).
 
 ---
 
 #### COTATION ET INTERPRÉTATION
 
-**1. Score Perceptif (SP)** — cotation rapide perceptive 0 à 3 :
+**1. Score Perceptif (SP)**, cotation rapide perceptive 0 à 3 :
 - 0 : Pas de dysarthrie ; parole normale ;
 - 1 : Dysarthrie légère ; parole peu altérée, intelligibilité préservée ;
 - 2 : Dysarthrie modérée ; parole nettement altérée mais intelligible en contexte ;
 - 3 : Dysarthrie sévère ; parole très altérée, intelligibilité compromise.
 
-**2. Score d'Intelligibilité (SI)** — % de réussite :
-- Sous-test 1 : compréhension de **50 mots** isolés (séries A/B) — % de mots compris par un auditeur naïf.
-- Sous-test 2 : compréhension de **50 phrases** — idem.
+**2. Score d'Intelligibilité (SI)**, % de réussite :
+- Sous-test 1 : compréhension de **50 mots** isolés (séries A/B), % de mots compris par un auditeur naïf.
+- Sous-test 2 : compréhension de **50 phrases**, idem.
 - Seuils cliniques (approximatifs, à valider sur le manuel) :
   - ≥ 95 % : intelligibilité préservée
   - 80-94 % : intelligibilité légèrement réduite
   - 50-79 % : intelligibilité modérément altérée
   - < 50 % : intelligibilité sévèrement altérée
 
-**3. Test Phonétique d'Intelligibilité (TPI)** — réalisation phonétique :
+**3. Test Phonétique d'Intelligibilité (TPI)**, réalisation phonétique :
 - 5 carnets de 52 mots dans un ordre différent (utilisation alternée pour suivi).
 - Cotation : nombre de phonèmes corrects / nombre total de phonèmes attendus.
 
-**4. Grille perceptive** — 33 items qualitatifs notés sur échelle :
+**4. Grille perceptive**, 33 items qualitatifs notés sur échelle :
 Analyser les altérations sur 5 grands axes :
 - **Phonation/voix** : intensité, qualité vocale, hauteur, attaques vocales, fin de phrase.
 - **Articulation** : précision consonantique, voyelles, déformations.
@@ -119,7 +119,7 @@ Analyser les altérations sur 5 grands axes :
 - Mots simples (1-2 syllabes) → étude fine du contexte CV / VC.
 - Mots complexes (3+ syllabes, groupes consonantiques) → analyse de la coarticulation.
 
-**6. Grille motrice** — mobilité des effecteurs :
+**6. Grille motrice**, mobilité des effecteurs :
 - Lèvres (étirement, projection)
 - Joues (gonflement)
 - Mandibule (ouverture, fermeture, latéralité)
@@ -127,13 +127,13 @@ Analyser les altérations sur 5 grands axes :
 - Voile du palais (élévation lors du /a/)
 - Mouvements laryngés (toux volontaire, tenue du /a/)
 
-**7. Speech Handicap Index (SHI)** — auto-évaluation 30 items :
+**7. Speech Handicap Index (SHI)**, auto-évaluation 30 items :
 - Échelle Likert 5 points par item.
 - Total ≥ 30 = retentissement significatif sur la qualité de vie.
 - À rapprocher des plaintes spontanées du patient.
 
 **8. Analyse acoustique** (optionnelle) :
-- **MPT (Maximum Phonation Time)** : tenue d'un /a/ — normale ≥ 15 s adulte, < 10 s = atteinte respiratoire/phonatoire.
+- **MPT (Maximum Phonation Time)** : tenue d'un /a/, normale ≥ 15 s adulte, < 10 s = atteinte respiratoire/phonatoire.
 - **F0** (fréquence fondamentale) : hauteur de voix moyenne. Variations anormales = trouble prosodique.
 - **Jitter** (perturbation cycle-à-cycle de F0) : > 1 % = altération de la qualité vocale.
 - **Shimmer** (perturbation cycle-à-cycle d'amplitude) : > 3 % = altération.
@@ -143,7 +143,7 @@ Analyser les altérations sur 5 grands axes :
 
 #### 🎯 PROFILS DYSARTHRIQUES TYPES (classification Darley adaptée)
 
-**PROFIL 1 — Dysarthrie hypokinétique (parkinsonienne)**
+**PROFIL 1, Dysarthrie hypokinétique (parkinsonienne)**
 - SP : 1-3
 - Phonation : voix faible, monotone (manque de modulation F0).
 - Articulation : imprécise, sons brefs, "rush" vers la fin de phrase.
@@ -154,7 +154,7 @@ Analyser les altérations sur 5 grands axes :
 - **Diagnostic** : "Profil compatible avec une dysarthrie hypokinétique d'origine extrapyramidale, à mettre en regard du contexte clinique [maladie de Parkinson / syndrome parkinsonien]."
 - **PEC** : LSVT LOUD (programme intensif voix), techniques d'intensification prosodique, exercices respiratoires.
 
-**PROFIL 2 — Dysarthrie spastique (atteinte motoneurone supérieur bilatérale)**
+**PROFIL 2, Dysarthrie spastique (atteinte motoneurone supérieur bilatérale)**
 - SP : 2-3
 - Phonation : voix forcée, raidie, qualité strangulée.
 - Articulation : imprécise, surtout sur les groupes consonantiques.
@@ -164,7 +164,7 @@ Analyser les altérations sur 5 grands axes :
 - **Diagnostic** : "Profil de dysarthrie spastique compatible avec une atteinte bilatérale du motoneurone supérieur."
 - **PEC** : exercices de détente articulatoire, ralentissement contrôlé, travail respiratoire.
 
-**PROFIL 3 — Dysarthrie ataxique (cérébelleuse)**
+**PROFIL 3, Dysarthrie ataxique (cérébelleuse)**
 - SP : 2-3
 - Phonation : intensité fluctuante, tremblée.
 - Articulation : irrégulière, "explosive", scandée syllabe par syllabe.
@@ -174,7 +174,7 @@ Analyser les altérations sur 5 grands axes :
 - **Diagnostic** : "Dysarthrie ataxique compatible avec une atteinte cérébelleuse."
 - **PEC** : exercices de coordination phono-articulatoire, ralentissement contrôlé.
 
-**PROFIL 4 — Dysarthrie flasque (atteinte motoneurone inférieur)**
+**PROFIL 4, Dysarthrie flasque (atteinte motoneurone inférieur)**
 - SP : 2-3
 - Phonation : voix soufflée, faible, fuites d'air.
 - Articulation : très imprécise, surtout sur consonnes nécessitant pression intrabuccale.
@@ -183,7 +183,7 @@ Analyser les altérations sur 5 grands axes :
 - **Diagnostic** : "Dysarthrie flasque évocatrice d'une atteinte du motoneurone inférieur [paralysie bulbaire / SLA bulbaire / lésion des nerfs crâniens]."
 - **PEC** : compensations (orthèse vélaire en cas d'incompétence vélaire majeure), CAA si évolutif.
 
-**PROFIL 5 — Dysarthrie mixte (SLA, SEP, AVC multifocal)**
+**PROFIL 5, Dysarthrie mixte (SLA, SEP, AVC multifocal)**
 - Combinaison de plusieurs profils (souvent spastique + flasque dans la SLA bulbaire évoluée).
 - **Diagnostic** : "Profil mixte associant des éléments [spastique/flasque/ataxique] cohérent avec [pathologie sous-jacente]."
 - **PEC** : adaptée à la composante dominante + suivi rapproché si évolutif.
@@ -195,17 +195,17 @@ Analyser les altérations sur 5 grands axes :
 1. **TOUJOURS commencer par le SP** quelle que soit la sévérité (cotation rapide globale).
 2. **Adapter le choix des épreuves** à la sévérité observée d'emblée (TPI plutôt que SI si majeure).
 3. **Croiser perceptif et acoustique** quand l'acoustique est disponible.
-4. **Toujours noter le diagnostic médical** du patient avant le bilan (Parkinson, SLA, AVC, SEP…) — orientation diagnostique de profil.
-5. **Le SHI complète mais ne remplace pas** le bilan objectif — auto-évaluation = perception du patient.
+4. **Toujours noter le diagnostic médical** du patient avant le bilan (Parkinson, SLA, AVC, SEP…), orientation diagnostique de profil.
+5. **Le SHI complète mais ne remplace pas** le bilan objectif, auto-évaluation = perception du patient.
 6. **Si dysarthrie évolutive** (SLA notamment) : refaire la BECD tous les 3-6 mois pour suivre l'évolution.
-7. **NE PAS poser de diagnostic étiologique** depuis le bilan seul — le profil oriente, le diagnostic relève du neurologue.
+7. **NE PAS poser de diagnostic étiologique** depuis le bilan seul, le profil oriente, le diagnostic relève du neurologue.
 
 ---
 
 #### RECOMMANDATIONS / PEC
 
 **PEC orthophonique de la dysarthrie** :
-- Hypokinétique (Parkinson) : **LSVT LOUD** (16 séances en 4 semaines) — programme à efficacité démontrée.
+- Hypokinétique (Parkinson) : **LSVT LOUD** (16 séances en 4 semaines), programme à efficacité démontrée.
 - Spastique : détente articulatoire, ralentissement contrôlé.
 - Ataxique : coordination, ralentissement.
 - Flasque : compensations + CAA si évolutif (SLA).
@@ -225,10 +225,10 @@ Analyser les altérations sur 5 grands axes :
 #### À NE JAMAIS FAIRE
 
 - ❌ Conclure à un type de dysarthrie depuis une seule épreuve isolée.
-- ❌ Diagnostiquer l'étiologie (Parkinson, SLA, AVC, SEP) — c'est le neurologue.
+- ❌ Diagnostiquer l'étiologie (Parkinson, SLA, AVC, SEP), c'est le neurologue.
 - ❌ Confondre dysarthrie et aphasie (le langage est préservé dans la dysarthrie pure).
 - ❌ Confondre dysarthrie et apraxie de la parole (l'apraxie est une atteinte de la programmation motrice, non de l'exécution).
-- ❌ Ignorer le SHI — la plainte du patient et le retentissement sur sa qualité de vie sont déterminants.
+- ❌ Ignorer le SHI, la plainte du patient et le retentissement sur sa qualité de vie sont déterminants.
 
 #### TOUJOURS FAIRE
 

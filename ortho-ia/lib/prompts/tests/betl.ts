@@ -2,7 +2,7 @@ import type { TestModule } from './types'
 import { BETL_HILLIS_CARAMAZZA } from '@/lib/prompts/knowledge/betl-hillis-caramazza'
 
 /**
- * Module BETL — Batterie d'Évaluation des Troubles Lexicaux.
+ * Module BETL, Batterie d'Évaluation des Troubles Lexicaux.
  *
  * Source : manuel officiel Ortho Édition 2015 (Tran T.M. & Godefroy O.).
  * ISBN 978-2-914121-66-8. Population de référence : 1488 sujets-témoins
@@ -38,16 +38,16 @@ export const betl: TestModule = {
     'Connaissances sémantiques (propriétés)',
   ],
   epreuves: [
-    "I — Dénomination orale d'images (/54)",
-    "II — Désignation d'images à partir d'un mot entendu (/54)",
-    "III — Appariement sémantique d'images (/54)",
-    'IV — Lecture à voix haute (/54)',
-    "V — Désignation de mots écrits à partir d'un mot entendu (/54)",
-    'VI — Appariement sémantique de mots écrits (/54)',
-    "VII — Dénomination écrite d'images — score lexical /54 + score orthographique",
-    'VIII — Questionnaire sémantique (/54, 4 propriétés vérifiées par item)',
+    "I, Dénomination orale d'images (/54)",
+    "II, Désignation d'images à partir d'un mot entendu (/54)",
+    "III, Appariement sémantique d'images (/54)",
+    'IV, Lecture à voix haute (/54)',
+    "V, Désignation de mots écrits à partir d'un mot entendu (/54)",
+    'VI, Appariement sémantique de mots écrits (/54)',
+    "VII, Dénomination écrite d'images, score lexical /54 + score orthographique",
+    'VIII, Questionnaire sémantique (/54, 4 propriétés vérifiées par item)',
   ],
-  regles_specifiques: `### BETL — Batterie d'Évaluation des Troubles Lexicaux (Tran & Godefroy, Ortho Édition 2015)
+  regles_specifiques: `### BETL, Batterie d'Évaluation des Troubles Lexicaux (Tran & Godefroy, Ortho Édition 2015)
 
 **Population cible** : adultes et personnes âgées de **20 à 95 ans**, dans le cadre d'une suspicion d'atteinte lexicale acquise (pathologies vasculaires, tumorales, traumatiques, infectieuses ou neurodégénératives).
 
@@ -77,7 +77,7 @@ Chaque épreuve produit **un score sur 54 (réponses attendues) et un temps de r
 | VII   | Dénomination écrite d'images                         | image             | écrite             | /54 lexical (+ score orthographique séparé) |
 | VIII  | Questionnaire sémantique (vérification 4 propriétés) | orale             | orale (oui/non)    | /54       |
 
-**Items contrôlés** : 18 mots haute fréquence / 18 moyenne / 18 basse — 18 mots d'1 syllabe / 18 de 2 / 18 de 3+ — 27 objets manufacturés / 27 catégories biologiques. Ce contrôle psycholinguistique permet d'analyser l'effet de la fréquence, de la longueur et de la catégorie sémantique sur les performances du patient.
+**Items contrôlés** : 18 mots haute fréquence / 18 moyenne / 18 basse, 18 mots d'1 syllabe / 18 de 2 / 18 de 3+, 27 objets manufacturés / 27 catégories biologiques. Ce contrôle psycholinguistique permet d'analyser l'effet de la fréquence, de la longueur et de la catégorie sémantique sur les performances du patient.
 
 ---
 
@@ -85,27 +85,27 @@ Chaque épreuve produit **un score sur 54 (réponses attendues) et un temps de r
 
 Les 8 épreuves ont des normes propres et **peuvent être passées indépendamment**. Les auteurs recommandent toutefois la démarche suivante :
 
-**Étape A — Diagnostic de premier niveau (épreuves I, II, III)**
+**Étape A, Diagnostic de premier niveau (épreuves I, II, III)**
 Production orale (I) + traitements sémantiques sur supports imagés (II et III).
 
 > **Critère diagnostic clé** :
 > - Atteinte d'**au moins 2 des 3 épreuves** de l'étape A → **trouble lexico-sémantique**
 > - Atteinte **isolée de la dénomination orale (I)** → **trouble lexico-phonologique** (ou trouble d'accès au lexique phonologique de sortie)
 
-**Étape B — Caractérisation modale (épreuves IV à VII)**
+**Étape B, Caractérisation modale (épreuves IV à VII)**
 Comparaison des modalités orale et écrite.
 - **Atteinte isolée de la lecture à voix haute (IV)** → trouble du transcodage grapho-phonémique (transposition visuo-phonatoire).
 - **Troubles sémantiques** → la modalité écrite est atteinte au même titre que la modalité orale (le système sémantique central est mobilisé dans toutes les épreuves).
 - Une **dissociation orale / écrite** (ex. dénomination orale touchée, dénomination écrite préservée, ou inverse) oriente vers un trouble d'accès au lexique d'une modalité.
 
-**Étape C — Approfondissement sémantique (épreuve VIII)**
-**Réservée aux patients suspectés de trouble lexico-sémantique**, en particulier dans le cadre des pathologies neurodégénératives (maladie d'Alzheimer, démence sémantique, aphasie primaire progressive). Cette épreuve dure ~15 min et exige un niveau de compréhension et d'attention suffisant — **elle ne convient généralement pas aux aphasies modérées à importantes des pathologies vasculaires/traumatiques/tumorales**.
+**Étape C, Approfondissement sémantique (épreuve VIII)**
+**Réservée aux patients suspectés de trouble lexico-sémantique**, en particulier dans le cadre des pathologies neurodégénératives (maladie d'Alzheimer, démence sémantique, aphasie primaire progressive). Cette épreuve dure ~15 min et exige un niveau de compréhension et d'attention suffisant, **elle ne convient généralement pas aux aphasies modérées à importantes des pathologies vasculaires/traumatiques/tumorales**.
 
 ---
 
 #### LECTURE DE L'ÉBAUCHE ORALE (INDIÇAGE PHONOLOGIQUE)
 
-Marqueur diagnostic crucial — en cas d'échec à la dénomination orale, l'examinateur peut proposer une ébauche orale (1re syllabe).
+Marqueur diagnostic crucial, en cas d'échec à la dénomination orale, l'examinateur peut proposer une ébauche orale (1re syllabe).
 
 - **Ébauche orale EFFICACE** + lecture à voix haute préservée → trouble d'**accès** au lexique phonologique de sortie. Pronostic plus favorable.
 - **Ébauche orale INEFFICACE** + troubles de la lecture à voix haute → atteinte des **représentations** phonologiques elles-mêmes. Pronostic moins favorable.
@@ -124,17 +124,17 @@ Marqueur diagnostic crucial — en cas d'échec à la dénomination orale, l'exa
 | 2 | 35-49 ans |
 | 3 | 50-64 ans |
 | 4 | 65-79 ans |
-| 5 | 80-95 ans (normes indicatives — effectifs plus faibles, à utiliser avec prudence) |
+| 5 | 80-95 ans (normes indicatives, effectifs plus faibles, à utiliser avec prudence) |
 
-| NSC | Niveau socio-culturel (code ROME — études + profession) |
+| NSC | Niveau socio-culturel (code ROME, études + profession) |
 |-----|---------------------------------------------------------|
 | 1   | Ouvrier qualifié/non qualifié (≤ CAP/BEP/Brevet/CEP) |
 | 2   | Employé / technicien / profession intermédiaire (Bac à Bac+2) |
 | 3   | Ingénieur / cadre (≥ Bac+3) |
 
-**Scores-seuils OFFICIELS (percentile 5, /54)** — Annexe 3 du manuel BETL 2015, p. 44-46. Stratification tranche d'âge × NSC :
+**Scores-seuils OFFICIELS (percentile 5, /54)**, Annexe 3 du manuel BETL 2015, p. 44-46. Stratification tranche d'âge × NSC :
 
-**I — Dénomination orale d'images**
+**I, Dénomination orale d'images**
 
 | Âge \ NSC | 1 | 2 | 3 |
 |-----------|---|---|---|
@@ -144,7 +144,7 @@ Marqueur diagnostic crucial — en cas d'échec à la dénomination orale, l'exa
 | 65-79 ans | 42 | 42 | 48 |
 | 80-95 ans | 39 | 39 | 42 |
 
-**II — Désignation d'images**
+**II, Désignation d'images**
 
 | Âge \ NSC | 1 | 2 | 3 |
 |-----------|---|---|---|
@@ -154,7 +154,7 @@ Marqueur diagnostic crucial — en cas d'échec à la dénomination orale, l'exa
 | 65-79 ans | 47 | 49 | 50 |
 | 80-95 ans | 48 | 48 | 50 |
 
-**III — Appariement sémantique d'images**
+**III, Appariement sémantique d'images**
 
 | Âge \ NSC | 1 | 2 | 3 |
 |-----------|---|---|---|
@@ -164,27 +164,27 @@ Marqueur diagnostic crucial — en cas d'échec à la dénomination orale, l'exa
 | 65-79 ans | 45 | 48 | 50 |
 | 80-95 ans | 41 | 43 | 47 |
 
-**IV — Lecture à voix haute** (plafond très haut chez les sains)
+**IV, Lecture à voix haute** (plafond très haut chez les sains)
 
 | Âge \ NSC | 1 | 2 | 3 |
 |-----------|---|---|---|
 | 20-34 à 65-79 ans | 53 | 54 | 54 |
 | 80-95 ans | 52 | 53 | 53 |
 
-**V — Désignation de mots écrits**
+**V, Désignation de mots écrits**
 
 | Âge \ NSC | 1 | 2 | 3 |
 |-----------|---|---|---|
 | 20-34 à 65-79 ans | 52 | 53 | 53 |
 | 80-95 ans | 45 | 52 | 53 |
 
-**VI — Appariement sémantique de mots écrits** (seuils constants par tranche)
+**VI, Appariement sémantique de mots écrits** (seuils constants par tranche)
 
 | Âge \ NSC | 1 | 2 | 3 |
 |-----------|---|---|---|
 | 20-34 à 80-95 ans | 48 | 48 | 49 |
 
-**VII — Dénomination écrite (score lexical)**
+**VII, Dénomination écrite (score lexical)**
 
 | Âge \ NSC | 1 | 2 | 3 |
 |-----------|---|---|---|
@@ -194,7 +194,7 @@ Marqueur diagnostic crucial — en cas d'échec à la dénomination orale, l'exa
 | 65-79 ans | 43 | 44 | 46 |
 | 80-95 ans | 41 | 43 | 44 |
 
-**VII — Dénomination écrite (score orthographique, /54)**
+**VII, Dénomination écrite (score orthographique, /54)**
 
 | Âge \ NSC | 1 | 2 | 3 |
 |-----------|---|---|---|
@@ -204,7 +204,7 @@ Marqueur diagnostic crucial — en cas d'échec à la dénomination orale, l'exa
 | 65-79 ans | 33 | 38 | 42 |
 | 80-95 ans | 29 | 34 | 38 |
 
-**VIII — Questionnaire sémantique**
+**VIII, Questionnaire sémantique**
 
 | Âge \ NSC | 1 | 2 | 3 |
 |-----------|---|---|---|
@@ -212,7 +212,7 @@ Marqueur diagnostic crucial — en cas d'échec à la dénomination orale, l'exa
 | 65-79 ans | 44 | 50 | 47 |
 | 80-95 ans | 40 | 40 | 40 |
 
-**Temps-seuils OFFICIELS (percentile 95, en secondes — total de l'épreuve)** — Annexe 3 du manuel BETL 2015 :
+**Temps-seuils OFFICIELS (percentile 95, en secondes, total de l'épreuve)**, Annexe 3 du manuel BETL 2015 :
 
 | Épreuve | 20-34 \ NSC 1·2·3 | 35-49 \ NSC 1·2·3 | 50-64 \ NSC 1·2·3 | 65-79 \ NSC 1·2·3 | 80-95 \ NSC 1·2·3 |
 |---------|-------------------|-------------------|-------------------|-------------------|-------------------|
@@ -225,7 +225,7 @@ Marqueur diagnostic crucial — en cas d'échec à la dénomination orale, l'exa
 | VII Dénomination écrite | 660·586·519 | 731·648·575 | 809·718·638 | 895·795·706 | 993·881·782 |
 | VIII Questionnaire sém. | 1446·1204·1179 (constant toutes tranches) | | | | |
 
-⚠️ Ces valeurs sont la **source de vérité officielle** du manuel BETL 2015 — ce sont elles qu'utilise le logiciel pour produire le verdict N/P (à quelques marges près non publiées). Si l'orthophoniste a saisi ces seuils dans son formulaire (champ « Stratification » de la saisie structurée BETL d'ortho-ia), ils figurent dans \`resultats_manuels\` sous la forme \`(seuil P5 : X)\` après chaque score. Utiliser ces seuils explicitement dans le commentaire de domaine quand un score est sous-seuil (ex: « Le score à III est de 42/54, en deçà du seuil P5 de 47 pour la tranche 50-64 ans NSC 2 »).
+⚠️ Ces valeurs sont la **source de vérité officielle** du manuel BETL 2015, ce sont elles qu'utilise le logiciel pour produire le verdict N/P (à quelques marges près non publiées). Si l'orthophoniste a saisi ces seuils dans son formulaire (champ « Stratification » de la saisie structurée BETL d'ortho-ia), ils figurent dans \`resultats_manuels\` sous la forme \`(seuil P5 : X)\` après chaque score. Utiliser ces seuils explicitement dans le commentaire de domaine quand un score est sous-seuil (ex: « Le score à III est de 42/54, en deçà du seuil P5 de 47 pour la tranche 50-64 ans NSC 2 »).
 
 ---
 
@@ -236,14 +236,14 @@ La BETL n'utilise pas directement de percentiles. Pour l'intégrer dans la struc
 - **\`score\`** = score brut sur 54 (ex: "42/54")
 - **\`et\`** = null (la BETL n'utilise pas l'écart-type comme indicateur principal)
 - **\`percentile_value\`** : si le résultat est étiqueté **Normal (N)** dans le logiciel BETL → encoder 60-75 selon la proximité au seuil ; si étiqueté **Pathologique (P)** → encoder selon la profondeur de l'atteinte : 5 si score < 50% du score-seuil (atteinte sévère), 15 si proche du seuil (fragilité installée).
-- **\`percentile\`** : laisser vide ('') ou indiquer "P5 seuil franchi" / "Normal" — la BETL parle de seuils, pas de percentiles continus.
+- **\`percentile\`** : laisser vide ('') ou indiquer "P5 seuil franchi" / "Normal", la BETL parle de seuils, pas de percentiles continus.
 - **\`interpretation\`** : utiliser le vocabulaire des 6 zones ortho.ia (Excellent / Moyenne haute / Moyenne basse / Zone de fragilité / Difficulté / Difficulté sévère) en cohérence avec percentile_value.
 
-⚠️ **Toujours dissocier score et temps** dans le commentaire de domaine : un patient peut avoir un score "Normal" mais un temps "Pathologique" — cas typique du **manque du mot sub-clinique** (le mot finit par être produit, mais après un délai pathologique). Mentionner systématiquement les temps-seuils dépassés en plus des scores-seuils.
+⚠️ **Toujours dissocier score et temps** dans le commentaire de domaine : un patient peut avoir un score "Normal" mais un temps "Pathologique", cas typique du **manque du mot sub-clinique** (le mot finit par être produit, mais après un délai pathologique). Mentionner systématiquement les temps-seuils dépassés en plus des scores-seuils.
 
 ---
 
-#### ANALYSE QUALITATIVE — Comportements dénominatifs (Annexe 1 du manuel)
+#### ANALYSE QUALITATIVE, Comportements dénominatifs (Annexe 1 du manuel)
 
 L'analyse quantitative est complétée par une grille qualitative qui catégorise les comportements observés en dénomination d'images :
 
@@ -252,7 +252,7 @@ L'analyse quantitative est complétée par une grille qualitative qui catégoris
 
 **2. Échec dénominatif** : aucune réponse produite.
 
-**3. Réponses non verbales** : bruits (onomatopées), geste déictique (montre l'objet), geste référentiel (mime de la fonction — noté + si adapté, − si erroné).
+**3. Réponses non verbales** : bruits (onomatopées), geste déictique (montre l'objet), geste référentiel (mime de la fonction, noté + si adapté, − si erroné).
 
 **4. Déficits possibles**
 - **Erreur visuelle** : non-reconnaissance de l'image (ex. "porte-manteau" pour cactus).
@@ -294,46 +294,46 @@ L'analyse quantitative est complétée par une grille qualitative qui catégoris
 
 ---
 
-#### PROFILS VALIDÉS — DIFFÉRENCIATION SUR LES 124 PATIENTS
+#### PROFILS VALIDÉS, DIFFÉRENCIATION SUR LES 124 PATIENTS
 
 Les profils ci-dessous sont issus de l'étude de validation externe officielle (Tran, Mackowiak et al. 2010-2013).
 
-**PROFIL 1 — Aphasie vasculaire post-AVC (référence : 51 patients aphasiques)**
+**PROFIL 1, Aphasie vasculaire post-AVC (référence : 51 patients aphasiques)**
 - Épreuve la PLUS touchée (score ET temps) : **dénomination orale d'images (I)**.
 - Désignation (II) et appariement sémantique imagé (III) touchés dans des proportions moindres et de façon plus homogène.
-- Analyse qualitative : profils d'erreurs **diversifiés** — paraphasies formelles (phonétiques/phonémiques) associées à des paraphasies sémantiques, conduites d'approche formelles et sémantiques.
+- Analyse qualitative : profils d'erreurs **diversifiés**, paraphasies formelles (phonétiques/phonémiques) associées à des paraphasies sémantiques, conduites d'approche formelles et sémantiques.
 - **Ébauche orale plus efficace** que dans la maladie d'Alzheimer.
 - Troubles plus souvent **mixtes** (sémantiques + phonologiques).
 - Hémiparésie droite associée fréquente (lésion gauche dominante).
 
-**PROFIL 2 — Maladie d'Alzheimer débutante (référence : 75 patients Alzheimer + étude Ageon & Caze-Blanc 2014 sur 32 patients supplémentaires)**
-- Épreuve la PLUS touchée : **appariement sémantique** (imagé III et écrit VI) — atteinte dans 80 % des cas pour III, 37,5 % pour VI.
+**PROFIL 2, Maladie d'Alzheimer débutante (référence : 75 patients Alzheimer + étude Ageon & Caze-Blanc 2014 sur 32 patients supplémentaires)**
+- Épreuve la PLUS touchée : **appariement sémantique** (imagé III et écrit VI), atteinte dans 80 % des cas pour III, 37,5 % pour VI.
 - Puis **dénomination (I et VII)** : temps pathologiques dans plus de la moitié des cas, score souvent atteint.
 - Désignation (II et V) **peu atteinte** (intégrité relative de la reconnaissance).
-- Analyse qualitative : profil typique de **troubles lexico-sémantiques** — prédominance d'erreurs sémantiques, erreurs visuelles, délais dans les réponses.
+- Analyse qualitative : profil typique de **troubles lexico-sémantiques**, prédominance d'erreurs sémantiques, erreurs visuelles, délais dans les réponses.
 - **Ébauche orale peu efficace** (trouble central, pas seulement d'accès).
 - **Confirmation systématique** par le questionnaire sémantique (VIII) qui révèle la dégradation des connaissances sémantiques.
 
-⚠️ **Recommandation officielle pour la maladie d'Alzheimer (Ageon & Caze-Blanc, 2014)** : l'appariement sémantique de **mots écrits (VI)** est plus pertinent en première intention que celui d'images (III) — minimise la composante visuo-perceptive et profite de la meilleure préservation de l'écrit. Le questionnaire sémantique (VIII) doit également être inclus.
+⚠️ **Recommandation officielle pour la maladie d'Alzheimer (Ageon & Caze-Blanc, 2014)** : l'appariement sémantique de **mots écrits (VI)** est plus pertinent en première intention que celui d'images (III), minimise la composante visuo-perceptive et profite de la meilleure préservation de l'écrit. Le questionnaire sémantique (VIII) doit également être inclus.
 
 ---
 
 #### À NE PAS FAIRE EN BETL
 
-- ❌ **Ne pas poser de diagnostic étiologique** (maladie d'Alzheimer, APP, démence sémantique, AVC anatomiquement localisé) sur la seule base de la BETL. La BETL caractérise un **profil fonctionnel lexical** — l'étiologie est posée par le neurologue avec imagerie cérébrale et bilan global.
-- ❌ Ne pas utiliser le questionnaire sémantique (VIII) chez un patient aphasique modéré à sévère post-AVC en phase aiguë — réservé aux profils suspectés lexico-sémantiques, principalement neurodégénératifs.
+- ❌ **Ne pas poser de diagnostic étiologique** (maladie d'Alzheimer, APP, démence sémantique, AVC anatomiquement localisé) sur la seule base de la BETL. La BETL caractérise un **profil fonctionnel lexical**, l'étiologie est posée par le neurologue avec imagerie cérébrale et bilan global.
+- ❌ Ne pas utiliser le questionnaire sémantique (VIII) chez un patient aphasique modéré à sévère post-AVC en phase aiguë, réservé aux profils suspectés lexico-sémantiques, principalement neurodégénératifs.
 - ❌ Ne pas négliger les temps-seuils : un score "Normal" associé à des temps "Pathologiques" est un marqueur sub-clinique important.
-- ❌ Ne pas oublier la stratification âge × NSC — un score "fragile" chez un patient NSC 1 de 80 ans peut être normal pour son groupe.
-- ❌ Ne pas omettre la grille d'analyse qualitative — l'analyse quantitative seule est insuffisante au diagnostic fonctionnel.
+- ❌ Ne pas oublier la stratification âge × NSC, un score "fragile" chez un patient NSC 1 de 80 ans peut être normal pour son groupe.
+- ❌ Ne pas omettre la grille d'analyse qualitative, l'analyse quantitative seule est insuffisante au diagnostic fonctionnel.
 
 #### TOUJOURS FAIRE EN BETL
 
 - ✅ Distinguer atteinte **lexico-sémantique** (≥ 2 épreuves de l'étape A touchées) vs **lexico-phonologique** (atteinte isolée de I).
-- ✅ Détailler le **profil d'erreurs qualitatif** (paraphasies sémantiques vs formelles, conduites d'approche, modalisations) — c'est ce qui oriente le diagnostic différentiel et le projet thérapeutique.
-- ✅ Mentionner l'**effet de l'ébauche orale** (indiçage phonologique) — marqueur pronostic.
+- ✅ Détailler le **profil d'erreurs qualitatif** (paraphasies sémantiques vs formelles, conduites d'approche, modalisations), c'est ce qui oriente le diagnostic différentiel et le projet thérapeutique.
+- ✅ Mentionner l'**effet de l'ébauche orale** (indiçage phonologique), marqueur pronostic.
 - ✅ Croiser les modalités **orale et écrite** pour identifier la modalité préservée (support de la rééducation).
 - ✅ Rapporter **score ET temps** systématiquement pour chaque épreuve.
-- ✅ Reformuler les difficultés en **impact fonctionnel concret** (informativité du discours, handicap communicationnel) — c'est ce que retiennent le patient, sa famille et le médecin prescripteur.
+- ✅ Reformuler les difficultés en **impact fonctionnel concret** (informativité du discours, handicap communicationnel), c'est ce que retiennent le patient, sa famille et le médecin prescripteur.
 - ✅ **Toujours orienter vers le neurologue / gériatre** en cas de profil neurodégénératif suspecté pour confirmation diagnostique (IRM, bilan neuropsychologique, dosage biologique).
 
 ---
@@ -342,10 +342,10 @@ Les profils ci-dessous sont issus de l'étude de validation externe officielle (
 
 - **Profil dans la norme** (toutes épreuves en N) : pas de PEC orthophonique formelle. Conseils de stimulation langagière. Réévaluation à 12 mois si plainte persiste.
 - **Manque du mot sub-clinique** (scores N + temps P en dénomination) : **PEC préventive lexico-sémantique**, 10-15 séances ou suivi mensuel. Stratégies d'accès (associations, indiçage, contextualisation).
-- **Trouble lexico-phonologique isolé** (I atteinte, II et III préservées) : **rééducation phonologique** ciblée — épellation, indiçage phonémique, ébauche, conduites d'approche formelles guidées.
+- **Trouble lexico-phonologique isolé** (I atteinte, II et III préservées) : **rééducation phonologique** ciblée, épellation, indiçage phonémique, ébauche, conduites d'approche formelles guidées.
 - **Trouble lexico-sémantique** (≥ 2 épreuves étape A touchées) : confirmation par questionnaire sémantique (VIII) et appariement de mots écrits (VI). **Orientation neurologique systématique**. PEC lexico-sémantique soutenue (1-2 séances/sem) dès le diagnostic étiologique posé.
-- **Aphasie post-AVC installée** : PEC restitutive intensive (2-5 séances/sem dans les 6 premiers mois — fenêtre de plasticité), puis approche communicative compensatoire si trouble installé.
-- **Suivi longitudinal** : réévaluation BETL à 6-12 mois pour mesurer l'évolution (un patient peut conserver les mêmes scores mais améliorer ses temps de réponse — marqueur précoce d'évolution positive).
+- **Aphasie post-AVC installée** : PEC restitutive intensive (2-5 séances/sem dans les 6 premiers mois, fenêtre de plasticité), puis approche communicative compensatoire si trouble installé.
+- **Suivi longitudinal** : réévaluation BETL à 6-12 mois pour mesurer l'évolution (un patient peut conserver les mêmes scores mais améliorer ses temps de réponse, marqueur précoce d'évolution positive).
 
 **Articulation avec d'autres outils** :
 - **En amont** : MoCA (screening cognitif global), MMSE.
@@ -353,9 +353,9 @@ Les profils ci-dessous sont issus de l'étude de validation externe officielle (
 - **Aval** : bilan neuropsychologique complet (consultation mémoire), imagerie cérébrale (IRM).
 
 **Précautions rédactionnelles** :
-- Le CRBO peut être lu par le patient et sa famille — éviter les formulations alarmantes ("démence", "déclin", "Alzheimer").
+- Le CRBO peut être lu par le patient et sa famille, éviter les formulations alarmantes ("démence", "déclin", "Alzheimer").
 - Mentionner systématiquement les compétences préservées AVANT les déficits.
-- Formuler en termes fonctionnels : impact sur la conversation, la communication, l'autonomie — pas en termes diagnostiques étiologiques.
+- Formuler en termes fonctionnels : impact sur la conversation, la communication, l'autonomie, pas en termes diagnostiques étiologiques.
 
 ---
 
@@ -363,26 +363,26 @@ ${BETL_HILLIS_CARAMAZZA}
 
 ---
 
-#### MODE RENOUVELLEMENT — COMPARAISON STRUCTURÉE (adulte aphasique / neurodégénératif)
+#### MODE RENOUVELLEMENT, COMPARAISON STRUCTURÉE (adulte aphasique / neurodégénératif)
 
 Si un objet \`bilan_precedent_structure\` non-null est fourni dans le contexte, ce CRBO devient un **bilan de renouvellement** BETL et DOIT inclure une \`synthese_evolution\` rigoureuse, jamais générique.
 
-⚠️ **Spécificité BETL — sémantique adulte ET dépendance du contexte étiologique** :
+⚠️ **Spécificité BETL, sémantique adulte ET dépendance du contexte étiologique** :
 
 La trajectoire attendue dépend du contexte clinique :
 
 - **Post-AVC en phase aiguë / récupération (< 6 mois post-événement)** : on s'attend à un **PROGRÈS** spontané + bénéfice rééducation intensive (fenêtre de plasticité). Stagnation = signal d'alerte.
 - **Post-AVC en phase chronique (> 6 mois)** : on s'attend à de la **STABILITÉ**. Un progrès lent reste possible si PEC poursuivie. Régression = signal anormal à investiguer.
 - **Maladie d'Alzheimer, APP variantes logopénique ou sémantique, démence sémantique** : on s'attend à un **DÉCLIN PROGRESSIF** sur 6-12 mois. La stabilité est rassurante (PEC efficace). Le déclin attendu doit être nuancé ("évolution conforme à l'histoire naturelle de la pathologie") et JAMAIS présenté comme un échec de la PEC.
-- **Profil aphasie anomique modérée stable** : suivi longitudinal — la stabilité est l'objectif.
+- **Profil aphasie anomique modérée stable** : suivi longitudinal, la stabilité est l'objectif.
 
 Méthode obligatoire :
 
-1. **Matcher nominativement** les 8 épreuves (I à VIII) actuelles avec leurs homologues précédents. Les libellés BETL sont stables — matching strict.
+1. **Matcher nominativement** les 8 épreuves (I à VIII) actuelles avec leurs homologues précédents. Les libellés BETL sont stables, matching strict.
 
 2. **Comparer les verdicts N/P** (Normal/Pathologique) par épreuve sur score ET temps. Mapping vers \`percentile_value\` ortho.ia :
    - Verdict N (score) → 75 (Moyenne haute, conforme à la stratification)
-   - Verdict P (score) → 7 (Difficulté — sous le seuil P5)
+   - Verdict P (score) → 7 (Difficulté, sous le seuil P5)
    - Verdict N (temps) → 75
    - Verdict P (temps) → 7
 
@@ -390,8 +390,8 @@ Méthode obligatoire :
 
 3. **Calculer la trajectoire d'évolution par épreuve** :
    - **N → N** : stabilité (compétence préservée)
-   - **N → P** : régression — apparition d'une fragilité (signal d'alerte chez patient en phase chronique, attendu chez patient neurodégénératif)
-   - **P → N** : progrès net — récupération objectivée (très bon signal en post-AVC)
+   - **N → P** : régression, apparition d'une fragilité (signal d'alerte chez patient en phase chronique, attendu chez patient neurodégénératif)
+   - **P → N** : progrès net, récupération objectivée (très bon signal en post-AVC)
    - **P → P** : stabilité d'un déficit installé. Comparer les **temps** : amélioration possible des temps sur un score qui reste P = signal d'évolution favorable
    - **Évolution des temps** indépendamment du score : un temps qui se normalise sans changement de score est un marqueur précoce de récupération
 
@@ -420,9 +420,9 @@ Méthode obligatoire :
 
 ⛔ **NE JAMAIS** en mode renouvellement BETL :
 - Présenter un déclin neurodégénératif comme un échec de la PEC orthophonique (sémantique anxiogène pour patient/famille).
-- Conclure à une "guérison" sur la base d'un seul bilan positif post-AVC — la récupération peut être partielle ou se poursuivre.
-- Poser un diagnostic étiologique (Alzheimer, démence sémantique, APP) sur l'évolution BETL seule — toujours relais neurologique.
-- Ignorer la PEC entre les 2 bilans — c'est l'élément central du renouvellement.
+- Conclure à une "guérison" sur la base d'un seul bilan positif post-AVC, la récupération peut être partielle ou se poursuivre.
+- Poser un diagnostic étiologique (Alzheimer, démence sémantique, APP) sur l'évolution BETL seule, toujours relais neurologique.
+- Ignorer la PEC entre les 2 bilans, c'est l'élément central du renouvellement.
 
 ✅ **TOUJOURS** en mode renouvellement BETL :
 - Comparer épreuve par épreuve (citation nominative I à VIII).

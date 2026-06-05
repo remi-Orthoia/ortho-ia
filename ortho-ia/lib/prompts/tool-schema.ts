@@ -18,7 +18,7 @@ const EPREUVE_SCHEMA = {
       type: 'string' as const,
       description:
         'Notation percentile au format Px UNIQUEMENT (ex: "P25", "P10", "P50", "P75"). ' +
-        'JAMAIS "Q1", "Q3", "Med", "Med." — toujours convertir : Q1 → P25, Q3 → P75, Med → P50.',
+        'JAMAIS "Q1", "Q3", "Med", "Med.", toujours convertir : Q1 → P25, Q3 → P75, Med → P50.',
     },
     percentile_value: {
       type: 'number' as const,
@@ -30,23 +30,23 @@ const EPREUVE_SCHEMA = {
     interpretation: {
       type: 'string' as const,
       description:
-        "Interprétation clinique COURTE — la nomenclature dépend du test utilisé. " +
-        "Par DÉFAUT (Exalang, BETL, Examath, EVALO, BALE, etc.) — grille 6 zones imposée Laurie (refonte 2026-05-ter) : " +
+        "Interprétation clinique COURTE, la nomenclature dépend du test utilisé. " +
+        "Par DÉFAUT (Exalang, BETL, Examath, EVALO, BALE, etc.), grille 6 zones imposée Laurie (refonte 2026-05-ter) : " +
         "'Excellent' pour P76-P100 ; " +
         "'Moyenne haute' pour P50-P75 (Q3 inclus) ; " +
         "'Moyenne basse' pour P26-P49 ; " +
         "'Zone de fragilité' pour P11-P25 (Q1 = P25 inclus) ; " +
         "'Difficulté' pour P6-P10 ; " +
         "'Difficulté sévère' pour P1-P5 (Exalang n'affiche JAMAIS de bande <P5). " +
-        "EXCEPTION EVALEO 6-15 — utiliser la grille officielle 7 classes Launay et al. 2018 : " +
+        "EXCEPTION EVALEO 6-15, utiliser la grille officielle 7 classes Launay et al. 2018 : " +
         "'Classe 1 - Pathologique' (<P7) ; " +
         "'Classe 2 - Fragilité' (P7-P20) ; " +
         "'Classe 3 - Norme' / 'Classe 4 - Norme' / 'Classe 5 - Norme' (P21-P38 / P39-P62 / P63-P80, totalisent 60 % de la population) ; " +
         "'Classe 6 - Supérieure à la moyenne' (P81-P93) ; " +
         "'Classe 7 - Très supérieure' (>P93). " +
-        "EXCEPTION MoCA — laisser '' (le rendu Word MoCA n'affiche pas de colonne Interprétation par épreuve). " +
-        "EXCEPTION B-CM / B-CMado — laisser '' (rendu math pastilles qualitatives, pas de percentile). " +
-        "EXCEPTION HappyNeuron sigma-based (PREDIMEM, PrediFex, PrediLac) — utiliser le vocabulaire HappyNeuron, PAS la grille Laurie 6 zones : 'performance préservée' (zone Vert ≥ M − 1,5σ), 'performance dans la moyenne basse, à surveiller' (zone Vert clair — PREDIMEM uniquement, M − 1σ à M − 1,5σ, n'existe pas en PrediFex/PrediLac), 'fragilité objectivée (seuil d'alerte)' (zone Jaune M − 1,5σ à M − 2σ), 'difficulté avérée' (zone Orange M − 2σ à M − 3σ), 'effondrement' (zone Rouge < M − 3σ). Le module prompt de chaque bilan donne les règles exactes — les surclasser sur cette consigne générique en cas de doute.",
+        "EXCEPTION MoCA, laisser '' (le rendu Word MoCA n'affiche pas de colonne Interprétation par épreuve). " +
+        "EXCEPTION B-CM / B-CMado, laisser '' (rendu math pastilles qualitatives, pas de percentile). " +
+        "EXCEPTION HappyNeuron sigma-based (PREDIMEM, PrediFex, PrediLac), utiliser le vocabulaire HappyNeuron, PAS la grille Laurie 6 zones : 'performance préservée' (zone Vert ≥ M − 1,5σ), 'performance dans la moyenne basse, à surveiller' (zone Vert clair, PREDIMEM uniquement, M − 1σ à M − 1,5σ, n'existe pas en PrediFex/PrediLac), 'fragilité objectivée (seuil d'alerte)' (zone Jaune M − 1,5σ à M − 2σ), 'difficulté avérée' (zone Orange M − 2σ à M − 3σ), 'effondrement' (zone Rouge < M − 3σ). Le module prompt de chaque bilan donne les règles exactes, les surclasser sur cette consigne générique en cas de doute.",
     },
     sous_epreuves: {
       type: 'array' as const,
@@ -58,7 +58,7 @@ const EPREUVE_SCHEMA = {
         type: 'object' as const,
         required: ['nom', 'score'],
         properties: {
-          nom: { type: 'string' as const, description: "Nom du sous-item (ex: 'Cube', 'Horloge — aiguilles', '5 mots — rappel libre')." },
+          nom: { type: 'string' as const, description: "Nom du sous-item (ex: 'Cube', 'Horloge, aiguilles', '5 mots, rappel libre')." },
           score: { type: 'string' as const, description: "Score du sous-item (ex: '1/1', '0/1', '3/5')." },
         },
       },
@@ -67,10 +67,10 @@ const EPREUVE_SCHEMA = {
       type: 'string' as const,
       description:
         "Commentaire clinique DÉDIÉ pour cette épreuve spécifique (2-3 phrases, ≈ 30-50 mots). " +
-        "**OBLIGATOIRE si percentile_value < 50** (épreuve 'dans le rouge', en dessous de la médiane) — " +
+        "**OBLIGATOIRE si percentile_value < 50** (épreuve 'dans le rouge', en dessous de la médiane), " +
         "le commentaire décrit qualitativement la performance et son retentissement fonctionnel concret " +
         "(en classe, en lecture, en compréhension). Rendu dans le CRBO sous la forme " +
-        "« **Nom épreuve** — commentaire » juste après le tableau du domaine. " +
+        "« **Nom épreuve**, commentaire » juste après le tableau du domaine. " +
         "Pour MoCA (scoring hiérarchique), utilisé pour chaque domaine cognitif. " +
         "Vide ('') pour les épreuves avec percentile_value >= 50 (couvertes par le commentaire de domaine).",
     },
@@ -92,8 +92,8 @@ const DOMAIN_SCHEMA_EXTRACT = {
     commentaire: {
       type: 'string' as const,
       description:
-        "Commentaire clinique INITIAL pour ce domaine (3-4 lignes max, ≈ 40-70 mots) — il sera affiché à l'orthophoniste comme une suggestion qu'elle pourra valider, modifier ou compléter avec ses propres observations. " +
-        "Cette suggestion repose UNIQUEMENT sur les scores et l'interprétation des épreuves de ce domaine — elle décrit cliniquement la performance et, si elle est en zone de difficulté, les répercussions scolaires concrètes possibles. " +
+        "Commentaire clinique INITIAL pour ce domaine (3-4 lignes max, ≈ 40-70 mots), il sera affiché à l'orthophoniste comme une suggestion qu'elle pourra valider, modifier ou compléter avec ses propres observations. " +
+        "Cette suggestion repose UNIQUEMENT sur les scores et l'interprétation des épreuves de ce domaine, elle décrit cliniquement la performance et, si elle est en zone de difficulté, les répercussions scolaires concrètes possibles. " +
         "Respecter strictement les RÈGLES CLINIQUES ABSOLUES : aucun chiffre de percentile (P5, P25, P90...), aucun tiret en début de phrase, aucune mention de la rééducation / des séances / du suivi (ces éléments sont réservés aux recommandations finales). " +
         "Si toutes les épreuves du domaine sont préservées, écrire une phrase courte type 'Les performances sont préservées sur l'ensemble du domaine.' Vide ('') autorisé uniquement si le domaine ne contient qu'une seule épreuve dans la moyenne haute / excellent.",
     },
@@ -101,7 +101,7 @@ const DOMAIN_SCHEMA_EXTRACT = {
 }
 
 // ============================================================================
-// PHASE 1 — EXTRACTION : reformulation anamnèse + motif + parsing scores
+// PHASE 1, EXTRACTION : reformulation anamnèse + motif + parsing scores
 // ============================================================================
 //
 // L'IA reçoit : formulaire complet (anamnèse brute, motif brut, résultats bruts).
@@ -113,7 +113,7 @@ const DOMAIN_SCHEMA_EXTRACT = {
 export const EXTRACT_CRBO_TOOL: Anthropic.Tool = {
   name: 'extract_crbo_data',
   description:
-    "Extrait et structure les données du bilan : reformule l'anamnèse et le motif en prose professionnelle, classe les résultats par domaine, et propose pour chaque domaine un commentaire clinique INITIAL (3-4 lignes) qui pré-remplira la textarea d'observations qualitatives de l'orthophoniste. NE PRODUIT PAS de diagnostic ni de recommandations à ce stade — ces éléments seront générés en phase 2 (synthèse) après validation par l'orthophoniste.",
+    "Extrait et structure les données du bilan : reformule l'anamnèse et le motif en prose professionnelle, classe les résultats par domaine, et propose pour chaque domaine un commentaire clinique INITIAL (3-4 lignes) qui pré-remplira la textarea d'observations qualitatives de l'orthophoniste. NE PRODUIT PAS de diagnostic ni de recommandations à ce stade, ces éléments seront générés en phase 2 (synthèse) après validation par l'orthophoniste.",
   input_schema: {
     type: 'object',
     required: ['anamnese_redigee', 'motif_reformule', 'domains'],
@@ -121,7 +121,7 @@ export const EXTRACT_CRBO_TOOL: Anthropic.Tool = {
       anamnese_redigee: {
         type: 'string',
         description:
-          "Paragraphe fluide d'anamnèse rédigé en 3e personne. JAMAIS de notes brutes, toujours en prose professionnelle. Anti-hallucination stricte : ne couvrir QUE les rubriques pour lesquelles l'orthophoniste a fourni des notes — ne JAMAIS inférer composition familiale, profession parentale, antécédents, suivis, classe, etc. si non mentionnés.",
+          "Paragraphe fluide d'anamnèse rédigé en 3e personne. JAMAIS de notes brutes, toujours en prose professionnelle. Anti-hallucination stricte : ne couvrir QUE les rubriques pour lesquelles l'orthophoniste a fourni des notes, ne JAMAIS inférer composition familiale, profession parentale, antécédents, suivis, classe, etc. si non mentionnés.",
       },
       motif_reformule: {
         type: 'string',
@@ -139,19 +139,19 @@ export const EXTRACT_CRBO_TOOL: Anthropic.Tool = {
 }
 
 // ============================================================================
-// PHASE 2 — SYNTHÈSE : diagnostic + recommandations + comorbidités + PAP
+// PHASE 2, SYNTHÈSE : diagnostic + recommandations + comorbidités + PAP
 // ============================================================================
 //
 // L'IA reçoit : anamnèse éditée par l'ortho, motif édité, domaines structurés
 // (déjà extraits en phase 1), commentaires qualitatifs par domaine saisis par
 // l'ortho, infos patient/médecin.
 // L'IA renvoie : diagnostic + recommandations + comorbidités + PAP suggestions
-// + conclusion. PAS de domains, PAS d'anamnèse — déjà figés.
+// + conclusion. PAS de domains, PAS d'anamnèse, déjà figés.
 
 export const SYNTHESIZE_TOOL: Anthropic.Tool = {
   name: 'synthesize_crbo',
   description:
-    "Génère la synthèse finale du CRBO selon les règles cliniques imposées par Laurie : points forts, difficultés identifiées, diagnostic au format strict (sans codes Fxxx), recommandations en phrase unique, axes thérapeutiques (max 4), aménagements scolaires (max 6), conclusion médico-légale, et reformulation pro des commentaires de domaine édités par l'ortho. AUCUNE section Comportement / Analyse croisée / Comorbidités / Réévaluation ne doit être produite — elles sont supprimées du CRBO.",
+    "Génère la synthèse finale du CRBO selon les règles cliniques imposées par Laurie : points forts, difficultés identifiées, diagnostic au format strict (sans codes Fxxx), recommandations en phrase unique, axes thérapeutiques (max 4), aménagements scolaires (max 6), conclusion médico-légale, et reformulation pro des commentaires de domaine édités par l'ortho. AUCUNE section Comportement / Analyse croisée / Comorbidités / Réévaluation ne doit être produite, elles sont supprimées du CRBO.",
   input_schema: {
     type: 'object',
     required: [
@@ -187,9 +187,9 @@ export const SYNTHESIZE_TOOL: Anthropic.Tool = {
         type: 'string',
         description:
           "Diagnostic orthophonique au FORMAT STRICT imposé par Laurie : 'trouble spécifique des apprentissages en langage écrit (communément appelé dyslexie-dysorthographie), forme [légère / modérée / sévère / compensée]'. " +
-          "TOUJOURS préciser la forme/sévérité. JAMAIS de codes CIM/DSM (F81.x, F90.x, etc.) — ni dans le diagnostic ni ailleurs. " +
+          "TOUJOURS préciser la forme/sévérité. JAMAIS de codes CIM/DSM (F81.x, F90.x, etc.), ni dans le diagnostic ni ailleurs. " +
           "Si un diagnostic associé est DÉJÀ POSÉ par un autre professionnel (TDAH par exemple), ajouter UNIQUEMENT en fin de diagnostic la phrase : 'Ce tableau s'inscrit dans un contexte de [diagnostic] préalablement diagnostiqué.' " +
-          "JAMAIS de diagnostic hypothétique non confirmé. JAMAIS de section comorbidités séparée — si non posé, ne pas mentionner.",
+          "JAMAIS de diagnostic hypothétique non confirmé. JAMAIS de section comorbidités séparée, si non posé, ne pas mentionner.",
       },
       recommandations: {
         type: 'string',
@@ -203,44 +203,44 @@ export const SYNTHESIZE_TOOL: Anthropic.Tool = {
       axes_therapeutiques: {
         type: 'array',
         description:
-          "Maximum 4 axes thérapeutiques numérotés (le numéro est ajouté automatiquement au rendu — n'écris PAS '1.' devant). 1 ligne par axe, sans détail des exercices. JAMAIS de mention d'autres professionnels. Exemple : 'Renforcement de la conscience phonologique et du décodage'.",
+          "Maximum 4 axes thérapeutiques numérotés (le numéro est ajouté automatiquement au rendu, n'écris PAS '1.' devant). 1 ligne par axe, sans détail des exercices. JAMAIS de mention d'autres professionnels. Exemple : 'Renforcement de la conscience phonologique et du décodage'.",
         items: { type: 'string' },
       },
       pap_suggestions: {
         type: 'array',
         description:
           "Maximum 6 aménagements scolaires, 1 par grande catégorie. Format OBLIGATOIRE : 'Catégorie : description concrète' (la catégorie + ' : ' + description, sans markdown ni tiret cadratin). Catégories autorisées : Temps, Évaluations, Outils numériques, Pédagogie, Environnement, Oral, Valorisation. " +
-          "Adapter au profil — ne pas systématiquement remplir les 6. Restez généraux : pas de polices ni logiciels nominatifs. " +
+          "Adapter au profil, ne pas systématiquement remplir les 6. Restez généraux : pas de polices ni logiciels nominatifs. " +
           "RÈGLE TEMPS : toute mention de 'temps majoré' / 'tiers-temps' / 'temps supplémentaire' DOIT inclure dans la même phrase 'et/ou réduire la quantité de données à traiter sur le temps imparti' (alternative équivalente). " +
-          "RÈGLE VALORISATION : TOUJOURS inclure un item de catégorie 'Valorisation' sur l'estime de soi — valoriser/féliciter les efforts et les progrès pour soutenir la motivation. " +
+          "RÈGLE VALORISATION : TOUJOURS inclure un item de catégorie 'Valorisation' sur l'estime de soi, valoriser/féliciter les efforts et les progrès pour soutenir la motivation. " +
           "Exemples : 'Temps : temps majoré aux évaluations écrites, et/ou réduire la quantité de données à traiter sur le temps imparti', 'Valorisation : valoriser et féliciter régulièrement les efforts fournis, mettre en avant les progrès pour soutenir l'estime de soi et la motivation'.",
         items: { type: 'string' },
       },
       bilans_complementaires: {
         type: 'array',
         description:
-          "Orientations vers d'autres bilans pluridisciplinaires, **CONDITIONNEL** (0 à 4 items max). Inclure UNIQUEMENT si au moins un indice clinique du tableau justifie l'orientation — JAMAIS systématiquement. Liste VIDE [] si le bilan ne montre aucune comorbidité ni dissociation appelant un autre regard professionnel. " +
+          "Orientations vers d'autres bilans pluridisciplinaires, **CONDITIONNEL** (0 à 4 items max). Inclure UNIQUEMENT si au moins un indice clinique du tableau justifie l'orientation, JAMAIS systématiquement. Liste VIDE [] si le bilan ne montre aucune comorbidité ni dissociation appelant un autre regard professionnel. " +
           "Format STRICT par item : 'Catégorie : justification clinique courte (1 ligne, ~15-25 mots) qui pointe l'indice du bilan'. " +
-          "**Catégories AUTORISÉES (enfant/scolaire — Exalang, EVALEO, BETL pédiatrique, B-CM/B-CMado, etc.)** : 'Neuropsychologie' (suspicion TDAH, fonctions exécutives, attention/mémoire de travail effondrée < P10, fatigabilité majeure), 'Psychomotricité' (troubles graphiques, motricité fine/globale, latéralité, dyspraxie), 'Neurovisuel' (empan visuo-attentionnel déficitaire, suspicion DVS, hypothèses TVA), 'Orthoptie' (bilan langage écrit sans bilan visuel récent, troubles oculomoteurs, copie déficitaire), 'Ergothérapie' (compensation manuelle/numérique, dysgraphie sévère, adaptation matériel), 'ORL' (audition non vérifiée + déficit phonologique ou comprehension auditive, otites séro-muqueuses récidivantes), 'Pédopsychiatrie' (signaux dépressifs/anxieux, troubles de l'attachement, suspicion TSA), 'CRTLA / Centre référent' (profil TDL sévère, comorbidités multiples à coordonner). " +
-          "**Catégories AUTORISÉES (adulte — PREDIMEM, PrediFex, PrediLac, BETL adulte, BIA, BECD)** : 'Neurologie' (profil convergent évoquant atteinte neurologique débutante — démence frontotemporale, Parkinson cognitif, lésions sous-corticales, à explorer par consultation spécialisée + imagerie), 'Gériatrie / Consultation mémoire' (sujet > 60 ans avec fragilités convergentes, orientation prioritaire), 'Neuropsychologie' (profil exécutif/mnésique nécessitant un bilan approfondi — TMT, WCST, Stroop, RL/RI 16, BEM 144, figure de Rey, etc.), 'ORL / audiologie adulte' (fragilité dominante sur épreuves auditives sans audiométrie récente, presbyacousie), 'Psychiatrie adulte / psychologue clinicien' (éléments dépressifs/anxieux susceptibles d'expliquer le tableau — pseudo-démence dépressive à éliminer), 'Médecine du travail' (sujet en activité avec plainte impactant le poste de travail). " +
-          "RÈGLES ABSOLUES : (1) chaque item DOIT pointer un indice concret du bilan dans la justification (ex: 'empan envers déficitaire'). (2) NE PAS lister 'bilan psychométrique / WISC' ici sauf si lié à TDAH ou TSA — sinon c'est dans recommandations. (3) NE PAS recommander un autre orthophoniste ni un re-bilan orthophonique. (4) Liste TRIÉE par priorité clinique (le plus pertinent en premier). (5) **JAMAIS mélanger catégories enfant et adulte sur un même CRBO** — utiliser la liste enfant pour les bilans enfant et la liste adulte pour les bilans adulte (la nature du bilan dicte le périmètre). " +
+          "**Catégories AUTORISÉES (enfant/scolaire, Exalang, EVALEO, BETL pédiatrique, B-CM/B-CMado, etc.)** : 'Neuropsychologie' (suspicion TDAH, fonctions exécutives, attention/mémoire de travail effondrée < P10, fatigabilité majeure), 'Psychomotricité' (troubles graphiques, motricité fine/globale, latéralité, dyspraxie), 'Neurovisuel' (empan visuo-attentionnel déficitaire, suspicion DVS, hypothèses TVA), 'Orthoptie' (bilan langage écrit sans bilan visuel récent, troubles oculomoteurs, copie déficitaire), 'Ergothérapie' (compensation manuelle/numérique, dysgraphie sévère, adaptation matériel), 'ORL' (audition non vérifiée + déficit phonologique ou comprehension auditive, otites séro-muqueuses récidivantes), 'Pédopsychiatrie' (signaux dépressifs/anxieux, troubles de l'attachement, suspicion TSA), 'CRTLA / Centre référent' (profil TDL sévère, comorbidités multiples à coordonner). " +
+          "**Catégories AUTORISÉES (adulte, PREDIMEM, PrediFex, PrediLac, BETL adulte, BIA, BECD)** : 'Neurologie' (profil convergent évoquant atteinte neurologique débutante, démence frontotemporale, Parkinson cognitif, lésions sous-corticales, à explorer par consultation spécialisée + imagerie), 'Gériatrie / Consultation mémoire' (sujet > 60 ans avec fragilités convergentes, orientation prioritaire), 'Neuropsychologie' (profil exécutif/mnésique nécessitant un bilan approfondi, TMT, WCST, Stroop, RL/RI 16, BEM 144, figure de Rey, etc.), 'ORL / audiologie adulte' (fragilité dominante sur épreuves auditives sans audiométrie récente, presbyacousie), 'Psychiatrie adulte / psychologue clinicien' (éléments dépressifs/anxieux susceptibles d'expliquer le tableau, pseudo-démence dépressive à éliminer), 'Médecine du travail' (sujet en activité avec plainte impactant le poste de travail). " +
+          "RÈGLES ABSOLUES : (1) chaque item DOIT pointer un indice concret du bilan dans la justification (ex: 'empan envers déficitaire'). (2) NE PAS lister 'bilan psychométrique / WISC' ici sauf si lié à TDAH ou TSA, sinon c'est dans recommandations. (3) NE PAS recommander un autre orthophoniste ni un re-bilan orthophonique. (4) Liste TRIÉE par priorité clinique (le plus pertinent en premier). (5) **JAMAIS mélanger catégories enfant et adulte sur un même CRBO**, utiliser la liste enfant pour les bilans enfant et la liste adulte pour les bilans adulte (la nature du bilan dicte le périmètre). " +
           "Exemples enfant : ['Neuropsychologie : empan envers à P5 + fatigabilité marquée + fluences déficitaires → suspicion de trouble exécutif / TDAH à explorer.', 'Orthoptie : bilan visuel à actualiser, leximétrie déficitaire pouvant aussi traduire un trouble oculomoteur associé.']. " +
-          "Exemples adulte : ['Neurologie / Consultation mémoire : profil de fragilité d\\'encodage convergent sur 3 épreuves + temps allongés — à caractériser par bilan neuropsychologique approfondi et imagerie cérébrale.', 'Psychiatrie adulte : signaux dépressifs subjectifs notés en anamnèse, à éliminer comme cause de la plainte cognitive avant toute conclusion étiologique.'].",
+          "Exemples adulte : ['Neurologie / Consultation mémoire : profil de fragilité d\\'encodage convergent sur 3 épreuves + temps allongés, à caractériser par bilan neuropsychologique approfondi et imagerie cérébrale.', 'Psychiatrie adulte : signaux dépressifs subjectifs notés en anamnèse, à éliminer comme cause de la plainte cognitive avant toute conclusion étiologique.'].",
         items: { type: 'string' },
       },
       conclusion: {
         type: 'string',
         description:
-          "Champ conclusion = 1 OU 2 paragraphes séparés par une ligne vide (\\n\\n) — refonte 2026-06-05. " +
+          "Champ conclusion = 1 OU 2 paragraphes séparés par une ligne vide (\\n\\n), refonte 2026-06-05. " +
           "PARAGRAPHE 1 (CONDITIONNEL, nomenclature) : si le module impose une nomenclature, écris UNE seule phrase courte (2 lignes max). " +
-          "🔒 CODES PAR BILAN — UTILISER UNIQUEMENT le code de la liste ci-dessous, JAMAIS inventer un code voisin : " +
+          "🔒 CODES PAR BILAN, UTILISER UNIQUEMENT le code de la liste ci-dessous, JAMAIS inventer un code voisin : " +
           "* Exalang 3-6 / 5-8 / 8-11 / 11-15 / Lyfac → 'AMO 8.4 (rééducation des troubles du langage écrit)' OU 'AMO 9.4 (rééducation des troubles du langage oral)' selon profil dominant. " +
-          "* Examath, B-CM, B-CMado → 'AMO 11.7 (rééducation des troubles spécifiques des apprentissages — cognition mathématique)'. JAMAIS 12.6 / 11.4 / 12.1 — la cotation est UNIQUEMENT 11.7 (verbatim). " +
+          "* Examath, B-CM, B-CMado → 'AMO 11.7 (rééducation des troubles spécifiques des apprentissages, cognition mathématique)'. JAMAIS 12.6 / 11.4 / 12.1, la cotation est UNIQUEMENT 11.7 (verbatim). " +
           "* BETL pédiatrique → 'AMO 8.4' ou '9.4' selon profil. " +
           "* EVALEO 6-15 → ⚠️ EXCEPTION : EVALEO utilise la grille NGAP propre (PAS la grille AMO 8.4/9.4). " +
           "  Codes EVALEO : 'AMO 12,1' (dyslexie/dysorthographie) / 'AMO 13,5' (TDL ou TDL+dyslexie) / 'AMO 13,8' (trouble neurologique sévère) / 'AMO 10,1' (surveillance). " +
           "  Format EVALEO : 'La prise en charge orthophonique est cotée selon la NGAP AMO [code] ([libellé]).' " +
-          "OMETTRE cette phrase pour les bilans adulte (PREDIMEM, PrediFex, PrediLac, BETL adulte, BIA, BECD, MoCA) — pas de nomenclature pour la cognition adulte. " +
+          "OMETTRE cette phrase pour les bilans adulte (PREDIMEM, PrediFex, PrediLac, BETL adulte, BIA, BECD, MoCA), pas de nomenclature pour la cognition adulte. " +
           "PARAGRAPHE 2 (OBLIGATOIRE, médico-légal, VERBATIM) : " +
           "'Compte rendu remis en main propre à l\\'assuré(e) pour servir et faire valoir ce que de droit. (Copie au médecin prescripteur).' " +
           "Pour les bilans avec nomenclature : 2 paragraphes (nomenclature + \\n\\n + formule juridique). Pour les bilans sans nomenclature : 1 seul paragraphe (formule juridique). " +
@@ -255,27 +255,27 @@ export const SYNTHESIZE_TOOL: Anthropic.Tool = {
             description:
               "UNE SEULE phrase introductive TRÈS COURTE (10-25 mots max) qui caractérise globalement l'évolution depuis le bilan précédent. " +
               "Ex : 'Le bilan de contrôle met en évidence une évolution globalement favorable.' ou 'Évolution mitigée, avec des progrès en lecture mais une stagnation persistante en orthographe.' " +
-              "INTERDIT : plus d'une phrase, chiffres de percentile, mention de rééducation passée. Les détails ligne-par-ligne vont dans les listes domaines_progres / stagnation / regression — le résumé est juste une accroche.",
+              "INTERDIT : plus d'une phrase, chiffres de percentile, mention de rééducation passée. Les détails ligne-par-ligne vont dans les listes domaines_progres / stagnation / regression, le résumé est juste une accroche.",
           },
           domaines_progres: {
             type: 'array',
             items: { type: 'string' },
             description:
-              "Liste de bullets COURTS (5-15 mots chacun) — un item par épreuve / domaine en progrès depuis le bilan précédent. " +
+              "Liste de bullets COURTS (5-15 mots chacun), un item par épreuve / domaine en progrès depuis le bilan précédent. " +
               "Ex : 'Boucle phonologique : passage de difficulté sévère à zone de fragilité'. Vide [] si aucun progrès objectif.",
           },
           domaines_stagnation: {
             type: 'array',
             items: { type: 'string' },
             description:
-              "Liste de bullets COURTS (5-15 mots chacun) — un item par épreuve / domaine qui stagne (même niveau d'interprétation qu'au bilan précédent). " +
+              "Liste de bullets COURTS (5-15 mots chacun), un item par épreuve / domaine qui stagne (même niveau d'interprétation qu'au bilan précédent). " +
               "Ex : 'Orthographe lexicale : maintien des erreurs phonologiquement plausibles'. Vide [] si aucune stagnation à signaler.",
           },
           domaines_regression: {
             type: 'array',
             items: { type: 'string' },
             description:
-              "Liste de bullets COURTS (5-15 mots chacun) — un item par épreuve / domaine en régression. " +
+              "Liste de bullets COURTS (5-15 mots chacun), un item par épreuve / domaine en régression. " +
               "Ex : 'Empan auditif : passage de moyenne à zone de fragilité'. Vide [] si aucune régression.",
           },
         },
@@ -284,7 +284,7 @@ export const SYNTHESIZE_TOOL: Anthropic.Tool = {
         type: 'object',
         description:
           "Raisonnement clinique structuré ayant conduit au diagnostic. Affiché à " +
-          "l'orthophoniste sous un toggle 'Pourquoi cette conclusion ?' — construit " +
+          "l'orthophoniste sous un toggle 'Pourquoi cette conclusion ?', construit " +
           "la confiance en désamorçant le côté 'boîte noire' de l'IA. Doit refléter " +
           "le raisonnement réel, pas un résumé du diagnostic.",
         properties: {
@@ -295,7 +295,7 @@ export const SYNTHESIZE_TOOL: Anthropic.Tool = {
               "comme des observations factuelles. Ex: 'Métaphonologie en difficulté sévère " +
               "(P5) → marqueur précurseur du décodage phonologique'. " +
               "AUCUN chiffre de percentile DANS le diagnostic narratif final, MAIS " +
-              "autorisés ici car ce raisonnement reste interne — l'ortho l'ouvre " +
+              "autorisés ici car ce raisonnement reste interne, l'ortho l'ouvre " +
               "explicitement pour le voir.",
             items: { type: 'string' },
             minItems: 2,
@@ -332,7 +332,7 @@ export const SYNTHESIZE_TOOL: Anthropic.Tool = {
 }
 
 // ============================================================================
-// LEGACY : full single-shot (compat — utilisé encore par certains chemins)
+// LEGACY : full single-shot (compat, utilisé encore par certains chemins)
 // ============================================================================
 
 const _extractProps = EXTRACT_CRBO_TOOL.input_schema.properties as Record<string, unknown>
@@ -411,7 +411,7 @@ export interface CRBOEpreuve {
   /**
    * Commentaire clinique DÉDIÉ par épreuve. Rempli par l'IA pour :
    *  - chaque épreuve avec `percentile_value < 50` ("dans le rouge") —
-   *    rendu sous forme de paragraphe « **Nom épreuve** — commentaire »
+   *    rendu sous forme de paragraphe « **Nom épreuve**, commentaire »
    *    juste après le tableau du domaine (Word + PDF + preview UI) ;
    *  - chaque domaine cognitif MoCA (scoring hiérarchique).
    * Vide pour les épreuves >= P50 (couvertes par le commentaire de domaine).
@@ -479,13 +479,13 @@ export interface SynthesizedCRBO {
   bilans_complementaires: string[]
   /** Commentaires de domaine reformulés professionnellement (suggestion IA + notes ortho fusionnées). */
   domain_commentaires: { nom: string; commentaire: string }[]
-  /** @deprecated — backend uniquement, plus rendu dans le Word. */
+  /** @deprecated, backend uniquement, plus rendu dans le Word. */
   severite_globale?: SeveriteGlobale
-  /** @deprecated — section supprimée du Word, ne pas générer. */
+  /** @deprecated, section supprimée du Word, ne pas générer. */
   comorbidites_detectees?: string[]
   /** Renouvellements uniquement. */
   synthese_evolution?: SyntheseEvolution | null
-  /** Raisonnement clinique structuré — affiché sous toggle "Pourquoi cette conclusion ?". */
+  /** Raisonnement clinique structuré, affiché sous toggle "Pourquoi cette conclusion ?". */
   reasoning_clinical?: ReasoningClinical | null
 }
 
@@ -501,15 +501,15 @@ export interface CRBOStructure {
   points_forts?: string
   difficultes_identifiees?: string
   axes_therapeutiques?: string[]
-  /** @deprecated — backend uniquement. */
+  /** @deprecated, backend uniquement. */
   severite_globale?: SeveriteGlobale
-  /** @deprecated — section supprimée. */
+  /** @deprecated, section supprimée. */
   comorbidites_detectees?: string[]
   pap_suggestions?: string[]
-  /** Orientations bilans complémentaires (neuropsy / psychomot / neurovisuel / etc.), 0-4 items. Conditionnel — peut être vide pour les CRBO sans comorbidité. CRBO antérieurs au champ : valeur undefined. */
+  /** Orientations bilans complémentaires (neuropsy / psychomot / neurovisuel / etc.), 0-4 items. Conditionnel, peut être vide pour les CRBO sans comorbidité. CRBO antérieurs au champ : valeur undefined. */
   bilans_complementaires?: string[]
   synthese_evolution?: SyntheseEvolution | null
-  /** Raisonnement clinique structuré (optionnel — CRBO antérieurs n'en ont pas). */
+  /** Raisonnement clinique structuré (optionnel, CRBO antérieurs n'en ont pas). */
   reasoning_clinical?: ReasoningClinical | null
   /**
    * Liste des champs CRBO que l'orthophoniste a explicitement édités sur la
@@ -519,7 +519,7 @@ export interface CRBOStructure {
    *
    * Valeurs possibles : "anamnese_redigee", "motif_reformule",
    * "domain_commentaire:<nom_domaine>" pour chaque commentaire de domaine.
-   * Optionnel — CRBOs antérieurs n'ont pas ce champ.
+   * Optionnel, CRBOs antérieurs n'ont pas ce champ.
    */
   edited_fields?: string[]
 }

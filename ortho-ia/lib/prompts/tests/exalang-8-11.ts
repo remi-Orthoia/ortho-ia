@@ -6,10 +6,10 @@ export const exalang811: TestModule = {
   auteurs: 'Helloin, Lenfant, Thibault',
   annee: 2012,
   domaines: [
-    'Langage oral — versant réceptif',
-    'Langage oral — versant expressif',
-    'Langage écrit — lecture',
-    'Langage écrit — orthographe / production',
+    'Langage oral, versant réceptif',
+    'Langage oral, versant expressif',
+    'Langage écrit, lecture',
+    'Langage écrit, orthographe / production',
     'Mémoire de travail verbale',
     'Métaphonologie',
     'Fonctions exécutives verbales (fluences, flexibilité)',
@@ -30,9 +30,9 @@ export const exalang811: TestModule = {
     'Empan auditif envers (administrateur central)',
     'Répétition de logatomes',
     // Métaphonologie
-    'Métaphonologie — acronymes',
-    'Métaphonologie — rimes',
-    'Métaphonologie — suppression phonémique',
+    'Métaphonologie, acronymes',
+    'Métaphonologie, rimes',
+    'Métaphonologie, suppression phonémique',
     // Langage oral
     'Compréhension orale de phrases',
     'Compréhension orale de textes',
@@ -42,28 +42,28 @@ export const exalang811: TestModule = {
     // Fonctions exécutives verbales
     'Fluence phonémique (lettre, 1 min)',
     'Fluence sémantique (animaux, 1 min)',
-    // Langage écrit — lecture (B.1)
+    // Langage écrit, lecture (B.1)
     'Lecture de mots fréquents',
     'Lecture de mots irréguliers',
     'Lecture de non-mots (logatomes écrits)',
     'Leximétrie (vitesse de lecture en contexte)',
     'Décision lexico-morphologique',
     'Compréhension écrite de texte',
-    // Langage écrit — orthographe / production (B.2 — closure incluse)
-    'DRA — Dictée de Rédaction Abrégée (mots, phrases)',
+    // Langage écrit, orthographe / production (B.2, closure incluse)
+    'DRA, Dictée de Rédaction Abrégée (mots, phrases)',
     'Closure de texte',
     'Copie différée',
   ],
-  regles_specifiques: `### EXALANG 8-11 — Référentiel clinique complet (niveau senior)
+  regles_specifiques: `### EXALANG 8-11, Référentiel clinique complet (niveau senior)
 
 Population : enfants du CE2 au CM2 (classe d'âge 8 à 11 ans). Outil le plus utilisé en France pour le dépistage des troubles spécifiques des apprentissages (TSA).
 
 #### RÈGLES DE CONVERSION DES PERCENTILES (impératif)
 
 Les résultats Exalang sont présentés en quartiles :
-- **Q1 → P25** (Zone de fragilité — bord inférieur, NE PAS confondre avec Moyenne basse qui commence à P26)
+- **Q1 → P25** (Zone de fragilité, bord inférieur, NE PAS confondre avec Moyenne basse qui commence à P26)
 - **Med / Q2 → P50** (Moyenne haute, bord inférieur)
-- **Q3 → P75** (Moyenne haute, bord supérieur — Q3 inclus)
+- **Q3 → P75** (Moyenne haute, bord supérieur, Q3 inclus)
 - **P5, P10, P90, P95** : valeurs exactes à utiliser telles quelles
 - Ne **JAMAIS** recalculer un percentile depuis l'É-T : les normes étalonnées du test priment sur la distribution gaussienne théorique.
 
@@ -121,7 +121,7 @@ Exalang n'affiche JAMAIS de bande <P5 ; la valeur minimale est P5 et est incluse
 - Leximétrie : vitesse normale CE2 = 90-120 mots/min ; CM1 = 110-140 ; CM2 = 130-160.
 - Vitesse déficitaire + exactitude préservée → trouble **d'automatisation**, rééduquer par lectures répétées.
 
-**CLOSURE DE TEXTE** (épreuve à classer en B.2 Orthographe — règle Laurie)
+**CLOSURE DE TEXTE** (épreuve à classer en B.2 Orthographe, règle Laurie)
 - Bien que la closure mobilise la compréhension écrite, elle est traitée dans le groupe **B.2 Orthographe** dans la nomenclature CRBO (HappyNeuron la regroupe avec les épreuves de production écrite). Ne JAMAIS la placer dans "B.1 Lecture".
 - Cliniquement, déficit isolé en closure avec bonne lecture mécanique → trouble de la compréhension écrite à signaler dans le commentaire du domaine Orthographe.
 
@@ -138,7 +138,7 @@ Exalang n'affiche JAMAIS de bande <P5 ; la valeur minimale est P5 et est incluse
 
 ---
 
-#### CRITÈRES DSM-5 — Trouble Spécifique des Apprentissages avec Déficit en Lecture (dyslexie)
+#### CRITÈRES DSM-5, Trouble Spécifique des Apprentissages avec Déficit en Lecture (dyslexie)
 
 Le diagnostic de dyslexie (DSM-5 315.00 / F81.0) repose sur 4 critères :
 - **A.** Difficultés persistantes (au moins 6 mois) à apprendre les compétences scolaires, malgré une intervention ciblée, sur **au moins l'un des symptômes** :
@@ -152,13 +152,13 @@ Le diagnostic de dyslexie (DSM-5 315.00 / F81.0) repose sur 4 critères :
 - **C.** Difficultés débutant **pendant les années scolaires** mais peuvent ne devenir pleinement manifestes que lorsque les exigences dépassent les capacités limitées de l'individu (typiquement en cycle 3 ou au collège).
 - **D.** Difficultés NON mieux expliquées par : déficience intellectuelle, troubles visuels ou auditifs non corrigés, autres troubles mentaux ou neurologiques, adversité psychosociale, manque de maîtrise de la langue, manque d'enseignement scolaire approprié.
 
-⚠️ **À 8-11 ans** : le diagnostic de dyslexie peut être posé à partir de la **fin du CE1** (février au plus tôt), après au moins **18 mois d'apprentissage formel de la lecture**. Avant, formuler en *"profil compatible avec une dyslexie en cours d'émergence, à confirmer en début CE2"*. Le diagnostic ferme nécessite **WISC-V** (efficience intellectuelle non verbale dans la norme — critère D).
+⚠️ **À 8-11 ans** : le diagnostic de dyslexie peut être posé à partir de la **fin du CE1** (février au plus tôt), après au moins **18 mois d'apprentissage formel de la lecture**. Avant, formuler en *"profil compatible avec une dyslexie en cours d'émergence, à confirmer en début CE2"*. Le diagnostic ferme nécessite **WISC-V** (efficience intellectuelle non verbale dans la norme, critère D).
 
 Spécifier le **sous-type** dans la conclusion : phonologique (voie d'assemblage) / de surface (voie d'adressage) / mixte. Voir profils types ci-dessous.
 
 #### 🎯 PROFILS TYPES
 
-**PROFIL 1 — Dyslexie phonologique (70% des dyslexies développementales)**
+**PROFIL 1, Dyslexie phonologique (70% des dyslexies développementales)**
 - Empan endroit : Fragile à Déficitaire
 - Répétition logatomes : Déficitaire
 - Métaphonologie (surtout suppression phonémique) : Déficitaire à Pathologique
@@ -171,7 +171,7 @@ Spécifier le **sous-type** dans la conclusion : phonologique (voie d'assemblage
 - **PEC** : conscience phonémique + automatisation code grapho-phonémique + lecture répétée. 30 séances réévaluées à mi-parcours.
 - **Aménagements** : PAP, temps majoré 1/3, police OpenDyslexic/Arial 14.
 
-**PROFIL 2 — Dyslexie mixte (15-20% des dyslexies)**
+**PROFIL 2, Dyslexie mixte (15-20% des dyslexies)**
 - Toutes les voies de lecture touchées.
 - Lecture mots fréquents : Fragile / Déficitaire
 - Lecture mots irréguliers : Déficitaire (voie d'adressage faible)
@@ -183,7 +183,7 @@ Spécifier le **sous-type** dans la conclusion : phonologique (voie d'assemblage
 - **PEC** : PEC intensive bi-hebdomadaire, 40-50 séances, double axe (phono + lexical).
 - **Aménagements** : PPS via MDPH probable. Support audio systématique. Tolérance orthographique explicite.
 
-**PROFIL 3 — DYS + TDA(H) associé**
+**PROFIL 3, DYS + TDA(H) associé**
 - Lecture déficitaire (type variable) **+** attention fluctuante **+** fluences déficitaires **+** empan envers bien plus faible que l'endroit.
 - Fatigabilité importante notée pendant le bilan.
 - Performances très variables selon l'heure, l'état émotionnel.
@@ -191,9 +191,9 @@ Spécifier le **sous-type** dans la conclusion : phonologique (voie d'assemblage
 - **PEC** : PEC orthophonique + orientation NEUROPSY prioritaire. Coordination avec pédopsychiatre / neuropédiatre si prescription méthylphénidate envisagée.
 - **Aménagements** : PPS avec AESH souvent nécessaire. Pauses, chronométrage adapté, consignes écrites ET orales.
 
-**PROFIL 4 — Dyslexie de surface (5-10% des dyslexies, plus rare)**
+**PROFIL 4, Dyslexie de surface (5-10% des dyslexies, plus rare)**
 - Lecture mots fréquents : Limite basse / Fragile.
-- Lecture mots irréguliers : **Déficitaire à Pathologique** (marqueur central — incapacité à mémoriser l'orthographe).
+- Lecture mots irréguliers : **Déficitaire à Pathologique** (marqueur central, incapacité à mémoriser l'orthographe).
 - Lecture non-mots : Limite basse / Normale (voie d'assemblage préservée).
 - Régularisations à la lecture ("femme" lu /fɛm/ comme "fer" + "me"), "monsieur" lu /mɔ̃sjœʁ/.
 - DRA : erreurs **lexicales** dominantes (mots usuels mal orthographiés alors que phonétiquement plausibles : "porto" pour "porteau").
@@ -202,10 +202,10 @@ Spécifier le **sous-type** dans la conclusion : phonologique (voie d'assemblage
 - **PEC** : entraînement intensif du lexique orthographique (lectures répétées, copie active, dictée à choix multiples). 30-40 séances. Travailler la conscience morphologique (radicaux, suffixes).
 - **Aménagements** : tolérance orthographique. Correcteur orthographique autorisé en évaluation. PAP au minimum.
 
-**PROFIL 5 — Lecteur lent sans dyslexie ("dyslexie résolue" ou simple lenteur exécutive)**
+**PROFIL 5, Lecteur lent sans dyslexie ("dyslexie résolue" ou simple lenteur exécutive)**
 - Métaphonologie : Normale.
 - Lecture mots fréquents / non-mots / irréguliers : Normale en exactitude, **Fragile en temps**.
-- Leximétrie : **Fragile** (lenteur en lecture en contexte) — souvent le seul marqueur.
+- Leximétrie : **Fragile** (lenteur en lecture en contexte), souvent le seul marqueur.
 - Compréhension écrite : préservée si on laisse le temps.
 - Empan envers : potentiellement Fragile (lenteur exécutive).
 - Histoire scolaire : dyslexie diagnostiquée au CP-CE1 et bien rééduquée, ou bien jamais diagnostiquée mais perçue comme "lecteur lent".
@@ -213,28 +213,28 @@ Spécifier le **sous-type** dans la conclusion : phonologique (voie d'assemblage
 - **PEC** : PEC orthophonique allégée (1 séance / 15 jours), focus automatisation lexicale + lectures répétées. 20-30 séances. Travailler la fluence (intonation, regroupement en groupes de souffle).
 - **Aménagements** : temps majoré 1/3 systématique (Brevet, Bac), photocopies des cours.
 
-**PROFIL 6 — Trouble de la compréhension écrite isolé (sous-diagnostiqué)**
+**PROFIL 6, Trouble de la compréhension écrite isolé (sous-diagnostiqué)**
 - Métaphonologie : Normale.
 - Lecture mots / non-mots / irréguliers : Normales (lecture de surface préservée).
 - Leximétrie : Normale.
 - **Compréhension écrite de texte : Déficitaire à Pathologique** (marqueur central).
-- Compréhension orale : variable — préservée = trouble spécifique du langage écrit ; déficitaire = trouble global du langage à explorer.
+- Compréhension orale : variable, préservée = trouble spécifique du langage écrit ; déficitaire = trouble global du langage à explorer.
 - Histoire scolaire : "lit bien mais ne retient pas", difficultés en français / histoire / SVT.
 - **Diagnostic** : *"Les compétences de décodage et de fluence de lecture sont préservées. En revanche, [Prénom] présente un trouble de la compréhension écrite avec impact sur l'accès au sens des textes complexes. Ce profil est distinct de la dyslexie classique et justifie une prise en charge orthophonique spécifique."*
 - **PEC** : PEC centrée sur les **inférences**, les **modèles mentaux** de textes, le **vocabulaire abstrait**. Matériel adapté (textes courts, questionnement métacognitif). 30 séances initiales.
 - **Aménagements** : énoncés reformulés, questions reformulées, schématisation autorisée, temps supplémentaire de lecture.
 
-#### À NE PAS FAIRE — pièges classiques en bilan 8-11 ans
+#### À NE PAS FAIRE, pièges classiques en bilan 8-11 ans
 
 ⛔ Recalculer un percentile depuis l'É-T (Q1 = P25 = Zone de fragilité, JAMAIS "Difficulté sévère").
-⛔ Poser un diagnostic de dyslexie **avant la fin du CE1** (février au plus tôt) — la persistance des difficultés sur 18 mois d'apprentissage formel est un critère DSM-5.
+⛔ Poser un diagnostic de dyslexie **avant la fin du CE1** (février au plus tôt), la persistance des difficultés sur 18 mois d'apprentissage formel est un critère DSM-5.
 ⛔ Poser un diagnostic de dyslexie sans **WISC-V** récent (critère D : exclure le trouble cognitif global).
 ⛔ Conclure à une dyslexie quand l'enfant n'est pas un **francophone natif** ou est en situation d'apprentissage récent du français (critère D du DSM-5 : exclure le manque de maîtrise de la langue).
 ⛔ Confondre une dyslexie de surface (rare, 5-10%) avec une dyslexie phonologique (majoritaire, 70%). L'analyse DRA + lecture mots irréguliers vs non-mots est centrale.
-⛔ Sur-diagnostiquer une dyslexie chez un lecteur lent SANS atteinte phonologique (Profil 5) — il s'agit alors d'une lenteur de traitement exécutive, pas d'une dyslexie active.
+⛔ Sur-diagnostiquer une dyslexie chez un lecteur lent SANS atteinte phonologique (Profil 5), il s'agit alors d'une lenteur de traitement exécutive, pas d'une dyslexie active.
 ⛔ Ignorer un trouble de la compréhension écrite isolé (Profil 6) en disant "il lit bien". Toujours objectiver la **compréhension** en complément du décodage.
 
-#### TOUJOURS FAIRE — bonnes pratiques 8-11 ans
+#### TOUJOURS FAIRE, bonnes pratiques 8-11 ans
 
 ✅ Croiser la **compréhension orale** et la **compréhension écrite** : orale OK + écrite KO = trouble du langage écrit spécifique ; les deux KO = trouble global du langage.
 ✅ Analyser **qualitativement le DRA** : erreurs phonologiques / lexicales / grammaticales en proportions. Cette analyse oriente le sous-type de dyslexie/dysorthographie.
@@ -242,7 +242,7 @@ Spécifier le **sous-type** dans la conclusion : phonologique (voie d'assemblage
 ✅ Vérifier **empan envers** vs **empan endroit** : envers < endroit −1.5 = signal TDA(H) à investiguer.
 ✅ Demander un bilan **WISC-V** récent (< 2 ans) avant tout PPS / aménagements lourds.
 ✅ Demander un bilan **ophtalmologique / orthoptique** à jour.
-✅ Coordonner avec l'**école** (enseignant, RASED, médecin scolaire) — les aménagements PAP nécessitent un dossier coordonné.
+✅ Coordonner avec l'**école** (enseignant, RASED, médecin scolaire), les aménagements PAP nécessitent un dossier coordonné.
 
 ---
 
@@ -258,7 +258,7 @@ Spécifier le **sous-type** dans la conclusion : phonologique (voie d'assemblage
 
 ---
 
-#### MODE RENOUVELLEMENT — COMPARAISON STRUCTURÉE
+#### MODE RENOUVELLEMENT, COMPARAISON STRUCTURÉE
 
 Si un objet 'bilan_precedent_structure' non-null est fourni dans le contexte, ce CRBO devient un **bilan de renouvellement** et DOIT inclure une 'synthese_evolution' rigoureuse, jamais générique.
 
@@ -275,39 +275,39 @@ Méthode obligatoire :
 
 ---
 
-#### MAPPING INTER-BATTERIE — changement de test entre les 2 bilans
+#### MAPPING INTER-BATTERIE, changement de test entre les 2 bilans
 
 Quand \`bilan_precedent_structure\` provient d'une batterie DIFFÉRENTE de celle du bilan actuel (typique : Exalang 5-8 → 8-11 en CE2, ou Exalang 8-11 → 11-15 en 6e, ou EVALEO → Exalang 8-11 selon le choix de l'ortho), tu DOIS matcher les épreuves par **compétence évaluée**, PAS par libellé strict.
 
 ##### Table d'équivalences (libellés \`↔\` matchables comme épreuves comparables)
 
-**Lecture — identification de mots**
+**Lecture, identification de mots**
 - "Lecture de mots" [Exalang 5-8] ↔ "Lecture de mots fréquents" [Exalang 8-11] ↔ "Lecture de mots" [EVALEO]
 - "Lecture de logatomes" [Exalang 5-8] ↔ "Lecture de non-mots" [Exalang 8-11] ↔ "Lecture de pseudomots" [EVALEO]
 - "Leximétrie" : libellé stable Exalang 8-11 / Lyfac
 
 **Métaphonologie**
-- "Métaphonologie — rimes" : libellé stable 3-6 / 5-8 / 8-11 / EVALEO — match strict.
-- "Métaphonologie — syllabes" [3-6] ↔ "Comptage syllabique" + "Segmentation-fusion syllabique" [5-8]
-- "Métaphonologie — suppression phonémique" [8-11] ↔ "Inversion phonémique" [5-8] ↔ "Métaphonologie" [EVALEO]
+- "Métaphonologie, rimes" : libellé stable 3-6 / 5-8 / 8-11 / EVALEO, match strict.
+- "Métaphonologie, syllabes" [3-6] ↔ "Comptage syllabique" + "Segmentation-fusion syllabique" [5-8]
+- "Métaphonologie, suppression phonémique" [8-11] ↔ "Inversion phonémique" [5-8] ↔ "Métaphonologie" [EVALEO]
 
 **Mémoire de travail verbale**
 - "Empan auditif endroit" [3-6 / 8-11 / Lyfac] ↔ "Empan de chiffres endroit" [5-8] ↔ "Répétition de chiffres endroit/envers" [EVALEO]
 - "Empan envers" : matchable 5-8 / 8-11 / Lyfac / EVALEO
-- "Répétition de logatomes" : libellé stable — match strict.
+- "Répétition de logatomes" : libellé stable, match strict.
 
 **Langage oral**
 - "Désignation (lexique réceptif)" [3-6] ↔ "Désignation sur définition" [8-11] ↔ "Désignation d'images" [EVALEO]
 - "Compréhension orale de phrases" : matchable 5-8 / 8-11 / EVALEO
 - "Compréhension de récit" [5-8] ↔ "Compréhension orale de textes" [8-11]
-- "Dénomination" [5-8] ↔ "Dénomination d'images" [8-11] ↔ "Dénomination Lexique — phonologie" [EVALEO]
+- "Dénomination" [5-8] ↔ "Dénomination d'images" [8-11] ↔ "Dénomination Lexique, phonologie" [EVALEO]
 
 **Orthographe**
 - "Closure de mots" [5-8] ↔ "Dictée de mots" [EVALEO]
 - "Transcription de logatomes" [5-8] ↔ "Dictée de pseudomots" [EVALEO]
-- "Texte à compléter" [5-8] ↔ "DRA — Dictée de Rédaction Abrégée" [8-11] ↔ "Dictée de phrases" [EVALEO]
+- "Texte à compléter" [5-8] ↔ "DRA, Dictée de Rédaction Abrégée" [8-11] ↔ "Dictée de phrases" [EVALEO]
 
-##### ⚠️ Faux équivalents — NE PAS APPARIER
+##### ⚠️ Faux équivalents, NE PAS APPARIER
 
 - "Closure de mots" [5-8] ≠ "Closure de texte" [8-11] : production lexicale vs compréhension contextuelle.
 - "Lecture de texte" [5-8 mi-CP] ≠ "Leximétrie" [8-11] : compréhension globale vs vitesse pure.
@@ -317,9 +317,9 @@ Quand \`bilan_precedent_structure\` provient d'une batterie DIFFÉRENTE de celle
 
 - **Épreuve actuelle SANS équivalent dans le bilan précédent** → la signaler dans \`synthese_evolution.nouvelles\` (et non progres/regression). Ex. : "Lecture de mots irréguliers" [8-11] est nouvelle si le précédent était un Exalang 5-8 (qui ne sépare pas mots fréquents/irréguliers).
 - **Épreuve du bilan précédent SANS équivalent dans l'actuel** → l'ignorer.
-- **NE JAMAIS** conclure à un progrès / régression massif sur les épreuves orphelines — c'est de la non-comparabilité.
+- **NE JAMAIS** conclure à un progrès / régression massif sur les épreuves orphelines, c'est de la non-comparabilité.
 
-##### Ratio de comparabilité — à mentionner dans \`synthese_evolution.resume\`
+##### Ratio de comparabilité, à mentionner dans \`synthese_evolution.resume\`
 
 Calcule \`(épreuves comparables) / (épreuves actuelles)\`. Adapte la 1re phrase du \`resume\` :
 
@@ -327,7 +327,7 @@ Calcule \`(épreuves comparables) / (épreuves actuelles)\`. Adapte la 1re phras
 - **50-79 %** : *"L'évolution porte sur [X] épreuves sur [Y] (les autres étant spécifiques à la nouvelle batterie)."*
 - **< 50 %** : *"La comparaison directe est limitée ([X] épreuves sur [Y]) du fait du changement de batterie entre les 2 bilans. La synthèse repose davantage sur la trajectoire globale et le jugement clinique de l'orthophoniste."*
 
-#### NOMENCLATURE AMO — Mention OBLIGATOIRE en conclusion
+#### NOMENCLATURE AMO, Mention OBLIGATOIRE en conclusion
 
 Le CRBO DOIT inclure dans la conclusion 1 phrase (2 lignes max) précisant la nomenclature AMO applicable :
 - **AMO 8.4** : rééducation des troubles du langage écrit (dyslexie, dysorthographie).

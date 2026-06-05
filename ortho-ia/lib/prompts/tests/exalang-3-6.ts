@@ -25,7 +25,7 @@ export const exalang36: TestModule = {
     'Rimes, syllabes (pré-requis langage écrit)',
     'Conscience de l\'écrit émergente',
   ],
-  regles_specifiques: `### EXALANG 3-6 — Référentiel clinique complet (niveau senior)
+  regles_specifiques: `### EXALANG 3-6, Référentiel clinique complet (niveau senior)
 
 Population : **maternelle (PS, MS, GS)**. Premier outil HappyNeuron en langage oral, idéal pour les bilans de début de scolarisation et les dépistages de TDL.
 
@@ -51,12 +51,12 @@ Exalang n'affiche JAMAIS de bande <P5. Bornes inclusives de part et d'autre (P25
 
 #### INTERPRÉTATION PAR ÉPREUVE
 
-**LEXIQUE RÉCEPTIF** — désignation d'images
+**LEXIQUE RÉCEPTIF**, désignation d'images
 - Normes attendues à 3-6 ans, stock lexical passif.
 - Décalage marqué entre désignation et dénomination = manque du mot.
 - Sous-exposition langagière à considérer (multilinguisme, écrans excessifs).
 
-**LEXIQUE EXPRESSIF** — dénomination
+**LEXIQUE EXPRESSIF**, dénomination
 - Stock lexical actif.
 - Dénomination très pauvre → TDL expressif probable.
 
@@ -77,7 +77,7 @@ Exalang n'affiche JAMAIS de bande <P5. Bornes inclusives de part et d'autre (P25
 - Syllabes (segmentation) : acquises en GS.
 - Absence à la GS = alerte langage écrit.
 
-#### CRITÈRES DSM-5 — TDL (Trouble Développemental du Langage)
+#### CRITÈRES DSM-5, TDL (Trouble Développemental du Langage)
 
 Le **TDL** (anciennement "dysphasie") est défini par 4 critères DSM-5 (309.39 / F80.2) :
 - **A.** Difficultés persistantes d'acquisition et d'utilisation du langage (vocabulaire réduit, structures syntaxiques pauvres, capacités narratives limitées).
@@ -87,7 +87,7 @@ Le **TDL** (anciennement "dysphasie") est défini par 4 critères DSM-5 (309.39 
 
 ⚠️ **À 3-6 ans, le diagnostic différentiel central** : Retard Simple de Langage (évolutif) vs TDL persistant. Ne PAS conclure à un TDL définitif avant 5 ans révolus, sauf profil sévère et persistant malgré stimulation. Avant 5 ans, formuler en **"évocateur d'un TDL"** ou **"profil compatible avec un TDL à confirmer"**.
 
-#### TRAJECTOIRE DÉVELOPPEMENTALE — attendus par âge
+#### TRAJECTOIRE DÉVELOPPEMENTALE, attendus par âge
 
 Cadre de référence pour situer les performances de l'enfant dans son couloir développemental (manuel HappyNeuron Exalang 3-6 + DSM-5 + Bishop 2017) :
 
@@ -114,33 +114,33 @@ Cadre de référence pour situer les performances de l'enfant dans son couloir d
 - Récit narratif fluide.
 - **Tout déficit métaphonologique majeur en début CP est un drapeau rouge pour la dyslexie à venir.**
 
-#### FACTEURS DE RISQUE — à intégrer dans l'analyse
+#### FACTEURS DE RISQUE, à intégrer dans l'analyse
 
-Si l'anamnèse mentionne un ou plusieurs facteurs, le pondérer dans la conclusion (NE PAS le rendre déterministe — un enfant peut avoir des facteurs de risque sans pathologie, et vice-versa) :
+Si l'anamnèse mentionne un ou plusieurs facteurs, le pondérer dans la conclusion (NE PAS le rendre déterministe, un enfant peut avoir des facteurs de risque sans pathologie, et vice-versa) :
 
-- **Antécédents familiaux** de troubles du langage / dyslexie / TDA — pondère vers TDL persistant ou risque dyslexie.
+- **Antécédents familiaux** de troubles du langage / dyslexie / TDA, pondère vers TDL persistant ou risque dyslexie.
 - **Sexe masculin** (ratio 3:1 pour le TDL).
 - **Prématurité** (< 37 SA) ou faible poids de naissance.
-- **Otites séro-muqueuses à répétition** dans les 18 premiers mois — toujours demander statut audiométrique récent.
+- **Otites séro-muqueuses à répétition** dans les 18 premiers mois, toujours demander statut audiométrique récent.
 - **Bilinguisme** : ne PAS sur-diagnostiquer un TDL chez un enfant bilingue. Demander si **les deux langues sont touchées** (critère DSM-5). Si une seule langue déficitaire et l'autre préservée → c'est une question d'exposition, pas un TDL.
-- **Sous-exposition langagière** (écrans excessifs, faible interaction adulte-enfant) — pondérer la sévérité du tableau et privilégier la guidance avant la PEC intensive.
+- **Sous-exposition langagière** (écrans excessifs, faible interaction adulte-enfant), pondérer la sévérité du tableau et privilégier la guidance avant la PEC intensive.
 
 #### 🎯 PROFILS TYPES
 
-**Profil 1 — Développement normal avec fragilité isolée**
+**Profil 1, Développement normal avec fragilité isolée**
 - Performances globalement dans la norme, 1 composante en limite basse (P11-P25).
 - Pas de retard global, pas de plainte forte des parents.
 - **Conclusion** : variation interindividuelle, surveillance.
 - **Conduite à tenir** : guidance parentale (livres, jeux symboliques, qualité d'interaction), pas de PEC immédiate. Réévaluation à 6-12 mois si la fragilité persiste ou s'aggrave.
 
-**Profil 2 — Retard Simple de Langage (3-4 ans)**
+**Profil 2, Retard Simple de Langage (3-4 ans)**
 - Plusieurs composantes en Zone de fragilité ou Moyenne basse, profil homogène (toutes les composantes au même niveau, sans creux brutal).
 - Enfant évolutif, plaintes parentales mais bonne compréhension globale, communication non verbale préservée.
 - Anamnèse : premiers mots vers 18-24 mois, phrases vers 30-36 mois.
 - **Conclusion formulation prudente** : *"Le profil de [Prénom] évoque un retard simple de langage, sans argument à ce stade pour un trouble développemental persistant. Une guidance orthophonique et une réévaluation à 6 mois permettront de préciser la trajectoire évolutive."*
 - **Conduite à tenir** : guidance parentale renforcée + 6-10 séances orthophonie à visée diagnostique. Réévaluation à 6 mois impérative avant conclusion définitive.
 
-**Profil 3 — TDL persistant émergent (4-6 ans)**
+**Profil 3, TDL persistant émergent (4-6 ans)**
 - Multi-composantes en Difficulté ou Difficulté sévère, profil hétérogène (creux marqués sur certains domaines).
 - Premiers mots tardifs (> 24 mois) et/ou phrases tardives (> 36 mois).
 - Persistance malgré stimulation antérieure (guidance ou PEC déjà initiée).
@@ -148,7 +148,7 @@ Si l'anamnèse mentionne un ou plusieurs facteurs, le pondérer dans la conclusi
 - **Conclusion** : *"Les résultats sont compatibles avec un Trouble Développemental du Langage (TDL) émergent, à confirmer lors d'une réévaluation à 12 mois. Les critères DSM-5 (A) difficultés persistantes, (B) sous le 10e percentile, (C) apparition précoce, sont aujourd'hui réunis."*
 - **Conduite à tenir** : PEC orthophonique hebdomadaire 45 min, 30 séances initiales puis bilan d'étape. Orientation CRTLA si sévérité importante ou tableau atypique. Anticiper le diagnostic différentiel TSA (cf. Profil 5).
 
-**Profil 4 — Trouble phonologique isolé**
+**Profil 4, Trouble phonologique isolé**
 - Phonologie / Répétition de logatomes : Difficulté sévère.
 - Autres domaines (lexique, morphosyntaxe, métaphonologie, mémoire de travail) préservés.
 - Intelligibilité réduite par les pairs et les enseignants (~ 50-60% à 4 ans).
@@ -157,7 +157,7 @@ Si l'anamnèse mentionne un ou plusieurs facteurs, le pondérer dans la conclusi
 - **Conclusion** : *"[Prénom] présente un trouble phonologique isolé, caractérisé par une intelligibilité réduite secondaire à des difficultés d'organisation et de production des phonèmes. Les autres composantes du langage sont préservées."*
 - **Conduite à tenir** : PEC phonologique ciblée (méthodes type Borel-Maisonny, gestes Borel, paires minimales, conscience phonologique), 20-30 séances. Vigilance pré-CP : si la phonologie reste fragile en GS, anticipation d'un risque dyslexie phonologique.
 
-**Profil 5 — Alerte trouble de la communication sociale / TSA**
+**Profil 5, Alerte trouble de la communication sociale / TSA**
 - Langage oral atteint **+ pragmatique altérée** (pas de question, écholalie, langage stéréotypé, néologismes).
 - Communication non verbale aussi atteinte : pointage protodéclaratif absent ou tardif, attention conjointe pauvre, contact oculaire fuyant, gestes peu utilisés.
 - Anamnèse : intérêts restreints, routines rigides, hypersensibilités sensorielles.
@@ -165,22 +165,22 @@ Si l'anamnèse mentionne un ou plusieurs facteurs, le pondérer dans la conclusi
 - **Conclusion** : *"Au-delà du tableau langagier, [Prénom] présente des signes évocateurs d'un trouble de la communication sociale, à investiguer en priorité. Une orientation vers un CRA (Centre Ressources Autisme) ou une consultation de pédopsychiatrie spécialisée est recommandée avant la mise en place d'une PEC orthophonique isolée."*
 - **Conduite à tenir** : **orientation CRA / pédopsychiatrie URGENTE** (délai 6-18 mois). NE PAS rester sur un diagnostic de TDL simple. La PEC orthophonique peut démarrer en parallèle mais sera secondaire à l'évaluation TSA. Coordination obligatoire avec l'école et la PMI.
 
-**Profil 6 — Trouble pragmatique isolé (rare à cet âge mais à connaître)**
+**Profil 6, Trouble pragmatique isolé (rare à cet âge mais à connaître)**
 - Composantes formelles (lexique, syntaxe, phonologie) préservées.
 - Pragmatique altérée : difficultés conversationnelles, peu de respect des tours de parole, persévérations thématiques.
 - Pas de comportements TSA marqués (à différencier).
 - **Conduite à tenir** : PEC orthophonique pragmatique (jeux de rôle, scripts sociaux). Bilan psychologique pour éliminer un TSA léger / Asperger.
 
-#### À NE PAS FAIRE — pièges classiques en bilan 3-6 ans
+#### À NE PAS FAIRE, pièges classiques en bilan 3-6 ans
 
-⛔ Poser un diagnostic de TDL **avant 5 ans révolus** sauf profil sévère et persistant. Avant 5 ans, l'enfant est dans une fenêtre d'évolution maximale — privilégier "évocateur de TDL" et la réévaluation à 6 mois.
+⛔ Poser un diagnostic de TDL **avant 5 ans révolus** sauf profil sévère et persistant. Avant 5 ans, l'enfant est dans une fenêtre d'évolution maximale, privilégier "évocateur de TDL" et la réévaluation à 6 mois.
 ⛔ Recalculer un percentile depuis l'É-T (Q1 = P25, jamais "Difficulté sévère").
 ⛔ Conclure à un TDL chez un enfant bilingue sans avoir vérifié si **les deux langues** sont touchées.
 ⛔ Confondre un trouble phonologique isolé (intelligibilité réduite, lexique préservé) avec un TDL global.
 ⛔ Ignorer les signes pragmatiques évocateurs de TSA. La PEC orthophonique seule ne suffit pas si le tableau est mixte.
 ⛔ Recommander une PEC intensive avant 4 ans sans avoir tenté la guidance parentale (en cas de profil léger / retard simple).
 
-#### TOUJOURS FAIRE — bonnes pratiques 3-6 ans
+#### TOUJOURS FAIRE, bonnes pratiques 3-6 ans
 
 ✅ Demander un bilan **ORL avec audiogramme récent** (les otites séro-muqueuses sont fréquentes à cet âge et impactent l'acquisition phonologique).
 ✅ Demander un examen ophtalmologique / orthoptique (vision = condition préalable à la lecture).
@@ -204,7 +204,7 @@ Si l'anamnèse mentionne un ou plusieurs facteurs, le pondérer dans la conclusi
 
 ---
 
-#### MODE RENOUVELLEMENT — COMPARAISON STRUCTURÉE
+#### MODE RENOUVELLEMENT, COMPARAISON STRUCTURÉE
 
 Si un objet 'bilan_precedent_structure' non-null est fourni dans le contexte, ce CRBO devient un **bilan de renouvellement** et DOIT inclure une 'synthese_evolution' rigoureuse, jamais générique.
 
@@ -221,43 +221,43 @@ Méthode obligatoire :
 
 ---
 
-#### MAPPING INTER-BATTERIE — changement de test entre les 2 bilans
+#### MAPPING INTER-BATTERIE, changement de test entre les 2 bilans
 
 Quand \`bilan_precedent_structure\` provient d'une batterie DIFFÉRENTE de celle du bilan actuel (typique en pédiatrie sur plusieurs années : Exalang 3-6 → 5-8 en GS-CP, Exalang 5-8 → 8-11 en CE2, Exalang vers EVALEO entre 6 et 15 ans, ou EVALEO 6-15 → Exalang 8-11 selon le choix de l'ortho), tu DOIS matcher les épreuves par **compétence évaluée**, PAS par libellé strict.
 
 ##### Table d'équivalences (libellés \`↔\` matchables comme épreuves comparables)
 
-**Lecture — identification de mots**
+**Lecture, identification de mots**
 - "Lecture de mots" [Exalang 5-8] ↔ "Lecture de mots fréquents" [Exalang 8-11] ↔ "Lecture de mots" [EVALEO]
 - "Lecture de logatomes" [Exalang 5-8] ↔ "Lecture de non-mots" [Exalang 8-11] ↔ "Lecture de pseudomots" [EVALEO]
 - "Leximétrie" : libellé stable sur Exalang 8-11 / Lyfac
 
 **Métaphonologie**
-- "Métaphonologie — rimes" / "Rimes" : libellé stable Exalang 3-6 / 5-8 / 8-11 / EVALEO — match strict possible.
-- "Métaphonologie — syllabes" [Exalang 3-6] ↔ "Comptage syllabique" + "Segmentation-fusion syllabique" [Exalang 5-8]
-- "Métaphonologie — suppression phonémique" [Exalang 8-11] ↔ "Inversion phonémique" [Exalang 5-8] ↔ "Métaphonologie" [EVALEO]
+- "Métaphonologie, rimes" / "Rimes" : libellé stable Exalang 3-6 / 5-8 / 8-11 / EVALEO, match strict possible.
+- "Métaphonologie, syllabes" [Exalang 3-6] ↔ "Comptage syllabique" + "Segmentation-fusion syllabique" [Exalang 5-8]
+- "Métaphonologie, suppression phonémique" [Exalang 8-11] ↔ "Inversion phonémique" [Exalang 5-8] ↔ "Métaphonologie" [EVALEO]
 
 **Mémoire de travail verbale**
 - "Empan auditif endroit" [Exalang 3-6 / 8-11 / Lyfac] ↔ "Empan de chiffres endroit" [Exalang 5-8] ↔ "Répétition de chiffres endroit/envers" [EVALEO, contient les 2 dimensions]
 - "Empan envers" / "Chiffres à l'envers" : matchable Exalang 5-8 / 8-11 / Lyfac / EVALEO
-- "Répétition de logatomes" : libellé stable Exalang 3-6 / 5-8 / 8-11 / EVALEO — match strict possible.
+- "Répétition de logatomes" : libellé stable Exalang 3-6 / 5-8 / 8-11 / EVALEO, match strict possible.
 
-**Langage oral — réceptif**
+**Langage oral, réceptif**
 - "Désignation (lexique réceptif)" [Exalang 3-6] ↔ "Désignation sur définition" [Exalang 8-11] ↔ "Désignation d'images" [EVALEO]
 - "Compréhension morphosyntaxique" [Exalang 3-6] ↔ "Compréhension orale de phrases" [Exalang 5-8 / 8-11] ↔ "Compréhension orale de phrases" [EVALEO]
 - "Compréhension de récit" [Exalang 5-8] ↔ "Compréhension orale de textes" [Exalang 8-11]
 
-**Langage oral — expressif**
-- "Dénomination (lexique expressif)" [Exalang 3-6] ↔ "Dénomination" [Exalang 5-8] ↔ "Dénomination d'images" [Exalang 8-11] ↔ "Dénomination Lexique — phonologie" [EVALEO]
+**Langage oral, expressif**
+- "Dénomination (lexique expressif)" [Exalang 3-6] ↔ "Dénomination" [Exalang 5-8] ↔ "Dénomination d'images" [Exalang 8-11] ↔ "Dénomination Lexique, phonologie" [EVALEO]
 - "Fluence sémantique" : libellé stable Exalang 5-8 / 8-11 / EVALEO (équivalent : "Flexibilité lexicale" [Lyfac])
 - "Fluence phonémique" : libellé stable Exalang 5-8 / 8-11 / EVALEO
 
 **Orthographe**
 - "Closure de mots" [Exalang 5-8] ↔ "Dictée de mots" [EVALEO]
 - "Transcription de logatomes" [Exalang 5-8] ↔ "Dictée de pseudomots" [EVALEO]
-- "Texte à compléter" [Exalang 5-8] ↔ "DRA — Dictée de Rédaction Abrégée" [Exalang 8-11] ↔ "Dictée de phrases" [EVALEO]
+- "Texte à compléter" [Exalang 5-8] ↔ "DRA, Dictée de Rédaction Abrégée" [Exalang 8-11] ↔ "Dictée de phrases" [EVALEO]
 
-##### ⚠️ Faux équivalents — NE PAS APPARIER
+##### ⚠️ Faux équivalents, NE PAS APPARIER
 
 - "Closure de mots" [Exalang 5-8] ≠ "Closure de texte" [Exalang 8-11] : la première est une production lexicale, la seconde une compréhension contextuelle.
 - "Lecture de texte" [Exalang 5-8 mi-CP] ≠ "Leximétrie" [Exalang 8-11] : la première est une lecture compréhension globale, la seconde est purement vitesse.
@@ -268,9 +268,9 @@ Quand \`bilan_precedent_structure\` provient d'une batterie DIFFÉRENTE de celle
 
 - **Épreuve actuelle SANS équivalent dans le bilan précédent** → la signaler dans \`synthese_evolution.nouvelles\` (et non dans progres/regression).
 - **Épreuve du bilan précédent SANS équivalent dans l'actuel** → l'ignorer (le bilan actuel ne mesure plus cette compétence, pas pertinent de la commenter).
-- **NE JAMAIS** conclure à un progrès ou une régression massive sur les épreuves orphelines — c'est de la non-comparabilité, pas une évolution clinique.
+- **NE JAMAIS** conclure à un progrès ou une régression massive sur les épreuves orphelines, c'est de la non-comparabilité, pas une évolution clinique.
 
-##### Ratio de comparabilité — à mentionner dans \`synthese_evolution.resume\`
+##### Ratio de comparabilité, à mentionner dans \`synthese_evolution.resume\`
 
 Calcule \`(nombre d'épreuves comparables) / (nombre d'épreuves actuelles)\`. Adapte la 1re phrase du \`resume\` :
 
@@ -278,7 +278,7 @@ Calcule \`(nombre d'épreuves comparables) / (nombre d'épreuves actuelles)\`. A
 - **50-79 %** : *"L'évolution porte sur [X] épreuves sur [Y] (les autres étant spécifiques à la nouvelle batterie)."*
 - **< 50 %** : *"La comparaison directe est limitée ([X] épreuves sur [Y]) du fait du changement de batterie entre les 2 bilans. La synthèse repose davantage sur la trajectoire globale et le jugement clinique de l'orthophoniste."*
 
-#### NOMENCLATURE AMO — Mention OBLIGATOIRE en conclusion
+#### NOMENCLATURE AMO, Mention OBLIGATOIRE en conclusion
 
 Le CRBO DOIT inclure dans la conclusion 1 phrase (2 lignes max) précisant la nomenclature AMO applicable :
 - **AMO 9.4** : rééducation des troubles du langage oral (TDL, retard simple, troubles articulatoires).

@@ -6,9 +6,9 @@ export const exalang1115: TestModule = {
   auteurs: 'Helloin, Lenfant, Thibault',
   annee: 2009,
   domaines: [
-    'Langage oral — réceptif et expressif',
-    'Langage écrit — lecture fluente',
-    'Langage écrit — compréhension écrite complexe',
+    'Langage oral, réceptif et expressif',
+    'Langage écrit, lecture fluente',
+    'Langage écrit, compréhension écrite complexe',
     'Orthographe lexicale et grammaticale',
     'Mémoire de travail verbale',
     'Fonctions exécutives (fluences, flexibilité)',
@@ -35,13 +35,13 @@ export const exalang1115: TestModule = {
     'Lecture de non-mots / logatomes écrits',
     'Leximétrie en contexte (texte long)',
     'Compréhension écrite inférentielle',
-    // Orthographe / production écrite (B.2 — closure incluse)
+    // Orthographe / production écrite (B.2, closure incluse)
     'Dictée de mots, de phrases, de texte',
     'Closure de texte complexe',
     'Production écrite narrative',
     'Raisonnement verbal (analogies, métaphores)',
   ],
-  regles_specifiques: `### EXALANG 11-15 — Référentiel clinique complet
+  regles_specifiques: `### EXALANG 11-15, Référentiel clinique complet
 
 Population : **collège (6e à 3e)**. Outil de référence pour le suivi des troubles des apprentissages au collège et le dépistage tardif chez des élèves non diagnostiqués au primaire.
 
@@ -111,7 +111,7 @@ Exalang n'affiche JAMAIS de bande <P5. Bornes inclusives de part et d'autre (P25
 
 #### 🎯 PROFILS TYPES
 
-**PROFIL 1 — Dyslexie compensée / résiduelle (diagnostiquée au primaire)**
+**PROFIL 1, Dyslexie compensée / résiduelle (diagnostiquée au primaire)**
 - Lecture mots fréquents : Normale (compensée)
 - Lecture non-mots : Fragile (trace résiduelle)
 - Leximétrie : Fragile (lenteur persistante)
@@ -122,7 +122,7 @@ Exalang n'affiche JAMAIS de bande <P5. Bornes inclusives de part et d'autre (P25
 - **PEC** : maintien PEC orthophonique allégée (1 séance / 2 semaines), focus stratégies métacognitives (prise de notes, surlignage, organisation).
 - **Aménagements** : PAP maintenu ou PPS si pas encore en place. Temps majoré 1/3 aux épreuves du **Brevet des Collèges**. Ordinateur possible avec logiciel de lecture vocale.
 
-**PROFIL 2 — Dyslexie non diagnostiquée jusqu'au collège**
+**PROFIL 2, Dyslexie non diagnostiquée jusqu'au collège**
 - Lecture non-mots : Déficitaire
 - Leximétrie : Déficitaire (très lente)
 - Orthographe : Déficitaire (nombreuses erreurs)
@@ -134,7 +134,7 @@ Exalang n'affiche JAMAIS de bande <P5. Bornes inclusives de part et d'autre (P25
 - **PEC** : PEC intensive à démarrage, 40-50 séances. Restauration de la confiance (ado souvent en échec scolaire chronique). Stratégies métacognitives essentielles.
 - **Aménagements** : PPS via MDPH à initier immédiatement. Ordinateur autorisé aux évaluations. Temps 1/3 systématique. Discussion pour le Brevet et l'orientation post-3e.
 
-**PROFIL 3 — Trouble de la compréhension écrite isolé**
+**PROFIL 3, Trouble de la compréhension écrite isolé**
 - Lecture mots, non-mots, leximétrie : Normales
 - Orthographe : Normale à Limite basse
 - Compréhension écrite inférentielle : Déficitaire à Pathologique
@@ -164,7 +164,7 @@ Exalang n'affiche JAMAIS de bande <P5. Bornes inclusives de part et d'autre (P25
 
 ---
 
-#### MODE RENOUVELLEMENT — COMPARAISON STRUCTURÉE
+#### MODE RENOUVELLEMENT, COMPARAISON STRUCTURÉE
 
 Si un objet 'bilan_precedent_structure' non-null est fourni dans le contexte, ce CRBO devient un **bilan de renouvellement** et DOIT inclure une 'synthese_evolution' rigoureuse, jamais générique.
 
@@ -182,7 +182,7 @@ Méthode obligatoire :
 
 ---
 
-#### MAPPING INTER-BATTERIE — changement de test entre les 2 bilans
+#### MAPPING INTER-BATTERIE, changement de test entre les 2 bilans
 
 Quand \`bilan_precedent_structure\` provient d'une batterie DIFFÉRENTE de celle du bilan actuel (typique : Exalang 8-11 → 11-15 en 6e, ou EVALEO 6-15 → Exalang 11-15 en 6e+, ou Exalang 11-15 → Lyfac à 15 ans+), tu DOIS matcher les épreuves par **compétence évaluée**, PAS par libellé strict.
 
@@ -194,25 +194,25 @@ Quand \`bilan_precedent_structure\` provient d'une batterie DIFFÉRENTE de celle
 - "Leximétrie" : libellé stable Exalang 8-11 / 11-15 / Lyfac
 
 **Métaphonologie**
-- "Métaphonologie — rimes" / "Rimes" : libellé stable 3-6 / 5-8 / 8-11 / EVALEO — match strict.
-- "Métaphonologie — suppression phonémique" [8-11] ↔ "Inversion phonémique" [5-8] ↔ "Métaphonologie" [EVALEO]
+- "Métaphonologie, rimes" / "Rimes" : libellé stable 3-6 / 5-8 / 8-11 / EVALEO, match strict.
+- "Métaphonologie, suppression phonémique" [8-11] ↔ "Inversion phonémique" [5-8] ↔ "Métaphonologie" [EVALEO]
 
 **Mémoire de travail verbale**
 - "Empan auditif endroit" [3-6 / 8-11 / 11-15 / Lyfac] ↔ "Empan de chiffres endroit" [5-8] ↔ "Répétition de chiffres endroit/envers" [EVALEO]
 - "Empan envers" / "Chiffres à l'envers" : matchable 5-8 / 8-11 / 11-15 / Lyfac / EVALEO
-- "Répétition de logatomes" : libellé stable — match strict.
+- "Répétition de logatomes" : libellé stable, match strict.
 
 **Langage oral**
 - "Compréhension orale de phrases" : matchable 5-8 / 8-11 / 11-15 / EVALEO
 - "Compréhension de récit" [5-8] ↔ "Compréhension orale de textes" [8-11 / 11-15]
-- "Dénomination" [5-8] ↔ "Dénomination d'images" [8-11] ↔ "Dénomination Lexique — phonologie" [EVALEO]
+- "Dénomination" [5-8] ↔ "Dénomination d'images" [8-11] ↔ "Dénomination Lexique, phonologie" [EVALEO]
 - "Fluence sémantique" / "Fluence phonémique" : matchable 5-8 / 8-11 / 11-15 / EVALEO
 
 **Orthographe**
-- "Texte à compléter" [5-8] ↔ "DRA — Dictée de Rédaction Abrégée" [8-11] ↔ "Dictée de phrases" [EVALEO] ↔ "Texte à choix multiple" / "Complétion de phrases" [Lyfac]
+- "Texte à compléter" [5-8] ↔ "DRA, Dictée de Rédaction Abrégée" [8-11] ↔ "Dictée de phrases" [EVALEO] ↔ "Texte à choix multiple" / "Complétion de phrases" [Lyfac]
 - "Closure de mots" [5-8] ↔ "Dictée de mots" [EVALEO]
 
-##### ⚠️ Faux équivalents — NE PAS APPARIER
+##### ⚠️ Faux équivalents, NE PAS APPARIER
 
 - "Closure de mots" [5-8] ≠ "Closure de texte" [8-11].
 - "Lecture de texte" [5-8 mi-CP] ≠ "Leximétrie" [8-11 / 11-15].
@@ -224,13 +224,13 @@ Quand \`bilan_precedent_structure\` provient d'une batterie DIFFÉRENTE de celle
 - **Épreuve du bilan précédent SANS équivalent dans l'actuel** → l'ignorer.
 - **NE JAMAIS** conclure à un progrès / régression massif sur les épreuves orphelines.
 
-##### Ratio de comparabilité — à mentionner dans \`synthese_evolution.resume\`
+##### Ratio de comparabilité, à mentionner dans \`synthese_evolution.resume\`
 
 - **≥ 80 %** : *"L'évolution est documentée par [X] épreuves comparables sur [Y]."*
 - **50-79 %** : *"L'évolution porte sur [X] épreuves sur [Y] (les autres étant spécifiques à la nouvelle batterie)."*
 - **< 50 %** : *"La comparaison directe est limitée ([X] épreuves sur [Y]) du fait du changement de batterie entre les 2 bilans. La synthèse repose davantage sur la trajectoire globale et le jugement clinique de l'orthophoniste."*
 
-#### NOMENCLATURE AMO — Mention OBLIGATOIRE en conclusion
+#### NOMENCLATURE AMO, Mention OBLIGATOIRE en conclusion
 
 Le CRBO DOIT inclure dans la conclusion 1 phrase (2 lignes max) précisant la nomenclature AMO applicable :
 - **AMO 8.4** : rééducation des troubles du langage écrit (dyslexie, dysorthographie).
