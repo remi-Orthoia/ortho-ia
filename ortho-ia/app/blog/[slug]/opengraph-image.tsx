@@ -45,20 +45,37 @@ function bigFontSize(label: string): number {
 }
 
 // ----- Chargement Fraunces depuis Google Fonts (au runtime de la génération OG) -----
+// IMPORTANT: Satori (le moteur de @vercel/og) ne supporte QUE TTF/OTF, PAS woff2.
+// Sans User-Agent, Google Fonts sert du .ttf direct. Avec un UA Chrome moderne, il
+// renverrait du woff2 → crash "Unsupported OpenType signature wOF2" au build.
 async function loadFraunces(): Promise<Array<{ name: string; data: ArrayBuffer; weight: 400 | 500 | 600; style: 'normal' }> | undefined> {
   try {
     const cssUrl = 'https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,500;9..144,600&display=swap'
-    const css = await fetch(cssUrl, {
-      // User-Agent moderne pour que Google serve les woff2 (sinon TTF)
-      headers: { 'User-Agent': 'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/124.0.0.0 Safari/537.36' },
-    }).then(r => r.text())
+    // PAS de User-Agent → Google sert du TTF (compatible Satori)
+    const css = await fetch(cssUrl).then(r => r.text())
 
-    const urls = Array.from(css.matchAll(/url\((https:\/\/fonts\.gstatic\.com\/[^)]+)\)/g)).map(m => m[1])
-    if (urls.length < 2) return undefined
+    // Match strictement les URLs TTF/OTF (rejette woff2 si jamais Google en sert)
+    const matches = Array.from(
+      css.matchAll(/src:\s*url\((https:\/\/fonts\.gstatic\.com\/[^)]+\.(?:ttf|otf))\)\s*format\(['"](?:truetype|opentype)['"]\)/g)
+    ).map(m => m[1])
+
+    if (matches.length < 2) return undefined
+
     const [r500, r600] = await Promise.all([
-      fetch(urls[0]).then(r => r.arrayBuffer()),
-      fetch(urls[1]).then(r => r.arrayBuffer()),
+      fetch(matches[0]).then(r => r.arrayBuffer()),
+      fetch(matches[1]).then(r => r.arrayBuffer()),
     ])
+
+    // Double-check: les fichiers TTF commencent par 0x00 0x01 0x00 0x00 (TrueType) ou "OTTO" (OpenType)
+    // Les woff2 commencent par "wOF2" (0x77 0x4F 0x46 0x32) → on rejette
+    const isValidFont = (buf: ArrayBuffer) => {
+      const view = new DataView(buf)
+      if (buf.byteLength < 4) return false
+      const sig = view.getUint32(0)
+      return sig === 0x00010000 || sig === 0x4F54544F // TTF or OTTO
+    }
+    if (!isValidFont(r500) || !isValidFont(r600)) return undefined
+
     return [
       { name: 'Fraunces', data: r500, weight: 500, style: 'normal' },
       { name: 'Fraunces', data: r600, weight: 600, style: 'normal' },
