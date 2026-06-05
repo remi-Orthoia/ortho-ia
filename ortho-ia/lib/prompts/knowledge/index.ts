@@ -40,6 +40,8 @@ export {
 } from './style-examples'
 export { EVALEO_METHODOLOGY } from './evaleo-method'
 export { BETL_HILLIS_CARAMAZZA } from './betl-hillis-caramazza'
+export { ERREURS_EVALEO } from './erreurs-evaleo'
+export { ERREURS_BETL } from './erreurs-betl'
 export {
   STYLE_ADMINISTRATIF_FR,
   STYLE_ADMINISTRATIF_BE,
@@ -67,6 +69,8 @@ import {
 } from './style-examples'
 import { EVALEO_METHODOLOGY } from './evaleo-method'
 import { BETL_HILLIS_CARAMAZZA } from './betl-hillis-caramazza'
+import { ERREURS_EVALEO } from './erreurs-evaleo'
+import { ERREURS_BETL } from './erreurs-betl'
 import { getStyleAdministratifByCountry } from './country-administratif'
 import type { OrthoCountry } from '../../types'
 
@@ -267,6 +271,13 @@ export function buildKnowledgeContext(
   // 7 classes étalonnage + diagnostic juridique formel.
   if (includeStyle && tests.includes('EVALEO 6-15')) {
     fragments.push(EVALEO_METHODOLOGY)
+    // Typologie fine des erreurs EVALEO (substitutions acoustiques /
+    // visuelles / mixtes / autres, omissions, ajouts, erreurs séquentielles,
+    // OL / ODNM / ODM, segmentation, ventilation dictée de phrases en 4 axes).
+    // Source : Livret de cotation EVALEO 6-15 + annexe d'exemples 2026.
+    // Injecté en synthèse uniquement (en extract on n'a pas encore d'erreurs
+    // à qualifier).
+    fragments.push(ERREURS_EVALEO)
   }
 
   // BETL Hillis & Caramazza : injecté si BETL sélectionné. Demande Laurie :
@@ -276,6 +287,13 @@ export function buildKnowledgeContext(
   // d'erreurs en dénomination + profils par pathologie.
   if (tests.includes('BETL')) {
     fragments.push(BETL_HILLIS_CARAMAZZA)
+    // Typologie fine des erreurs BETL en dénomination (paraphasies
+    // lexicales formelles / sémantiques / mixtes, paraphasies segmentales,
+    // logatomes, conduites d'approche formelle / sémantique / flexionnelle /
+    // combinatoire / constructionnelle, persévérations, dénominations vides,
+    // grille discours 5 axes Annexe 2). Source : Manuel BETL Tran 2015 pp.
+    // 40-41 + Annexe 2.
+    fragments.push(ERREURS_BETL)
   }
 
   if (fragments.length === 0) return ''
