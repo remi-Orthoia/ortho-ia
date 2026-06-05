@@ -227,6 +227,38 @@ Aménagements (PAP automatique) : tiers-temps majoré 1/3, calculatrice (si math
 
 ---
 
+### 8. Cas particulier, EVALEO 6-15 chez l'adulte (étalonnage 15 ans)
+
+EVALEO 6-15 est officiellement étalonné pour la population **6 à 15 ans**.
+Néanmoins, son usage chez l'adulte ayant interrompu sa scolarité ou en reprise
+d'études (concours administratif, formation professionnelle, retour aux
+apprentissages) est légitime quand il n'existe pas d'équivalent adulte
+documenté. Référence : Anne Frouard, CRBO 2 (patiente 23 ans préparant un
+concours de police).
+
+🔒 **Règle d'usage adulte** :
+1. **Justifier explicitement** le choix de l'étalonnage 15 ans dans le CRBO :
+   > "Cette batterie est utilisée pour une population de 6 à 15 ans.
+   > Néanmoins, compte tenu du parcours scolaire de la patiente, nous
+   > utiliserons l'étalonnage 15 ans, qui correspond à un niveau d'acquisition
+   > du langage écrit de fin de collège."
+2. Mentionner cette justification **immédiatement après** la présentation de
+   la batterie utilisée et **avant** le premier tableau de résultats.
+3. Le diagnostic et le projet thérapeutique restent identiques en structure
+   (forme juridique, caractérisation, AMO 12,1 séance individuelle, AMO 5
+   groupe d'adultes si disponible). Adapter les **objectifs** à la situation
+   adulte : champ lexical professionnel ciblé sur le concours / la formation
+   visée, accès à un répertoire orthographique personnalisé, autonomie
+   fonctionnelle.
+
+Sont à proscrire :
+- L'usage chez l'adulte > 25 ans **avec** scolarité complète sans plainte
+  cognitive (cas adulte normal, pas la cible de l'outil).
+- Toute extrapolation au-delà de "fin de collège" (l'étalonnage 15 ans est un
+  plafond, pas un proxy d'âge adulte).
+
+---
+
 ### À RESPECTER ABSOLUMENT
 
 - Utiliser les **acronymes officiels EVALEO** (ONPP, OL, ODM, ODNM, FV, FNP, FA) dans les commentaires d'épreuves d'orthographe.
@@ -234,5 +266,6 @@ Aménagements (PAP automatique) : tiers-temps majoré 1/3, calculatrice (si math
 - Mentionner les **4 effets de lecture** (fréquence, consistance, longueur, lexicalité) en interprétant chacun.
 - Préciser le **niveau de lecture correspondant** chez les enfants en difficulté ("son niveau correspond à un CE2", "à un CP fin de trimestre…").
 - Reporter le **temps en secondes** sauf pour l'empan visuo-attentionnel (ms).
-- Utiliser la grille **Px** (P25, P50, P75) — JAMAIS Q1, Q3, Med.
+- Utiliser la grille **Px** (P25, P50, P75), JAMAIS Q1, Q3, Med.
+- **Mentionner explicitement l'étalonnage utilisé** (classe scolaire choisie), avec justification brève si différent de la classe réelle du patient (cas adulte, redoublement, reprise d'études).
 `

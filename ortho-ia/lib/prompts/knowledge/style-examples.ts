@@ -1,13 +1,27 @@
 /**
  * Extraits de style et structures-types issus des CRBO humains de référence.
  *
- * Source : docs/Etudes de cas CRBO/exemple de CRBO[1-4].docx (Anne Frouard,
- * orthophoniste, EVALEO 6-15 essentiellement).
+ * Sources :
+ * - docs/Etudes de cas CRBO/exemple de CRBO[1-4].docx (Anne Frouard,
+ *   orthophoniste, EVALEO 6-15 essentiellement, langage écrit/oral pédiatrique
+ *   + adulte).
+ * - docs/Etudes de cas CRBO/EXEMPLE b_cm.docx, Ex CR Bilan CM juillet 2018.docx,
+ *   modèle CR.docx (Elsa DALL'AGNOL, orthophoniste, B-CM / B-LM2 / TEDI-MATH /
+ *   ZAREKI-R / Examath, cognition mathématique pédiatrique).
  *
  * Ces extraits sont à injecter dans le system prompt comme **références de
  * style** (pas pour copie verbatim). Ils ancrent les tournures, la
  * structure de chaque section, et la richesse clinique attendue dans un
  * CRBO produit par une orthophoniste expérimentée.
+ *
+ * Deux traditions stylistiques cohabitent :
+ * - Anne Frouard, EVALEO 6-15, ton clinique concis, structure en questions
+ *   explicatives ("Existe-t-il un trouble [X] ?"), pas de mention juridique
+ *   en tête.
+ * - Elsa DALL'AGNOL, cognition mathématique, ton formel avec mention juridique
+ *   systématique (Article 226-13 Code Pénal + L1110-4 CSP), tableau DSM-5
+ *   cochable A.1 à A.6, mention NGAP verbatim (pas de code AMO chiffré pour
+ *   le math), phrase de clôture standard.
  */
 
 export const STYLE_ANAMNESE = `## Style — Anamnèse rédigée (référence orthophonistes expertes)
@@ -134,7 +148,103 @@ Une phrase unique au format imposé :
   neurologue. Toujours formuler en "profil compatible avec…".
 `
 
-export const STYLE_PROJET_THERAPEUTIQUE = `## Style — Projet thérapeutique (référence orthophonistes expertes)
+export const STYLE_MENTION_JURIDIQUE = `## Style, Mention juridique en tête de CRBO (référence Elsa DALL'AGNOL, math)
+
+Pour les bilans de **cognition mathématique** (Examath, B-CM, B-CMado), une
+mention juridique en tête du document est attendue, juste avant le motif de
+consultation. Pour les bilans **langage** (EVALEO, Exalang), cette mention
+n'est pas dans le style Anne Frouard, donc à ne pas ajouter sauf demande
+explicite.
+
+Quand elle est demandée, format exact :
+
+> Compte-rendu remis à leur demande à M./Mme [...] pour faire valoir ce que
+> de droit. La divulgation de ce document à des tierces personnes engage
+> leur responsabilité.
+>
+> Article 226-13 du Code Pénal : « La révélation d'une information à caractère
+> secret par une personne qui en est dépositaire soit par état ou par
+> profession, soit en raison d'une fonction ou d'une mission temporaire, est
+> punie d'un an d'emprisonnement et de 15 000 euros d'amende. »
+>
+> Article L1110-4 du Code de Santé Publique : « Le fait d'obtenir ou de tenter
+> d'obtenir la communication de ces informations en violation du présent
+> article est puni d'un an d'emprisonnement et de 15 000 euros d'amende. »
+
+Cette mention rappelle le secret médical et l'engagement de responsabilité
+du destinataire. Elle protège juridiquement l'orthophoniste et alerte la
+famille sur la nature confidentielle du document.
+
+🔒 **Règle** : insérer ce bloc UNIQUEMENT si le bilan utilise un test de
+cognition mathématique (Examath / B-CM / B-CMado / BECD). Pour les bilans
+langage, ne pas l'ajouter, c'est hors style Anne Frouard.
+`
+
+export const STYLE_DSM5_CHECKBOX = `## Style, Tableau DSM-5 cochable dans le diagnostic (référence Elsa DALL'AGNOL)
+
+Pour les troubles spécifiques des apprentissages (dyslexie, dysorthographie,
+dyscalculie), Elsa DALL'AGNOL ancre systématiquement le diagnostic sur les
+**critères DSM-5 cochés**. C'est une pratique clinique rigoureuse à reprendre
+dans les CRBO ortho.ia, particulièrement pour les bilans pédiatriques.
+
+Format type :
+
+> Selon le DSM-5, [Prénom] présente un tableau de Trouble Spécifique des
+> Apprentissages [avec déficit en X] :
+>
+> **A.** Difficulté à apprendre et à utiliser les aptitudes académiques,
+> comme indiqué par la présence depuis au moins 6 mois d'au moins un des
+> symptômes suivants :
+>
+> - ☑ 1. Lecture de mots inexacte, lente ou laborieuse
+> - ☐ 2. Difficultés à comprendre la signification de ce qui est lu (même si lu correctement)
+> - ☑ 3. Difficultés d'orthographe
+> - ☑ 4. Difficultés dans l'expression écrite (erreurs de ponctuation ou grammaticales, manque de clarté de l'expression des idées)
+> - ☐ 5. Difficultés à maîtriser le sens des nombres, les faits numériques, les données chiffrées ou le calcul
+> - ☐ 6. Difficultés dans le raisonnement mathématique
+>
+> **B.** Significativement en-dessous de ceux attendus pour l'âge et
+> interfère significativement avec les performances académiques ou les
+> occupations.
+>
+> **C.** Commence durant les années d'école mais peut n'être manifeste que
+> dès lors que les demandes excèdent les capacités limitées de l'individu.
+>
+> **D.** Pas mieux expliquées par déficience intellectuelle, acuité auditive
+> ou visuelle non corrigée, autres troubles neurologiques ou mentaux, manque
+> de maîtrise de la langue d'enseignement scolaire, pédagogie inadéquate de
+> l'enseignement.
+
+🔑 **Règles** :
+- Cocher (☑) les symptômes A.X effectivement objectivés par le bilan, en
+  cohérence avec les scores observés.
+- Laisser non coché (☐) les symptômes non explorés ou non observés.
+- TOUJOURS écrire les 4 critères A/B/C/D, le bloc est indissociable.
+- Le critère D s'écrit toujours en intégralité (formulation juridique).
+- Présent dans le diagnostic après la phrase juridique du décret 2002-721,
+  pas en remplacement.
+`
+
+export const STYLE_CLOTURE = `## Style, Phrase de clôture du CRBO (référence Elsa DALL'AGNOL)
+
+Le CRBO se termine par une **formule de politesse standard** avant la
+signature. Cette formule est constante et professionnelle, à reprendre
+verbatim pour ancrer le ton du document :
+
+> Vous remerciant de votre attention et me tenant à votre disposition pour
+> de plus amples informations, je vous prie de recevoir mes salutations
+> distinguées.
+
+🔒 **Règle** : insérer cette phrase systématiquement en fin de CRBO, juste
+avant la zone de signature. Elle marque la clôture du document médical et la
+disponibilité de l'orthophoniste pour échange avec le prescripteur.
+
+Le rendu Word d'ortho.ia ajoute automatiquement le nom de l'orthophoniste
+(récupéré du profil) et son numéro Adeli sous cette formule, pas besoin de
+les écrire dans le contenu généré.
+`
+
+export const STYLE_PROJET_THERAPEUTIQUE = `## Style, Projet thérapeutique (référence orthophonistes expertes)
 
 Le projet thérapeutique a une structure constante :
 
@@ -169,8 +279,42 @@ Mentionner le code AMO dans les recommandations quand pertinent :
 - **30 AMO 5,2** : rééducation des troubles de la fluidité de la parole.
 - **15 AMO 12,2** : groupe / atelier d'orthophonie.
 
-(Ne pas inventer un code AMO — vérifier la nomenclature en vigueur si
+(Ne pas inventer un code AMO, vérifier la nomenclature en vigueur si
 incertain.)
+
+### Cas particulier des bilans de cognition mathématique (Examath, B-CM, B-CMado, BECD)
+
+Pour les bilans **math**, le style Elsa DALL'AGNOL ne mentionne PAS de code
+AMO chiffré dans le projet thérapeutique. À la place, format verbatim :
+
+> "Pour démarrer la rééducation, nous utilisons votre ordonnance du [date]
+> pour demander une prise en charge à l'assurance maladie pour « [libellé
+> NGAP exact entre guillemets français] » selon la NGAP."
+
+Libellés NGAP officiels à utiliser entre guillemets (verbatim) :
+- "rééducation de la cognition mathématique" (cas standard Examath / B-CM)
+- "rééducation de la dyscalculie et des troubles du raisonnement
+  logico-mathématique" (cas avec atteinte logique avérée)
+
+🔒 **Règle math** : JAMAIS de code AMO chiffré (12,1 ou autre) pour les
+bilans math. Toujours mentionner "selon la NGAP" avec le libellé exact
+entre guillemets français (« »).
+
+### Vision longitudinale du projet thérapeutique math (référence Elsa DALL'AGNOL)
+
+Pour les bilans math, le projet thérapeutique se termine fréquemment par
+une phrase de vision longitudinale décrivant l'objectif final de la
+rééducation. Format type :
+
+> "L'objectif principal de la rééducation étant l'autonomie de la vie
+> d'adulte (le temps, l'argent, la numération, les 4 opérations,
+> l'organisation et la planification)."
+
+Adapter les domaines cités selon le profil (ex. pour un enfant CP-CE1,
+ajouter "la lecture de l'heure et la monnaie" ; pour un adolescent, ajouter
+"l'organisation de l'emploi du temps et la planification du travail
+personnel"). Cette phrase de clôture ancre la rééducation dans une
+**perspective fonctionnelle de long terme**, pas seulement scolaire.
 
 ### Aménagements pédagogiques
 
@@ -208,18 +352,53 @@ L'ordre des sections dans un CRBO complet :
    composante + hypothèses explicatives).
 7. **Batterie utilisée** (nom complet du test + auteurs + éditeur + année).
 8. **Échelle / convention de scores** (ex. 7 classes EVALEO ou 6 zones Exalang).
+8.bis. **Étalonnage utilisé**, mention explicite obligatoire (cf. règle dure
+   ci-dessous).
 9. **Résultats par section** (Langage écrit, Langage oral, Autres), épreuve par
    épreuve avec interprétation et phrase de synthèse par sous-domaine.
 10. **Hypothèses explicatives** : structure en questions cliniques
     ("Existe-t-il un trouble du langage oral ?", "Existe-t-il un trouble
-    phonologique ?", "Existe-t-il un trouble visuo-attentionnel ?").
+    phonologique ?", "Existe-t-il un trouble visuo-attentionnel ?"). À la fin
+    de **chaque** hypothèse, une conclusion partielle d'1 phrase est attendue
+    (ex. "X présente donc un trouble phonologique massif qui explique
+    l'atteinte de la voie d'assemblage." ou "X ne présente pas de trouble au
+    niveau visuel.").
 11. **Diagnostic orthophonique** : forme juridique + caractérisation +
-    explication linguistique (cf. STYLE_DIAGNOSTIC).
-12. **Projet thérapeutique** : PEC + aménagements + codes AMO (cf.
-    STYLE_PROJET_THERAPEUTIQUE).
+    explication linguistique (cf. STYLE_DIAGNOSTIC). Pour les TSA pédiatriques,
+    inclure le tableau DSM-5 cochable A.1 à A.6 + critères B/C/D
+    (cf. STYLE_DSM5_CHECKBOX).
+12. **Projet thérapeutique** : PEC + aménagements + codes AMO ou mention NGAP
+    pour math (cf. STYLE_PROJET_THERAPEUTIQUE).
 13. **Examens complémentaires** : bilans pluridisciplinaires à demander
-    (psychométrique, neurovisuel, ORL, etc.).
-14. **Conclusion / mention médico-légale** (en italique).
+    (psychométrique, neurovisuel, ORL, etc.). Chaque bilan proposé doit être
+    **justifié individuellement** par un élément observé dans le bilan en
+    cours (ex. "Un bilan orthoptique : XYZ ne perçoit pas correctement
+    l'élément central de la séquence d'empan visuo-attentionnel, ce qui
+    justifie une exploration.").
+14. **Phrase de clôture standard** (cf. STYLE_CLOTURE), puis signature
+    automatique (nom + Adeli depuis profil).
+15. **Mention médico-légale** (en italique, optionnelle, cf.
+    STYLE_MENTION_JURIDIQUE) : Article 226-13 Code Pénal + L1110-4 CSP,
+    recommandée pour les bilans math (style Elsa DALL'AGNOL), pas pour les
+    bilans langage (style Anne Frouard).
+
+### Règle dure, étalonnage explicite
+
+Les orthophonistes expertes mentionnent **toujours** explicitement
+l'étalonnage choisi avant d'analyser les résultats, et le **justifient
+brièvement** quand il n'est pas l'âge calendaire :
+- "Nous utiliserons l'étalonnage CM2 pour XYZ." (Anne Frouard)
+- "Les scores d'Examath sont comparés à ceux du niveau 6ème-5ème." (Elsa
+  DALL'AGNOL)
+- Cas adulte EVALEO 6-15 : "compte tenu du parcours scolaire de la patiente,
+  nous utiliserons l'étalonnage 15 ans, qui correspond à un niveau
+  d'acquisition du langage écrit de fin de collège."
+
+🔒 **Règle obligatoire** : le CRBO DOIT mentionner explicitement l'étalonnage
+utilisé (classe scolaire, pas âge calendaire). Si l'étalonnage diffère de la
+classe réelle du patient (cas adulte, redoublement, niveau scolaire avancé),
+**justifier brièvement** ce choix en une phrase. Cette mention va juste après
+l'échelle/convention de scores et avant le premier tableau de résultats.
 
 ### Tons et registres
 

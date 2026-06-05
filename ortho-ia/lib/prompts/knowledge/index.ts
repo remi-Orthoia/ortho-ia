@@ -34,6 +34,9 @@ export {
   STYLE_DIAGNOSTIC,
   STYLE_PROJET_THERAPEUTIQUE,
   STYLE_OVERALL_STRUCTURE,
+  STYLE_MENTION_JURIDIQUE,
+  STYLE_DSM5_CHECKBOX,
+  STYLE_CLOTURE,
 } from './style-examples'
 export { EVALEO_METHODOLOGY } from './evaleo-method'
 export { BETL_HILLIS_CARAMAZZA } from './betl-hillis-caramazza'
@@ -51,6 +54,9 @@ import {
   STYLE_DIAGNOSTIC,
   STYLE_PROJET_THERAPEUTIQUE,
   STYLE_OVERALL_STRUCTURE,
+  STYLE_MENTION_JURIDIQUE,
+  STYLE_DSM5_CHECKBOX,
+  STYLE_CLOTURE,
 } from './style-examples'
 import { EVALEO_METHODOLOGY } from './evaleo-method'
 import { BETL_HILLIS_CARAMAZZA } from './betl-hillis-caramazza'
@@ -101,6 +107,37 @@ const LECTURE_TESTS = new Set([
   'PrediLac',
 ])
 const ORTHOGRAPHE_TESTS = LECTURE_TESTS // mêmes batteries couvrent les 2
+
+/** Bilans de cognition mathématique, déclenche le style Elsa DALL'AGNOL
+ *  (mention juridique en tête, NGAP au lieu d'AMO chiffré, vision
+ *  longitudinale, DSM-5 cochable). */
+const MATH_TESTS = new Set([
+  'Examath',
+  'B-CM',
+  'B-CMado',
+  'BECD',
+])
+
+/** Bilans pédiatriques avec TSA possible (dyslexie / dysorthographie /
+ *  dyscalculie), déclenche le tableau DSM-5 cochable A.1 à A.6 dans le
+ *  diagnostic. */
+const TSA_PEDIATRIQUE_TESTS = new Set([
+  'EVALEO 6-15',
+  'Exalang 3-6',
+  'Exalang 5-8',
+  'Exalang 8-11',
+  'Exalang 11-15',
+  'Exalang Lyfac',
+  'BELEC',
+  'BALE',
+  'EVALO 2-6',
+  'ELO',
+  'N-EEL',
+  'BILO',
+  'Examath',
+  'B-CM',
+  'B-CMado',
+])
 
 /** Détecte si la structure CRBO inclut des épreuves de lecture nommées. */
 function hasLectureEpreuves(structure: { domains?: Array<{ epreuves?: Array<{ nom: string }> }> } | null | undefined): boolean {
@@ -162,6 +199,23 @@ export function buildKnowledgeContext(
     fragments.push(STYLE_DOMAIN_COMMENTAIRE)
     fragments.push(STYLE_DIAGNOSTIC)
     fragments.push(STYLE_PROJET_THERAPEUTIQUE)
+    fragments.push(STYLE_CLOTURE) // phrase de clôture standard, tous bilans
+  }
+
+  // Style Elsa DALL'AGNOL spécifique math, mention juridique + libellé NGAP
+  // (le bloc STYLE_PROJET_THERAPEUTIQUE injecté ci-dessus contient déjà la
+  // section "Cas particulier des bilans de cognition mathématique" qui rappelle
+  // que pour math on utilise NGAP, pas AMO chiffré). Mention juridique en tête
+  // de CRBO injectée uniquement pour les bilans math.
+  if (includeStyle && tests.some(t => MATH_TESTS.has(t))) {
+    fragments.push(STYLE_MENTION_JURIDIQUE)
+  }
+
+  // Tableau DSM-5 cochable A.1 à A.6, pour les TSA pédiatriques
+  // (dyslexie, dysorthographie, dyscalculie). Référence Elsa DALL'AGNOL,
+  // pratique clinique d'ancrage diagnostique rigoureuse.
+  if (includeStyle && tests.some(t => TSA_PEDIATRIQUE_TESTS.has(t))) {
+    fragments.push(STYLE_DSM5_CHECKBOX)
   }
 
   // Critères DSM-5 (toujours en synthèse — diagnostic doit être ancré)

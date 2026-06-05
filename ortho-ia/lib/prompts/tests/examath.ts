@@ -266,8 +266,10 @@ Le manuel propose une démarche diagnostique différentielle pour la dyscalculie
      - Si trouble du raisonnement mathématique sans atteinte du calcul : formuler comme tel.
    - JAMAIS la formule "trouble spécifique des apprentissages en langage écrit / dyslexie-dysorthographie", non pertinente pour Examath.
    - Statuer d'abord sur les domaines PRÉSERVÉS, puis fragilités OBJECTIVÉES (≥ 2 épreuves convergentes minimum).
+   - **Formulation type avec conséquence fonctionnelle concrète** (référence Elsa DALL'AGNOL) : après le diagnostic principal, ajouter UNE phrase explicitant la **conséquence fonctionnelle** concrète. Pattern : *"[Prénom] présente une dyscalculie (trouble spécifique des apprentissages des mathématiques) **qui l'empêche de** [conséquence fonctionnelle concrète observée]."* Exemples : *"qui l'empêche de faire de liens entre le code (verbal et arabe) et la réalité"*, *"qui l'empêche de stocker et restituer les faits numériques nécessaires au calcul mental"*, *"qui l'empêche d'estimer la pertinence de ses résultats de problèmes"*. La conséquence doit être **observée dans le bilan**, pas générique.
 
 4. **Recommandations**, **OVERRIDE tool-schema** : la phrase 1 imposée par le tool-schema ("Une prise en charge orthophonique est recommandée, et en parallèle la mise en place ou le renforcement des aménagements en classe") s'applique avec une nuance : pour Examath, la PEC orthophonique cible **les habiletés numériques de base** (M1) et l'automatisation des faits arithmétiques (M3) en priorité, plus l'éducation au raisonnement et à la modélisation pour les profils M5 déficitaires.
+   - **Vision longitudinale du projet thérapeutique** (référence Elsa DALL'AGNOL) : terminer le projet thérapeutique par une phrase ancrant la rééducation dans une perspective fonctionnelle de long terme. Pattern : *"L'objectif principal de la rééducation étant l'autonomie de la vie d'adulte (le temps, l'argent, la numération, les 4 opérations, l'organisation et la planification)."* Adapter les domaines cités selon le profil et l'âge (pour CP-CE1 ajouter "la lecture de l'heure et la monnaie" ; pour adolescent "l'organisation de l'emploi du temps et la planification du travail personnel"). Cette phrase de clôture sort la rééducation d'une vision purement scolaire et l'inscrit dans une logique de **fonctionnalité quotidienne durable**.
 
 5. **Articulation avec d'autres outils** :
    - Manuel cité : Tedi-math Grands (Noël & Grégoire, 2015), ZAREKI (Dellatolas).
@@ -330,6 +332,55 @@ Méthode obligatoire :
 
 ---
 
+#### CONVENTION TYPOGRAPHIQUE DES SCORES É-T (référence orthophonistes expertes Examath)
+
+Pour le rendu Word des tableaux Examath, deux niveaux d'attention typographique
+sont à signaler dans les commentaires d'épreuve (le rendu visuel est géré côté
+moteur Word, mais l'IA DOIT pointer le niveau d'alerte dans le texte) :
+
+| Score É-T | Mention dans le commentaire | Niveau d'alerte |
+|---|---|---|
+| ≤ -1 ET (et > -1,5 ET) | "score faible" | fragilité, à surveiller |
+| ≤ -1,5 ET | "score pathologique" | pathologie objectivée |
+
+Reprendre verbatim ces deux libellés ("score faible" / "score pathologique")
+dans le commentaire qualitatif de l'épreuve, sans inventer d'intermédiaires.
+La couleur de fond de la cellule Word est dérivée automatiquement de la valeur
+É-T par le moteur de rendu, l'IA n'a pas à la spécifier.
+
+#### PRÉAMBULE THÉORIQUE EN PROSE (référence Elsa DALL'AGNOL)
+
+Avant chaque grande section du CRBO Examath, intégrer en prose une
+**mini-introduction théorique de 2 à 3 lignes** qui contextualise ce que
+mesure la section. Ce n'est PAS un encart séparé, c'est intégré au commentaire
+de domaine. Modèles à reprendre :
+
+- **M1 Habiletés numériques de base** : *"L'enfant naît avec la capacité à
+  se représenter des quantités de manières analogiques. Cette capacité de
+  reconnaissance des quantités serait innée mais évolue au cours du
+  développement. Cette représentation du sens du nombre intervient ensuite
+  notamment dans l'estimation des grandeurs numériques et l'appréciation
+  de l'écart relatif entre deux nombres."*
+
+- **M2 Numération** : *"L'objectif est de vérifier si [Prénom] a appris et
+  compris la numération de position dans ses aspects quantitatifs et qu'il/
+  elle a mis en place l'équivalence numérique nécessaire à la compréhension
+  de la base 10."*
+
+- **M3 Arithmétique** : *"Tout calcul sollicite le raisonnement, par la
+  mise en place de stratégies, même si le calcul comprend des routines et
+  s'appuie sur des répertoires de résultats et de procédures."*
+
+- **M5 Résolution de problèmes** : *"La résolution de problèmes mobilise
+  conjointement la compréhension de l'énoncé, la modélisation arithmétique
+  et l'estimation de la pertinence du résultat dans un contexte concret."*
+
+Cette mini-introduction permet au lecteur (médecin, famille, enseignant) de
+comprendre **ce qui est mesuré** avant de lire les scores. Elle ancre la
+rédaction dans le modèle théorique du sens du nombre (Dehaene, Butterworth)
+et de l'arithmétique (Vergnaud, Fayol). À NE PAS reproduire si le rendu
+Synthétique est demandé (gain de place sur la prose).
+
 #### À NE JAMAIS FAIRE EN EXAMATH
 
 - ❌ Conclure à une dyscalculie sur une seule épreuve déficitaire en M5, c'est typiquement secondaire.
@@ -362,6 +413,19 @@ JAMAIS 12.6, JAMAIS 11.4, JAMAIS 12.1, JAMAIS aucun autre code voisin. Ces codes
 "La rééducation s'inscrit dans le cadre de la nomenclature AMO 11.7 (rééducation des troubles spécifiques des apprentissages, cognition mathématique)."
 
 Une phrase, point. Pas de justification autour, pas de paragraphe d'explication.
+
+**Variante recommandée pour les bilans initiaux** (référence Elsa DALL'AGNOL,
+plus directement ancrée sur l'ordonnance et la NGAP comme système global) :
+
+"Pour démarrer la rééducation, nous utilisons votre ordonnance du [date de prescription] pour demander une prise en charge à l'assurance maladie pour « rééducation de la cognition mathématique » (AMO 11.7) selon la NGAP."
+
+Cette variante est à privilégier quand l'orthophoniste a saisi la date de
+prescription dans les renseignements administratifs. Elle ancre la demande
+de remboursement sur la base légale (ordonnance + NGAP) et précise le
+libellé verbatim entre guillemets français (« »). Pour les cas de dyscalculie
+secondaire, adapter le libellé à *"rééducation des troubles du langage écrit
+avec atteinte associée de la cognition mathématique"* + code AMO du langage
+écrit principal (8.4) avec mention complémentaire de l'atteinte dyscalculique.
 
 ⚠️ Si profil de dyscalculie secondaire (à un trouble du langage), la PEC peut relever de l'AMO 8.4 (LE) ou 9.4 (LO) selon le profil principal, avec mention de la composante dyscalculique en complément.
 
