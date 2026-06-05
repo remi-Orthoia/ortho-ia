@@ -332,6 +332,39 @@ Méthode obligatoire :
 
 ---
 
+#### DÉCOMPOSITION SYSTÉMATIQUE DES SOUS-SCORES (référence Elsa DALL'AGNOL)
+
+Quand une épreuve Examath comporte des **sous-scores secondaires** (score
+brut + temps, ou plusieurs subtests), les rapporter systématiquement dans
+le commentaire d'épreuve avec le pattern Elsa :
+
+> "Dénombrement et calcul : Score 31/40, É-T -2,06.
+>   - Score Dénombrement d'une collection (score secondaire) : 7/16, É-T -3,64
+>   - Temps Dénombrement d'une collection (score secondaire) : 53,69 s, É-T 0,80
+>   - Score Production d'une collection (score secondaire) : 24/24, É-T 0,77"
+
+Liste des épreuves Examath avec sous-scores à décomposer obligatoirement :
+
+| Épreuve | Sous-scores attendus |
+|---|---|
+| **Comparaison analogique** | Petits nombres + Grands nombres |
+| **Relation Arabe / Analogique** | Jugement petits nombres + Comparaison petits / moyens nombres |
+| **Relation Oral / Analogique** | idem (4 sous-scores) |
+| **Ligne numérique** | Score de distance Arabe 0-100 / Oral 0-100 / Arabe 0-1000 / Arabe -1000/+1000 |
+| **Identification de quantités** | Score Subitizing + Score distance Estimation + Score Estimation pragmatique |
+| **Dénombrement et calcul** | Identification collection (score + temps) + Production collection (score) |
+| **Transcodage** | 4 subtests : Lecture 1-99 / Lecture 99+ / Dictée 1-99 / Dictée 99+ |
+| **Fluence arithmétique** | Addition / Soustraction / Multiplication / Division |
+| **Mécanismes opératoires écrits** | + / − / × / ÷ |
+| **Mesures** | Score temps + Score précision |
+
+🔑 **Règle** : la décomposition se fait en bullets indentés sous l'épreuve
+parent, pas dans un tableau séparé. Préfixer chaque sous-score de "Score"
+ou "Temps" selon sa nature, et indiquer "(score secondaire)" pour
+expliciter qu'il ne contribue pas au score parent mais à son analyse
+qualitative. C'est cette décomposition qui transforme un score résumé en
+**analyse clinique exploitable** par le neuropsychologue ou l'enseignant.
+
 #### CONVENTION TYPOGRAPHIQUE DES SCORES É-T (référence orthophonistes expertes Examath)
 
 Pour le rendu Word des tableaux Examath, deux niveaux d'attention typographique
@@ -380,6 +413,43 @@ comprendre **ce qui est mesuré** avant de lire les scores. Elle ancre la
 rédaction dans le modèle théorique du sens du nombre (Dehaene, Butterworth)
 et de l'arithmétique (Vergnaud, Fayol). À NE PAS reproduire si le rendu
 Synthétique est demandé (gain de place sur la prose).
+
+#### PATTERN « RAPPELONS QUE… » EN ENCART THÉORIQUE (référence Elsa DALL'AGNOL)
+
+Après une section critique (Arithmétique, Résolution de problèmes), insérer
+une **phrase d'ancrage théorique** commençant par "Rappelons que…" pour
+contextualiser cliniquement la performance observée. Exemples authentiques :
+
+> "Rappelons que tout calcul sollicite le raisonnement, par la mise en place
+> de stratégies, même si le calcul comprend des routines et s'appuie sur des
+> répertoires de résultats et de procédures."
+
+> "Rappelons que la résolution de problèmes mobilise conjointement la
+> compréhension de l'énoncé, la modélisation arithmétique et l'estimation
+> de la pertinence du résultat dans un contexte concret."
+
+🔑 **Règle** : 1 à 2 phrases maximum, placées en fin de section, sans titre
+dédié (intégrées en prose). Elles renforcent la portée clinique de
+l'interprétation et soutiennent le lecteur médical/parental.
+
+#### ANCRAGE DU CRITÈRE A DSM-5 PAR LA PERSISTANCE (référence Elsa DALL'AGNOL)
+
+**OBLIGATOIRE** avant le tableau DSM-5 cochable, insérer une phrase qui
+ancre explicitement le critère A (persistance ≥ 6 mois) sur l'anamnèse :
+
+> "Rappelons que les difficultés [en mathématiques / en calcul / en
+> résolution de problèmes] remontent au début des apprentissages [/ à la
+> classe de X / au cycle Y]."
+
+OU, si l'anamnèse donne une date précise de signalement :
+
+> "Les difficultés [en mathématiques] sont signalées depuis [CE2 / mai 2024 /
+> N mois], soit une persistance documentée d'au moins [N mois / N années],
+> conforme au Critère A du DSM-5 (≥ 6 mois)."
+
+🔒 **Sans cette phrase d'ancrage, le critère A n'est pas objectivé et le
+diagnostic est juridiquement fragile**. C'est l'élément qui transforme une
+"difficulté ponctuelle" en "trouble persistant".
 
 #### À NE JAMAIS FAIRE EN EXAMATH
 

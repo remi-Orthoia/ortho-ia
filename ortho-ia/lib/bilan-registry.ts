@@ -478,6 +478,13 @@ export const BILAN_REGISTRY: Record<string, BilanEntry> = {
   },
 
   // ===== Maths (cognition mathématique, parcours dédié hors flux CRBO standard) =====
+  // TODO 2026-06-05 : ouvrir un mode "Math composite" qui agrège B-CM /
+  // B-CMado / Examath / B-LM2 / TEDI-MATH / ZAREKI-R dans un seul CRBO,
+  // organisé par DOMAINES COGNITIFS (raisonnement, sens du nombre,
+  // numération, opérations, mesures, problèmes) plutôt que par batterie.
+  // Source : CRBO Elsa DALL'AGNOL (b_cm.docx, Ex CR juillet 2018, modèle CR)
+  // où ces 3 à 5 batteries sont systématiquement combinées dans la pratique
+  // clinique réelle. Voir CLAUDE.md TODO "Mode multi-batterie composite".
   'B-CM': {
     nom: 'B-CM',
     betaDisabled: true,

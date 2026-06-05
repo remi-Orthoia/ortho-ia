@@ -7,7 +7,8 @@ import Pastille from './Pastille'
  * code couleur sans avoir à hovers chaque pastille.
  */
 export default function PastilleLegend() {
-  const items: Array<{ etat: 'vert' | 'orange' | 'rouge'; label: string }> = [
+  const items: Array<{ etat: 'bleu' | 'vert' | 'orange' | 'rouge'; label: string }> = [
+    { etat: 'bleu', label: 'Performance supérieure à l\'âge' },
     { etat: 'vert', label: 'Réussite spontanée' },
     { etat: 'orange', label: 'Réussite après étayage' },
     { etat: 'rouge', label: 'Échec' },
@@ -35,7 +36,7 @@ export default function PastilleLegend() {
         </span>
       ))}
       <span style={{ marginLeft: 'auto', fontSize: 11, color: 'var(--fg-3)' }}>
-        Clic sur la pastille pour cycler · Rouge &gt; Orange &gt; Vert sur l&apos;épreuve parent
+        Clic sur la pastille pour cycler · Rouge &gt; Orange &gt; Vert &gt; Bleu sur l&apos;épreuve parent
       </span>
     </div>
   )

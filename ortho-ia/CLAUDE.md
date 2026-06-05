@@ -116,6 +116,20 @@ PDF : "Boucle phonologique : É-T -1.53, Percentiles : Q1"
 - [ ] CGU avec mention IA
 - [ ] Stripe paiement
 - [ ] Templates par test (Exalang 8-11, 11-15, EVALO...)
+- [ ] Internationalisation administrative (Belgique INAMI / catégorie B2,
+  Luxembourg, Suisse). Source : CRBO Bruwier (CRBO5/6 docs). Aujourd'hui
+  ortho.ia est franco-français (AMO, NGAP, décret 2002-721). Ajouter un
+  champ `pays` au profil ortho + un dispatch dans le prompt pour utiliser
+  le bon formulaire administratif (N° INAMI au lieu d'Adeli, "catégorie
+  B2" au lieu de "AMO 12,1", phrase "Nous sollicitons l'accord de la
+  mutuelle pour…" au lieu de la forme française).
+- [ ] Mode multi-batterie composite (math). Source : CRBO Elsa
+  (b_cm.docx, Ex CR juillet 2018). Aujourd'hui ortho.ia traite 1 bilan
+  par CRBO. Les experts agrègent fréquemment B-LM2 + TEDI-MATH + ZAREKI-R
+  + Examath + épreuves cliniques dans un seul CRBO math. Chantier :
+  bilan-registry "composite math" + UI multi-onglets + agrégation des
+  scores par domaine cognitif (raisonnement, sens du nombre, numération,
+  opérations, problèmes) plutôt que par batterie.
 
 ## Contexte métier
 - **Orthophoniste** = speech therapist (profession paramédicale)

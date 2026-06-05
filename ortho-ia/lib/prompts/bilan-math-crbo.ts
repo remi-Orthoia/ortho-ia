@@ -14,15 +14,16 @@ import type { PastilleEtat } from '../bilans/math/types'
 
 const COLOR_LABEL: Record<PastilleEtat, string> = {
   gris: 'non renseigné',
+  bleu: 'performance supérieure à l\'âge',
   vert: 'réussite spontanée',
   orange: 'réussite après étayage',
   rouge: 'échec',
 }
 
-/** Ordre de severite clinique : gris (non cote) < vert (reussite) < orange
- *  (etayage) < rouge (echec). Pour l'aggregation au niveau epreuve macro,
- *  on prend la PIRE couleur cotee. */
-const COLOR_SEVERITY: Record<PastilleEtat, number> = { gris: -1, vert: 0, orange: 1, rouge: 2 }
+/** Ordre de severite clinique : gris (non cote) < bleu (perf > age) < vert
+ *  (reussite) < orange (etayage) < rouge (echec). Pour l'aggregation au
+ *  niveau epreuve macro, on prend la PIRE couleur cotee. */
+const COLOR_SEVERITY: Record<PastilleEtat, number> = { gris: -1, bleu: 0, vert: 1, orange: 2, rouge: 3 }
 
 /** Agrege une liste de couleurs cellules en une couleur "epreuve macro" :
  *  retourne la pire couleur (qui domine cliniquement). Si toutes sont gris,

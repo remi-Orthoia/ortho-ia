@@ -43,12 +43,14 @@ export interface EvolutionRow {
   direction: EvolutionDirection
 }
 
-/** Ordre des couleurs pour comparaison numerique (0=meilleur, 3=pire). */
+/** Ordre des couleurs pour comparaison numerique (0=meilleur, 4=pire).
+ *  Bleu < Vert < Orange < Rouge (bleu = performance > âge). */
 const COLOR_RANK: Record<PastilleEtat, number> = {
   gris: -1,
-  vert: 0,
-  orange: 1,
-  rouge: 2,
+  bleu: 0,
+  vert: 1,
+  orange: 2,
+  rouge: 3,
 }
 
 /** Calcule le sens d'evolution entre 2 couleurs. */
@@ -101,6 +103,7 @@ export function computeEvolutionRows(
 /** Helper : un libelle court pour chaque couleur (sert dans le tableau). */
 export const COLOR_LABEL_FR: Record<PastilleEtat, string> = {
   gris: 'non coté',
+  bleu: 'performance supérieure à l\'âge',
   vert: 'réussite spontanée',
   orange: 'réussite après étayage',
   rouge: 'échec',

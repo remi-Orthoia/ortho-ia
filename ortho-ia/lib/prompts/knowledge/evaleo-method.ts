@@ -160,6 +160,15 @@ Structurer la suite du CRBO en **questions cliniques** (logique arbre décisionn
    - Effet Stroop (inhibition).
    - Conclusion : "X présente un trouble visuo-attentionnel : il ne perçoit pas correctement les items visuels, ce qui perturbe la constitution du lexique orthographique" OU "Pas de trouble visuo-attentionnel objectivable".
 
+4. **Existe-t-il un trouble morphologique ?** (référence Bruwier, CRBO Yaelle Belgique)
+   - Quand les épreuves morphologiques EVALEO sont passées, ouvrir une 4ᵉ hypothèse distincte de la métaphonologie :
+   - Fluence morphologique (dériver le maximum de mots depuis une racine donnée).
+   - Jugement de grammaticalité et reformulation.
+   - Jugement de dérivation (transparentes vs opaques).
+   - Création de néologismes (décomposition racine + affixe).
+   - Conclusion type : "X présente un trouble métamorphologique objectivé sur [épreuves convergentes], avec des difficultés d'organisation du lexique selon des critères morphologiques. Ceci impacte la voie d'adressage en lecture/orthographe (sensibilité aux familles de mots) et l'enrichissement lexical fonctionnel."
+   - 🔑 **Distinction métaphonologie vs métamorphologie** : la métaphonologie manipule les sons (syllabes, phonèmes) ; la métamorphologie manipule les morphèmes (racines, préfixes, suffixes). Toutes deux prédisent l'efficacité en langage écrit mais sur des voies différentes (assemblage vs adressage).
+
 ---
 
 ### 5. Anchrage en littérature (à utiliser pour étayer le diagnostic)

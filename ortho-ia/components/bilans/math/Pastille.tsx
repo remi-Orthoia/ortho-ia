@@ -3,15 +3,20 @@
 import type { PastilleEtat } from '@/lib/bilans/math/types'
 
 /**
- * Pastille cliquable à 3 niveaux (vert / orange / rouge) + état neutre gris.
+ * Pastille cliquable à 4 niveaux (bleu / vert / orange / rouge) + état neutre gris.
  *
- * Cliquer cycle : gris → vert → orange → rouge → gris.
+ * Cliquer cycle : gris → bleu → vert → orange → rouge → gris.
  * Utilisée à la fois pour les sous-épreuves (cliquables) et pour afficher
  * la couleur calculée d'une épreuve parent (mode readonly).
+ *
+ * Niveau bleu (OK+, performance supérieure à l'âge) ajouté 2026-06-05 sur
+ * référence Elsa DALL'AGNOL. Permet de marquer une compétence MIEUX que
+ * le niveau attendu (équivalent du "OK+" dans les CRBO Elsa).
  */
 
 const COLORS: Record<PastilleEtat, { bg: string; ring: string; label: string }> = {
   gris:   { bg: '#e5e7eb', ring: '#d1d5db', label: 'Non renseigné' },
+  bleu:   { bg: '#3b82f6', ring: '#2563eb', label: 'Performance supérieure à l\'âge' },
   vert:   { bg: '#22c55e', ring: '#16a34a', label: 'Réussite spontanée' },
   orange: { bg: '#f59e0b', ring: '#d97706', label: 'Réussite après étayage' },
   rouge:  { bg: '#ef4444', ring: '#dc2626', label: 'Échec' },

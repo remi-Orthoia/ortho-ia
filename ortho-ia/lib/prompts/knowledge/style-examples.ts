@@ -95,6 +95,85 @@ Règles de style :
   uniquement quantitative.
 - Évoquer la **fatigabilité** ou les comportements parasites si observés
   (ex. "XYZ s'énerve et me dit 'ça me saoule, je laisse tomber'.").
+
+### Comportement observé en séance (référence Anne Frouard, Elsa DALL'AGNOL)
+
+À CHAQUE CRBO, intégrer **au moins une phrase d'observation comportementale**
+qui décrit l'attitude du patient face aux épreuves, sa métacognition, sa
+fatigabilité, ou ses stratégies de coping. Ces observations sont **fournies
+par l'orthophoniste dans sa saisie libre** (textarea "Observations" ou
+"Notes de séance") et doivent être reprises VERBATIM dans la prose, pas
+inventées.
+
+Patterns observés dans les CRBO de référence :
+
+> "Tout au long du bilan, [Prénom] s'est montré coopératif, travaillant
+> consciencieusement, en écoutant bien les consignes."
+
+> "[Prénom] ne demande pas spontanément d'explications supplémentaires en
+> cas d'incompréhension car il ne semble pas être conscient des échecs."
+
+> "On remarque des signes d'agacement et d'anxiété (jambe qui bat sous la
+> table, gribouillis dans le coin de la feuille, soupirs)."
+
+> "[Prénom] s'auto-corrige fréquemment, ce qui le ralentit mais témoigne
+> d'une vigilance orthographique préservée."
+
+> "[Prénom] s'énerve et nous dit « ça me saoule, je laisse tomber », il
+> est alors nécessaire de réduire la durée de la séance."
+
+🔑 **Règle** : la phrase d'observation comportementale se place soit dans
+le commentaire de domaine pertinent (ex. après une épreuve où le
+comportement a été marquant), soit en synthèse avant le diagnostic. Elle
+ancre cliniquement le bilan dans la réalité de la séance, au-delà des
+seuls scores chiffrés. Si l'ortho n'a pas saisi d'observation libre, ne
+PAS inventer ce contenu.
+
+### Diagnostic secondaire avec orientation immédiate (référence Elsa DALL'AGNOL)
+
+Quand le bilan met en évidence un trouble **secondaire** à une autre
+pathologie suspectée (ex. dyscalculie secondaire à un trouble du langage
+écrit, dyslexie secondaire à une fragilité métaphonologique), le
+diagnostic doit nommer la **cascade étiologique** ET **promettre un bilan
+complémentaire** dans le même paragraphe. Pattern :
+
+> "[Prénom] présente un tableau de [trouble principal] qui semble
+> **secondaire à** [trouble sous-jacent suspecté]. **Un bilan
+> orthophonique [du langage écrit / cognitif / etc.] va lui être proposé
+> [à la rentrée de septembre / dans le mois / à l'issue de la PEC
+> actuelle]**. En attendant, il convient de proposer à [Prénom] une prise
+> en charge des difficultés [actuellement objectivées]."
+
+Exemples authentiques :
+- Elsa, L (B-CM CE1) : *"L présente un tableau de trouble des apprentissages
+  des mathématiques qui semble secondaire à des difficultés de langage écrit
+  et des difficultés exécutives. Un bilan orthophonique du Langage Écrit va
+  lui être proposé à la rentrée de septembre."*
+
+🔑 **Règle** : la mention "secondaire à" doit toujours être suivie de
+l'orientation immédiate vers le bilan complémentaire approprié. Pas de
+wait-and-see. Le CRBO ortho.ia ne doit JAMAIS laisser un trouble
+secondaire suspecté sans plan d'investigation concret.
+
+### Citation d'erreur verbatim (référence Anne Frouard, Bruwier, Elsa)
+
+Quand l'orthophoniste a fourni des erreurs précises dans sa saisie (épreuves
+de dictée, dénomination, jugement orthographique, métaphonologie), **reproduire
+l'exemple textuel** dans le commentaire d'épreuve avec le pattern :
+
+> ex. : « cible attendue » → « production patient »
+
+Exemples authentiques tirés des CRBO de référence :
+- Dictée : *"ex. : « car » écrit « quarre », « boîte en fer » écrit « boite enver »"*
+- Création de néologismes : *"ex. : « un barrideur est celui qui … embarride » (réponse attendue : barride)"*
+- Compréhension : *"ex. : « Il la lui montre » → Yaelle indique « il les lui montre »"*
+- Désignation : *"ex. : « lavabo » → Yaelle désigne lavabo ET robinet"*
+- Comportement face à l'épreuve : *"XYZ s'énerve et me dit 'ça me saoule, je laisse tomber'"*
+
+🔑 **Règle** : si l'ortho a saisi des exemples concrets, les inclure VERBATIM
+dans la prose avec guillemets français («  »). N'inventer JAMAIS d'erreurs
+non rapportées par l'ortho. Si aucun exemple n'est fourni, ne pas ajouter de
+"ex." factice.
 `
 
 export const STYLE_DIAGNOSTIC = `## Style — Diagnostic orthophonique (forme juridique recommandée)

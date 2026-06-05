@@ -11,10 +11,14 @@
  *   - Certaines cellules sont GRISÉES — non cotables, juste signalées
  *     visuellement comme inapplicables à ce niveau.
  *
- * Cotation purement qualitative : vert / orange / rouge / gris.
+ * Cotation purement qualitative : bleu / vert / orange / rouge / gris.
+ *
+ * Niveau 'bleu' (OK+, performance supérieure à l'âge) ajouté 2026-06-05 sur
+ * référence Elsa DALL'AGNOL. Permet de marquer une compétence MIEUX que le
+ * niveau attendu, à distinguer de "vert" (réussite spontanée au niveau).
  */
 
-export type PastilleEtat = 'gris' | 'vert' | 'orange' | 'rouge'
+export type PastilleEtat = 'gris' | 'bleu' | 'vert' | 'orange' | 'rouge'
 
 /** Ligne de la matrice — un niveau développemental ou scolaire. */
 export interface Niveau {

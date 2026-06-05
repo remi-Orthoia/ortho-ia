@@ -44,6 +44,7 @@ export interface EpreuveContext {
 /** Glose clinique d'un état de pastille — passé tel quel à Claude. */
 const COLOR_LABEL: Record<PastilleEtat, string> = {
   gris: 'non renseigné',
+  bleu: 'performance supérieure à l\'âge',
   vert: 'réussite spontanée',
   orange: 'réussite après étayage / autocorrection',
   rouge: 'échec',

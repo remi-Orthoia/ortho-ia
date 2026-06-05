@@ -72,18 +72,21 @@ export interface MathWordExportPayload {
 //   gris  inchange (F3F4F6 = Tailwind gray-100, neutre OK)
 const COLOR_SHADING: Record<PastilleEtat, string | undefined> = {
   gris: 'F3F4F6',
+  bleu: '93C5FD',  // blue-300, performance > âge
   vert: '86EFAC',
   orange: 'FCD34D',
   rouge: 'FCA5A5',
 }
 const COLOR_TEXT: Record<PastilleEtat, string> = {
   gris: '6B7280',
+  bleu: '1E3A8A',  // blue-900
   vert: '14532D',  // green-900 sombre, contraste fort sur green-300
   orange: '78350F', // amber-900
   rouge: '7F1D1D',  // red-900
 }
 const COLOR_LABEL: Record<PastilleEtat, string> = {
   gris: '—',
+  bleu: 'OK+',
   vert: 'OK',
   orange: 'étayage',
   rouge: 'échec',

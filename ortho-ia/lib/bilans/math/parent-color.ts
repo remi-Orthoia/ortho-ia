@@ -5,20 +5,28 @@ import type { PastilleEtat, EpreuveState, Epreuve, SousEpreuve, Criterion } from
  * critères cotés. Règle clinique imposée : "la couleur la plus faible
  * domine" — toute fragilité doit remonter pour ne pas être masquée.
  *
- *   Rouge > Orange > Vert (dominance descendante)
+ *   Rouge > Orange > Vert > Bleu (dominance descendante)
+ *
+ * Bleu (performance supérieure à l'âge) ne remonte JAMAIS contre une
+ * fragilité : si certains critères sont rouges/oranges et d'autres bleus,
+ * le parent reste rouge/orange. Bleu ne s'affiche au parent QUE si tous
+ * les critères cotés sont bleus.
  */
 export function computeParentColor(states: PastilleEtat[]): PastilleEtat {
   const cotees = states.filter((s) => s !== 'gris')
   if (cotees.length === 0) return 'gris'
   if (cotees.some((s) => s === 'rouge')) return 'rouge'
   if (cotees.some((s) => s === 'orange')) return 'orange'
+  if (cotees.every((s) => s === 'bleu')) return 'bleu'
   return 'vert'
 }
 
-/** Cycle d'état lors d'un clic sur une pastille : gris → vert → orange → rouge → gris. */
+/** Cycle d'état lors d'un clic sur une pastille :
+ *  gris → bleu → vert → orange → rouge → gris. */
 export function cyclePastille(current: PastilleEtat): PastilleEtat {
   switch (current) {
-    case 'gris':   return 'vert'
+    case 'gris':   return 'bleu'
+    case 'bleu':   return 'vert'
     case 'vert':   return 'orange'
     case 'orange': return 'rouge'
     case 'rouge':  return 'gris'
