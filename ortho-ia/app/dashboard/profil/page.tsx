@@ -37,6 +37,10 @@ function ProfilContent() {
     telephone: '',
     adeli_rpps: '',
     statut: '',
+    /** Pays d'exercice ISO 3166-1 alpha-2. Détermine les mentions
+     *  administratives (AMO/NGAP, INAMI, GLN/SLPS, CNS) dans les CRBO
+     *  générés. Default 'FR'. */
+    country: 'FR' as 'FR' | 'BE' | 'CH' | 'LU',
   })
   // ===== Section extension Chrome =====
   // userLoaded sert uniquement à afficher la section "Connexion extension Chrome".
@@ -97,6 +101,7 @@ function ProfilContent() {
           telephone: data.telephone || '',
           adeli_rpps: data.adeli_rpps || '',
           statut: data.statut || '',
+          country: (data.country === 'BE' || data.country === 'CH' || data.country === 'LU') ? data.country : 'FR',
         })
         if (data.referral_code) setReferralCode(data.referral_code)
       }
@@ -284,6 +289,7 @@ function ProfilContent() {
         telephone: (profile.telephone || '').trim(),
         adeli_rpps: (profile.adeli_rpps || '').trim() || null,
         statut: (profile.statut || '').trim() || null,
+        country: profile.country || 'FR',
       }, { onConflict: 'id' })
 
     setSaving(false)
@@ -541,6 +547,29 @@ function ProfilContent() {
             className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-green-500"
             placeholder="par ex : Libérale E.I."
           />
+        </div>
+
+        <div>
+          <label className="block text-sm font-medium text-gray-700 mb-1">Pays d&apos;exercice</label>
+          <select
+            name="country"
+            value={profile.country}
+            onChange={(e) => setProfile((p) => ({
+              ...p,
+              country: (e.target.value === 'BE' || e.target.value === 'CH' || e.target.value === 'LU')
+                ? e.target.value
+                : 'FR',
+            }))}
+            className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-green-500 bg-white"
+          >
+            <option value="FR">France (AMO / NGAP, décret 2002-721, ADELI/RPPS)</option>
+            <option value="BE">Belgique (INAMI, catégorie B2, vocabulaire logopède)</option>
+            <option value="CH">Suisse (GLN, convention SLPS, LAMal / AI)</option>
+            <option value="LU">Luxembourg (CNS, MENJE / CCPP)</option>
+          </select>
+          <p className="mt-1 text-xs text-gray-500">
+            Détermine automatiquement les mentions administratives (codes de remboursement, formules juridiques, vocabulaire professionnel) insérées dans vos CRBO générés.
+          </p>
         </div>
 
         <div className="flex items-center gap-4 pt-4 border-t border-gray-200">

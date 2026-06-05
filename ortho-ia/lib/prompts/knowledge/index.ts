@@ -40,6 +40,13 @@ export {
 } from './style-examples'
 export { EVALEO_METHODOLOGY } from './evaleo-method'
 export { BETL_HILLIS_CARAMAZZA } from './betl-hillis-caramazza'
+export {
+  STYLE_ADMINISTRATIF_FR,
+  STYLE_ADMINISTRATIF_BE,
+  STYLE_ADMINISTRATIF_CH,
+  STYLE_ADMINISTRATIF_LU,
+  getStyleAdministratifByCountry,
+} from './country-administratif'
 
 import { DSM5_CRITERIA } from './dsm5-criteria'
 import {
@@ -60,6 +67,8 @@ import {
 } from './style-examples'
 import { EVALEO_METHODOLOGY } from './evaleo-method'
 import { BETL_HILLIS_CARAMAZZA } from './betl-hillis-caramazza'
+import { getStyleAdministratifByCountry } from './country-administratif'
+import type { OrthoCountry } from '../../types'
 
 /** Catégorisation des tests pour le sélecteur de knowledge.
  *  Exalang 5-8 est listé dans les 5 buckets (oral + écrit + lecture +
@@ -182,6 +191,7 @@ export function buildKnowledgeContext(
   tests: string[],
   structure: { domains?: Array<{ epreuves?: Array<{ nom: string }> }> } | null | undefined,
   phase: 'extract' | 'synthesize' | 'full' = 'full',
+  country: OrthoCountry | undefined = 'FR',
 ): string {
   const fragments: string[] = []
 
@@ -201,6 +211,12 @@ export function buildKnowledgeContext(
     fragments.push(STYLE_PROJET_THERAPEUTIQUE)
     fragments.push(STYLE_CLOTURE) // phrase de clôture standard, tous bilans
   }
+
+  // Mentions administratives selon le pays d'exercice de l'orthophoniste
+  // (AMO/NGAP pour FR, INAMI/catégorie B2 pour BE, GLN/SLPS pour CH, CNS
+  // pour LU). Injecté pour toutes les phases (utile dès l'extraction pour
+  // que le motif reformulé utilise déjà le bon vocabulaire).
+  fragments.push(getStyleAdministratifByCountry(country))
 
   // Style Elsa DALL'AGNOL spécifique math, mention juridique + libellé NGAP
   // (le bloc STYLE_PROJET_THERAPEUTIQUE injecté ci-dessus contient déjà la

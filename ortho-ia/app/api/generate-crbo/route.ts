@@ -159,6 +159,25 @@ export async function POST(request: NextRequest) {
       )
     }
 
+    // Récupère le pays d'exercice depuis le profil ortho pour adapter les
+    // mentions administratives du CRBO (AMO/NGAP pour FR, INAMI/catégorie B2
+    // pour BE, GLN/SLPS pour CH, CNS pour LU). Default 'FR' si non saisi.
+    // Erreur soft : si la colonne n'existe pas (migration non appliquée) ou
+    // si la query échoue, on tombe sur 'FR' silencieusement plutôt que de
+    // casser le pipeline de génération.
+    let orthoCountry: import('@/lib/types').OrthoCountry = 'FR'
+    try {
+      const { data: profileRow } = await supabase
+        .from('profiles')
+        .select('country')
+        .eq('id', user.id)
+        .maybeSingle()
+      const c = (profileRow as { country?: string } | null)?.country
+      if (c === 'BE' || c === 'CH' || c === 'LU' || c === 'FR') orthoCountry = c
+    } catch {
+      // colonne manquante ou network glitch — on garde FR par défaut.
+    }
+
     let sub
     try {
       const res = await supabase
@@ -529,7 +548,7 @@ export async function POST(request: NextRequest) {
     // cf. branche pipeline plus bas). On substitue 'extract' comme placeholder
     // neutre pour satisfaire le typage CRBOPhase strict, sans effet de bord.
     const phaseForLegacyPrompt: CRBOPhase = phase === 'pipeline' ? 'extract' : phase
-    const baseSystemText = buildSystemPrompt(tests, phaseForLegacyPrompt, format, knowledgeScores)
+    const baseSystemText = buildSystemPrompt(tests, phaseForLegacyPrompt, format, knowledgeScores, orthoCountry)
     const systemBlocks = fewShotBlock
       ? [
           {
@@ -614,7 +633,7 @@ export async function POST(request: NextRequest) {
 
               // ───── Phase 1 : extract (non-stream, ~10-30s) ─────
               const extractUserPrompt = buildExtractPrompt(baseInputs)
-              const extractSystemText = buildSystemPrompt(tests, 'extract', format, {})
+              const extractSystemText = buildSystemPrompt(tests, 'extract', format, {}, orthoCountry)
               const extractMessage = await withRetry(
                 () => anthropic.messages.create(
                   {
@@ -717,6 +736,7 @@ export async function POST(request: NextRequest) {
                 'synthesize',
                 format,
                 scoresFromDomains(safeExtracted.domains as any),
+                orthoCountry,
               )
               const synthSystemBlocks = fewShotBlock
                 ? [

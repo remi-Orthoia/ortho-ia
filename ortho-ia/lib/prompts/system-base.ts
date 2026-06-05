@@ -617,6 +617,7 @@ export function buildSystemPrompt(
   phase: CRBOPhase = 'full',
   format: CRBOFormat = 'complet',
   scores: Record<string, number> = {},
+  country: import('../types').OrthoCountry = 'FR',
 ): string {
   const activeModules = tests
     .map((t) => getTestModule(t))
@@ -777,7 +778,7 @@ préciser le profil sur les domaines [X, Y]."`
   // lecture/orthographe), sélection automatique selon les tests et la phase.
   // En extract, on n'injecte que les arbres + effets (pour la classification
   // domains[]) ; en synthesize, on ajoute le style + DSM-5.
-  const clinicalKnowledge = buildKnowledgeContext(tests, null, phase)
+  const clinicalKnowledge = buildKnowledgeContext(tests, null, phase, country)
 
   // Vocabulaire des items de test (extrait des cahiers de passation officiels)
   //, permet à l'IA de reconnaître/corriger un mot d'item de test cité dans

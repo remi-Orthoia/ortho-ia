@@ -1,5 +1,11 @@
 // Types pour l'application Ortho.ia
 
+/** Code ISO 3166-1 alpha-2 du pays d'exercice de l'orthophoniste.
+ *  Détermine les mentions administratives à insérer dans les CRBO générés
+ *  (AMO/NGAP pour FR, INAMI/catégorie B2 pour BE, conventions cantonales
+ *  pour CH, CNS pour LU). */
+export type OrthoCountry = 'FR' | 'BE' | 'CH' | 'LU'
+
 export interface User {
   id: string
   email: string
@@ -9,6 +15,8 @@ export interface User {
   code_postal?: string
   ville?: string
   telephone?: string
+  /** Pays d'exercice (default 'FR'). Voir OrthoCountry. */
+  country?: OrthoCountry
   created_at: string
 }
 
