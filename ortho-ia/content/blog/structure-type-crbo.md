@@ -36,17 +36,6 @@ Pour une vision d'ensemble avant d'entrer dans le détail, consultez notre [guid
 
 ---
 
-## Sommaire
-
-- [Pourquoi la structure du CRBO est-elle normée ?](#pourquoi-la-structure-du-crbo-est-elle-normée-)
-- [Vue d'ensemble : les 8 sections en un coup d'œil](#vue-d-ensemble--les-8-sections-en-un-coup-d-œil)
-- [Les 8 sections détaillées : contenu, exemple et erreurs](#les-8-sections-détaillées--contenu-exemple-et-erreurs)
-- [Bilan initial vs bilan de renouvellement : quelles adaptations ?](#bilan-initial-vs-bilan-de-renouvellement--quelles-adaptations-)
-- [Les 5 erreurs de structure les plus fréquentes](#les-5-erreurs-de-structure-les-plus-fréquentes)
-- [Questions fréquentes](#questions-fréquentes)
-
----
-
 ## Pourquoi la structure du CRBO est-elle normée ?
 
 Le CRBO n'est pas un simple compte rendu clinique. C'est un document médico-légal qui engage la responsabilité professionnelle de l'orthophoniste et conditionne le remboursement des soins par l'Assurance Maladie. Il circule entre plusieurs acteurs : le médecin prescripteur, la CPAM, le patient ou ses représentants légaux, et potentiellement d'autres professionnels de santé impliqués dans le suivi.
