@@ -1,7 +1,10 @@
 /** @type {import('next').NextConfig} */
 const nextConfig = {
   images: {
-    domains: ['psxngyjpshweknwrhpck.supabase.co'],
+    domains: [
+      'psxngyjpshweknwrhpck.supabase.co',
+      'images.pexels.com', // cover images blog (Pexels CDN)
+    ],
   },
   // Instrumentation hook (Next.js 14) — chargé via instrumentation.ts.
   experimental: {
