@@ -1,7 +1,7 @@
 ---
 slug: exemples-crbo-pdf
-title: "Exemples de CRBO en PDF : 12 modèles téléchargeables conformes 2025"
-description: "12 modèles de CRBO en PDF téléchargeables, fictifs et anonymisés, couvrant les pathologies les plus prescrites en libéral. Structure conforme à l'arrêté du 25 juillet 2023."
+title: "Exemple CRBO PDF : 12 modèles à télécharger"
+description: "Dyslexie, AVC, retard de langage, bégaiement... Téléchargez 12 exemples de CRBO en PDF, conformes à l'arrêté 2023, commentés section par section."
 date: 2026-06-08
 dateModified: 2026-06-08
 author: "Équipe Ortho.ia"
