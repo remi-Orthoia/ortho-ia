@@ -1,3 +1,4 @@
+import Image from 'next/image'
 import Link from 'next/link'
 import type { PostMeta } from '@/lib/blog'
 import { getCocon } from '@/lib/blog-cocons'
@@ -87,6 +88,26 @@ export function ArticleHero({ meta, locale = 'fr' }: ArticleHeroProps) {
       <div style={{ paddingBottom: 24, borderBottom: '1px solid var(--border-ds)' }}>
         <AuthorMeta meta={meta} />
       </div>
+
+      {meta.coverImage && (
+        <figure style={{
+          margin: '32px 0 0',
+          borderRadius: 16,
+          overflow: 'hidden',
+          background: 'var(--bg-surface)',
+          aspectRatio: '940 / 650',
+          position: 'relative',
+        }}>
+          <Image
+            src={meta.coverImage}
+            alt={meta.coverAlt ?? meta.title}
+            fill
+            sizes="(max-width: 740px) 100vw, 740px"
+            priority
+            style={{ objectFit: 'cover' }}
+          />
+        </figure>
+      )}
     </header>
   )
 }
