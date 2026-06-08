@@ -7,8 +7,8 @@ tags: ["CRBO", "rédaction", "pratique", "NGAP", "avenant 20"]
 cocon: "redaction-crbo"
 locale: "fr-FR"
 canonicalSlug: "guide-redaction-crbo"
-coverImage: "https://images.pexels.com/photos/8413090/pexels-photo-8413090.jpeg?auto=compress&cs=tinysrgb&h=650&w=940"
-coverAlt: "Professionnel de santé rédigeant un compte rendu de bilan orthophonique sur dossier médical"
+coverImage: "https://images.pexels.com/photos/7578814/pexels-photo-7578814.jpeg?auto=compress&cs=tinysrgb&h=650&w=940"
+coverAlt: "Orthophoniste rédigeant un compte rendu de bilan en cabinet"
 isPillar: true
 faq:
   - question: "Comment rédiger un compte rendu de bilan orthophonique ?"
