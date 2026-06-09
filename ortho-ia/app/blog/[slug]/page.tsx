@@ -130,8 +130,10 @@ export default function BlogPostPage({ params }: PageProps) {
 
             <div style={{
               display: 'flex', flexWrap: 'wrap', gap: 12, alignItems: 'center',
-              fontSize: 13, color: 'var(--fg-3)', marginBottom: 40,
-              paddingBottom: 24, borderBottom: '1px solid var(--border-ds)',
+              fontSize: 13, color: 'var(--fg-3)',
+              marginBottom: meta.coverImage ? 32 : 40,
+              paddingBottom: meta.coverImage ? 0 : 24,
+              borderBottom: meta.coverImage ? 'none' : '1px solid var(--border-ds)',
             }}>
               <span>{meta.author}</span>
               <span aria-hidden="true">·</span>
@@ -139,6 +141,39 @@ export default function BlogPostPage({ params }: PageProps) {
               <span aria-hidden="true">·</span>
               <span>{meta.readingTime} min de lecture</span>
             </div>
+
+            {meta.coverImage && (
+              <figure style={{
+                margin: '0 0 40px',
+                paddingBottom: 24,
+                borderBottom: '1px solid var(--border-ds)',
+              }}>
+                {/* eslint-disable-next-line @next/next/no-img-element */}
+                <img
+                  src={meta.coverImage}
+                  alt={meta.coverAlt ?? meta.title}
+                  width={meta.coverWidth ?? 940}
+                  height={meta.coverHeight ?? 650}
+                  loading="eager"
+                  style={{
+                    display: 'block',
+                    width: '100%',
+                    height: 'auto',
+                    borderRadius: 12,
+                    background: 'var(--bg-soft, #f4f4f5)',
+                  }}
+                />
+                {meta.coverAlt && (
+                  <figcaption style={{
+                    marginTop: 10,
+                    fontSize: 12,
+                    color: 'var(--fg-3)',
+                    fontStyle: 'italic',
+                    textAlign: 'center',
+                  }}>{meta.coverAlt}</figcaption>
+                )}
+              </figure>
+            )}
 
             <div
               className="prose-blog"
