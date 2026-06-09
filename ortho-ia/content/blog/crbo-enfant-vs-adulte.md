@@ -21,28 +21,19 @@ coverWidth: 940
 coverHeight: 650
 ---
 
-# CRBO enfant vs CRBO adulte : différences et trames spécifiques
-
 Le CRBO (compte-rendu de bilan orthophonique) ne se rédige pas de la même façon selon que le patient a 4 ans ou 54 ans. Au-delà du cadre réglementaire qui demeure identique (arrêté du 25 juillet 2023), **les contenus, la durée d'évaluation, les tests administrés, et jusqu'à la restitution au patient divergent radicalement**. Cette différence structure l'ensemble de la pratique orthophonique, et pourtant elle reste peu documentée de manière comparative.
 
 Cet article présente les critères concrets qui distinguent un CRBO pédiatrique d'un CRBO adulte : items évalués, anamnèse, restitution, cotation, trames adaptées. Objectif : clarifier ces différences pour ajuster vos bilans selon l'âge du patient, gagner du temps en rédaction, et éviter les erreurs fréquentes de transposition d'un format à l'autre.
 
----
-
-## Sommaire
-
-- [Cadre réglementaire commun : structure obligatoire du CRBO 2026](#cadre-reglementaire-commun-structure-obligatoire-du-crbo-2026)
-- [Anamnèse : questions développementales vs parcours de vie](#anamnese-questions-developpementales-vs-parcours-de-vie)
-- [Durée et protocoles de passation adaptés à l'âge](#duree-et-protocoles-de-passation-adaptes-a-lage)
-- [Axes d'évaluation : spécificités pédiatriques et adultes](#axes-devaluation-specificites-pediatriques-et-adultes)
-- [Tests normés : batteries jeune enfant vs batteries adultes](#tests-normes-batteries-jeune-enfant-vs-batteries-adultes)
-- [Restitution au patient et à l'entourage](#restitution-au-patient-et-a-lentourage)
-- [Cotation NGAP : bilan initial, renouvellement, AMO 24](#cotation-ngap-bilan-initial-renouvellement-amo-24)
-- [Tableau comparatif : 12 critères clés](#tableau-comparatif-12-criteres-cles)
-- [Erreurs fréquentes de transposition entre formats](#erreurs-frequentes-de-transposition-entre-formats)
-- [Modèles téléchargeables : trames enfant et adulte](#modeles-telechargeables-trames-enfant-et-adulte)
-
----
+<aside class="essentiel">
+  <div class="essentiel-label">L'essentiel</div>
+  <ul>
+    <li><strong>Structure commune</strong> : les six sections imposées par l'arrêté du 25 juillet 2023 s'appliquent à tous les CRBO, enfant comme adulte.</li>
+    <li><strong>Anamnèse divergente</strong> : développement psychomoteur et scolaire chez l'enfant, parcours professionnel et événements neurologiques chez l'adulte.</li>
+    <li><strong>Batteries dédiées</strong> : EVALO 2-6, N-EEL, BETL en pédiatrie ; MT86, BDAE, MoCA chez l'adulte.</li>
+    <li><strong>Restitution adaptée</strong> : aux parents avec un ton déculpabilisant pour l'enfant, au patient avec un projet co-construit pour l'adulte.</li>
+  </ul>
+</aside>
 
 ## Cadre réglementaire commun : structure obligatoire du CRBO 2026
 
@@ -59,11 +50,15 @@ Sections obligatoires :
 
 Cette structure ne change pas d'un enfant à un adulte. **Ce qui change, c'est le contenu de chaque section.**
 
-> **Bon à savoir** : L'avenant 21 (application 2026) supprime la demande d'accord préalable (DAP). Le CRBO devient la seule pièce opposable en cas de contrôle a posteriori. Qualité documentaire et précision diagnostique sont devenues centrales.
+<div class="callout callout-info">
+  <div class="callout-icon">i</div>
+  <div class="callout-body">
+    <div class="callout-title">Bon à savoir</div>
+    <p>L'avenant 21 (application 2026) supprime la demande d'accord préalable (DAP). Le CRBO devient la seule pièce opposable en cas de contrôle a posteriori. Qualité documentaire et précision diagnostique sont devenues centrales.</p>
+  </div>
+</div>
 
 Pour une [méthode complète de rédaction du CRBO](https://ortho-ia.com/blog/theme/redaction-crbo), consultez le guide de rédaction détaillé.
-
----
 
 ## Anamnèse : questions développementales vs parcours de vie
 
@@ -103,9 +98,13 @@ Questions types :
 
 **Le bilan adulte intègre systématiquement un volet cognitif** (mémoire, attention, fonctions exécutives), même si le motif de consultation initial concerne uniquement le langage. Les troubles cognitifs post-AVC ou liés à une maladie neurodégénérative impactent directement la communication fonctionnelle.
 
-> **Attention** : Chez l'adulte, l'absence de vérification neurologique récente (imagerie cérébrale dans les 6 mois pour un AVC) fragilise le diagnostic d'aphasie. Mentionner explicitement la date et le résultat de la dernière IRM ou du dernier scanner.
-
----
+<div class="callout callout-warn">
+  <div class="callout-icon">!</div>
+  <div class="callout-body">
+    <div class="callout-title">Attention</div>
+    <p>Chez l'adulte, l'absence de vérification neurologique récente (imagerie cérébrale dans les 6 mois pour un AVC) fragilise le diagnostic d'aphasie. Mentionner explicitement la date et le résultat de la dernière IRM ou du dernier scanner.</p>
+  </div>
+</div>
 
 ## Durée et protocoles de passation adaptés à l'âge
 
@@ -135,9 +134,13 @@ Contraintes spécifiques :
 
 Le bilan adulte privilégie **la quantification fine des déficits**, avec des batteries standardisées longues (MT86, BDAE, GREMOTS) et des épreuves écologiques (compréhension de documents administratifs, rédaction d'un SMS).
 
-> **Bon à savoir** : Selon la HAS, un bilan orthophonique adulte post-AVC doit être réalisé dans les 15 jours suivant l'accident vasculaire pour documenter l'aphasie aiguë, puis réévalué à 3 mois pour mesurer la récupération spontanée.
-
----
+<div class="callout callout-info">
+  <div class="callout-icon">i</div>
+  <div class="callout-body">
+    <div class="callout-title">Bon à savoir</div>
+    <p>Selon la HAS, un bilan orthophonique adulte post-AVC doit être réalisé dans les 15 jours suivant l'accident vasculaire pour documenter l'aphasie aiguë, puis réévalué à 3 mois pour mesurer la récupération spontanée.</p>
+  </div>
+</div>
 
 ## Axes d'évaluation : spécificités pédiatriques et adultes
 
@@ -168,8 +171,6 @@ Les cinq axes d'évaluation du langage oral (phonologie, lexique, morphosyntaxe,
 - **Enfant** : recherche de bégaiement développemental (3-5 ans), bégaiement persistant (au-delà de 6 ans), disfluences normales vs pathologiques (répétitions de syllabes, blocages, prolongations).
 - **Adulte** : bégaiement persistant depuis l'enfance, bégaiement acquis (post-AVC, post-traumatique), dysprosodie (maladie de Parkinson, SEP).
 
----
-
 ## Tests normés : batteries jeune enfant vs batteries adultes
 
 ### Batteries pédiatriques (3-12 ans)
@@ -184,7 +185,13 @@ Tests fréquents :
 - **BETL** (Batterie d'Évaluation des Troubles du Langage) : 6 ans à 12 ans, couvre langage oral et écrit. Passation 1 h 30 à 2 h.
 - **NEPSY-II** (3 ans à 16 ans) : fonctions exécutives, mémoire, attention, langage. Passation 1 h à 2 h selon les modules.
 
-> **Exemple clinique** : Pour Léo, 5 ans 4 mois, motif "retard de langage", vous administrez EVALO 2-6 (phonologie, lexique, morphosyntaxe) + N-EEL (compréhension morphosyntaxique). Durée totale : 1 h 30, répartie sur deux séances de 45 min.
+<div class="callout callout-info">
+  <div class="callout-icon">i</div>
+  <div class="callout-body">
+    <div class="callout-title">Exemple clinique</div>
+    <p>Pour Léo, 5 ans 4 mois, motif "retard de langage", vous administrez EVALO 2-6 (phonologie, lexique, morphosyntaxe) + N-EEL (compréhension morphosyntaxique). Durée totale : 1 h 30, répartie sur deux séances de 45 min.</p>
+  </div>
+</div>
 
 ### Batteries adultes (16 ans et plus)
 
@@ -199,9 +206,13 @@ Tests fréquents :
 - **MoCA** (Montreal Cognitive Assessment) : dépistage cognitif (mémoire, attention, fonctions exécutives, langage). Passation 10 min.
 - **BREF** (Batterie Rapide d'Efficience Frontale) : fonctions exécutives. Passation 5 min.
 
-> **Exemple clinique** : Pour Monsieur D., 62 ans, aphasie post-AVC ischémique gauche à 3 semaines, vous administrez MT86 complet (sous-tests de compréhension, production, répétition, lecture) + MoCA (cognition globale) + DO 80 (manque du mot). Durée totale : 3 h, répartie sur deux séances de 1 h 30.
-
----
+<div class="callout callout-info">
+  <div class="callout-icon">i</div>
+  <div class="callout-body">
+    <div class="callout-title">Exemple clinique</div>
+    <p>Pour Monsieur D., 62 ans, aphasie post-AVC ischémique gauche à 3 semaines, vous administrez MT86 complet (sous-tests de compréhension, production, répétition, lecture) + MoCA (cognition globale) + DO 80 (manque du mot). Durée totale : 3 h, répartie sur deux séances de 1 h 30.</p>
+  </div>
+</div>
 
 ## Restitution au patient et à l'entourage
 
@@ -235,8 +246,6 @@ Modalités :
 
 **Le ton est factuel, honnête sur la sévérité des déficits, mais toujours étayé par des solutions concrètes.** Vous évitez le paternalisme ("Ne vous inquiétez pas, ça va aller") et les promesses de guérison ("Vous allez tout récupérer").
 
----
-
 ## Cotation NGAP : bilan initial, renouvellement, AMO 24
 
 La cotation d'un bilan orthophonique suit la nomenclature NGAP, identique pour enfant et adulte. Depuis janvier 2024, l'AMO 24 (bilan de renouvellement simplifié) peut être coté dans certaines situations.
@@ -257,9 +266,13 @@ La cotation d'un bilan orthophonique suit la nomenclature NGAP, identique pour e
 - **Conditions** : patient déjà suivi, prise en charge stable, pas de changement majeur de profil.
 - **Limite** : l'AMO 24 ne remplace pas le bilan complet tous les 18 mois. Il s'intercale entre deux AMO 30 pour documenter l'évolution intermédiaire.
 
-> **Attention** : L'AMO 24 ne peut pas être coté pour un premier renouvellement. Le premier renouvellement reste obligatoirement un AMO 30 complet.
-
----
+<div class="callout callout-warn">
+  <div class="callout-icon">!</div>
+  <div class="callout-body">
+    <div class="callout-title">Attention</div>
+    <p>L'AMO 24 ne peut pas être coté pour un premier renouvellement. Le premier renouvellement reste obligatoirement un AMO 30 complet.</p>
+  </div>
+</div>
 
 ## Tableau comparatif : 12 critères clés
 
@@ -277,8 +290,6 @@ La cotation d'un bilan orthophonique suit la nomenclature NGAP, identique pour e
 | **Cotation initiale** | AMO 30 (60 €) | AMO 30 (60 €) |
 | **Cotation renouvellement** | AMO 30 tous les 18 mois | AMO 30 tous les 18 mois |
 | **AMO 24 applicable** | Oui (bilan intermédiaire entre deux AMO 30) | Oui (bilan intermédiaire entre deux AMO 30) |
-
----
 
 ## Erreurs fréquentes de transposition entre formats
 
@@ -298,9 +309,13 @@ Certaines orthophonistes, habituées aux bilans pédiatriques, transposent par a
 3. **Restitution technique excessive** : "Léo présente un déficit de -2,1 écarts-types en morphosyntaxe expressive" ne parle pas aux parents. Reformulez en termes fonctionnels : "Léo a du mal à construire des phrases longues, on va l'aider à ajouter des mots de liaison."
 4. **Batterie adulte inadaptée** : le MT86 n'a pas d'étalonnage pédiatrique. Utiliser EVALO 2-6, N-EEL, BETL.
 
-> **Bon à savoir** : Si vous débutez en libéral et hésitez entre les tests à acheter, privilégiez EVALO 2-6 + N-EEL pour le pédiatrique, MT86 + MoCA pour l'adulte. Ces quatre outils couvrent 80 % des demandes de bilan.
-
----
+<div class="callout callout-info">
+  <div class="callout-icon">i</div>
+  <div class="callout-body">
+    <div class="callout-title">Bon à savoir</div>
+    <p>Si vous débutez en libéral et hésitez entre les tests à acheter, privilégiez EVALO 2-6 + N-EEL pour le pédiatrique, MT86 + MoCA pour l'adulte. Ces quatre outils couvrent 80 % des demandes de bilan.</p>
+  </div>
+</div>
 
 ## Modèles téléchargeables : trames enfant et adulte
 
@@ -312,9 +327,12 @@ Pour démarrer rapidement, deux trames Word structurées selon l'arrêté du 25 
 
 Les trames sont modifiables librement, compatibles avec Orthoscribe et les logiciels de gestion de cabinet classiques (Vocalys, Maiia).
 
-**Voir les 2 trames** → [Voir les 2 trames](https://ortho-ia.com/ressources/crbo-exemples-pdf)
-
----
+<div class="cta">
+  <div class="cta-eyebrow">Ortho.ia</div>
+  <h3 class="cta-h">Téléchargez les 2 trames CRBO enfant et adulte</h3>
+  <p class="cta-p">Deux modèles Word prêts à l'emploi, structurés selon l'arrêté du 25 juillet 2023, avec tableaux de scores et formulations diagnostiques types.</p>
+  <a href="https://ortho-ia.com/ressources/crbo-exemples-pdf" class="cta-btn">Voir les 2 trames →</a>
+</div>
 
 ## En résumé
 
