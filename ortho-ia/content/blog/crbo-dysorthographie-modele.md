@@ -21,8 +21,6 @@ coverWidth: 940
 coverHeight: 650
 ---
 
----
-
 Rédiger un compte-rendu de bilan orthophonique (CRBO) pour une dysorthographie isolée demande plus de rigueur clinique que pour un trouble dyslexie-dysorthographie associé. Parce que la différence entre retard orthographique et trouble dysorthographique ne repose pas sur un seuil chiffré seul : elle dépend de la formulation du praticien, de l'explicitation des critères d'exclusion et de la précision du type de dysorthographie identifié. La nomenclature générale des actes orthophoniques (avenant 20, arrêté du 25 juillet 2023) impose une structure de CRBO standardisée, mais c'est votre rédaction qui en fait un document recevable par la MDPH, l'Éducation Nationale et le médecin prescripteur. Cet article détaille la trame CRBO dysorthographie avec tests nommés (ODEDYS-2, BALE, BELO), formulations commentées et pièges à éviter. Pour approfondir les règles générales de rédaction du CRBO applicables à tous les domaines, consultez [notre guide complet sur la rédaction du CRBO](https://ortho-ia.com/blog/theme/redaction-crbo). Notez que [le CRBO dyscalculie suit une logique similaire pour les troubles logico-mathématiques](https://ortho-ia.com/blog/crbo-dyscalculie), avec une adaptation des batteries et des axes évalués.
 
 <aside class="essentiel">
@@ -193,4 +191,10 @@ Certaines erreurs rédactionnelles reviennent dans les CRBO dysorthographie, com
 
 Un CRBO dysorthographie conforme protège le patient, le prescripteur et l'orthophoniste. Sa valeur repose autant sur la rigueur clinique (tests normés, scores interprétés, type de dysorthographie explicite) que sur la formulation rédactionnelle (conclusion non ambiguë, critères d'exclusion mentionnés, projet thérapeutique différencié). Trois points critiques : nommer le type de dysorthographie (phonologique/de surface/mixte), trancher explicitement entre retard et trouble développemental, associer systématiquement score brut et score normé pour chaque axe évalué. Un CRBO bien rédigé ouvre l'accès aux aménagements scolaires, justifie la prise en charge orthophonique et documente l'évolution du patient sur le long terme.
 
-> Cet article a été rédigé à destination des orthophonistes et professionnels de santé. Il ne constitue pas un avis médical et ne se substitue pas au jugement clinique du praticien. Toute décision diagnostique ou thérapeutique relève de la responsabilité de l'orthophoniste en charge du patient, conformément au code de déontologie de la Fédération Nationale des Orthophonistes (FNO).
+<div class="callout callout-info">
+  <div class="callout-icon">i</div>
+  <div class="callout-body">
+    <div class="callout-title">Avertissement</div>
+    <p>Cet article a été rédigé à destination des orthophonistes et professionnels de santé. Il ne constitue pas un avis médical et ne se substitue pas au jugement clinique du praticien. Toute décision diagnostique ou thérapeutique relève de la responsabilité de l'orthophoniste en charge du patient, conformément au code de déontologie de la Fédération Nationale des Orthophonistes (FNO).</p>
+  </div>
+</div>
