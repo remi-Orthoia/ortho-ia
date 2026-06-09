@@ -21,10 +21,6 @@ coverWidth: 940
 coverHeight: 650
 ---
 
-Je vais générer l'article selon votre structure détaillée.
-
----
-
 Vous finissez un bilan de langage écrit d'un enfant CE2 orienté pour dyslexie. Vous avez passé 2 h 30 de tests, coté votre BALE ou ODEDYS, et maintenant il vous faut rédiger le compte rendu de bilan orthophonique (CRBO). Ce document, transmis au médecin prescripteur et aux parents, doit être structuré, argumenté et conforme au cahier des charges 2023. Cet article donne la trame complète, section par section, avec exemples rédigés et tableau de scores intégrable. Si vous êtes aussi confronté à un profil dysorthographie isolée, le [modèle de CRBO dysorthographie](/crbo-dysorthographie-modele/) couvre cette situation spécifique.
 
 <aside class="essentiel">
@@ -236,8 +232,6 @@ La commission MDPH statue sur le taux d'incapacité et les compensations (tiers-
 
 Un CRBO dyslexie conforme à l'avenant 20 contient six sections obligatoires : identification, motif, anamnèse, bilan des compétences, synthèse diagnostique, projet thérapeutique. L'anamnèse doit mentionner explicitement l'histoire du langage oral, le contexte familial et l'exclusion des facteurs non-dys. Les résultats des batteries (BALE, ODEDYS) se présentent sous forme de tableau avec quatre colonnes pour une lecture immédiate. La synthèse croise scores quantitatifs et analyse qualitative des erreurs pour identifier le profil dyslexique (phonologique, de surface, mixte). Les objectifs thérapeutiques ciblent les mécanismes déficitaires identifiés et s'accompagnent d'une mention des aménagements scolaires recommandés. Ce document, transmis au prescripteur et aux parents, engage votre responsabilité professionnelle : vérifiez chaque donnée, citez vos sources, signez.
 
----
-
 <div class="faq">
   <details>
     <summary>Quels sont les 4 types de dyslexie à distinguer dans le CRBO ?</summary>
@@ -265,6 +259,10 @@ Un CRBO dyslexie conforme à l'avenant 20 contient six sections obligatoires : i
   </details>
 </div>
 
----
-
-> **Cet article a une visée informative et ne remplace pas un bilan réalisé par un professionnel de santé.** Les formulations proposées sont des exemples illustratifs à adapter à chaque situation clinique. Le diagnostic de dyslexie relève d'une démarche pluridisciplinaire associant orthophoniste, médecin prescripteur et, si besoin, neuropsychologue. Chaque CRBO doit refléter la situation individuelle du patient et engager la responsabilité de l'orthophoniste signataire.
+<div class="callout callout-info">
+  <div class="callout-icon">i</div>
+  <div class="callout-body">
+    <div class="callout-title">Avertissement</div>
+    <p>Cet article a une visée informative et ne remplace pas un bilan réalisé par un professionnel de santé. Les formulations proposées sont des exemples illustratifs à adapter à chaque situation clinique. Le diagnostic de dyslexie relève d'une démarche pluridisciplinaire associant orthophoniste, médecin prescripteur et, si besoin, neuropsychologue. Chaque CRBO doit refléter la situation individuelle du patient et engager la responsabilité de l'orthophoniste signataire.</p>
+  </div>
+</div>
