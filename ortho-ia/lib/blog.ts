@@ -41,6 +41,11 @@ export interface PostMeta {
   author: string
   tags: string[]
   coverImage?: string
+  /** Texte alternatif de l'image de couverture (SEO + a11y). */
+  coverAlt?: string
+  /** Dimensions natives de l'image — utilisées pour éviter le CLS. */
+  coverWidth?: number
+  coverHeight?: number
   readingTime: number  // minutes (estimé à 200 wpm)
   /** Q/R optionnelles depuis le frontmatter — alimentent le JSON-LD
    *  FAQPage (éligibilité rich snippets Google). */
@@ -87,6 +92,9 @@ export function getPostBySlug(slug: string): Post {
     author: data.author ?? 'L\'équipe Ortho.ia',
     tags: Array.isArray(data.tags) ? data.tags : [],
     coverImage: typeof data.coverImage === 'string' ? data.coverImage : undefined,
+    coverAlt: typeof data.coverAlt === 'string' ? data.coverAlt : undefined,
+    coverWidth: typeof data.coverWidth === 'number' ? data.coverWidth : undefined,
+    coverHeight: typeof data.coverHeight === 'number' ? data.coverHeight : undefined,
     readingTime: estimateReadingTime(content),
     faq: Array.isArray(data.faq)
       ? data.faq
