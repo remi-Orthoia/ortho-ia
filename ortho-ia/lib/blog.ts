@@ -40,6 +40,9 @@ export interface PostMeta {
   date: string         // ISO YYYY-MM-DD
   author: string
   tags: string[]
+  /** Slug du cocon éditorial (voir `lib/cocons.ts`). Pilote la nav, la chip
+   *  de catégorie sur les cards et les pages /blog/categorie/[slug]. */
+  cocon?: string
   coverImage?: string
   /** Texte alternatif de l'image de couverture (SEO + a11y). */
   coverAlt?: string
@@ -91,6 +94,7 @@ export function getPostBySlug(slug: string): Post {
     date: typeof data.date === 'string' ? data.date : new Date(data.date).toISOString().slice(0, 10),
     author: data.author ?? 'L\'équipe Ortho.ia',
     tags: Array.isArray(data.tags) ? data.tags : [],
+    cocon: typeof data.cocon === 'string' ? data.cocon : undefined,
     coverImage: typeof data.coverImage === 'string' ? data.coverImage : undefined,
     coverAlt: typeof data.coverAlt === 'string' ? data.coverAlt : undefined,
     coverWidth: typeof data.coverWidth === 'number' ? data.coverWidth : undefined,
@@ -111,6 +115,11 @@ export function getAllPosts(): PostMeta[] {
   return getAllSlugs()
     .map((slug) => getPostBySlug(slug).meta)
     .sort((a, b) => (a.date < b.date ? 1 : -1))
+}
+
+/** Retourne les articles d'un cocon donné, triés par date desc. */
+export function getPostsByCocon(coconSlug: string): PostMeta[] {
+  return getAllPosts().filter((p) => p.cocon === coconSlug)
 }
 
 /** Formatte une date ISO en "12 mai 2026" (fr-FR). */
