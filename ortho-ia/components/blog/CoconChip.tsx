@@ -33,7 +33,7 @@ export function CoconChip({ cocon, variant = 'default' }: CoconChipProps) {
     variant === 'active'
       ? {
           background: cocon.color,
-          color: '#FFFFFF',
+          color: cocon.activeFg ?? '#FFFFFF',
           borderColor: cocon.color,
         }
       : {
