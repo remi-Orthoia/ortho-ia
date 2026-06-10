@@ -30,8 +30,43 @@ import fs from 'fs'
 import path from 'path'
 import matter from 'gray-matter'
 import { marked } from 'marked'
+import { COCON_SLUGS } from './cocons'
 
 const BLOG_DIR = path.join(process.cwd(), 'content', 'blog')
+
+/**
+ * Garde-fou : crie un WARN visible au build (et en dev) si un article n'a
+ * pas de champ `cocon` valide. C'est le filet anti-régression du bug
+ * "les catégories disparaissent à chaque fois" (cause : rédaction manuelle
+ * ou pipeline Make qui n'écrit pas la valeur dans le frontmatter, sans
+ * jamais déclencher d'erreur visible).
+ *
+ * - Cocon absent → WARN "missing cocon" (rouge en terminal)
+ * - Cocon inconnu (faute de frappe, valeur retirée) → WARN "unknown cocon"
+ * - Cocon valide → silencieux
+ *
+ * Si tu veux passer en mode strict (build qui fail), remplace `console.warn`
+ * par `throw new Error(...)` ci-dessous. Garder en WARN tant que tous les
+ * articles legacy n'ont pas été migrés.
+ */
+function validateCocon(slug: string, cocon: string | undefined): void {
+  if (!cocon) {
+    // eslint-disable-next-line no-console
+    console.warn(
+      `\x1b[31m[blog] ⚠ Article "${slug}.md" : champ \`cocon\` manquant.\x1b[0m\n` +
+      `  → Ajoute "cocon: <slug>" dans le frontmatter.\n` +
+      `  → Valeurs valides : ${COCON_SLUGS.join(', ')}`
+    )
+    return
+  }
+  if (!COCON_SLUGS.includes(cocon)) {
+    // eslint-disable-next-line no-console
+    console.warn(
+      `\x1b[31m[blog] ⚠ Article "${slug}.md" : cocon inconnu "${cocon}".\x1b[0m\n` +
+      `  → Valeurs valides : ${COCON_SLUGS.join(', ')}`
+    )
+  }
+}
 
 export interface PostMeta {
   slug: string
@@ -94,7 +129,11 @@ export function getPostBySlug(slug: string): Post {
     date: typeof data.date === 'string' ? data.date : new Date(data.date).toISOString().slice(0, 10),
     author: data.author ?? 'L\'équipe Ortho.ia',
     tags: Array.isArray(data.tags) ? data.tags : [],
-    cocon: typeof data.cocon === 'string' ? data.cocon : undefined,
+    cocon: (() => {
+      const c = typeof data.cocon === 'string' ? data.cocon : undefined
+      validateCocon(slug, c)
+      return c
+    })(),
     coverImage: typeof data.coverImage === 'string' ? data.coverImage : undefined,
     coverAlt: typeof data.coverAlt === 'string' ? data.coverAlt : undefined,
     coverWidth: typeof data.coverWidth === 'number' ? data.coverWidth : undefined,

@@ -3,6 +3,7 @@ title: "Q1 = P25 : le piège des percentiles Exalang qu'on retrouve dans la moit
 description: "Pourquoi Q1 dans un protocole Exalang correspond au percentile 25 et NON à une zone de difficulté sévère — et comment éviter l'erreur d'interprétation qui circule dans la moitié des bilans."
 date: 2026-05-08
 author: "L'équipe Ortho.ia"
+cocon: redaction-crbo
 tags: ["exalang", "percentile", "CRBO"]
 ---
 

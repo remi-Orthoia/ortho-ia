@@ -3,6 +3,7 @@ title: "Dyslexie phonologique : comment la reconnaître en bilan"
 description: "Repérer une dyslexie phonologique sur un bilan orthophonique : critères diagnostiques, dissociations utiles, conséquences scolaires, et ce qu'il faut écrire dans le CRBO."
 date: 2026-05-12
 author: "L'équipe Ortho.ia"
+cocon: redaction-crbo
 tags: ["dyslexie", "exalang", "CRBO"]
 ---
 

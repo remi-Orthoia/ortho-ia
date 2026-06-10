@@ -3,6 +3,7 @@ title: "Écrire un CRBO qui parle aux médecins (et pas seulement aux orthophoni
 description: "Le compte rendu de bilan orthophonique est aussi lu par des médecins, des enseignants et des familles. Voici comment garder un niveau clinique sans perdre les lecteurs non spécialistes."
 date: 2026-05-05
 author: "L'équipe Ortho.ia"
+cocon: redaction-crbo
 tags: ["CRBO", "rédaction", "pratique"]
 ---
 
