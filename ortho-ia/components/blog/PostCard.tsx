@@ -42,6 +42,7 @@ export function PostCard({ post }: { post: PostMeta }) {
         }}
       >
         {cocon && <CoconChip cocon={cocon} variant="static" />}
+        {post.isPillar && <PillierBadge />}
         <span>{formatPostDate(post.date)}</span>
         <span aria-hidden="true">·</span>
         <span>{post.readingTime} min de lecture</span>
@@ -62,5 +63,41 @@ export function PostCard({ post }: { post: PostMeta }) {
         {post.description}
       </p>
     </Link>
+  )
+}
+
+/**
+ * Badge "À lire en premier" affiché sur l'article pilier d'un cocon.
+ *
+ * Style aligné DA Ortho.ia : fond sage 50 très pâle + texte sage 700, bordure
+ * sage 300, petit triangle indicateur. Visuellement plus discret que la chip
+ * de cocon (la chip dit "quoi", le badge dit "pourquoi commencer ici").
+ *
+ * Convention métier : 1 pilier par cocon (5 piliers max au total). Géré dans
+ * `lib/blog.ts` (`sortCanonical`) pour rester en tête de liste quoi qu'il
+ * arrive — pas de risque de "perdre" le pilier au prochain push d'article.
+ */
+function PillierBadge() {
+  return (
+    <span
+      style={{
+        display: 'inline-flex',
+        alignItems: 'center',
+        gap: 6,
+        padding: '4px 10px',
+        borderRadius: 999,
+        fontSize: 11,
+        fontWeight: 700,
+        textTransform: 'uppercase',
+        letterSpacing: '0.04em',
+        background: '#EEF3EF',          // sage 50 (pâle)
+        color: '#2E4A41',                // sage 700
+        border: '1px solid #A8BBB1',     // sage 300
+      }}
+      aria-label="Article pilier — à lire en premier"
+    >
+      <span aria-hidden="true" style={{ fontSize: 10 }}>★</span>
+      À lire en premier
+    </span>
   )
 }

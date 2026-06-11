@@ -84,6 +84,11 @@ export interface PostMeta {
   /** Dimensions natives de l'image — utilisées pour éviter le CLS. */
   coverWidth?: number
   coverHeight?: number
+  /** Article pilier du cocon : affiche un badge "À lire en premier" et reste
+   *  systématiquement en tête de liste (page index + page catégorie).
+   *  Convention : 1 seul pilier par cocon. Géré par sort code-driven, donc
+   *  ne peut PAS être perturbé par un nouveau push d'article daté du jour. */
+  isPillar?: boolean
   readingTime: number  // minutes (estimé à 200 wpm)
   /** Q/R optionnelles depuis le frontmatter — alimentent le JSON-LD
    *  FAQPage (éligibilité rich snippets Google). */
@@ -138,6 +143,7 @@ export function getPostBySlug(slug: string): Post {
     coverAlt: typeof data.coverAlt === 'string' ? data.coverAlt : undefined,
     coverWidth: typeof data.coverWidth === 'number' ? data.coverWidth : undefined,
     coverHeight: typeof data.coverHeight === 'number' ? data.coverHeight : undefined,
+    isPillar: data.isPillar === true,
     readingTime: estimateReadingTime(content),
     faq: Array.isArray(data.faq)
       ? data.faq
@@ -149,14 +155,32 @@ export function getPostBySlug(slug: string): Post {
   return { meta, html }
 }
 
-/** Retourne tous les articles triés par date desc (plus récent en premier). */
+/**
+ * Tri canonique de la liste d'articles, code-driven (pas frontmatter-driven) :
+ *
+ *   1. isPillar === true   → systématiquement en tête
+ *   2. date desc           → puis chronologique inverse
+ *
+ * Pourquoi code-driven : Make pousse régulièrement des articles datés du jour.
+ * Si on triait sur la seule date, le pilier "Comment rédiger un CRBO" tomberait
+ * à chaque nouveau push (cf incident récurrent "le pilier disparaît"). Ici, la
+ * règle est codée → impossible de la perdre via un frontmatter mal rempli.
+ *
+ * Convention métier : 1 pilier par cocon (5 piliers max au total).
+ */
+function sortCanonical(a: PostMeta, b: PostMeta): number {
+  if (a.isPillar !== b.isPillar) return a.isPillar ? -1 : 1
+  return a.date < b.date ? 1 : -1
+}
+
+/** Retourne tous les articles triés selon l'ordre canonique (piliers en tête). */
 export function getAllPosts(): PostMeta[] {
   return getAllSlugs()
     .map((slug) => getPostBySlug(slug).meta)
-    .sort((a, b) => (a.date < b.date ? 1 : -1))
+    .sort(sortCanonical)
 }
 
-/** Retourne les articles d'un cocon donné, triés par date desc. */
+/** Retourne les articles d'un cocon donné, triés selon l'ordre canonique. */
 export function getPostsByCocon(coconSlug: string): PostMeta[] {
   return getAllPosts().filter((p) => p.cocon === coconSlug)
 }
